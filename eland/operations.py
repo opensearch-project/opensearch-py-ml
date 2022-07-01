@@ -1301,7 +1301,7 @@ class Operations:
         body.exists(field, must=True)
 
         count: int = query_compiler._client.count(
-            index=query_compiler._index_pattern, **body.to_count_body()
+            index=query_compiler._index_pattern, body=body.to_count_body()
         )["count"]
         return count
 

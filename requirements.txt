@@ -5,3 +5,4 @@ elasticsearch>=8,<9
 pandas>=1.2,<2
 matplotlib<4
 numpy<2
+opensearch-py>=2
