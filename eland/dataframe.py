@@ -124,12 +124,12 @@ class DataFrame(NDFrame):
 
     def __init__(
         self,
-        es_client: Optional[
-            Union[str, List[str], Tuple[str, ...], "Elasticsearch"]
+        os_client: Optional[
+            Union[str, List[str], Tuple[str, ...], "OpenSearch"]
         ] = None,
-        es_index_pattern: Optional[str] = None,
+        os_index_pattern: Optional[str] = None,
         columns: Optional[List[str]] = None,
-        es_index_field: Optional[str] = None,
+        os_index_field: Optional[str] = None,
         _query_compiler: Optional["QueryCompiler"] = None,
     ) -> None:
         """
@@ -141,19 +141,18 @@ class DataFrame(NDFrame):
         The constructor with 'query_compiler' is for internal use only.
         """
         if _query_compiler is None:
-            if es_client is None or es_index_pattern is None:
+            if os_client is None or os_index_pattern is None:
                 raise ValueError(
                     "client and index_pattern must be defined in DataFrame constructor"
                 )
         # python 3 syntax
         super().__init__(
-            es_client=es_client,
-            es_index_pattern=es_index_pattern,
+            os_client=os_client,
+            os_index_pattern=os_index_pattern,
             columns=columns,
-            es_index_field=es_index_field,
+            os_index_field=os_index_field,
             _query_compiler=_query_compiler,
         )
-
     @property
     def columns(self) -> pd.Index:
         """

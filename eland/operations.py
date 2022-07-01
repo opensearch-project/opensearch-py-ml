@@ -1537,46 +1537,28 @@ def _search_yield_hits(
     # care about the hit itself for these queries.
     body.setdefault("track_total_hits", False)
 
-    try:
-        pit_id = client.open_point_in_time(
-            index=query_compiler._index_pattern, keep_alive=DEFAULT_PIT_KEEP_ALIVE
-        )["id"]
+    while max_number_of_hits is None or hits_yielded < max_number_of_hits:
+        resp = client.search(body = body, index = query_compiler._index_pattern)
+        hits: List[Dict[str, Any]] = resp["hits"]["hits"]
 
-        # Modify the search with the new point in time ID and keep-alive time.
-        body["pit"] = {"id": pit_id, "keep_alive": DEFAULT_PIT_KEEP_ALIVE}
+        # If we didn't receive any hits it means we've reached the end.
+        if not hits:
+            break
 
-        while max_number_of_hits is None or hits_yielded < max_number_of_hits:
-            resp = client.search(**body)
-            hits: List[Dict[str, Any]] = resp["hits"]["hits"]
+        # Calculate which hits should be yielded from this batch
+        if max_number_of_hits is None:
+            hits_to_yield = len(hits)
+        else:
+            hits_to_yield = min(len(hits), max_number_of_hits - hits_yielded)
 
-            # The point in time ID can change between searches so we
-            # need to keep the next search up-to-date
-            pit_id = resp.get("pit_id", pit_id)
-            body["pit"]["id"] = pit_id
+        # Yield the hits we need to and then track the total number.
+        # Never yield an empty list as that makes things simpler for
+        # downstream consumers.
+        if hits and hits_to_yield > 0:
+            yield hits[:hits_to_yield]
+            hits_yielded += hits_to_yield
 
-            # If we didn't receive any hits it means we've reached the end.
-            if not hits:
-                break
+        # Set the 'search_after' for the next request
+        # to be the last sort value for this set of hits.
+        body["search_after"] = hits[-1]["sort"]
 
-            # Calculate which hits should be yielded from this batch
-            if max_number_of_hits is None:
-                hits_to_yield = len(hits)
-            else:
-                hits_to_yield = min(len(hits), max_number_of_hits - hits_yielded)
-
-            # Yield the hits we need to and then track the total number.
-            # Never yield an empty list as that makes things simpler for
-            # downstream consumers.
-            if hits and hits_to_yield > 0:
-                yield hits[:hits_to_yield]
-                hits_yielded += hits_to_yield
-
-            # Set the 'search_after' for the next request
-            # to be the last sort value for this set of hits.
-            body["search_after"] = hits[-1]["sort"]
-
-    finally:
-        # We want to cleanup the point in time if we allocated one
-        # to keep our memory footprint low.
-        if pit_id is not None:
-            client.options(ignore_status=404).close_point_in_time(id=pit_id)
