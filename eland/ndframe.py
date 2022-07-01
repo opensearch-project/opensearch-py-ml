@@ -57,12 +57,12 @@ only Elasticsearch aggregatable fields can be aggregated or grouped.
 class NDFrame(ABC):
     def __init__(
         self,
-        es_client: Optional[
-            Union[str, List[str], Tuple[str, ...], "Elasticsearch"]
+        os_client: Optional[
+            Union[str, List[str], Tuple[str, ...], "OpenSearch"]
         ] = None,
-        es_index_pattern: Optional[str] = None,
+        os_index_pattern: Optional[str] = None,
         columns: Optional[List[str]] = None,
-        es_index_field: Optional[str] = None,
+        os_index_field: Optional[str] = None,
         _query_compiler: Optional[QueryCompiler] = None,
     ) -> None:
         """
@@ -75,10 +75,10 @@ class NDFrame(ABC):
         """
         if _query_compiler is None:
             _query_compiler = QueryCompiler(
-                client=es_client,
-                index_pattern=es_index_pattern,
+                client=os_client,
+                index_pattern=os_index_pattern,
                 display_names=columns,
-                index_field=es_index_field,
+                index_field=os_index_field,
             )
         self._query_compiler = _query_compiler
 

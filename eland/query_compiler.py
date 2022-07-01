@@ -78,7 +78,7 @@ class QueryCompiler:
     def __init__(
         self,
         client: Optional[
-            Union[str, List[str], Tuple[str, ...], "Elasticsearch"]
+            Union[str, List[str], Tuple[str, ...], "OpenSearch"]
         ] = None,
         index_pattern: Optional[str] = None,
         display_names=None,
@@ -93,7 +93,7 @@ class QueryCompiler:
             self._operations: "Operations" = copy.deepcopy(to_copy._operations)
             self._mappings: FieldMappings = copy.deepcopy(to_copy._mappings)
         else:
-            self._client = ensure_es_client(client)
+            self._client = client
             self._index_pattern = index_pattern
             # Get and persist mappings, this allows us to correctly
             # map returned types from Elasticsearch to pandas datatypes
