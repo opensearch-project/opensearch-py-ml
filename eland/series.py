@@ -78,13 +78,13 @@ class Series(NDFrame):
 
     Parameters
     ----------
-    es_client : elasticsearch.Elasticsearch
+    os_client : elasticsearch.Elasticsearch
         A reference to a Elasticsearch python client
 
-    es_index_pattern : str
+    os_index_pattern : str
         An Elasticsearch index pattern. This can contain wildcards.
 
-    es_index_field : str
+    os_index_field : str
         The field to base the series on
 
     Notes
@@ -115,10 +115,10 @@ class Series(NDFrame):
 
     def __init__(
         self,
-        es_client: Optional["Elasticsearch"] = None,
-        es_index_pattern: Optional[str] = None,
+        os_client: Optional["OpenSearch"] = None,
+        os_index_pattern: Optional[str] = None,
         name: Optional[str] = None,
-        es_index_field: Optional[str] = None,
+        os_index_field: Optional[str] = None,
         _query_compiler: Optional["QueryCompiler"] = None,
     ) -> None:
         # Series has 1 column
@@ -128,10 +128,10 @@ class Series(NDFrame):
             columns = [name]
 
         super().__init__(
-            es_client=es_client,
-            es_index_pattern=es_index_pattern,
+            os_client=os_client,
+            os_index_pattern=os_index_pattern,
             columns=columns,
-            es_index_field=es_index_field,
+            os_index_field=os_index_field,
             _query_compiler=_query_compiler,
         )
 

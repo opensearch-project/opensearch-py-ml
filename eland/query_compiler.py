@@ -39,7 +39,7 @@ from eland.index import Index
 from eland.operations import Operations
 
 if TYPE_CHECKING:
-    from elasticsearch import Elasticsearch
+    from opensearchpy import OpenSearch
 
     from eland.arithmetics import ArithmeticSeries
 
