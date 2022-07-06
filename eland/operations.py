@@ -170,7 +170,7 @@ class Operations:
             body.exists(field, must=True)
 
             field_exists_count = query_compiler._client.count(
-                index=query_compiler._index_pattern, **body.to_count_body()
+                index=query_compiler._index_pattern, body=body.to_count_body()
             )["count"]
             counts[field] = field_exists_count
 
@@ -237,7 +237,7 @@ class Operations:
 
         # Fetch Response
         response = query_compiler._client.search(
-            index=query_compiler._index_pattern, size=0, **body.to_search_body()
+            index=query_compiler._index_pattern, size=0, body=body.to_search_body()
         )
         response = response["aggregations"]
 
@@ -401,7 +401,7 @@ class Operations:
                     )
 
         response = query_compiler._client.search(
-            index=query_compiler._index_pattern, size=0, **body.to_search_body()
+            index=query_compiler._index_pattern, size=0, body=body.to_search_body()
         )
 
         """
@@ -1339,7 +1339,7 @@ class Operations:
             body.terms(field, items, must=True)
 
         count: int = query_compiler._client.count(
-            index=query_compiler._index_pattern, **body.to_count_body()
+            index=query_compiler._index_pattern, body=body.to_count_body()
         )["count"]
         return count
 
