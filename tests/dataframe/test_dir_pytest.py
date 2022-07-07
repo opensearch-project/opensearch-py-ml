@@ -30,4 +30,8 @@ class TestDataFrameDir(TestData):
         autocomplete_attrs = dir(ed_flights)
 
         for c in ed_flights.columns:
-            assert c in autocomplete_attrs
+            # opensearch will save JSON values with sub-entries (like {A: {b: x}}) as A.b
+            # these are not saved in pandas as attributes as they interfere with the naming convention
+            # we ignore these for now
+            if '.' not in c:
+                assert c in autocomplete_attrs

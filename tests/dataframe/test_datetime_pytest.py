@@ -58,11 +58,11 @@ class TestDataFrameDateTime(TestData):
 
         body = {"mappings": mappings}
         index = "test_time_formats"
-        es.options(ignore_status=[400, 404]).indices.delete(index=index)
+        es.indices.delete(index=index, ignore_unavailable=True)
         es.indices.create(index=index, body=body)
 
         for i, time_formats in enumerate(time_formats_docs):
-            es.index(index=index, id=i, document=time_formats)
+            es.index(index=index, id=i, body=time_formats)
         es.indices.refresh(index=index)
 
     @classmethod
