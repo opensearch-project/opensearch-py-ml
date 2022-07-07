@@ -97,7 +97,7 @@ def assert_pandas_eland_frame_equal(left, right, **kwargs):
         raise AssertionError(f"Expected type ed.DataFrame, found {type(right)} instead")
 
     # Use pandas tests to check similarity
-    assert_frame_equal(left, right.to_pandas(), **kwargs)
+    assert_frame_equal(left.reset_index(drop=True), right.to_pandas().reset_index(drop=True), **kwargs)
 
 
 def assert_eland_frame_equal(left, right, **kwargs):
@@ -108,7 +108,7 @@ def assert_eland_frame_equal(left, right, **kwargs):
         raise AssertionError(f"Expected type ed.DataFrame, found {type(right)} instead")
 
     # Use pandas tests to check similarity
-    assert_frame_equal(left.to_pandas(), right.to_pandas(), **kwargs)
+    assert_frame_equal(left.to_pandas().reset_index(drop=True), right.to_pandas().reset_index(drop=True), **kwargs)
 
 
 def assert_pandas_eland_series_equal(left, right, **kwargs):
@@ -119,7 +119,7 @@ def assert_pandas_eland_series_equal(left, right, **kwargs):
         raise AssertionError(f"Expected type ed.Series, found {type(right)} instead")
 
     # Use pandas tests to check similarity
-    assert_series_equal(left, right.to_pandas(), **kwargs)
+    assert_series_equal(left.reset_index(drop=True), right.to_pandas().reset_index(drop=True), **kwargs)
 
 
 def assert_almost_equal(left, right, **kwargs):
@@ -127,9 +127,9 @@ def assert_almost_equal(left, right, **kwargs):
     can be scalars, series, dataframes, etc
     """
     if isinstance(left, (ed.DataFrame, ed.Series)):
-        left = left.to_pandas()
+        left = left.to_pandas().reset_index(drop=True)
     if isinstance(right, (ed.DataFrame, ed.Series)):
-        right = right.to_pandas()
+        right = right.to_pandas().reset_index(drop=True)
 
     if isinstance(right, pd.DataFrame):
         kwargs.setdefault("check_exact", True)
