@@ -21,7 +21,7 @@ from typing import Any, Dict, Generator, List, Mapping, Optional, Tuple, Union
 
 import pandas as pd  # type: ignore
 from elasticsearch import Elasticsearch
-from elasticsearch.helpers import parallel_bulk
+from opensearchpy.helpers import parallel_bulk
 
 from eland import DataFrame
 from eland.common import DEFAULT_CHUNK_SIZE, PANDAS_VERSION, ensure_es_client
@@ -160,7 +160,6 @@ def pandas_to_eland(
         chunksize = DEFAULT_CHUNK_SIZE
 
     mapping = FieldMappings._generate_es_mappings(pd_df, es_type_overrides)
-    es_client = ensure_es_client(es_client)
 
     # If table exists, check if_exists parameter
     if es_client.indices.exists(index=es_dest_index):
@@ -174,7 +173,7 @@ def pandas_to_eland(
 
         elif es_if_exists == "replace":
             es_client.indices.delete(index=es_dest_index)
-            es_client.indices.create(index=es_dest_index, mappings=mapping["mappings"])
+            es_client.indices.create(index=es_dest_index, body={'mappings': mapping["mappings"]})
 
         elif es_if_exists == "append" and es_verify_mapping_compatibility:
             dest_mapping = es_client.indices.get_mapping(index=es_dest_index)[
@@ -186,7 +185,7 @@ def pandas_to_eland(
                 es_type_overrides=es_type_overrides,
             )
     else:
-        es_client.indices.create(index=es_dest_index, mappings=mapping["mappings"])
+        es_client.indices.create(index=es_dest_index, body={'mappings': mapping["mappings"]})
 
     def action_generator(
         pd_df: pd.DataFrame,

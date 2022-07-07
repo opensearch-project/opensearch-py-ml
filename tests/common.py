@@ -56,7 +56,6 @@ _pd_ecommerce["order_date"] = pd.to_datetime(_pd_ecommerce["order_date"])
 _pd_ecommerce["products.created_on"] = _pd_ecommerce["products.created_on"].apply(
     lambda x: pd.to_datetime(x)
 )
-_pd_ecommerce.insert(2, "customer_birth_date", None)
 _pd_ecommerce.index = _pd_ecommerce.index.map(str)  # make index 'object' not int
 # need to unpack the dictionaries in the original df to accommodate OpenSearch client read procedure
 _pd_ecommerce['geoip.location.lon'] = _pd_ecommerce['geoip.location'].apply(pd.Series)['lon']
