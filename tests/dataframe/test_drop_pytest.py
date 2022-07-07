@@ -22,14 +22,23 @@ from tests.common import TestData
 
 
 class TestDataFrameDrop(TestData):
-    def test_drop(self, df):
+    def test_drop_rows(self, df):
+        # to properly test dropping of indices we must account for differently named indexes
+        pd_drop_many = ["1", "2"]
+        pd_drop_one = "3"
+        ed_index = df.ed.head().to_pandas().index
+        ed_drop_many = [ed_index[1], ed_index[2]]
+        ed_drop_one = ed_index[3]
+
+        df.check_values(df.ed.drop(ed_drop_many), df.pd.drop(pd_drop_many))
+        df.check_values(df.ed.drop(labels=ed_drop_many, axis=0), df.pd.drop(labels=pd_drop_many, axis=0))
+        df.check_values(df.ed.drop(index=ed_drop_many), df.pd.drop(index=pd_drop_many))
+        df.check_values(df.ed.drop(labels=ed_drop_one, axis=0), df.pd.drop(labels=pd_drop_one, axis=0))
+
+    def test_drop_columns(self, df):
         df.drop(labels=["Carrier", "DestCityName"], axis=1)
         df.drop(columns=["Carrier", "DestCityName"])
 
-        df.drop(["1", "2"])
-        df.drop(labels=["1", "2"], axis=0)
-        df.drop(index=["1", "2"])
-        df.drop(labels="3", axis=0)
         df.drop(columns="Carrier")
         df.drop(columns=["Carrier", "Carrier_1"], errors="ignore")
         df.drop(columns=["Carrier_1"], errors="ignore")
@@ -47,16 +56,19 @@ class TestDataFrameDrop(TestData):
             assert list(dropped.columns) == []
 
     def test_drop_all_index(self, df):
-        all_index = list(df.pd.index)
+        all_index_pd = list(df.pd.index)
+        all_index_ed = list(df.ed.to_pandas().index)
         cols = df.shape[1]
 
-        for dropped in (
-            df.drop(all_index),
-            df.drop(all_index, axis=0),
-            df.drop(index=all_index),
+        for dropped_pd, dropped_ed in (
+                (df.pd.drop(all_index_pd), df.ed.drop(all_index_ed)),
+                (df.pd.drop(all_index_pd, axis=0), df.ed.drop(all_index_ed, axis=0)),
+                (df.pd.drop(index=all_index_pd), df.ed.drop(index=all_index_ed)),
         ):
-            assert dropped.shape == (0, cols)
-            assert list(dropped.to_pandas().index) == []
+            assert dropped_pd.shape == (0, cols)
+            assert dropped_ed.shape == (0, cols)
+            assert list(dropped_pd.index) == []
+            assert list(dropped_ed.to_pandas().index) == []
 
     def test_drop_raises(self):
         ed_flights = self.ed_flights()
