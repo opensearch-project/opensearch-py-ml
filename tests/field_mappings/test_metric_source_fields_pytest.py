@@ -77,7 +77,6 @@ class TestMetricSourceFields(TestData):
         field_names = [
             "category",
             "currency",
-            "customer_birth_date",
             "customer_first_name",
             "user",
         ]
@@ -85,7 +84,6 @@ class TestMetricSourceFields(TestData):
         Note: non of there are metric
         category                       object
         currency                       object
-        customer_birth_date    datetime64[ns]
         customer_first_name            object
         user                           object
         """
@@ -108,7 +106,6 @@ class TestMetricSourceFields(TestData):
         field_names = [
             "category",
             "currency",
-            "customer_birth_date",
             "customer_first_name",
             "total_quantity",
             "user",
@@ -117,7 +114,6 @@ class TestMetricSourceFields(TestData):
         Note: one is metric
         category                       object
         currency                       object
-        customer_birth_date    datetime64[ns]
         customer_first_name            object
         total_quantity                 int64
         user                           object
