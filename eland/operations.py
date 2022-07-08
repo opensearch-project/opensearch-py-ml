@@ -308,7 +308,7 @@ class Operations:
 
             return pd.DataFrame(pd_dict)
         else:
-            return pd.DataFrame(results.values()).iloc[0].rename()
+            return pd.DataFrame(results).iloc[:, 0]
 
     def _metric_aggs(
         self,

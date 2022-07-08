@@ -47,11 +47,11 @@ class TestDateTime(TestData):
             mappings["properties"][field_name]["format"] = field_name
 
         index = "test_time_formats"
-        es.options(ignore_status=[400, 404]).indices.delete(index=index)
-        es.indices.create(index=index, mappings=mappings)
+        es.indices.delete(index=index, ignore_unavailable=True)
+        es.indices.create(index=index, body={'mappings': mappings})
 
         for i, time_formats in enumerate(time_formats_docs):
-            es.index(index=index, id=i, document=time_formats)
+            es.index(index=index, id=i, body=time_formats)
         es.indices.refresh(index=index)
 
     @classmethod
