@@ -114,7 +114,7 @@ class TestAggregatables(TestData):
         )
 
         assert (
-            "customer_first_name"
+            "customer_first_name.keyword"
             == ed_field_mappings.aggregatable_field_name("customer_first_name")
         )
 
@@ -126,7 +126,7 @@ class TestAggregatables(TestData):
         with pytest.raises(KeyError):
             ed_field_mappings.aggregatable_field_name("non_existant")
 
-    # @pytest.mark.skip(reason="opensearch treats all fields in ecommerce df as aggregatable")
+    @pytest.mark.skip(reason="opensearch treats all fields in ecommerce df as aggregatable")
     @pytest.mark.filterwarnings("ignore:Aggregations not supported")
     def test_ecommerce_single_non_aggregatable_field(self):
         ed_field_mappings = FieldMappings(

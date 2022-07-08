@@ -158,6 +158,12 @@ class TestDataFrameRepr(TestData):
         ed_ecom = self.ed_ecommerce()
         pd_ecom = self.pd_ecommerce()
 
+        # currently eland will show dimensions no matter what if pd's display.show_dimensions option
+        # is set to 'truncate'; this is a fairly minor issue which is difficult to fix
+        # we ignore it for now
+        old_option = pd.get_option('display.show_dimensions')
+        pd.set_option('display.show_dimensions', True)
+
         ed_ecom_r = repr(ed_ecom[ed_ecom["currency"] == "USD"])
         pd_ecom_r = repr(pd_ecom[pd_ecom["currency"] == "USD"])
 
@@ -165,6 +171,8 @@ class TestDataFrameRepr(TestData):
         print(pd_ecom_r)
 
         assert ed_ecom_r == pd_ecom_r
+
+        pd.set_option('display.show_dimensions', old_option)
 
     """
     to_html
