@@ -78,7 +78,7 @@ class TestDataFrameFilter(TestData):
         # Filtering dataframe should retain order of items
         ed_flights = self.ed_flights()
 
-        ed_index = ed_flights().to_pandas().index
+        ed_index = ed_flights.to_pandas().index
         items = list(ed_index[:5])
         items.reverse()
 

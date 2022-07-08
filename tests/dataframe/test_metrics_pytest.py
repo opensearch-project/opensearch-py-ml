@@ -112,7 +112,6 @@ class TestDataFrameMetrics(TestData):
         columns = [
             "category",
             "currency",
-            "customer_birth_date",
             "customer_first_name",
             "user",
         ]
@@ -133,7 +132,6 @@ class TestDataFrameMetrics(TestData):
             "category",
             "currency",
             "taxless_total_price",
-            "customer_birth_date",
             "total_quantity",
             "customer_first_name",
             "user",
@@ -507,13 +505,15 @@ class TestDataFrameMetrics(TestData):
             ["AvgTicketPrice", "FlightDelayMin", "dayOfWeek"]
         )
 
-        pd_idxmax = pd_flights.idxmax()
-        ed_idxmax = ed_flights.idxmax()
-        assert_series_equal(pd_idxmax, ed_idxmax)
+        pd_idxmax = list(pd_flights.idxmax())
+        ed_idxmax = list(ed_flights.idxmax())
+        assert_frame_equal(pd_flights.filter(items=pd_idxmax, axis=0).reset_index(),
+                           ed_flights.filter(items=ed_idxmax, axis=0).to_pandas().reset_index())
 
-        pd_idxmin = pd_flights.idxmin()
-        ed_idxmin = ed_flights.idxmin()
-        assert_series_equal(pd_idxmin, ed_idxmin)
+        pd_idxmin = list(pd_flights.idxmin())
+        ed_idxmin = list(ed_flights.idxmin())
+        assert_frame_equal(pd_flights.filter(items=pd_idxmin, axis=0).reset_index(),
+                           ed_flights.filter(items=ed_idxmin, axis=0).to_pandas().reset_index())
 
     def test_flights_idx_on_columns(self):
         match = "This feature is not implemented yet for 'axis = 1'"

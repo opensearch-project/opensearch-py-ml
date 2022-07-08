@@ -32,15 +32,15 @@ class TestDataFrameInit:
 
         # Construct invalid DataFrame (throws)
         with pytest.raises(ValueError):
-            ed.DataFrame(es_client=ES_TEST_CLIENT)
+            ed.DataFrame(os_client=ES_TEST_CLIENT)
 
         # Construct invalid DataFrame (throws)
         with pytest.raises(ValueError):
-            ed.DataFrame(es_index_pattern=FLIGHTS_INDEX_NAME)
+            ed.DataFrame(os_index_pattern=FLIGHTS_INDEX_NAME)
 
         # Good constructors
         ed.DataFrame(ES_TEST_CLIENT, FLIGHTS_INDEX_NAME)
-        ed.DataFrame(es_client=ES_TEST_CLIENT, es_index_pattern=FLIGHTS_INDEX_NAME)
+        ed.DataFrame(os_client=ES_TEST_CLIENT, os_index_pattern=FLIGHTS_INDEX_NAME)
 
         qc = QueryCompiler(client=ES_TEST_CLIENT, index_pattern=FLIGHTS_INDEX_NAME)
         ed.DataFrame(_query_compiler=qc)
