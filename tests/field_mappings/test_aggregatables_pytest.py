@@ -34,22 +34,21 @@ class TestAggregatables(TestData):
 
         expected = {
             "category.keyword": "category",
-            'currency.keyword': "currency",
+            "currency": "currency",
+            "customer_birth_date": "customer_birth_date",
             "customer_first_name.keyword": "customer_first_name",
             "customer_full_name.keyword": "customer_full_name",
-            'customer_gender.keyword': "customer_gender",
             "customer_id": "customer_id",
             "customer_last_name.keyword": "customer_last_name",
-            "customer_phone.keyword": "customer_phone",
-            "day_of_week.keyword": "day_of_week",
+            "customer_phone": "customer_phone",
+            "day_of_week": "day_of_week",
             "day_of_week_i": "day_of_week_i",
-            "email.keyword": "email",
-            "geoip.city_name.keyword": "geoip.city_name",
-            "geoip.continent_name.keyword": "geoip.continent_name",
-            "geoip.country_iso_code.keyword": "geoip.country_iso_code",
-            "geoip.location.lat": "geoip.location.lat",
-            "geoip.location.lon": "geoip.location.lon",
-            "geoip.region_name.keyword": "geoip.region_name",
+            "email": "email",
+            "geoip.city_name": "geoip.city_name",
+            "geoip.continent_name": "geoip.continent_name",
+            "geoip.country_iso_code": "geoip.country_iso_code",
+            "geoip.location": "geoip.location",
+            "geoip.region_name": "geoip.region_name",
             "manufacturer.keyword": "manufacturer",
             "order_date": "order_date",
             "order_id": "order_id",
@@ -66,18 +65,18 @@ class TestAggregatables(TestData):
             "products.product_id": "products.product_id",
             "products.product_name.keyword": "products.product_name",
             "products.quantity": "products.quantity",
-            "products.sku.keyword": "products.sku",
+            "products.sku": "products.sku",
             "products.tax_amount": "products.tax_amount",
             "products.taxful_price": "products.taxful_price",
             "products.taxless_price": "products.taxless_price",
             "products.unit_discount_amount": "products.unit_discount_amount",
-            "sku.keyword": "sku",
+            "sku": "sku",
             "taxful_total_price": "taxful_total_price",
             "taxless_total_price": "taxless_total_price",
             "total_quantity": "total_quantity",
             "total_unique_products": "total_unique_products",
-            "type.keyword": "type",
-            "user.keyword": "user",
+            "type": "type",
+            "user": "user",
         }
 
         assert expected == aggregatables
@@ -85,10 +84,11 @@ class TestAggregatables(TestData):
     def test_ecommerce_selected_aggregatables(self):
         expected = {
             "category.keyword": "category",
-            "currency.keyword": "currency",
+            "currency": "currency",
+            "customer_birth_date": "customer_birth_date",
             "customer_first_name.keyword": "customer_first_name",
-            "type.keyword": "type",
-            "user.keyword": "user",
+            "type": "type",
+            "user": "user",
         }
 
         ed_field_mappings = FieldMappings(
@@ -106,7 +106,7 @@ class TestAggregatables(TestData):
             client=ES_TEST_CLIENT, index_pattern=ECOMMERCE_INDEX_NAME
         )
 
-        assert "user.keyword" == ed_field_mappings.aggregatable_field_name("user")
+        assert "user" == ed_field_mappings.aggregatable_field_name("user")
 
     def test_ecommerce_single_keyword_aggregatable_field(self):
         ed_field_mappings = FieldMappings(
@@ -114,7 +114,7 @@ class TestAggregatables(TestData):
         )
 
         assert (
-            "customer_first_name.keyword"
+            "customer_first_name"
             == ed_field_mappings.aggregatable_field_name("customer_first_name")
         )
 
@@ -126,7 +126,7 @@ class TestAggregatables(TestData):
         with pytest.raises(KeyError):
             ed_field_mappings.aggregatable_field_name("non_existant")
 
-    @pytest.mark.skip(reason="opensearch treats all fields in ecommerce df as aggregatable")
+    # @pytest.mark.skip(reason="opensearch treats all fields in ecommerce df as aggregatable")
     @pytest.mark.filterwarnings("ignore:Aggregations not supported")
     def test_ecommerce_single_non_aggregatable_field(self):
         ed_field_mappings = FieldMappings(

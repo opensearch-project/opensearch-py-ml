@@ -543,4 +543,4 @@ def csv_to_eland(  # type: ignore
         first_write = False
 
     # Now create an eland.DataFrame that references the new index
-    return DataFrame(es_client, es_index_pattern=es_dest_index)
+    return DataFrame(es_client, os_index_pattern=es_dest_index)

@@ -32,7 +32,7 @@ class TestDataFrameGetItem:
         print(df.OriginAirportID)
 
     def test_getitem_multiple_calls(self, df):
-        df = df[["DestCityName", "DestCountry", "DestLocation.lat", "DestLocation.lon", "DestRegion"]]
+        df = df[["DestCityName", "DestCountry", "DestLocation", "DestRegion"]]
         with pytest.raises(KeyError):
             df["Carrier"]
 
