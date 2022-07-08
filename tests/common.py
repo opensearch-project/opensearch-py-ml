@@ -38,14 +38,6 @@ from tests import (
 _pd_flights = pd.read_json(FLIGHTS_DF_FILE_NAME).sort_index()
 _pd_flights["timestamp"] = pd.to_datetime(_pd_flights["timestamp"])
 _pd_flights.index = _pd_flights.index.map(str)  # make index 'object' not int
-# need to unpack the dictionaries in the original df to accommodate OpenSearch client read procedure
-_pd_flights['DestLocation.lon'] = _pd_flights['DestLocation'].apply(pd.Series)['lon']
-_pd_flights['DestLocation.lat'] = _pd_flights['DestLocation'].apply(pd.Series)['lat']
-_pd_flights['OriginLocation.lon'] = _pd_flights['OriginLocation'].apply(pd.Series)['lon']
-_pd_flights['OriginLocation.lat'] = _pd_flights['OriginLocation'].apply(pd.Series)['lat']
-_pd_flights = _pd_flights.drop(columns=['DestLocation','OriginLocation'])
-_pd_flights = _pd_flights.reindex(sorted(_pd_flights.columns), axis=1)
-
 _ed_flights = ed.DataFrame(ES_TEST_CLIENT, FLIGHTS_INDEX_NAME)
 
 _pd_flights_small = _pd_flights.head(48)
@@ -56,16 +48,10 @@ _pd_ecommerce["order_date"] = pd.to_datetime(_pd_ecommerce["order_date"])
 _pd_ecommerce["products.created_on"] = _pd_ecommerce["products.created_on"].apply(
     lambda x: pd.to_datetime(x)
 )
+_pd_ecommerce.insert(2, "customer_birth_date", None)
 _pd_ecommerce.index = _pd_ecommerce.index.map(str)  # make index 'object' not int
-# need to unpack the dictionaries in the original df to accommodate OpenSearch client read procedure
-_pd_ecommerce['geoip.location.lon'] = _pd_ecommerce['geoip.location'].apply(pd.Series)['lon']
-_pd_ecommerce['geoip.location.lat'] = _pd_ecommerce['geoip.location'].apply(pd.Series)['lat']
-_pd_ecommerce = _pd_ecommerce.drop(columns=['geoip.location'])
-_pd_ecommerce = _pd_ecommerce.reindex(sorted(_pd_ecommerce.columns), axis=1)
-
-
+_pd_ecommerce["customer_birth_date"].astype("datetime64")
 _ed_ecommerce = ed.DataFrame(ES_TEST_CLIENT, ECOMMERCE_INDEX_NAME)
-
 
 class TestData:
     client = ES_TEST_CLIENT
