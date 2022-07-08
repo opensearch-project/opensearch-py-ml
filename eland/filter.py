@@ -121,7 +121,7 @@ class Less(BooleanFilter):
 class Equal(BooleanFilter):
     def __init__(self, field: str, value: Any) -> None:
         super().__init__()
-        self._filter = {"match": {field: value}}
+        self._filter = {"term": {field: value}}
 
 
 class IsIn(BooleanFilter):

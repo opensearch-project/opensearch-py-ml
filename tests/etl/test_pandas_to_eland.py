@@ -19,7 +19,7 @@ from datetime import datetime, timedelta
 
 import pandas as pd
 import pytest
-from elasticsearch.helpers import BulkIndexError
+from opensearchpy.helpers import BulkIndexError
 
 from eland import DataFrame, pandas_to_eland
 from tests.common import (
