@@ -31,6 +31,7 @@ from .etl import csv_to_eland, eland_to_pandas, pandas_to_eland
 from .index import Index
 from .ndframe import NDFrame
 from .series import Series
+from .sagemaker_tools import make_sagemaker_prediction
 
 __all__ = [
     "DataFrame",
@@ -41,4 +42,5 @@ __all__ = [
     "eland_to_pandas",
     "csv_to_eland",
     "SortOrder",
+    "make_sagemaker_prediction"
 ]

@@ -46,7 +46,6 @@ class TestDataEsQuery(TestData):
         assert len(left) > 0
         assert_eland_frame_equal(left, right)
 
-    # @pytest.mark.skip(reason="OpenSearch currently does not support geosearch")
     def test_es_query_geo_location(self):
         df = self.ed_ecommerce()
         cur_nearby = df.es_query(
