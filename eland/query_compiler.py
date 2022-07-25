@@ -515,8 +515,8 @@ class QueryCompiler:
         """
         return self._operations.to_csv(self, **kwargs)
 
-    def search_yield_pandas_dataframes(self) -> Generator["pd.DataFrame", None, None]:
-        return self._operations.search_yield_pandas_dataframes(self)
+    def search_yield_pandas_dataframes(self, sort_index: Optional['str'] = "_doc") -> Generator["pd.DataFrame", None, None]:
+        return self._operations.search_yield_pandas_dataframes(self, sort_index)
 
     # __getitem__ methods
     def getitem_column_array(self, key, numeric=False):
