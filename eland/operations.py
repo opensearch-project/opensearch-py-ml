@@ -1279,14 +1279,14 @@ class Operations:
         if sort_params:
             body["sort"] = [sort_params]
 
-        i = 1
+        # i = 1
         for hits in _search_yield_hits(
             query_compiler=query_compiler, body=body, max_number_of_hits=result_size, sort_index=sort_index
         ):
             df = query_compiler._es_results_to_pandas(hits)
             df = self._apply_df_post_processing(df, post_processing)
-            df.to_csv(f'debug_{i}.csv')
-            i += 1
+            # df.to_csv(f'debug_{i}.csv')
+            # i += 1
             yield df
 
     def index_count(self, query_compiler: "QueryCompiler", field: str) -> int:
@@ -1592,5 +1592,3 @@ if __name__ == "__main__":
 
     indices = [index for index, _ in ed_df.iterrows('_doc')]
     print(len(set(indices)))
-
-    pass

@@ -91,8 +91,7 @@ def _update_max_compilations_limit(es: OpenSearch, limit="10000/1m"):
         body={
                 "transient": {
                 "script.max_compilations_rate": "use-context",
-                "senecccbnijrkjjerviltfgjlibhffleggivlgcrhgthi"
-                "cript.context.field.max_compilations_rate": limit,
+                "script.context.field.max_compilations_rate": limit,
             }
         }
     )
