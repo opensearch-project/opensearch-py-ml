@@ -18,6 +18,7 @@
 from typing import Any, Optional, Sequence
 
 from .._model_serializer import ModelSerializer
+from warnings import warn
 
 
 class ModelTransformer:
@@ -28,6 +29,7 @@ class ModelTransformer:
         classification_labels: Optional[Sequence[str]] = None,
         classification_weights: Optional[Sequence[float]] = None,
     ):
+        warn('class is deprecated, this currently only supports ElasticSearch client', DeprecationWarning, stacklevel=2)
         self._feature_names = feature_names
         self._model = model
         self._classification_labels = classification_labels

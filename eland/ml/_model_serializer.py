@@ -21,6 +21,8 @@ import json
 from abc import ABC
 from typing import Any, Dict, List, Optional, Sequence
 
+from warnings import warn
+
 
 def add_if_exists(d: Dict[str, Any], k: str, v: Any) -> None:
     if v is not None:
@@ -34,6 +36,7 @@ class ModelSerializer(ABC):
         target_type: Optional[str] = None,
         classification_labels: Optional[Sequence[str]] = None,
     ):
+        warn('class is deprecated, this currently only supports ElasticSearch client', DeprecationWarning, stacklevel=2)
         self._target_type = target_type
         self._feature_names = feature_names
         self._classification_labels = classification_labels
@@ -72,6 +75,7 @@ class TreeNode:
         leaf_value: Optional[List[float]] = None,
         number_samples: Optional[int] = None,
     ):
+        warn('class is deprecated, this currently only supports ElasticSearch client', DeprecationWarning, stacklevel=2)
         self._node_idx = node_idx
         self._decision_type = decision_type
         self._left_child = left_child
@@ -114,6 +118,7 @@ class Tree(ModelSerializer):
         tree_structure: Optional[Sequence[TreeNode]] = None,
         classification_labels: Optional[Sequence[str]] = None,
     ):
+        warn('class is deprecated, this currently only supports ElasticSearch client', DeprecationWarning, stacklevel=2)
         super().__init__(
             feature_names=feature_names,
             target_type=target_type,
@@ -139,6 +144,7 @@ class Ensemble(ModelSerializer):
         classification_labels: Optional[Sequence[str]] = None,
         classification_weights: Optional[Sequence[float]] = None,
     ):
+        warn('class is deprecated, this currently only supports ElasticSearch client', DeprecationWarning, stacklevel=2)
         super().__init__(
             feature_names=feature_names,
             target_type=target_type,

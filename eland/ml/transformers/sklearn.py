@@ -23,6 +23,7 @@ from .._model_serializer import Ensemble, Tree, TreeNode
 from .._optional import import_optional_dependency
 from ..common import TYPE_CLASSIFICATION, TYPE_REGRESSION
 from .base import ModelTransformer
+from warnings import warn
 
 import_optional_dependency("sklearn", on_version="warn")
 
@@ -55,6 +56,7 @@ class SKLearnTransformer(ModelTransformer):
         :param classification_labels: Optional classification labels (if not encoded in the model)
         :param classification_weights: Optional classification weights
         """
+        warn('class is deprecated, this currently only supports ElasticSearch client', DeprecationWarning, stacklevel=2)
         super().__init__(
             model, feature_names, classification_labels, classification_weights
         )
@@ -127,6 +129,7 @@ class SKLearnDecisionTreeTransformer(SKLearnTransformer):
         :param feature_names: model feature names
         :param classification_labels: Optional classification labels
         """
+        warn('class is deprecated, this currently only supports ElasticSearch client', DeprecationWarning, stacklevel=2)
         super().__init__(model, feature_names, classification_labels)
 
     def transform(self) -> Tree:
@@ -179,6 +182,7 @@ class SKLearnForestTransformer(SKLearnTransformer):
         classification_labels: Optional[Sequence[str]] = None,
         classification_weights: Optional[Sequence[float]] = None,
     ):
+        warn('class is deprecated, this currently only supports ElasticSearch client', DeprecationWarning, stacklevel=2)
         super().__init__(
             model, feature_names, classification_labels, classification_weights
         )
@@ -219,6 +223,7 @@ class SKLearnForestRegressorTransformer(SKLearnForestTransformer):
     """
 
     def __init__(self, model: RandomForestRegressor, feature_names: Sequence[str]):
+        warn('class is deprecated, this currently only supports ElasticSearch client', DeprecationWarning, stacklevel=2)
         super().__init__(model, feature_names)
 
     def build_aggregator_output(self) -> Dict[str, Any]:
@@ -248,6 +253,7 @@ class SKLearnForestClassifierTransformer(SKLearnForestTransformer):
         feature_names: Sequence[str],
         classification_labels: Optional[Sequence[str]] = None,
     ):
+        warn('class is deprecated, this currently only supports ElasticSearch client', DeprecationWarning, stacklevel=2)
         super().__init__(model, feature_names, classification_labels)
 
     def build_aggregator_output(self) -> Dict[str, Any]:

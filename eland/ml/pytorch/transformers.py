@@ -55,6 +55,7 @@ from eland.ml.pytorch.nlp_ml_model import (
     ZeroShotClassificationInferenceOptions,
 )
 from eland.ml.pytorch.traceable_model import TraceableModel
+from warnings import warn
 
 DEFAULT_OUTPUT_KEY = "sentence_embedding"
 SUPPORTED_TASK_TYPES = {
@@ -112,6 +113,7 @@ class TaskTypeError(Exception):
 
 
 def task_type_from_model_config(model_config: PretrainedConfig) -> Optional[str]:
+    warn('func is deprecated, this currently only supports ElasticSearch client', DeprecationWarning, stacklevel=2)
     if model_config.architectures is None:
         if model_config.name_or_path.startswith("sentence-transformers/"):
             return "text_embedding"
@@ -150,6 +152,7 @@ class _QuestionAnsweringWrapperModule(nn.Module):  # type: ignore
     """
 
     def __init__(self, model: PreTrainedModel):
+        warn('class is deprecated, this currently only supports ElasticSearch client', DeprecationWarning, stacklevel=2)
         super().__init__()
         self._hf_model = model
         self.config = model.config
@@ -174,6 +177,7 @@ class _QuestionAnsweringWrapperModule(nn.Module):  # type: ignore
 
 class _QuestionAnsweringWrapper(_QuestionAnsweringWrapperModule):
     def __init__(self, model: PreTrainedModel):
+        warn('class is deprecated, this currently only supports ElasticSearch client', DeprecationWarning, stacklevel=2)
         super().__init__(model=model)
 
     def forward(
@@ -204,6 +208,7 @@ class _QuestionAnsweringWrapper(_QuestionAnsweringWrapperModule):
 
 class _TwoParameterQuestionAnsweringWrapper(_QuestionAnsweringWrapperModule):
     def __init__(self, model: PreTrainedModel):
+        warn('class is deprecated, this currently only supports ElasticSearch client', DeprecationWarning, stacklevel=2)
         super().__init__(model=model)
 
     def forward(self, input_ids: Tensor, attention_mask: Tensor) -> Tensor:
@@ -225,6 +230,7 @@ class _DistilBertWrapper(nn.Module):  # type: ignore
     """
 
     def __init__(self, model: transformers.PreTrainedModel):
+        warn('class is deprecated, this currently only supports ElasticSearch client', DeprecationWarning, stacklevel=2)
         super().__init__()
         self._model = model
         self.config = model.config
@@ -256,6 +262,7 @@ class _SentenceTransformerWrapperModule(nn.Module):  # type: ignore
     """
 
     def __init__(self, model: PreTrainedModel, output_key: str = DEFAULT_OUTPUT_KEY):
+        warn('class is deprecated, this currently only supports ElasticSearch client', DeprecationWarning, stacklevel=2)
         super().__init__()
         self._hf_model = model
         self._st_model = SentenceTransformer(model.config.name_or_path)
@@ -310,6 +317,7 @@ class _SentenceTransformerWrapperModule(nn.Module):  # type: ignore
 
 class _SentenceTransformerWrapper(_SentenceTransformerWrapperModule):
     def __init__(self, model: PreTrainedModel, output_key: str = DEFAULT_OUTPUT_KEY):
+        warn('class is deprecated, this currently only supports ElasticSearch client', DeprecationWarning, stacklevel=2)
         super().__init__(model=model, output_key=output_key)
 
     def forward(
@@ -337,6 +345,7 @@ class _SentenceTransformerWrapper(_SentenceTransformerWrapperModule):
 
 class _TwoParameterSentenceTransformerWrapper(_SentenceTransformerWrapperModule):
     def __init__(self, model: PreTrainedModel, output_key: str = DEFAULT_OUTPUT_KEY):
+        warn('class is deprecated, this currently only supports ElasticSearch client', DeprecationWarning, stacklevel=2)
         super().__init__(model=model, output_key=output_key)
 
     def forward(self, input_ids: Tensor, attention_mask: Tensor) -> Tensor:
@@ -365,6 +374,7 @@ class _DPREncoderWrapper(nn.Module):  # type: ignore
         self,
         model: Union[transformers.DPRContextEncoder, transformers.DPRQuestionEncoder],
     ):
+        warn('class is deprecated, this currently only supports ElasticSearch client', DeprecationWarning, stacklevel=2)
         super().__init__()
         self._model = model
         self.config = model.config
@@ -419,6 +429,7 @@ class _TransformerTraceableModel(TraceableModel):
             _DistilBertWrapper,
         ],
     ):
+        warn('class is deprecated, this currently only supports ElasticSearch client', DeprecationWarning, stacklevel=2)
         super(_TransformerTraceableModel, self).__init__(model=model)
         self._tokenizer = tokenizer
 
@@ -462,6 +473,8 @@ class _TransformerTraceableModel(TraceableModel):
 
 class _TraceableClassificationModel(_TransformerTraceableModel, ABC):
     def classification_labels(self) -> Optional[List[str]]:
+        warn('method is deprecated, this currently only supports ElasticSearch client', DeprecationWarning,
+             stacklevel=2)
         id_label_items = self._model.config.id2label.items()
         labels = [v for _, v in sorted(id_label_items, key=lambda kv: kv[0])]  # type: ignore
 
@@ -471,6 +484,8 @@ class _TraceableClassificationModel(_TransformerTraceableModel, ABC):
 
 class _TraceableFillMaskModel(_TransformerTraceableModel):
     def _prepare_inputs(self) -> transformers.BatchEncoding:
+        warn('method is deprecated, this currently only supports ElasticSearch client', DeprecationWarning,
+             stacklevel=2)
         return self._tokenizer(
             "Who was Jim Henson?",
             "[MASK] Henson was a puppeteer",
@@ -481,6 +496,8 @@ class _TraceableFillMaskModel(_TransformerTraceableModel):
 
 class _TraceableNerModel(_TraceableClassificationModel):
     def _prepare_inputs(self) -> transformers.BatchEncoding:
+        warn('method is deprecated, this currently only supports ElasticSearch client', DeprecationWarning,
+             stacklevel=2)
         return self._tokenizer(
             (
                 "Hugging Face Inc. is a company based in New York City. "
@@ -493,6 +510,8 @@ class _TraceableNerModel(_TraceableClassificationModel):
 
 class _TraceableTextClassificationModel(_TraceableClassificationModel):
     def _prepare_inputs(self) -> transformers.BatchEncoding:
+        warn('method is deprecated, this currently only supports ElasticSearch client', DeprecationWarning,
+             stacklevel=2)
         return self._tokenizer(
             "This is an example sentence.",
             padding="max_length",
@@ -502,6 +521,8 @@ class _TraceableTextClassificationModel(_TraceableClassificationModel):
 
 class _TraceableTextEmbeddingModel(_TransformerTraceableModel):
     def _prepare_inputs(self) -> transformers.BatchEncoding:
+        warn('method is deprecated, this currently only supports ElasticSearch client', DeprecationWarning,
+             stacklevel=2)
         return self._tokenizer(
             "This is an example sentence.",
             padding="max_length",
@@ -511,6 +532,8 @@ class _TraceableTextEmbeddingModel(_TransformerTraceableModel):
 
 class _TraceableZeroShotClassificationModel(_TraceableClassificationModel):
     def _prepare_inputs(self) -> transformers.BatchEncoding:
+        warn('method is deprecated, this currently only supports ElasticSearch client', DeprecationWarning,
+             stacklevel=2)
         return self._tokenizer(
             "This is an example sentence.",
             "This example is an example.",
@@ -521,6 +544,8 @@ class _TraceableZeroShotClassificationModel(_TraceableClassificationModel):
 
 class _TraceableQuestionAnsweringModel(_TransformerTraceableModel):
     def _prepare_inputs(self) -> transformers.BatchEncoding:
+        warn('method is deprecated, this currently only supports ElasticSearch client', DeprecationWarning,
+             stacklevel=2)
         return self._tokenizer(
             "What is the meaning of life?"
             "The meaning of life, according to the hitchikers guide, is 42.",
@@ -531,6 +556,7 @@ class _TraceableQuestionAnsweringModel(_TransformerTraceableModel):
 
 class TransformerModel:
     def __init__(self, model_id: str, task_type: str, quantize: bool = False):
+        warn('class is deprecated, this currently only supports ElasticSearch client', DeprecationWarning, stacklevel=2)
         self._model_id = model_id
         self._task_type = task_type.replace("-", "_")
 

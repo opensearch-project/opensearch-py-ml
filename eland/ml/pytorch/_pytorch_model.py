@@ -35,6 +35,7 @@ from tqdm.auto import tqdm  # type: ignore
 
 from eland.common import ensure_es_client
 from eland.ml.pytorch.nlp_ml_model import NlpTrainedModelConfig
+from warnings import warn
 
 if TYPE_CHECKING:
     from elasticsearch import Elasticsearch
@@ -57,6 +58,7 @@ class PyTorchModel:
         es_client: Union[str, List[str], Tuple[str, ...], "Elasticsearch"],
         model_id: str,
     ):
+        warn('class is deprecated, this currently only supports ElasticSearch client', DeprecationWarning, stacklevel=2)
         self._client: Elasticsearch = ensure_es_client(es_client)
         self.model_id = model_id
 

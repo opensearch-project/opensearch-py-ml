@@ -16,6 +16,7 @@
 #  under the License.
 
 import typing as t
+from warnings import warn
 
 
 class NlpTokenizationConfig:
@@ -30,6 +31,7 @@ class NlpTokenizationConfig:
         ] = None,
         span: t.Optional[int] = None,
     ):
+        warn('class is deprecated, this currently only supports ElasticSearch client', DeprecationWarning, stacklevel=2)
         self.name = configuration_type
         self.with_special_tokens = with_special_tokens
         self.max_sequence_length = max_sequence_length
@@ -56,6 +58,7 @@ class NlpRobertaTokenizationConfig(NlpTokenizationConfig):
         ] = None,
         span: t.Optional[int] = None,
     ):
+        warn('class is deprecated, this currently only supports ElasticSearch client', DeprecationWarning, stacklevel=2)
         super().__init__(
             configuration_type="roberta",
             with_special_tokens=with_special_tokens,
@@ -78,6 +81,7 @@ class NlpBertTokenizationConfig(NlpTokenizationConfig):
         ] = None,
         span: t.Optional[int] = None,
     ):
+        warn('class is deprecated, this currently only supports ElasticSearch client', DeprecationWarning, stacklevel=2)
         super().__init__(
             configuration_type="bert",
             with_special_tokens=with_special_tokens,
@@ -100,6 +104,7 @@ class NlpMPNetTokenizationConfig(NlpTokenizationConfig):
         ] = None,
         span: t.Optional[int] = None,
     ):
+        warn('class is deprecated, this currently only supports ElasticSearch client', DeprecationWarning, stacklevel=2)
         super().__init__(
             configuration_type="mpnet",
             with_special_tokens=with_special_tokens,
@@ -112,6 +117,7 @@ class NlpMPNetTokenizationConfig(NlpTokenizationConfig):
 
 class InferenceConfig:
     def __init__(self, *, configuration_type: str):
+        warn('class is deprecated, this currently only supports ElasticSearch client', DeprecationWarning, stacklevel=2)
         self.name = configuration_type
 
     def to_dict(self) -> t.Dict[str, t.Any]:
@@ -133,6 +139,7 @@ class TextClassificationInferenceOptions(InferenceConfig):
         results_field: t.Optional[str] = None,
         num_top_classes: t.Optional[int] = None,
     ):
+        warn('class is deprecated, this currently only supports ElasticSearch client', DeprecationWarning, stacklevel=2)
         super().__init__(configuration_type="text_classification")
         self.results_field = results_field
         self.num_top_classes = num_top_classes
@@ -151,6 +158,7 @@ class ZeroShotClassificationInferenceOptions(InferenceConfig):
         labels: t.Optional[t.Union[t.List[str], t.Tuple[str, ...]]] = None,
         hypothesis_template: t.Optional[str] = None,
     ):
+        warn('class is deprecated, this currently only supports ElasticSearch client', DeprecationWarning, stacklevel=2)
         super().__init__(configuration_type="zero_shot_classification")
         self.tokenization = tokenization
         self.hypothesis_template = hypothesis_template
@@ -168,6 +176,7 @@ class FillMaskInferenceOptions(InferenceConfig):
         results_field: t.Optional[str] = None,
         num_top_classes: t.Optional[int] = None,
     ):
+        warn('class is deprecated, this currently only supports ElasticSearch client', DeprecationWarning, stacklevel=2)
         super().__init__(configuration_type="fill_mask")
         self.num_top_classes = num_top_classes
         self.tokenization = tokenization
@@ -182,6 +191,7 @@ class NerInferenceOptions(InferenceConfig):
         classification_labels: t.Union[t.List[str], t.Tuple[str, ...]],
         results_field: t.Optional[str] = None,
     ):
+        warn('class is deprecated, this currently only supports ElasticSearch client', DeprecationWarning, stacklevel=2)
         super().__init__(configuration_type="ner")
         self.tokenization = tokenization
         self.classification_labels = classification_labels
@@ -195,6 +205,7 @@ class PassThroughInferenceOptions(InferenceConfig):
         tokenization: NlpTokenizationConfig,
         results_field: t.Optional[str] = None,
     ):
+        warn('class is deprecated, this currently only supports ElasticSearch client', DeprecationWarning, stacklevel=2)
         super().__init__(configuration_type="pass_through")
         self.tokenization = tokenization
         self.results_field = results_field
@@ -210,6 +221,7 @@ class QuestionAnsweringInferenceOptions(InferenceConfig):
         question: t.Optional[str] = None,
         num_top_classes: t.Optional[int] = None,
     ):
+        warn('class is deprecated, this currently only supports ElasticSearch client', DeprecationWarning, stacklevel=2)
         super().__init__(configuration_type="question_answering")
         self.tokenization = tokenization
         self.results_field = results_field
@@ -225,6 +237,7 @@ class TextEmbeddingInferenceOptions(InferenceConfig):
         tokenization: NlpTokenizationConfig,
         results_field: t.Optional[str] = None,
     ):
+        warn('class is deprecated, this currently only supports ElasticSearch client', DeprecationWarning, stacklevel=2)
         super().__init__(configuration_type="text_embedding")
         self.tokenization = tokenization
         self.results_field = results_field
@@ -232,6 +245,7 @@ class TextEmbeddingInferenceOptions(InferenceConfig):
 
 class TrainedModelInput:
     def __init__(self, *, field_names: t.List[str]):
+        warn('class is deprecated, this currently only supports ElasticSearch client', DeprecationWarning, stacklevel=2)
         self.field_names = field_names
 
     def to_dict(self) -> t.Dict[str, t.Any]:
@@ -250,6 +264,7 @@ class NlpTrainedModelConfig:
         default_field_map: t.Optional[t.Mapping[str, str]] = None,
         tags: t.Optional[t.Union[t.List[str], t.Tuple[str, ...]]] = None,
     ):
+        warn('class is deprecated, this currently only supports ElasticSearch client', DeprecationWarning, stacklevel=2)
         self.tags = tags
         self.default_field_map = default_field_map
         self.description = description
