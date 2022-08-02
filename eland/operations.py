@@ -308,7 +308,7 @@ class Operations:
 
             return pd.DataFrame(pd_dict)
         else:
-            return pd.DataFrame(results.values()).iloc[0].rename()
+            return pd.DataFrame(results).iloc[:, 0]
 
     def _metric_aggs(
         self,
@@ -1257,7 +1257,7 @@ class Operations:
         ).to_csv(**kwargs)
 
     def search_yield_pandas_dataframes(
-        self, query_compiler: "QueryCompiler"
+        self, query_compiler: "QueryCompiler", sort_index: Optional['str'] = '_doc'
     ) -> Generator["pd.DataFrame", None, None]:
         query_params, post_processing = self._resolve_tasks(query_compiler)
 
@@ -1279,11 +1279,14 @@ class Operations:
         if sort_params:
             body["sort"] = [sort_params]
 
+        # i = 1
         for hits in _search_yield_hits(
-            query_compiler=query_compiler, body=body, max_number_of_hits=result_size
+            query_compiler=query_compiler, body=body, max_number_of_hits=result_size, sort_index=sort_index
         ):
             df = query_compiler._es_results_to_pandas(hits)
             df = self._apply_df_post_processing(df, post_processing)
+            # df.to_csv(f'debug_{i}.csv')
+            # i += 1
             yield df
 
     def index_count(self, query_compiler: "QueryCompiler", field: str) -> int:
@@ -1491,6 +1494,7 @@ def _search_yield_hits(
     query_compiler: "QueryCompiler",
     body: Dict[str, Any],
     max_number_of_hits: Optional[int],
+    sort_index: Optional[str] = '_doc',
 ) -> Generator[List[Dict[str, Any]], None, None]:
     """
     This is a generator used to initialize point in time API and query the
@@ -1531,7 +1535,7 @@ def _search_yield_hits(
     # Pagination with 'search_after' must have a 'sort' setting.
     # Using '_doc:asc' is the most efficient as reads documents
     # in the order that they're written on disk in Lucene.
-    body.setdefault("sort", [{"_doc": "asc"}])
+    body.setdefault("sort", [{sort_index: "asc"}])
 
     # Improves performance by not tracking # of hits. We only
     # care about the hit itself for these queries.
@@ -1562,3 +1566,29 @@ def _search_yield_hits(
         # to be the last sort value for this set of hits.
         body["search_after"] = hits[-1]["sort"]
 
+if __name__ == "__main__":
+    import eland as ed
+    from opensearchpy import OpenSearch
+
+
+    # try connecting to an actual cluster at some point
+    def get_os_client(cluster_url='https://localhost:9200',
+                      username='admin',
+                      password='admin'):
+        '''
+        Get OpenSearch client
+        :param cluster_url: cluster URL like https://ml-te-netwo-1s12ba42br23v-ff1736fa7db98ff2.elb.us-west-2.amazonaws.com:443
+        :return: OpenSearch client
+        '''
+        client = OpenSearch(
+            hosts=[cluster_url],
+            http_auth=(username, password),
+            verify_certs=False
+        )
+        return client
+
+    client = get_os_client()
+    ed_df = ed.DataFrame(client, 'sagemaker_demo_data')
+
+    indices = [index for index, _ in ed_df.iterrows('_doc')]
+    print(len(set(indices)))

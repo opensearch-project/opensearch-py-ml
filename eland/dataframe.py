@@ -1444,9 +1444,14 @@ class DataFrame(NDFrame):
         """
         return self.columns
 
-    def iterrows(self) -> Iterable[Tuple[Union[str, Tuple[str, ...]], pd.Series]]:
+    def iterrows(self, sort_index: Optional['str'] = '_doc') -> Iterable[Tuple[Union[str, Tuple[str, ...]], pd.Series]]:
         """
         Iterate over eland.DataFrame rows as (index, pandas.Series) pairs.
+
+        Parameters
+        ----------
+        sort_index: str, default '_doc'
+            What field to sort the OpenSearch data by.
 
         Yields
         ------
@@ -1490,11 +1495,11 @@ class DataFrame(NDFrame):
         Cancelled              False
         Name: 4, dtype: object
         """
-        for df in self._query_compiler.search_yield_pandas_dataframes():
+        for df in self._query_compiler.search_yield_pandas_dataframes(sort_index=sort_index):
             yield from df.iterrows()
 
     def itertuples(
-        self, index: bool = True, name: Union[str, None] = "Eland"
+        self, index: bool = True, name: Union[str, None] = "Eland", sort_index: Optional[str] = '_doc'
     ) -> Iterable[Tuple[Any, ...]]:
         """
         Iterate over eland.DataFrame rows as namedtuples.
@@ -1505,6 +1510,8 @@ class DataFrame(NDFrame):
             If True, return the index as the first element of the tuple.
         name: str or None, default "Eland"
             The name of the returned namedtuples or None to return regular tuples.
+        sort_index: str, default '_doc'
+            What field to sort the OpenSearch data by.
 
         Returns
         -------
@@ -1558,7 +1565,7 @@ class DataFrame(NDFrame):
         Flight(Index='3', AvgTicketPrice=181.69421554118, Cancelled=True)
         Flight(Index='4', AvgTicketPrice=730.041778346198, Cancelled=False)
         """
-        for df in self._query_compiler.search_yield_pandas_dataframes():
+        for df in self._query_compiler.search_yield_pandas_dataframes(sort_index=sort_index):
             yield from df.itertuples(index=index, name=name)
 
     def aggregate(
