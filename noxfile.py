@@ -22,37 +22,37 @@ from pathlib import Path
 import nox
 
 BASE_DIR = Path(__file__).parent
-SOURCE_FILES = ("setup.py", "noxfile.py", "eland/", "docs/", "utils/", "tests/", "bin/")
+SOURCE_FILES = ("setup.py", "noxfile.py", "opensearch_py_ml/", "docs/", "utils/", "tests/", "bin/")
 
 # Whenever type-hints are completed on a file it should
 # be added here so that this file will continue to be checked
 # by mypy. Errors from other files are ignored.
 TYPED_FILES = (
-    "eland/actions.py",
-    "eland/arithmetics.py",
-    "eland/common.py",
-    "eland/etl.py",
-    "eland/filter.py",
-    "eland/index.py",
-    "eland/query.py",
-    "eland/tasks.py",
-    "eland/utils.py",
-    "eland/groupby.py",
-    "eland/operations.py",
-    "eland/ndframe.py",
-    "eland/ml/__init__.py",
-    "eland/ml/_optional.py",
-    "eland/ml/_model_serializer.py",
-    "eland/ml/ml_model.py",
-    "eland/ml/pytorch/__init__.py",
-    "eland/ml/pytorch/_pytorch_model.py",
-    "eland/ml/pytorch/transformers.py",
-    "eland/ml/transformers/__init__.py",
-    "eland/ml/transformers/base.py",
-    "eland/ml/transformers/lightgbm.py",
-    "eland/ml/transformers/sklearn.py",
-    "eland/ml/transformers/xgboost.py",
-    "eland/plotting/_matplotlib/__init__.py",
+    "opensearch_py_ml/actions.py",
+    "opensearch_py_ml/arithmetics.py",
+    "opensearch_py_ml/common.py",
+    "opensearch_py_ml/etl.py",
+    "opensearch_py_ml/filter.py",
+    "opensearch_py_ml/index.py",
+    "opensearch_py_ml/query.py",
+    "opensearch_py_ml/tasks.py",
+    "opensearch_py_ml/utils.py",
+    "opensearch_py_ml/groupby.py",
+    "opensearch_py_ml/operations.py",
+    "opensearch_py_ml/ndframe.py",
+    "opensearch_py_ml/ml/__init__.py",
+    "opensearch_py_ml/ml/_optional.py",
+    "opensearch_py_ml/ml/_model_serializer.py",
+    "opensearch_py_ml/ml/ml_model.py",
+    "opensearch_py_ml/ml/pytorch/__init__.py",
+    "opensearch_py_ml/ml/pytorch/_pytorch_model.py",
+    "opensearch_py_ml/ml/pytorch/transformers.py",
+    "opensearch_py_ml/ml/transformers/__init__.py",
+    "opensearch_py_ml/ml/transformers/base.py",
+    "opensearch_py_ml/ml/transformers/lightgbm.py",
+    "opensearch_py_ml/ml/transformers/sklearn.py",
+    "opensearch_py_ml/ml/transformers/xgboost.py",
+    "opensearch_py_ml/plotting/_matplotlib/__init__.py",
 )
 
 
@@ -77,8 +77,8 @@ def lint(session):
     session.run("isort", "--check", "--profile=black", *SOURCE_FILES)
     session.run("flake8", "--ignore=E501,W503,E402,E712,E203", *SOURCE_FILES)
 
-    # TODO: When all files are typed we can change this to .run("mypy", "--strict", "eland/")
-    session.log("mypy --show-error-codes --strict eland/")
+    # TODO: When all files are typed we can change this to .run("mypy", "--strict", "opensearch_py_ml/")
+    session.log("mypy --show-error-codes --strict opensearch_py_ml/")
     for typed_file in TYPED_FILES:
         if not os.path.isfile(typed_file):
             session.error(f"The file {typed_file!r} couldn't be found")
@@ -113,7 +113,7 @@ def test(session, pandas_version: str):
         "-m",
         "pytest",
         "--cov-report=term-missing",
-        "--cov=eland/",
+        "--cov=opensearch_py_ml/",
         "--cov-config=setup.cfg",
         "--doctest-modules",
         "--nbval",
@@ -121,10 +121,10 @@ def test(session, pandas_version: str):
 
     # PyTorch doesn't support Python 3.10 yet
     if session.python == "3.10":
-        pytest_args += ("--ignore=eland/ml/pytorch",)
+        pytest_args += ("--ignore=opensearch_py_ml/ml/pytorch",)
     session.run(
         *pytest_args,
-        *(session.posargs or ("eland/", "tests/")),
+        *(session.posargs or ("opensearch_py_ml/", "tests/")),
     )
 
     # Only run during default test execution

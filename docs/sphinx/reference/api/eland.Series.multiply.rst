@@ -1,4 +1,4 @@
-eland.Series.multiply
+opensearch_py_ml.Series.multiply
 =====================
 
 .. currentmodule:: eland

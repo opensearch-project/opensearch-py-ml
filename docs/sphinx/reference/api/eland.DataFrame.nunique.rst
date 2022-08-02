@@ -1,4 +1,4 @@
-eland.DataFrame.nunique
+opensearch_py_ml.DataFrame.nunique
 =======================
 
 .. currentmodule:: eland

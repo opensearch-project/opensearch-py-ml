@@ -1,6 +1,6 @@
-eland.groupby.DataFrameGroupBy.sum
+opensearch_py_ml.groupby.DataFrameGroupBy.sum
 ==================================
 
-.. currentmodule:: eland.groupby
+.. currentmodule:: opensearch_py_ml.groupby
 
 .. automethod:: DataFrameGroupBy.sum

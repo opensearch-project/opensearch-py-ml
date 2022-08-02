@@ -18,9 +18,9 @@
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, List, Tuple
 
-from eland import SortOrder
-from eland.actions import HeadAction, SortIndexAction, TailAction
-from eland.arithmetics import ArithmeticSeries
+from opensearch_py_ml import SortOrder
+from opensearch_py_ml.actions import HeadAction, SortIndexAction, TailAction
+from opensearch_py_ml.arithmetics import ArithmeticSeries
 
 if TYPE_CHECKING:
     from .actions import PostProcessingAction  # noqa: F401

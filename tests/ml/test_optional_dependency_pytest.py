@@ -20,7 +20,7 @@ import types
 
 import pytest
 
-from eland.ml._optional import VERSIONS, import_optional_dependency
+from opensearch_py_ml.ml._optional import VERSIONS, import_optional_dependency
 
 
 def test_import_optional():

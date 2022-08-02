@@ -1,6 +1,6 @@
-eland.groupby.DataFrameGroupBy.mad
+opensearch_py_ml.groupby.DataFrameGroupBy.mad
 ==================================
 
-.. currentmodule:: eland.groupby
+.. currentmodule:: opensearch_py_ml.groupby
 
 .. automethod:: DataFrameGroupBy.mad

@@ -23,8 +23,8 @@ from tests import (
     ECOMMERCE_FILE_NAME,
     ECOMMERCE_INDEX_NAME,
     ECOMMERCE_MAPPING,
-    ELASTICSEARCH_HOST,
-    ES_TEST_CLIENT,
+    OPENSEARCH_HOST,
+    OPENSEARCH_TEST_CLIENT,
     FLIGHTS_FILE_NAME,
     FLIGHTS_INDEX_NAME,
     FLIGHTS_MAPPING,
@@ -116,8 +116,8 @@ def _setup_test_nested(es):
 
 if __name__ == "__main__":
     # Create connection to Elasticsearch - use defaults
-    print("Connecting to ES", ELASTICSEARCH_HOST)
-    es = ES_TEST_CLIENT
+    print("Connecting to ES", OPENSEARCH_HOST)
+    es = OPENSEARCH_TEST_CLIENT
 
     _setup_data(es)
     _setup_test_mappings(es)

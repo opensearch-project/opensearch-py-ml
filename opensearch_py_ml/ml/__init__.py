@@ -15,16 +15,6 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-"""
-Public plotting API
+from opensearch_py_ml.ml.ml_model import ImportedMLModel, MLModel  # noqa: F401
 
-Based from https://github.com/pandas-dev/pandas/blob/v0.25.3/pandas/plotting/__init__.py
-but only supporting a subset of plotting methods (for now).
-"""
-
-from eland.plotting._core import ed_hist_frame, ed_hist_series
-
-__all__ = [
-    "ed_hist_frame",
-    "ed_hist_series",
-]
+__all__ = ["MLModel"]

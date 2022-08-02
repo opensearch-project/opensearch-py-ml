@@ -1,6 +1,6 @@
-eland.groupby.DataFrameGroupBy.median
+opensearch_py_ml.groupby.DataFrameGroupBy.median
 =====================================
 
-.. currentmodule:: eland.groupby
+.. currentmodule:: opensearch_py_ml.groupby
 
 .. automethod:: DataFrameGroupBy.median

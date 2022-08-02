@@ -1,4 +1,4 @@
-eland.Series.rdivide
+opensearch_py_ml.Series.rdivide
 ====================
 
 .. currentmodule:: eland

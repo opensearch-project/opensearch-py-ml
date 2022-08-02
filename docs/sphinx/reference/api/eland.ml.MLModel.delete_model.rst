@@ -1,6 +1,6 @@
-eland.ml.MLModel.delete_model
+opensearch_py_ml.ml.MLModel.delete_model
 =============================
 
-.. currentmodule:: eland.ml
+.. currentmodule:: opensearch_py_ml.ml
 
 .. automethod:: MLModel.delete_model

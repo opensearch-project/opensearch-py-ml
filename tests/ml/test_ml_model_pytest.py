@@ -18,8 +18,8 @@
 import numpy as np
 import pytest
 
-from eland.ml import MLModel
-from tests import ES_TEST_CLIENT, ES_VERSION
+from opensearch_py_ml.ml import MLModel
+from tests import OPENSEARCH_TEST_CLIENT, ES_VERSION
 
 try:
     from sklearn import datasets
@@ -83,7 +83,7 @@ def check_prediction_equality(es_model: MLModel, py_model, test_data):
 class TestMLModel:
     @requires_no_ml_extras
     def test_import_ml_model_when_dependencies_are_not_available(self):
-        from eland.ml import MLModel  # noqa: F401
+        from opensearch_py_ml.ml import MLModel  # noqa: F401
 
     @requires_sklearn
     def test_unpack_and_raise_errors_in_ingest_simulate(self, mocker):
@@ -98,7 +98,7 @@ class TestMLModel:
         test_data = [[0.1, 0.2, 0.3, -0.5, 1.0], [1.6, 2.1, -10, 50, -1.0]]
 
         es_model = MLModel.import_model(
-            ES_TEST_CLIENT,
+            OPENSEARCH_TEST_CLIENT,
             model_id,
             classifier,
             feature_names,
@@ -107,7 +107,7 @@ class TestMLModel:
         )
 
         # Mock the ingest.simulate API to return an error within {'docs': [...]}
-        mock = mocker.patch.object(ES_TEST_CLIENT.ingest, "simulate")
+        mock = mocker.patch.object(OPENSEARCH_TEST_CLIENT.ingest, "simulate")
         mock.return_value = {
             "docs": [
                 {
@@ -153,7 +153,7 @@ class TestMLModel:
         model_id = "test_decision_tree_classifier"
 
         es_model = MLModel.import_model(
-            ES_TEST_CLIENT,
+            OPENSEARCH_TEST_CLIENT,
             model_id,
             classifier,
             feature_names,
@@ -182,7 +182,7 @@ class TestMLModel:
         model_id = "test_decision_tree_regressor"
 
         es_model = MLModel.import_model(
-            ES_TEST_CLIENT,
+            OPENSEARCH_TEST_CLIENT,
             model_id,
             regressor,
             feature_names,
@@ -210,7 +210,7 @@ class TestMLModel:
         model_id = "test_random_forest_classifier"
 
         es_model = MLModel.import_model(
-            ES_TEST_CLIENT,
+            OPENSEARCH_TEST_CLIENT,
             model_id,
             classifier,
             feature_names,
@@ -238,7 +238,7 @@ class TestMLModel:
         model_id = "test_random_forest_regressor"
 
         es_model = MLModel.import_model(
-            ES_TEST_CLIENT,
+            OPENSEARCH_TEST_CLIENT,
             model_id,
             regressor,
             feature_names,
@@ -253,7 +253,7 @@ class TestMLModel:
         match = f"Trained machine learning model {model_id} already exists"
         with pytest.raises(ValueError, match=match):
             MLModel.import_model(
-                ES_TEST_CLIENT,
+                OPENSEARCH_TEST_CLIENT,
                 model_id,
                 regressor,
                 feature_names,
@@ -289,7 +289,7 @@ class TestMLModel:
         model_id = "test_xgb_classifier"
 
         es_model = MLModel.import_model(
-            ES_TEST_CLIENT,
+            OPENSEARCH_TEST_CLIENT,
             model_id,
             classifier,
             feature_names,
@@ -333,7 +333,7 @@ class TestMLModel:
         model_id = "test_xgb_classifier"
 
         es_model = MLModel.import_model(
-            ES_TEST_CLIENT, model_id, classifier, feature_names, es_if_exists="replace"
+            OPENSEARCH_TEST_CLIENT, model_id, classifier, feature_names, es_if_exists="replace"
         )
         # Get some test results
         check_prediction_equality(
@@ -371,7 +371,7 @@ class TestMLModel:
         model_id = "test_xgb_regressor"
 
         es_model = MLModel.import_model(
-            ES_TEST_CLIENT,
+            OPENSEARCH_TEST_CLIENT,
             model_id,
             regressor,
             feature_names,
@@ -402,7 +402,7 @@ class TestMLModel:
         model_id = "test_xgb_regressor"
 
         es_model = MLModel.import_model(
-            ES_TEST_CLIENT, model_id, regressor, feature_names, es_if_exists="replace"
+            OPENSEARCH_TEST_CLIENT, model_id, regressor, feature_names, es_if_exists="replace"
         )
 
         # Single feature
@@ -439,7 +439,7 @@ class TestMLModel:
         model_id = "test_lgbm_regressor"
 
         es_model = MLModel.import_model(
-            ES_TEST_CLIENT,
+            OPENSEARCH_TEST_CLIENT,
             model_id,
             regressor,
             feature_names,
@@ -480,7 +480,7 @@ class TestMLModel:
         model_id = "test_lgbm_classifier"
 
         es_model = MLModel.import_model(
-            ES_TEST_CLIENT,
+            OPENSEARCH_TEST_CLIENT,
             model_id,
             classifier,
             feature_names,

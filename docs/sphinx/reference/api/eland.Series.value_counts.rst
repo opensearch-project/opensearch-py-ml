@@ -1,4 +1,4 @@
-eland.Series.value_counts
+opensearch_py_ml.Series.value_counts
 =========================
 
 .. currentmodule:: eland

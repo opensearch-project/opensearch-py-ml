@@ -15,16 +15,22 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-"""
-Public plotting API
+from typing import Any, Dict
 
-Based from https://github.com/pandas-dev/pandas/blob/v0.25.3/pandas/plotting/__init__.py
-but only supporting a subset of plotting methods (for now).
-"""
+import numpy as np
+import pandas as pd  # type: ignore
+import pytest  # type: ignore
 
-from eland.plotting._matplotlib.hist import hist_frame, hist_series
+import opensearch_py_ml as ed
 
-__all__ = [
-    "hist_frame",
-    "hist_series",
-]
+# Fix console size for consistent test results
+pd.set_option("display.max_rows", 10)
+pd.set_option("display.max_columns", 5)
+pd.set_option("display.width", 100)
+
+
+@pytest.fixture(autouse=True)
+def add_imports(doctest_namespace: Dict[str, Any]) -> None:
+    doctest_namespace["np"] = np
+    doctest_namespace["pd"] = pd
+    doctest_namespace["ed"] = ed

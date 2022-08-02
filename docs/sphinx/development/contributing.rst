@@ -150,7 +150,7 @@ Configuring PyCharm And Running Tests
     Control\'-\>\'Git\' on the \"Welcome to PyCharm\" page  <or other>
 
 - Enter the URL to your fork of eland
-     <e.g. `git@github.com:stevedodson/eland.git`>
+     <e.g. `git@github.com:stevedodson/opensearch_py_ml.git`>
 
 - Click \'Yes\' for \'Checkout from Version Control\'
 
@@ -189,7 +189,7 @@ Configuring PyCharm And Running Tests
 - To validate installation, open python console and run
    .. code-block:: bash
 
-      import eland as ed
+      import opensearch_py_ml as ed
       ed_df = ed.DataFrame('localhost', 'flights')
 
 - To run the automatic formatter and check for lint issues

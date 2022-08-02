@@ -1,4 +1,4 @@
-eland.Series.shape
+opensearch_py_ml.Series.shape
 ==================
 
 .. currentmodule:: eland

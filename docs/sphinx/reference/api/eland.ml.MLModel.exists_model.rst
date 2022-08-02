@@ -1,6 +1,6 @@
-eland.ml.MLModel.exists_model
+opensearch_py_ml.ml.MLModel.exists_model
 =============================
 
-.. currentmodule:: eland.ml
+.. currentmodule:: opensearch_py_ml.ml
 
 .. automethod:: MLModel.exists_model

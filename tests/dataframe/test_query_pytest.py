@@ -19,8 +19,8 @@
 
 import pandas as pd
 
-import eland as ed
-from tests.common import ES_TEST_CLIENT, TestData, assert_pandas_eland_frame_equal
+import opensearch_py_ml as ed
+from tests.common import OPENSEARCH_TEST_CLIENT, TestData, assert_pandas_eland_frame_equal
 
 
 class TestDataFrameQuery(TestData):
@@ -44,7 +44,7 @@ class TestDataFrameQuery(TestData):
         index_name = "eland_test_query"
 
         ed_df = ed.pandas_to_eland(
-            pd_df, ES_TEST_CLIENT, index_name, es_if_exists="replace", es_refresh=True
+            pd_df, OPENSEARCH_TEST_CLIENT, index_name, es_if_exists="replace", es_refresh=True
         )
 
         assert_pandas_eland_frame_equal(pd_df, ed_df)
@@ -69,7 +69,7 @@ class TestDataFrameQuery(TestData):
 
         assert_pandas_eland_frame_equal(pd_q4, ed_q4)
 
-        ES_TEST_CLIENT.indices.delete(index=index_name)
+        OPENSEARCH_TEST_CLIENT.indices.delete(index=index_name)
 
     def test_simple_query(self):
         ed_flights = self.ed_flights()
@@ -110,7 +110,7 @@ class TestDataFrameQuery(TestData):
         index_name = "eland_test_query"
 
         ed_df = ed.pandas_to_eland(
-            pd_df, ES_TEST_CLIENT, index_name, es_if_exists="replace", es_refresh=True
+            pd_df, OPENSEARCH_TEST_CLIENT, index_name, es_if_exists="replace", es_refresh=True
         )
 
         assert_pandas_eland_frame_equal(pd_df, ed_df)
@@ -141,4 +141,4 @@ class TestDataFrameQuery(TestData):
 
         assert_pandas_eland_frame_equal(pd_q4, ed_q4)
 
-        ES_TEST_CLIENT.indices.delete(index=index_name)
+        OPENSEARCH_TEST_CLIENT.indices.delete(index=index_name)

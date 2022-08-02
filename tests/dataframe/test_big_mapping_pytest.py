@@ -17,8 +17,8 @@
 
 # File called _pytest for PyCharm compatability
 
-import eland as ed
-from tests.common import ES_TEST_CLIENT, TestData
+import opensearch_py_ml as ed
+from tests.common import OPENSEARCH_TEST_CLIENT, TestData
 
 
 class TestDataFrameBigMapping(TestData):
@@ -29,10 +29,10 @@ class TestDataFrameBigMapping(TestData):
             field_name = "long_field_name_" + str(i)
             mapping["mappings"]["properties"][field_name] = {"type": "float"}
 
-        ES_TEST_CLIENT.indices.delete(index="thousand_fields", ignore=[400, 404])
-        ES_TEST_CLIENT.indices.create(index="thousand_fields", body=mapping)
+        OPENSEARCH_TEST_CLIENT.indices.delete(index="thousand_fields", ignore=[400, 404])
+        OPENSEARCH_TEST_CLIENT.indices.create(index="thousand_fields", body=mapping)
 
-        ed_df = ed.DataFrame(ES_TEST_CLIENT, "thousand_fields")
+        ed_df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, "thousand_fields")
         ed_df.info()
 
-        ES_TEST_CLIENT.indices.delete(index="thousand_fields")
+        OPENSEARCH_TEST_CLIENT.indices.delete(index="thousand_fields")

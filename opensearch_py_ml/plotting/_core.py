@@ -15,7 +15,7 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from eland.plotting._matplotlib.hist import hist_frame, hist_series
+from opensearch_py_ml.plotting._matplotlib.hist import hist_frame, hist_series
 
 
 def ed_hist_series(

@@ -1,7 +1,11 @@
+"""
+Copyright OpenSearch Contributors
+SPDX-License-Identifier: Apache-2.0
+ """
 import json
 
 import numpy as np
-from eland import DataFrame
+from opensearch_py_ml import DataFrame
 from typing import List, Optional
 from math import ceil
 
@@ -19,7 +23,7 @@ def make_sagemaker_prediction(endpoint_name: str,
                               sort_index: Optional[str] = '_doc'
                               )-> np.array:
     """
-    Make a prediction on an eland dataframe using a deployed SageMaker model endpoint.
+    Make a prediction on an opensearch_py_ml dataframe using a deployed SageMaker model endpoint.
 
     Note that predictions will be returned based on the order in which data is ordered when
     ed.Dataframe.iterrows() is called on them.
@@ -27,13 +31,13 @@ def make_sagemaker_prediction(endpoint_name: str,
     Parameters
     ----------
     endpoint_name: string representing name of SageMaker endpoint
-    data: eland DataFrame representing data to feed to SageMaker model. The dataframe must match the input datatypes
+    data: opensearch_py_ml DataFrame representing data to feed to SageMaker model. The dataframe must match the input datatypes
         of the model and also have the correct number of columns.
     target_column: column name of the dependent variable in the data.
     sagemaker_session: A SageMaker Session object, used for SageMaker interactions (default: None). If not specified,
         one is created using the default AWS configuration chain.
     column_order: list of string values representing the proper order that the columns of independent variables should
-    be read into the SageMaker model. Must be a permutation of the column names of the eland DataFrame.
+    be read into the SageMaker model. Must be a permutation of the column names of the opensearch_py_ml DataFrame.
     chunksize: how large each chunk being uploaded to sagemaker should be.
     sort_index: the index with which to sort the predictions by. Defaults to '_doc', an internal identifier for
         Lucene that optimizes performance.

@@ -15,8 +15,8 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-__title__ = "eland"
-__description__ = "Python Client and Toolkit for DataFrames, Big Data, Machine Learning and ETL in Elasticsearch"
+__title__ = "opensearch_py_ml"
+__description__ = "Python Client and Toolkit for DataFrames, Big Data, Machine Learning and ETL in OpenSearch"
 __url__ = "https://github.com/elastic/eland"
 __version__ = "8.2.0"
 __author__ = "Steve Dodson"

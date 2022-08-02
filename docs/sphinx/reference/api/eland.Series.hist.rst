@@ -1,4 +1,4 @@
-eland.Series.hist
+opensearch_py_ml.Series.hist
 ====================
 
 .. currentmodule:: eland

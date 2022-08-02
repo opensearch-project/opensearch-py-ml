@@ -1,6 +1,6 @@
-eland.groupby.DataFrameGroupBy.quantile
+opensearch_py_ml.groupby.DataFrameGroupBy.quantile
 =======================================
 
-.. currentmodule:: eland.groupby
+.. currentmodule:: opensearch_py_ml.groupby
 
 .. automethod:: DataFrameGroupBy.quantile

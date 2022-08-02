@@ -1,4 +1,4 @@
-eland.Series.radd
+opensearch_py_ml.Series.radd
 =================
 
 .. currentmodule:: eland

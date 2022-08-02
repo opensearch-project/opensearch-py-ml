@@ -21,9 +21,9 @@ import numpy as np
 import pandas as pd
 import pytest
 
-import eland as ed
-from eland.field_mappings import FieldMappings
-from tests.common import ES_TEST_CLIENT, TestData, assert_pandas_eland_frame_equal
+import opensearch_py_ml as ed
+from opensearch_py_ml.field_mappings import FieldMappings
+from tests.common import OPENSEARCH_TEST_CLIENT, TestData, assert_pandas_eland_frame_equal
 
 
 class TestDataFrameUtils(TestData):
@@ -65,13 +65,13 @@ class TestDataFrameUtils(TestData):
         index_name = "eland_test_generate_es_mappings"
 
         ed_df = ed.pandas_to_eland(
-            df, ES_TEST_CLIENT, index_name, es_if_exists="replace", es_refresh=True
+            df, OPENSEARCH_TEST_CLIENT, index_name, es_if_exists="replace", es_refresh=True
         )
         ed_df_head = ed_df.head()
 
         assert_pandas_eland_frame_equal(df, ed_df_head)
 
-        ES_TEST_CLIENT.indices.delete(index=index_name)
+        OPENSEARCH_TEST_CLIENT.indices.delete(index=index_name)
 
     def test_pandas_to_eland_ignore_index(self):
         df = pd.DataFrame(
@@ -94,7 +94,7 @@ class TestDataFrameUtils(TestData):
 
         ed_df = ed.pandas_to_eland(
             df,
-            ES_TEST_CLIENT,
+            OPENSEARCH_TEST_CLIENT,
             index_name,
             es_if_exists="replace",
             es_refresh=True,
@@ -124,7 +124,7 @@ class TestDataFrameUtils(TestData):
             }
         }
 
-        mapping = ES_TEST_CLIENT.indices.get_mapping(index=index_name)
+        mapping = OPENSEARCH_TEST_CLIENT.indices.get_mapping(index=index_name)
 
         assert expected_mapping == mapping
 
@@ -137,7 +137,7 @@ class TestDataFrameUtils(TestData):
         # Ensure that index is populated by ES.
         assert not (df.index == pd_df.index).any()
 
-        ES_TEST_CLIENT.indices.delete(index=index_name)
+        OPENSEARCH_TEST_CLIENT.indices.delete(index=index_name)
 
     def tests_to_pandas_performance(self):
         # TODO quantify this
@@ -158,7 +158,7 @@ class TestDataFrameUtils(TestData):
         with pytest.raises(KeyError) as e:
             ed.pandas_to_eland(
                 df,
-                ES_TEST_CLIENT,
+                OPENSEARCH_TEST_CLIENT,
                 index_name,
                 es_if_exists="replace",
                 es_refresh=True,
@@ -170,4 +170,4 @@ class TestDataFrameUtils(TestData):
                 },
             )
             assert str(e.value) == match
-            ES_TEST_CLIENT.indices.delete(index=index_name)
+            OPENSEARCH_TEST_CLIENT.indices.delete(index=index_name)

@@ -1,4 +1,4 @@
-eland.Series.rsub
+opensearch_py_ml.Series.rsub
 =================
 
 .. currentmodule:: eland

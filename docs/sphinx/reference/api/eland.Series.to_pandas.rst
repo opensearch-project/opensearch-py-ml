@@ -1,4 +1,4 @@
-eland.DataFrame.to_pandas
+opensearch_py_ml.DataFrame.to_pandas
 =========================
 
 .. currentmodule:: eland

@@ -1,4 +1,4 @@
-eland.DataFrame.keys
+opensearch_py_ml.DataFrame.keys
 ====================
 
 .. currentmodule:: eland

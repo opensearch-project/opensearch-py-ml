@@ -1,4 +1,4 @@
-eland.DataFrame.to_string
+opensearch_py_ml.DataFrame.to_string
 =========================
 
 .. currentmodule:: eland

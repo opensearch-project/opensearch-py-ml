@@ -35,8 +35,8 @@ from typing import (
 import numpy as np
 import pandas as pd  # type: ignore
 
-from eland.actions import PostProcessingAction
-from eland.common import (
+from opensearch_py_ml.actions import PostProcessingAction
+from opensearch_py_ml.common import (
     DEFAULT_PAGINATION_SIZE,
     DEFAULT_PIT_KEEP_ALIVE,
     DEFAULT_PROGRESS_REPORTING_NUM_ROWS,
@@ -45,9 +45,9 @@ from eland.common import (
     build_pd_series,
     elasticsearch_date_to_pandas_date,
 )
-from eland.index import Index
-from eland.query import Query
-from eland.tasks import (
+from opensearch_py_ml.index import Index
+from opensearch_py_ml.query import Query
+from opensearch_py_ml.tasks import (
     RESOLVED_TASK_TYPE,
     ArithmeticOpFieldsTask,
     BooleanFilterTask,
@@ -62,11 +62,11 @@ from eland.tasks import (
 if TYPE_CHECKING:
     from numpy.typing import DTypeLike
 
-    from eland.arithmetics import ArithmeticSeries
-    from eland.field_mappings import Field
-    from eland.filter import BooleanFilter
-    from eland.query_compiler import QueryCompiler
-    from eland.tasks import Task
+    from opensearch_py_ml.arithmetics import ArithmeticSeries
+    from opensearch_py_ml.field_mappings import Field
+    from opensearch_py_ml.filter import BooleanFilter
+    from opensearch_py_ml.query_compiler import QueryCompiler
+    from opensearch_py_ml.tasks import Task
 
 
 class QueryParams:
@@ -806,7 +806,7 @@ class Operations:
         body = Query(query_params.query)
 
         fields = query_compiler._mappings.all_source_fields()
-        assert len(fields) == 1  # Unique is only for eland.Series
+        assert len(fields) == 1  # Unique is only for opensearch_py_ml.Series
         field = fields[0]
         bucket_key = f"unique_{field.column}"
 

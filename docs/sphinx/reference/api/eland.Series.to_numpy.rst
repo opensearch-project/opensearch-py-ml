@@ -1,4 +1,4 @@
-eland.Series.to_numpy
+opensearch_py_ml.Series.to_numpy
 =====================
 
 .. currentmodule:: eland

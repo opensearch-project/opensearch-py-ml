@@ -1,4 +1,4 @@
-eland.DataFrame.values
+opensearch_py_ml.DataFrame.values
 ======================
 
 .. currentmodule:: eland

@@ -1,4 +1,4 @@
-eland.Series.mean
+opensearch_py_ml.Series.mean
 =================
 
 .. currentmodule:: eland

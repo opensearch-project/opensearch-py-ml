@@ -1,4 +1,4 @@
-eland.DataFrame.to_html
+opensearch_py_ml.DataFrame.to_html
 =======================
 
 .. currentmodule:: eland

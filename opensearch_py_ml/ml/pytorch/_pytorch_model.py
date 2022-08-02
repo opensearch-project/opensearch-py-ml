@@ -33,8 +33,8 @@ from typing import (
 
 from tqdm.auto import tqdm  # type: ignore
 
-from eland.common import ensure_es_client
-from eland.ml.pytorch.nlp_ml_model import NlpTrainedModelConfig
+from opensearch_py_ml.common import ensure_es_client
+from opensearch_py_ml.ml.pytorch.nlp_ml_model import NlpTrainedModelConfig
 from warnings import warn
 
 if TYPE_CHECKING:

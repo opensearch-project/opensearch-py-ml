@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 
 class Index:
     """
-    The index for an eland.DataFrame.
+    The index for an opensearch_py_ml.DataFrame.
 
     TODO - This currently has very different behaviour than pandas.Index
 

@@ -1,4 +1,4 @@
-eland.DataFrame.mean
+opensearch_py_ml.DataFrame.mean
 ====================
 
 .. currentmodule:: eland

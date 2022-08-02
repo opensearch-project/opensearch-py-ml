@@ -1,4 +1,4 @@
-eland.Series.rfloordiv
+opensearch_py_ml.Series.rfloordiv
 ======================
 
 .. currentmodule:: eland

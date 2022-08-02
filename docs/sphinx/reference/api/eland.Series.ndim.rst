@@ -1,4 +1,4 @@
-eland.Series.ndim
+opensearch_py_ml.Series.ndim
 =================
 
 .. currentmodule:: eland

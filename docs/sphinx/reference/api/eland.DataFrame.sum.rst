@@ -1,4 +1,4 @@
-eland.DataFrame.sum
+opensearch_py_ml.DataFrame.sum
 ===================
 
 .. currentmodule:: eland

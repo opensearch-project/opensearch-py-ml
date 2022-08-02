@@ -1,4 +1,4 @@
-eland.Series.div
+opensearch_py_ml.Series.div
 ================
 
 .. currentmodule:: eland

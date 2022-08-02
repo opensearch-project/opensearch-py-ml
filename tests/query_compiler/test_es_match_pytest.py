@@ -19,7 +19,7 @@
 
 import pytest
 
-from eland.query_compiler import QueryCompiler
+from opensearch_py_ml.query_compiler import QueryCompiler
 from tests.common import TestData
 
 

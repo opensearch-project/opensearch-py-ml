@@ -59,7 +59,7 @@ Function Application, GroupBy & Window
    DataFrame.aggregate
    DataFrame.groupby
 
-.. currentmodule:: eland.groupby
+.. currentmodule:: opensearch_py_ml.groupby
 
 .. autosummary::
    :toctree: api/

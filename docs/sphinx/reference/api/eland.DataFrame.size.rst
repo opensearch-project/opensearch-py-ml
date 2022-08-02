@@ -1,4 +1,4 @@
-eland.DataFrame.size
+opensearch_py_ml.DataFrame.size
 ====================
 
 .. currentmodule:: eland

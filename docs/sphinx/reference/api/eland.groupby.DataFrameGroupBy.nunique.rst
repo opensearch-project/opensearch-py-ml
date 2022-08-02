@@ -1,6 +1,6 @@
-eland.groupby.DataFrameGroupBy.nunique
+opensearch_py_ml.groupby.DataFrameGroupBy.nunique
 ======================================
 
-.. currentmodule:: eland.groupby
+.. currentmodule:: opensearch_py_ml.groupby
 
 .. automethod:: DataFrameGroupBy.nunique
