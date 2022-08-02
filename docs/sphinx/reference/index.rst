@@ -5,7 +5,7 @@ API Reference
 =============
 
 This page gives an overview of all public eland objects, functions and
-methods. All classes and functions exposed in ``eland.*`` namespace are public.
+methods. All classes and functions exposed in ``opensearch_py_ml.*`` namespace are public.
 
 .. toctree::
    :maxdepth: 2

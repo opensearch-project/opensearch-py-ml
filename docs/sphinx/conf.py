@@ -41,13 +41,13 @@ sys.path.extend(
 
 # -- Project information -----------------------------------------------------
 
-project = "eland"
+project = "opensearch_py_ml"
 copyright = f"{datetime.date.today().year}, Elasticsearch BV"
 
 # The full version, including alpha/beta/rc tags
-import eland
+import opensearch_py_ml
 
-version = str(eland._version.__version__)
+version = str(opensearch_py_ml._version.__version__)
 
 release = version
 
@@ -67,7 +67,7 @@ extensions = [
 
 doctest_global_setup = """
 try:
-    import eland as ed
+    import opensearch_py_ml as ed
 except ImportError:
     ed = None
 try:
@@ -100,7 +100,7 @@ plot_formats = [("png", 90)]
 plot_html_show_formats = False
 plot_html_show_source_link = False
 plot_pre_code = """import numpy as np
-import eland as ed"""
+import opensearch_py_ml as ed"""
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -127,7 +127,7 @@ html_theme_options = {
 # so a file named "default.css" will overwrite the builtin "default.css".
 # html_static_path = ['_static']
 
-html_logo = "logo/eland.png"
+html_logo = "logo/opensearch_py_ml.png"
 html_favicon = "logo/eland_favicon.png"
 
 master_doc = "index"

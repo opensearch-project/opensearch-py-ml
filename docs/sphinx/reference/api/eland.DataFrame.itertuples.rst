@@ -1,4 +1,4 @@
-eland.DataFrame.itertuples
+opensearch_py_ml.DataFrame.itertuples
 ==========================
 
 .. currentmodule:: eland

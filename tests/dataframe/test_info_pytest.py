@@ -18,8 +18,8 @@
 # File called _pytest for PyCharm compatability
 from io import StringIO
 
-import eland as ed
-from tests import ES_TEST_CLIENT
+import opensearch_py_ml as ed
+from tests import OPENSEARCH_TEST_CLIENT
 from tests.common import TestData
 
 
@@ -51,10 +51,10 @@ class TestDataFrameInfo(TestData):
             field_name = "field_name_" + str(i)
             mapping["mappings"]["properties"][field_name] = {"type": "float"}
 
-        ES_TEST_CLIENT.indices.delete(index="empty_index", ignore=[400, 404])
-        ES_TEST_CLIENT.indices.create(index="empty_index", body=mapping)
+        OPENSEARCH_TEST_CLIENT.indices.delete(index="empty_index", ignore=[400, 404])
+        OPENSEARCH_TEST_CLIENT.indices.create(index="empty_index", body=mapping)
 
-        ed_df = ed.DataFrame(ES_TEST_CLIENT, "empty_index")
+        ed_df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, "empty_index")
         ed_df.info()
 
-        ES_TEST_CLIENT.indices.delete(index="empty_index")
+        OPENSEARCH_TEST_CLIENT.indices.delete(index="empty_index")

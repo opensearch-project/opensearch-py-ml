@@ -1,4 +1,4 @@
-eland.Series.sample
+opensearch_py_ml.Series.sample
 ===================
 
 .. currentmodule:: eland

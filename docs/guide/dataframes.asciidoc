@@ -1,7 +1,7 @@
 [[dataframes]]
 == Data Frames
 
-`eland.DataFrame` wraps an Elasticsearch index in a Pandas-like API
+`opensearch_py_ml.DataFrame` wraps an Elasticsearch index in a Pandas-like API
 and defers all processing and filtering of data to Elasticsearch
 instead of your local machine. This means you can process large
 amounts of data within Elasticsearch from a Jupyter Notebook
@@ -9,11 +9,11 @@ without overloading your machine.
 
 [source,python]
 -------------------------------------
->>> import eland as ed
+>>> import opensearch_py_ml as ed
 >>> # Connect to 'flights' index via localhost Elasticsearch node
 >>> df = ed.DataFrame('http://localhost:9200', 'flights')
 
-# eland.DataFrame instance has the same API as pandas.DataFrame
+# opensearch_py_ml.DataFrame instance has the same API as pandas.DataFrame
 # except all data is in Elasticsearch. See .info() memory usage.
 >>> df.head()
    AvgTicketPrice  Cancelled  ... dayOfWeek           timestamp
@@ -26,7 +26,7 @@ without overloading your machine.
 [5 rows x 27 columns]
 
 >>> df.info()
-<class 'eland.dataframe.DataFrame'>
+<class 'opensearch_py_ml.dataframe.DataFrame'>
 Index: 13059 entries, 0 to 13058
 Data columns (total 27 columns):
  #   Column              Non-Null Count  Dtype         

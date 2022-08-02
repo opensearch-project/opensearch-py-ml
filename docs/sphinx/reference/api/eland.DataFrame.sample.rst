@@ -1,4 +1,4 @@
-eland.DataFrame.sample
+opensearch_py_ml.DataFrame.sample
 ======================
 
 .. currentmodule:: eland

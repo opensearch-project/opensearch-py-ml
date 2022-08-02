@@ -1,4 +1,4 @@
-eland.Series.subtract
+opensearch_py_ml.Series.subtract
 =====================
 
 .. currentmodule:: eland

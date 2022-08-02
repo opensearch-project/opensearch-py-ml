@@ -1,7 +1,7 @@
-eland.groupby.GroupBy
+opensearch_py_ml.groupby.GroupBy
 =====================
 
-.. currentmodule:: eland.groupby
+.. currentmodule:: opensearch_py_ml.groupby
 
 .. autoclass:: GroupBy
 

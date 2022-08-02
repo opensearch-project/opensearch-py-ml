@@ -1,22 +1,22 @@
 <div align="center">
   <a href="https://github.com/elastic/eland">
-    <img src="https://raw.githubusercontent.com/elastic/eland/main/docs/sphinx/logo/eland.png" width="30%"
+    <img src="https://raw.githubusercontent.com/elastic/eland/main/docs/sphinx/logo/opensearch_py_ml.png" width="30%"
       alt="Eland" />
   </a>
 </div>
 <br />
 <div align="center">
-  <a href="https://pypi.org/project/eland"><img src="https://img.shields.io/pypi/v/eland.svg" alt="PyPI Version"></a>
+  <a href="https://pypi.org/project/eland"><img src="https://img.shields.io/pypi/v/opensearch_py_ml.svg" alt="PyPI Version"></a>
   <a href="https://anaconda.org/conda-forge/eland"><img src="https://img.shields.io/conda/vn/conda-forge/eland"
       alt="Conda Version"></a>
   <a href="https://pepy.tech/project/eland"><img src="https://pepy.tech/badge/eland" alt="Downloads"></a>
-  <a href="https://pypi.org/project/eland"><img src="https://img.shields.io/pypi/status/eland.svg"
+  <a href="https://pypi.org/project/eland"><img src="https://img.shields.io/pypi/status/opensearch_py_ml.svg"
       alt="Package Status"></a>
   <a href="https://clients-ci.elastic.co/job/elastic+eland+main"><img
       src="https://clients-ci.elastic.co/buildStatus/icon?job=elastic%2Beland%2Bmain" alt="Build Status"></a>
-  <a href="https://github.com/elastic/eland/blob/main/LICENSE.txt"><img src="https://img.shields.io/pypi/l/eland.svg"
+  <a href="https://github.com/elastic/eland/blob/main/LICENSE.txt"><img src="https://img.shields.io/pypi/l/opensearch_py_ml.svg"
       alt="License"></a>
-  <a href="https://eland.readthedocs.io"><img
+  <a href="https://opensearch_py_ml.readthedocs.io"><img
       src="https://readthedocs.org/projects/eland/badge/?version=latest" alt="Documentation Status"></a>
 </div>
 
@@ -38,13 +38,13 @@ Eland also provides tools to upload trained machine learning models from common 
 Eland can be installed from [PyPI](https://pypi.org/project/eland) with Pip:
 
 ```bash
-$ python -m pip install eland
+$ python -m pip install opensearch_py_ml
 ```
 
 Eland can also be installed from [Conda Forge](https://anaconda.org/conda-forge/eland) with Conda:
 
 ```bash
-$ conda install -c conda-forge eland
+$ conda install -c conda-forge opensearch_py_ml
 ```
 
 ### Compatibility
@@ -73,20 +73,20 @@ Users wishing to use Eland without installing it, in order to just run the avail
 container:
 
 ```bash
-$ docker build -t elastic/eland .
+$ docker build -t elastic/opensearch_py_ml .
 ```
 
 The container can now be used interactively:
 
 ```bash
-$ docker run -it --rm --network host elastic/eland
+$ docker run -it --rm --network host elastic/opensearch_py_ml
 ```
 
 Running installed scripts is also possible without an interactive shell, e.g.:
 
 ```bash
 $ docker run -it --rm --network host \
-    elastic/eland \
+    elastic/opensearch_py_ml \
     eland_import_hub_model \
       --url http://host.docker.internal:9200/ \
       --hub-model-id elastic/distilbert-base-cased-finetuned-conll03-english \
@@ -103,7 +103,7 @@ You can pass either an instance of `elasticsearch.Elasticsearch` to Eland APIs
 or a string containing the host to connect to:
 
 ```python
-import eland as ed
+import opensearch_py_ml as ed
 
 # Connecting to an Elasticsearch instance running on 'localhost:9200'
 df = ed.DataFrame("localhost:9200", es_index_pattern="flights")
@@ -120,23 +120,23 @@ df = ed.DataFrame(es, es_index_pattern="flights")
 
 ## DataFrames in Eland
 
-`eland.DataFrame` wraps an Elasticsearch index in a Pandas-like API
+`opensearch_py_ml.DataFrame` wraps an Elasticsearch index in a Pandas-like API
 and defers all processing and filtering of data to Elasticsearch
 instead of your local machine. This means you can process large
 amounts of data within Elasticsearch from a Jupyter Notebook
 without overloading your machine.
 
-➤ [Eland DataFrame API documentation](https://eland.readthedocs.io/en/latest/reference/dataframe.html)
+➤ [Eland DataFrame API documentation](https://opensearch_py_ml.readthedocs.io/en/latest/reference/dataframe.html)
 
-➤ [Advanced examples in a Jupyter Notebook](https://eland.readthedocs.io/en/latest/examples/demo_notebook.html)
+➤ [Advanced examples in a Jupyter Notebook](https://opensearch_py_ml.readthedocs.io/en/latest/examples/demo_notebook.html)
 
 ```python
->>> import eland as ed
+>>> import opensearch_py_ml as ed
 
 >>> # Connect to 'flights' index via localhost Elasticsearch node
 >>> df = ed.DataFrame('localhost:9200', 'flights')
 
-# eland.DataFrame instance has the same API as pandas.DataFrame
+# opensearch_py_ml.DataFrame instance has the same API as pandas.DataFrame
 # except all data is in Elasticsearch. See .info() memory usage.
 >>> df.head()
    AvgTicketPrice  Cancelled  ... dayOfWeek           timestamp
@@ -149,7 +149,7 @@ without overloading your machine.
 [5 rows x 27 columns]
 
 >>> df.info()
-<class 'eland.dataframe.DataFrame'>
+<class 'opensearch_py_ml.dataframe.DataFrame'>
 Index: 13059 entries, 0 to 13058
 Data columns (total 27 columns):
  #   Column              Non-Null Count  Dtype         
@@ -191,13 +191,13 @@ std        4.578263e+03    2.663867e+02
 Eland allows transforming trained regression and classification models from scikit-learn, XGBoost, and LightGBM
 libraries to be serialized and used as an inference model in Elasticsearch.
 
-➤ [Eland Machine Learning API documentation](https://eland.readthedocs.io/en/latest/reference/ml.html)
+➤ [Eland Machine Learning API documentation](https://opensearch_py_ml.readthedocs.io/en/latest/reference/ml.html)
 
 ➤ [Read more about Machine Learning in Elasticsearch](https://www.elastic.co/guide/en/machine-learning/current/ml-getting-started.html)
 
 ```python
 >>> from xgboost import XGBClassifier
->>> from eland.ml import MLModel
+>>> from opensearch_py_ml.ml import MLModel
 
 # Train and exercise an XGBoost ML model locally
 >>> xgb_model = XGBClassifier(booster="gbtree")
@@ -236,8 +236,8 @@ $ eland_import_hub_model \
 ```python
 >>> import elasticsearch
 >>> from pathlib import Path
->>> from eland.ml.pytorch import PyTorchModel
->>> from eland.ml.pytorch.transformers import TransformerModel
+>>> from opensearch_py_ml.ml.pytorch import PyTorchModel
+>>> from opensearch_py_ml.ml.pytorch.transformers import TransformerModel
 
 # Load a Hugging Face transformers model directly from the model hub
 >>> tm = TransformerModel("elastic/distilbert-base-cased-finetuned-conll03-english", "ner")

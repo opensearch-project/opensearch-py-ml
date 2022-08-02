@@ -1,4 +1,4 @@
-eland.DataFrame.ndim
+opensearch_py_ml.DataFrame.ndim
 ====================
 
 .. currentmodule:: eland

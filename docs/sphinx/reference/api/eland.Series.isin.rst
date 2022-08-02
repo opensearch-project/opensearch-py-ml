@@ -1,4 +1,4 @@
-eland.Series.isin
+opensearch_py_ml.Series.isin
 =================
 
 .. currentmodule:: eland

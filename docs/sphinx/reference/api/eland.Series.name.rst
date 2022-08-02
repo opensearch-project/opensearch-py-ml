@@ -1,4 +1,4 @@
-eland.Series.name
+opensearch_py_ml.Series.name
 =================
 
 .. currentmodule:: eland

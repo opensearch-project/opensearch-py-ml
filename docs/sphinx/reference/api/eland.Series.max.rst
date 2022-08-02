@@ -1,4 +1,4 @@
-eland.Series.max
+opensearch_py_ml.Series.max
 ================
 
 .. currentmodule:: eland

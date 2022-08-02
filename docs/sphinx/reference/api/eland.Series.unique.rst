@@ -1,4 +1,4 @@
-eland.Series.unique
+opensearch_py_ml.Series.unique
 ====================
 
 .. currentmodule:: eland

@@ -17,7 +17,7 @@
 
 from typing import TYPE_CHECKING, List, Optional, Union
 
-from eland.query_compiler import QueryCompiler
+from opensearch_py_ml.query_compiler import QueryCompiler
 
 if TYPE_CHECKING:
     import pandas as pd  # type: ignore
@@ -25,7 +25,7 @@ if TYPE_CHECKING:
 
 class GroupBy:
     """
-    Base class for calls to :py:func:`eland.DataFrame.groupby`
+    Base class for calls to :py:func:`opensearch_py_ml.DataFrame.groupby`
     """
 
     def __init__(
@@ -41,7 +41,7 @@ class GroupBy:
 
 class DataFrameGroupBy(GroupBy):
     """
-    This holds all the groupby methods for :py:func:`eland.DataFrame.groupby`
+    This holds all the groupby methods for :py:func:`opensearch_py_ml.DataFrame.groupby`
     """
 
     def mean(self, numeric_only: bool = True) -> "pd.DataFrame":

@@ -1,6 +1,6 @@
-eland.groupby.DataFrameGroupBy.max
+opensearch_py_ml.groupby.DataFrameGroupBy.max
 ==================================
 
-.. currentmodule:: eland.groupby
+.. currentmodule:: opensearch_py_ml.groupby
 
 .. automethod:: DataFrameGroupBy.max

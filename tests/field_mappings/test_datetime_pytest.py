@@ -18,8 +18,8 @@
 # File called _pytest for PyCharm compatability
 from datetime import datetime
 
-from eland.field_mappings import FieldMappings
-from tests.common import ES_TEST_CLIENT, TestData
+from opensearch_py_ml.field_mappings import FieldMappings
+from tests.common import OPENSEARCH_TEST_CLIENT, TestData
 
 
 class TestDateTime(TestData):
@@ -31,7 +31,7 @@ class TestDateTime(TestData):
         """setup any state specific to the execution of the given class (which
         usually contains tests).
         """
-        es = ES_TEST_CLIENT
+        es = OPENSEARCH_TEST_CLIENT
         if es.indices.exists(index=cls.time_index_name):
             es.indices.delete(index=cls.time_index_name)
         dts = [datetime.strptime(time, "%Y-%m-%dT%H:%M:%S.%f%z") for time in cls.times]
@@ -60,12 +60,12 @@ class TestDateTime(TestData):
         setup_class.
         """
 
-        es = ES_TEST_CLIENT
+        es = OPENSEARCH_TEST_CLIENT
         es.indices.delete(index=cls.time_index_name)
 
     def test_all_formats(self):
         ed_field_mappings = FieldMappings(
-            client=ES_TEST_CLIENT, index_pattern=self.time_index_name
+            client=OPENSEARCH_TEST_CLIENT, index_pattern=self.time_index_name
         )
 
         # do a rename so display_name for a field is different to es_field_name

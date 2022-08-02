@@ -1,4 +1,4 @@
-eland.DataFrame.idxmin
+opensearch_py_ml.DataFrame.idxmin
 ========================
 
 .. currentmodule:: eland

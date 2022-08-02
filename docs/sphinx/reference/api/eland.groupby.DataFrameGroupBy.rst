@@ -1,7 +1,7 @@
-eland.groupby.DataFrameGroupBy
+opensearch_py_ml.groupby.DataFrameGroupBy
 ==============================
 
-.. currentmodule:: eland.groupby
+.. currentmodule:: opensearch_py_ml.groupby
 
 .. autoclass:: DataFrameGroupBy
 

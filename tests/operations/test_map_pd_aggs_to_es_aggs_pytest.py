@@ -15,7 +15,7 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from eland.operations import Operations
+from opensearch_py_ml.operations import Operations
 
 
 def test_all_aggs():

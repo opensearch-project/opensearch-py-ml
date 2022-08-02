@@ -20,7 +20,7 @@ import warnings
 import numpy as np
 import pandas as pd
 
-from eland.common import EMPTY_SERIES_DTYPE, build_pd_series
+from opensearch_py_ml.common import EMPTY_SERIES_DTYPE, build_pd_series
 from tests.common import assert_series_equal
 
 

@@ -4,7 +4,7 @@
 Implementation Details
 ======================
 
-The goal of an ``eland.DataFrame`` is to enable users who are familiar with ``pandas.DataFrame``
+The goal of an ``opensearch_py_ml.DataFrame`` is to enable users who are familiar with ``pandas.DataFrame``
 to access, explore and manipulate data that resides in Elasticsearch.
 
 Ideally, all data should reside in Elasticsearch and not to reside in memory.
@@ -45,16 +45,16 @@ accessors. This would allow full access to the ``pandas.DataFrame`` APIs. Howeve
 *   The backend ``pandas.DataFrame`` structures are not easily abstractable and are deeply embedded in
     the implementation.
 
-Another option is to create a ``eland.DataFrame`` API that mimics appropriate aspects of
+Another option is to create a ``opensearch_py_ml.DataFrame`` API that mimics appropriate aspects of
 the ``pandas.DataFrame`` API. This resolves some of the issues above as:
 
 *   ``df_a = df['a']`` could be implemented as a change to the Elasticsearch query used, rather
     than a new index
 
 *   Instead of supporting the enitre ``pandas.DataFrame`` API we can support a subset appropriate for
-    Elasticsearch. If addition calls are required, we could to create a ``eland.DataFrame._to_pandas()``
+    Elasticsearch. If addition calls are required, we could to create a ``opensearch_py_ml.DataFrame._to_pandas()``
     method which would explicitly export all data to a ``pandas.DataFrame``
 
-*   Creating a new ``eland.DataFrame`` API gives us full flexibility in terms of implementation. However,
+*   Creating a new ``opensearch_py_ml.DataFrame`` API gives us full flexibility in terms of implementation. However,
     it does create a large amount of work which may duplicate a lot of the ``pandas`` code - for example,
     printing objects etc. - this creates maintenance issues etc.

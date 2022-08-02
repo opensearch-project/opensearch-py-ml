@@ -1,4 +1,4 @@
-eland.Series.filter
+opensearch_py_ml.Series.filter
 ===================
 
 .. currentmodule:: eland

@@ -1,4 +1,4 @@
-eland.DataFrame.head
+opensearch_py_ml.DataFrame.head
 ====================
 
 .. currentmodule:: eland

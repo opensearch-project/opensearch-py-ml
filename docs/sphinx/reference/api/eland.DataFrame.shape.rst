@@ -1,4 +1,4 @@
-eland.DataFrame.shape
+opensearch_py_ml.DataFrame.shape
 =====================
 
 .. currentmodule:: eland

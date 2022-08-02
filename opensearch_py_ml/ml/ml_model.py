@@ -20,8 +20,8 @@ from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Tuple, Uni
 import elasticsearch
 import numpy as np
 
-from eland.common import ensure_es_client, es_version
-from eland.utils import deprecated_api
+from opensearch_py_ml.common import ensure_es_client, es_version
+from opensearch_py_ml.utils import deprecated_api
 
 from .common import TYPE_CLASSIFICATION, TYPE_REGRESSION
 from .transformers import get_model_transformer
@@ -107,7 +107,7 @@ class MLModel:
         --------
         >>> from sklearn import datasets
         >>> from xgboost import XGBRegressor
-        >>> from eland.ml import MLModel
+        >>> from opensearch_py_ml.ml import MLModel
 
         >>> # Train model
         >>> training_data = datasets.make_classification(n_features=6, random_state=0)
@@ -329,7 +329,7 @@ class MLModel:
         --------
         >>> from sklearn import datasets
         >>> from sklearn.tree import DecisionTreeClassifier
-        >>> from eland.ml import MLModel
+        >>> from opensearch_py_ml.ml import MLModel
 
         >>> # Train model
         >>> training_data = datasets.make_classification(n_features=5, random_state=0)

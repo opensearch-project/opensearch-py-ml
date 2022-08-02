@@ -19,7 +19,7 @@ import warnings
 from copy import deepcopy
 from typing import Any, Dict, List, Optional
 
-from eland.filter import BooleanFilter, IsIn, IsNull, NotNull, RandomScoreFilter, Rlike
+from opensearch_py_ml.filter import BooleanFilter, IsIn, IsNull, NotNull, RandomScoreFilter, Rlike
 
 
 class Query:

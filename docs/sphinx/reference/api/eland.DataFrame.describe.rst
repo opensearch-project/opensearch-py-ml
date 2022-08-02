@@ -1,4 +1,4 @@
-eland.DataFrame.describe
+opensearch_py_ml.DataFrame.describe
 ========================
 
 .. currentmodule:: eland

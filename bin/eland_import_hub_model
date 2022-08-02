@@ -33,11 +33,13 @@ import textwrap
 
 from elastic_transport.client_utils import DEFAULT
 from elasticsearch import AuthenticationException, Elasticsearch
+from warnings import warn
 
 MODEL_HUB_URL = "https://huggingface.co"
 
 
 def get_arg_parser():
+    warn('function has been deprecated - only works for ElasticSearch', DeprecationWarning, stacklevel=2)
     parser = argparse.ArgumentParser()
     location_args = parser.add_mutually_exclusive_group(required=True)
     location_args.add_argument(
@@ -166,8 +168,8 @@ if __name__ == "__main__":
     logger.setLevel(logging.INFO)
 
     try:
-        from eland.ml.pytorch import PyTorchModel
-        from eland.ml.pytorch.transformers import (
+        from opensearch_py_ml.ml.pytorch import PyTorchModel
+        from opensearch_py_ml.ml.pytorch.transformers import (
             SUPPORTED_TASK_TYPES,
             TaskTypeError,
             TransformerModel,

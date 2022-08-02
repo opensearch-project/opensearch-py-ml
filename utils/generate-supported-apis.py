@@ -23,7 +23,7 @@ from pathlib import Path
 
 import pandas
 
-import eland
+import opensearch_py_ml
 
 api_docs_dir = Path(__file__).absolute().parent.parent / "docs/sphinx/reference/api"
 is_supported = []
@@ -34,8 +34,8 @@ supported_attr = re.compile(
 
 def main():
     for prefix, pd_obj, ed_obj in [
-        ("ed.DataFrame.", pandas.DataFrame, eland.DataFrame),
-        ("ed.Series.", pandas.Series, eland.Series),
+        ("ed.DataFrame.", pandas.DataFrame, opensearch_py_ml.DataFrame),
+        ("ed.Series.", pandas.Series, opensearch_py_ml.Series),
     ]:
         total = 0
         supported = 0
@@ -73,7 +73,7 @@ def main():
 
     for attr, supported in is_supported:
         if supported and "__" not in attr:
-            attr = attr.replace("ed.", "eland.").rstrip("()")
+            attr = attr.replace("ed.", "opensearch_py_ml.").rstrip("()")
             attr_doc_path = api_docs_dir / f"{attr}.rst"
             if not attr_doc_path.exists():
                 with attr_doc_path.open(mode="w") as f:
@@ -82,9 +82,9 @@ def main():
                         f"""{attr}
 {'=' * len(attr)}
 
-.. currentmodule:: eland
+.. currentmodule:: opensearch_py_ml
 
-.. automethod:: { attr.replace('eland.', '') }
+.. automethod:: { attr.replace('opensearch_py_ml.', '') }
 """
                     )
 

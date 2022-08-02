@@ -18,7 +18,7 @@
 # File called _pytest for PyCharm compatability
 import pytest
 
-from eland.field_mappings import FieldMappings
+from opensearch_py_ml.field_mappings import FieldMappings
 from tests.common import TestData
 
 
@@ -26,7 +26,7 @@ class TestMappingsWithType(TestData):
     def test_mappings_with_type(self):
         # Unless we spin up a 6.x index, this is difficult
         # to test. This is not ideal, but supporting some basic
-        # features on 6.x indices makes eland more generally usable.
+        # features on 6.x indices makes opensearch_py_ml more generally usable.
         #
         # For now, just test function:
         mapping7x = {

@@ -1,6 +1,6 @@
-eland.ml.MLModel.import_model
+opensearch_py_ml.ml.MLModel.import_model
 =============================
 
-.. currentmodule:: eland.ml
+.. currentmodule:: opensearch_py_ml.ml
 
 .. automethod:: MLModel.import_model

@@ -1,4 +1,4 @@
-eland.DataFrame.empty
+opensearch_py_ml.DataFrame.empty
 =====================
 
 .. currentmodule:: eland

@@ -1,6 +1,6 @@
-eland.groupby.DataFrameGroupBy.mean
+opensearch_py_ml.groupby.DataFrameGroupBy.mean
 ===================================
 
-.. currentmodule:: eland.groupby
+.. currentmodule:: opensearch_py_ml.groupby
 
 .. automethod:: DataFrameGroupBy.mean

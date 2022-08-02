@@ -21,22 +21,22 @@ from typing import TYPE_CHECKING, List, Optional, TextIO, Tuple, Union
 
 import pandas as pd  # type: ignore
 
-from eland.query_compiler import QueryCompiler
+from opensearch_py_ml.query_compiler import QueryCompiler
 
 if TYPE_CHECKING:
     from elasticsearch import Elasticsearch
 
-    from eland.index import Index
+    from opensearch_py_ml.index import Index
 
 """
 NDFrame
 ---------
-Abstract base class for eland.DataFrame and eland.Series.
+Abstract base class for opensearch_py_ml.DataFrame and opensearch_py_ml.Series.
 
 The underlying data resides in Elasticsearch and the API aligns as much as
 possible with pandas APIs.
 
-This allows the eland.DataFrame to access large datasets stored in Elasticsearch,
+This allows the opensearch_py_ml.DataFrame to access large datasets stored in Elasticsearch,
 without storing the dataset in local memory.
 
 Implementation Details
@@ -45,7 +45,7 @@ Implementation Details
 Elasticsearch indexes can be configured in many different ways, and these indexes
 utilise different data structures to pandas.
 
-eland.DataFrame operations that return individual rows (e.g. df.head()) return
+opensearch_py_ml.DataFrame operations that return individual rows (e.g. df.head()) return
 _source data. If _source is not enabled, this data is not accessible.
 
 Similarly, only Elasticsearch searchable fields can be searched or filtered, and
@@ -85,12 +85,12 @@ class NDFrame(ABC):
     @property
     def index(self) -> "Index":
         """
-        Return eland index referencing Elasticsearch field to index a DataFrame/Series
+        Return opensearch_py_ml index referencing Elasticsearch field to index a DataFrame/Series
 
         Returns
         -------
-        eland.Index:
-            Note eland.Index has a very limited API compared to pandas.Index
+        opensearch_py_ml.Index:
+            Note opensearch_py_ml.Index has a very limited API compared to pandas.Index
 
         See Also
         --------

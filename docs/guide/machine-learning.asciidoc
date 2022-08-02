@@ -12,7 +12,7 @@ model in {es}.
 [source,python]
 ------------------------
 >>> from xgboost import XGBClassifier
->>> from eland.ml import MLModel
+>>> from opensearch_py_ml.ml import MLModel
 
 # Train and exercise an XGBoost ML model locally
 >>> xgb_model = XGBClassifier(booster="gbtree")
@@ -61,8 +61,8 @@ $ eland_import_hub_model <authentication> \ <1>
 ------------------------
 >>> import elasticsearch
 >>> from pathlib import Path
->>> from eland.ml.pytorch import PyTorchModel
->>> from eland.ml.pytorch.transformers import TransformerModel
+>>> from opensearch_py_ml.ml.pytorch import PyTorchModel
+>>> from opensearch_py_ml.ml.pytorch.transformers import TransformerModel
 
 # Load a Hugging Face transformers model directly from the model hub
 >>> tm = TransformerModel("elastic/distilbert-base-cased-finetuned-conll03-english", "ner")

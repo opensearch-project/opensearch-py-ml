@@ -1,7 +1,7 @@
-eland.ml.MLModel
+opensearch_py_ml.ml.MLModel
 ================
 
-.. currentmodule:: eland.ml
+.. currentmodule:: opensearch_py_ml.ml
 
 .. autoclass:: MLModel
 

@@ -18,7 +18,7 @@
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
-from eland import SortOrder
+from opensearch_py_ml import SortOrder
 
 if TYPE_CHECKING:
     import pandas as pd  # type: ignore

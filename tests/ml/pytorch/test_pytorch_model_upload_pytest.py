@@ -27,14 +27,14 @@ except ImportError:
     HAS_SKLEARN = False
 
 try:
-    from eland.ml.pytorch import PyTorchModel
-    from eland.ml.pytorch.transformers import TransformerModel
+    from opensearch_py_ml.ml.pytorch import PyTorchModel
+    from opensearch_py_ml.ml.pytorch.transformers import TransformerModel
 
     HAS_TRANSFORMERS = True
 except ImportError:
     HAS_TRANSFORMERS = False
 
-from tests import ES_TEST_CLIENT, ES_VERSION
+from tests import OPENSEARCH_TEST_CLIENT, ES_VERSION
 
 pytestmark = [
     pytest.mark.skipif(
@@ -61,12 +61,12 @@ TEXT_PREDICTION_MODELS = [
 
 @pytest.fixture(scope="function", autouse=True)
 def setup_and_tear_down():
-    ES_TEST_CLIENT.cluster.put_settings(
+    OPENSEARCH_TEST_CLIENT.cluster.put_settings(
         body={"transient": {"logger.org.elasticsearch.xpack.ml": "DEBUG"}}
     )
     yield
     for model_id, _, _, _ in TEXT_PREDICTION_MODELS:
-        model = PyTorchModel(ES_TEST_CLIENT, model_id.replace("/", "__").lower()[:64])
+        model = PyTorchModel(OPENSEARCH_TEST_CLIENT, model_id.replace("/", "__").lower()[:64])
         try:
             model.stop()
             model.delete()
@@ -78,7 +78,7 @@ def download_model_and_start_deployment(tmp_dir, quantize, model_id, task):
     print("Loading HuggingFace transformer tokenizer and model")
     tm = TransformerModel(model_id, task, quantize)
     model_path, config, vocab_path = tm.save(tmp_dir)
-    ptm = PyTorchModel(ES_TEST_CLIENT, tm.elasticsearch_model_id())
+    ptm = PyTorchModel(OPENSEARCH_TEST_CLIENT, tm.elasticsearch_model_id())
     try:
         ptm.stop()
         ptm.delete()

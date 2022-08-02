@@ -33,16 +33,17 @@ from pandas.io.formats import format as fmt
 from pandas.io.formats.printing import pprint_thing  # type: ignore
 from pandas.util._validators import validate_bool_kwarg  # type: ignore
 
-import eland.plotting as gfx
-from eland.common import DEFAULT_NUM_ROWS_DISPLAYED, docstring_parameter
-from eland.filter import BooleanFilter
-from eland.groupby import DataFrameGroupBy
-from eland.ndframe import NDFrame
-from eland.series import Series
-from eland.utils import is_valid_attr_name
+import opensearch_py_ml.plotting as gfx
+from opensearch_py_ml.common import DEFAULT_NUM_ROWS_DISPLAYED, docstring_parameter
+from opensearch_py_ml.filter import BooleanFilter
+from opensearch_py_ml.groupby import DataFrameGroupBy
+from opensearch_py_ml.ndframe import NDFrame
+from opensearch_py_ml.series import Series
+from opensearch_py_ml.utils import is_valid_attr_name
 
 if TYPE_CHECKING:
     from elasticsearch import Elasticsearch
+    from opensearchpy import OpenSearch
 
     from .query_compiler import QueryCompiler
 
@@ -136,7 +137,7 @@ class DataFrame(NDFrame):
         There are effectively 2 constructors:
 
         1. client, index_pattern, columns, index_field
-        2. query_compiler (eland.QueryCompiler)
+        2. query_compiler (opensearch_py_ml.QueryCompiler)
 
         The constructor with 'query_compiler' is for internal use only.
         """
@@ -218,8 +219,8 @@ class DataFrame(NDFrame):
 
         Returns
         -------
-        eland.DataFrame
-            eland DataFrame filtered on first n rows sorted by index field
+        opensearch_py_ml.DataFrame
+            opensearch_py_ml DataFrame filtered on first n rows sorted by index field
 
         See Also
         --------
@@ -253,8 +254,8 @@ class DataFrame(NDFrame):
 
         Returns
         -------
-        eland.DataFrame:
-            eland DataFrame filtered on last n rows sorted by index field
+        opensearch_py_ml.DataFrame:
+            opensearch_py_ml DataFrame filtered on last n rows sorted by index field
 
         See Also
         --------
@@ -303,8 +304,8 @@ class DataFrame(NDFrame):
 
         Returns
         -------
-        eland.DataFrame:
-            eland DataFrame filtered containing n rows randomly sampled
+        opensearch_py_ml.DataFrame:
+            opensearch_py_ml DataFrame filtered containing n rows randomly sampled
 
         See Also
         --------
@@ -585,14 +586,14 @@ class DataFrame(NDFrame):
     def es_info(self):
         # noinspection PyPep8
         """
-        A debug summary of an eland DataFrame internals.
+        A debug summary of an opensearch_py_ml DataFrame internals.
 
         This includes the Elasticsearch search queries and query compiler task list.
 
         Returns
         -------
         str
-            A debug summary of an eland DataFrame internals.
+            A debug summary of an opensearch_py_ml DataFrame internals.
 
         Examples
         --------
@@ -656,7 +657,7 @@ class DataFrame(NDFrame):
 
         By default all fields of type 'text' within Elasticsearch are queried
         otherwise specific columns can be specified via the ``columns`` parameter
-        or a single column can be filtered on with :py:meth:`eland.Series.es_match`
+        or a single column can be filtered on with :py:meth:`opensearch_py_ml.Series.es_match`
 
         All additional keyword arguments are passed in the body of the match query.
 
@@ -687,7 +688,7 @@ class DataFrame(NDFrame):
         Returns
         -------
         DataFrame
-            A filtered :py:class:`eland.DataFrame` with the given match query
+            A filtered :py:class:`opensearch_py_ml.DataFrame` with the given match query
 
         Examples
         --------
@@ -743,8 +744,8 @@ class DataFrame(NDFrame):
 
         Returns
         -------
-        eland.DataFrame:
-            eland DataFrame with the query applied
+        opensearch_py_ml.DataFrame:
+            opensearch_py_ml DataFrame with the query applied
 
         Examples
         --------
@@ -831,7 +832,7 @@ class DataFrame(NDFrame):
         --------
         >>> df = ed.DataFrame('http://localhost:9200', 'ecommerce', columns=['customer_first_name', 'geoip.city_name'])
         >>> df.info()
-        <class 'eland.dataframe.DataFrame'>
+        <class 'opensearch_py_ml.dataframe.DataFrame'>
         Index: 4675 entries, 0 to 4674
         Data columns (total 2 columns):
          #   Column               Non-Null Count  Dtype...
@@ -1042,7 +1043,7 @@ class DataFrame(NDFrame):
             max_rows = DEFAULT_NUM_ROWS_DISPLAYED
 
         # because of the way pandas handles max_rows=0, not having this throws an error
-        # see eland issue #56
+        # see opensearch_py_ml issue #56
         if max_rows == 0:
             max_rows = 1
 
@@ -1139,7 +1140,7 @@ class DataFrame(NDFrame):
             max_rows = DEFAULT_NUM_ROWS_DISPLAYED
 
         # because of the way pandas handles max_rows=0, not having this throws an error
-        # see eland issue #56
+        # see opensearch_py_ml issue #56
         if max_rows == 0:
             max_rows = 1
 
@@ -1341,7 +1342,7 @@ class DataFrame(NDFrame):
 
     def to_pandas(self, show_progress: bool = False) -> pd.DataFrame:
         """
-        Utility method to convert eland.Dataframe to pandas.Dataframe
+        Utility method to convert opensearch_py_ml.Dataframe to pandas.Dataframe
 
         Returns
         -------
@@ -1360,7 +1361,7 @@ class DataFrame(NDFrame):
 
         Returns
         -------
-        eland.DataFrame
+        opensearch_py_ml.DataFrame
             DataFrame contains only columns of selected dtypes
 
         Examples
@@ -1446,7 +1447,7 @@ class DataFrame(NDFrame):
 
     def iterrows(self, sort_index: Optional['str'] = '_doc') -> Iterable[Tuple[Union[str, Tuple[str, ...]], pd.Series]]:
         """
-        Iterate over eland.DataFrame rows as (index, pandas.Series) pairs.
+        Iterate over opensearch_py_ml.DataFrame rows as (index, pandas.Series) pairs.
 
         Parameters
         ----------
@@ -1462,7 +1463,7 @@ class DataFrame(NDFrame):
 
         See Also
         --------
-        eland.DataFrame.itertuples: Iterate over eland.DataFrame rows as namedtuples.
+        opensearch_py_ml.DataFrame.itertuples: Iterate over opensearch_py_ml.DataFrame rows as namedtuples.
 
         Examples
         --------
@@ -1502,7 +1503,7 @@ class DataFrame(NDFrame):
         self, index: bool = True, name: Union[str, None] = "Eland", sort_index: Optional[str] = '_doc'
     ) -> Iterable[Tuple[Any, ...]]:
         """
-        Iterate over eland.DataFrame rows as namedtuples.
+        Iterate over opensearch_py_ml.DataFrame rows as namedtuples.
 
         Parameters
         ----------
@@ -1522,7 +1523,7 @@ class DataFrame(NDFrame):
 
         See Also
         --------
-        eland.DataFrame.iterrows: Iterate over eland.DataFrame rows as (index, pandas.Series) pairs.
+        opensearch_py_ml.DataFrame.iterrows: Iterate over opensearch_py_ml.DataFrame rows as (index, pandas.Series) pairs.
 
         Examples
         --------
@@ -1687,7 +1688,7 @@ class DataFrame(NDFrame):
 
         Returns
         -------
-        eland.groupby.DataFrameGroupBy
+        opensearch_py_ml.groupby.DataFrameGroupBy
 
         See Also
         --------
@@ -1954,10 +1955,10 @@ class DataFrame(NDFrame):
 
         Returns
         -------
-        eland.DataFrame:
+        opensearch_py_ml.DataFrame:
             DataFrame populated by results of the query
 
-        TODO - add link to eland user guide
+        TODO - add link to opensearch_py_ml user guide
 
         See Also
         --------
@@ -2055,7 +2056,7 @@ class DataFrame(NDFrame):
 
         Returns
         -------
-        eland.DataFrame
+        opensearch_py_ml.DataFrame
 
         See Also
         --------
@@ -2144,7 +2145,7 @@ class DataFrame(NDFrame):
         >>> ed_df = ed.DataFrame('http://localhost:9200', 'flights', columns=['AvgTicketPrice', 'Carrier']).head(5)
         >>> pd_df = ed.eland_to_pandas(ed_df)
         >>> print(f"type(ed_df)={type(ed_df)}\\ntype(pd_df)={type(pd_df)}")
-        type(ed_df)=<class 'eland.dataframe.DataFrame'>
+        type(ed_df)=<class 'opensearch_py_ml.dataframe.DataFrame'>
         type(pd_df)=<class 'pandas.core.frame.DataFrame'>
         >>> ed_df
            AvgTicketPrice           Carrier

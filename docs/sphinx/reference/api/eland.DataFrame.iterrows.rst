@@ -1,4 +1,4 @@
-eland.DataFrame.iterrows
+opensearch_py_ml.DataFrame.iterrows
 ========================
 
 .. currentmodule:: eland

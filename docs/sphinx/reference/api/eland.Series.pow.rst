@@ -1,4 +1,4 @@
-eland.Series.pow
+opensearch_py_ml.Series.pow
 ================
 
 .. currentmodule:: eland

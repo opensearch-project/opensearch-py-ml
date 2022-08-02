@@ -39,7 +39,7 @@ from transformers import (
     PreTrainedTokenizerFast,
 )
 
-from eland.ml.pytorch.nlp_ml_model import (
+from opensearch_py_ml.ml.pytorch.nlp_ml_model import (
     FillMaskInferenceOptions,
     NerInferenceOptions,
     NlpBertTokenizationConfig,
@@ -54,7 +54,7 @@ from eland.ml.pytorch.nlp_ml_model import (
     TrainedModelInput,
     ZeroShotClassificationInferenceOptions,
 )
-from eland.ml.pytorch.traceable_model import TraceableModel
+from opensearch_py_ml.ml.pytorch.traceable_model import TraceableModel
 from warnings import warn
 
 DEFAULT_OUTPUT_KEY = "sentence_embedding"

@@ -1,4 +1,4 @@
-eland.DataFrame.median
+opensearch_py_ml.DataFrame.median
 ======================
 
 .. currentmodule:: eland

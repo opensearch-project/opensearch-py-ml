@@ -20,15 +20,15 @@ import pandas as pd
 from pandas.testing import assert_index_equal
 
 # File called _pytest for PyCharm compatability
-from eland.field_mappings import FieldMappings
-from tests import ES_TEST_CLIENT, FLIGHTS_INDEX_NAME
+from opensearch_py_ml.field_mappings import FieldMappings
+from tests import OPENSEARCH_TEST_CLIENT, FLIGHTS_INDEX_NAME
 from tests.common import TestData
 
 
 class TestGetFieldNames(TestData):
     def test_get_field_names_all(self):
         ed_field_mappings = FieldMappings(
-            client=ES_TEST_CLIENT, index_pattern=FLIGHTS_INDEX_NAME
+            client=OPENSEARCH_TEST_CLIENT, index_pattern=FLIGHTS_INDEX_NAME
         )
         pd_flights = self.pd_flights()
 
@@ -41,7 +41,7 @@ class TestGetFieldNames(TestData):
     def test_get_field_names_selected(self):
         expected = ["Carrier", "AvgTicketPrice"]
         ed_field_mappings = FieldMappings(
-            client=ES_TEST_CLIENT,
+            client=OPENSEARCH_TEST_CLIENT,
             index_pattern=FLIGHTS_INDEX_NAME,
             display_names=expected,
         )
@@ -56,7 +56,7 @@ class TestGetFieldNames(TestData):
     def test_get_field_names_scripted(self):
         expected = ["Carrier", "AvgTicketPrice"]
         ed_field_mappings = FieldMappings(
-            client=ES_TEST_CLIENT,
+            client=OPENSEARCH_TEST_CLIENT,
             index_pattern=FLIGHTS_INDEX_NAME,
             display_names=expected,
         )

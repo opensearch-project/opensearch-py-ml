@@ -1,4 +1,4 @@
-eland.DataFrame.drop
+opensearch_py_ml.DataFrame.drop
 ====================
 
 .. currentmodule:: eland

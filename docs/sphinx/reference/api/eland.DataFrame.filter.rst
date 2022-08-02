@@ -1,4 +1,4 @@
-eland.DataFrame.filter
+opensearch_py_ml.DataFrame.filter
 ======================
 
 .. currentmodule:: eland

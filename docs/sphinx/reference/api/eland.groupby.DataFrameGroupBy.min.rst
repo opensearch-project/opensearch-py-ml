@@ -1,6 +1,6 @@
-eland.groupby.DataFrameGroupBy.min
+opensearch_py_ml.groupby.DataFrameGroupBy.min
 ==================================
 
-.. currentmodule:: eland.groupby
+.. currentmodule:: opensearch_py_ml.groupby
 
 .. automethod:: DataFrameGroupBy.min

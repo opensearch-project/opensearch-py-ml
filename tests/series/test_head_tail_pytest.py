@@ -16,15 +16,15 @@
 #  under the License.
 
 # File called _pytest for PyCharm compatability
-import eland as ed
-from tests import ES_TEST_CLIENT, FLIGHTS_INDEX_NAME
+import opensearch_py_ml as ed
+from tests import OPENSEARCH_TEST_CLIENT, FLIGHTS_INDEX_NAME
 from tests.common import TestData, assert_pandas_eland_series_equal
 
 
 class TestSeriesHeadTail(TestData):
     def test_head_tail(self):
         pd_s = self.pd_flights()["Carrier"]
-        ed_s = ed.Series(ES_TEST_CLIENT, FLIGHTS_INDEX_NAME, "Carrier")
+        ed_s = ed.Series(OPENSEARCH_TEST_CLIENT, FLIGHTS_INDEX_NAME, "Carrier")
 
         pd_s_head = pd_s.head(10)
         ed_s_head = ed_s.head(10)

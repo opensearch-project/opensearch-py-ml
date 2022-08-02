@@ -1,4 +1,4 @@
-eland.Series.sum
+opensearch_py_ml.Series.sum
 ================
 
 .. currentmodule:: eland

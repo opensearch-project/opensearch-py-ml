@@ -1,4 +1,4 @@
-eland.DataFrame.es_dtypes
+opensearch_py_ml.DataFrame.es_dtypes
 =========================
 
 .. currentmodule:: eland

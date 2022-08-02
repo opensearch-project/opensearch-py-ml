@@ -1,4 +1,4 @@
-eland.DataFrame.count
+opensearch_py_ml.DataFrame.count
 =====================
 
 .. currentmodule:: eland

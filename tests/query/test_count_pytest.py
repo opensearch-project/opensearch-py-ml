@@ -17,7 +17,7 @@
 
 # File called _pytest for PyCharm compatability
 
-from eland.query import Query
+from opensearch_py_ml.query import Query
 from tests.common import TestData
 
 

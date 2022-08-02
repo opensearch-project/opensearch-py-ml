@@ -1,4 +1,4 @@
-eland.Series.truediv
+opensearch_py_ml.Series.truediv
 ====================
 
 .. currentmodule:: eland

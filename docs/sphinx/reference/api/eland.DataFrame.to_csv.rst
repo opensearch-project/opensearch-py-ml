@@ -1,4 +1,4 @@
-eland.DataFrame.to_csv
+opensearch_py_ml.DataFrame.to_csv
 ======================
 
 .. currentmodule:: eland

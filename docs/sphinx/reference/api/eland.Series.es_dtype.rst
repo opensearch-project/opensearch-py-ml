@@ -1,4 +1,4 @@
-eland.Series.es_dtype
+opensearch_py_ml.Series.es_dtype
 =====================
 
 .. currentmodule:: eland

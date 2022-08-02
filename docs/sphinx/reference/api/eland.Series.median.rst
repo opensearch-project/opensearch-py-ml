@@ -1,4 +1,4 @@
-eland.Series.median
+opensearch_py_ml.Series.median
 ===================
 
 .. currentmodule:: eland

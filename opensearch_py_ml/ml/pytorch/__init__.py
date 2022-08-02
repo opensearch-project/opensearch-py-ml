@@ -15,6 +15,22 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from eland.ml.ml_model import ImportedMLModel, MLModel  # noqa: F401
+from opensearch_py_ml.ml.pytorch._pytorch_model import PyTorchModel  # noqa: F401
+from opensearch_py_ml.ml.pytorch.nlp_ml_model import (
+    NlpBertTokenizationConfig,
+    NlpMPNetTokenizationConfig,
+    NlpRobertaTokenizationConfig,
+    NlpTrainedModelConfig,
+)
+from opensearch_py_ml.ml.pytorch.traceable_model import TraceableModel  # noqa: F401
+from opensearch_py_ml.ml.pytorch.transformers import task_type_from_model_config
 
-__all__ = ["MLModel"]
+__all__ = [
+    "PyTorchModel",
+    "TraceableModel",
+    "NlpTrainedModelConfig",
+    "NlpBertTokenizationConfig",
+    "NlpRobertaTokenizationConfig",
+    "NlpMPNetTokenizationConfig",
+    "task_type_from_model_config",
+]

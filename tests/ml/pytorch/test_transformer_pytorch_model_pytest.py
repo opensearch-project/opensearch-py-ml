@@ -36,14 +36,14 @@ try:
     from torch import Tensor, nn  # noqa: F401
     from transformers import PretrainedConfig  # noqa: F401
 
-    from eland.ml.pytorch import (  # noqa: F401
+    from opensearch_py_ml.ml.pytorch import (  # noqa: F401
         NlpBertTokenizationConfig,
         NlpTrainedModelConfig,
         PyTorchModel,
         TraceableModel,
         task_type_from_model_config,
     )
-    from eland.ml.pytorch.nlp_ml_model import (
+    from opensearch_py_ml.ml.pytorch.nlp_ml_model import (
         NerInferenceOptions,
         TextClassificationInferenceOptions,
         TextEmbeddingInferenceOptions,
@@ -60,7 +60,7 @@ try:
 except ImportError:
     HAS_PYTORCH = False
 
-from tests import ES_TEST_CLIENT, ES_VERSION
+from tests import OPENSEARCH_TEST_CLIENT, ES_VERSION
 
 pytestmark = [
     pytest.mark.skipif(
@@ -262,7 +262,7 @@ AUTO_TASK_RESULTS = [
 
 @pytest.fixture(scope="function", autouse=True)
 def setup_and_tear_down():
-    ES_TEST_CLIENT.cluster.put_settings(
+    OPENSEARCH_TEST_CLIENT.cluster.put_settings(
         body={"transient": {"logger.org.elasticsearch.xpack.ml": "DEBUG"}}
     )
     yield
@@ -273,7 +273,7 @@ def setup_and_tear_down():
         _,
         _,
     ) in MODELS_TO_TEST:
-        model = PyTorchModel(ES_TEST_CLIENT, model_id.replace("/", "__").lower()[:64])
+        model = PyTorchModel(OPENSEARCH_TEST_CLIENT, model_id.replace("/", "__").lower()[:64])
         try:
             model.stop()
             model.delete()
@@ -289,7 +289,7 @@ def upload_model_and_start_deployment(
     vocab_path = os.path.join(tmp_dir, "vocabulary.json")
     with open(vocab_path, "w") as outfile:
         json.dump({"vocabulary": TEST_BERT_VOCAB}, outfile)
-    ptm = PyTorchModel(ES_TEST_CLIENT, model_id)
+    ptm = PyTorchModel(OPENSEARCH_TEST_CLIENT, model_id)
     try:
         ptm.stop()
         ptm.delete()

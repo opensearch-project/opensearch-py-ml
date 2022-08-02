@@ -1,4 +1,4 @@
-eland.DataFrame.to_numpy
+opensearch_py_ml.DataFrame.to_numpy
 ========================
 
 .. currentmodule:: eland

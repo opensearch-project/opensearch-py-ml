@@ -1,4 +1,4 @@
-eland.Series.to_string
+opensearch_py_ml.Series.to_string
 ======================
 
 .. currentmodule:: eland

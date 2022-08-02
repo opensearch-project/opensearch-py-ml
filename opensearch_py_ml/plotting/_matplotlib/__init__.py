@@ -15,22 +15,16 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from eland.ml.pytorch._pytorch_model import PyTorchModel  # noqa: F401
-from eland.ml.pytorch.nlp_ml_model import (
-    NlpBertTokenizationConfig,
-    NlpMPNetTokenizationConfig,
-    NlpRobertaTokenizationConfig,
-    NlpTrainedModelConfig,
-)
-from eland.ml.pytorch.traceable_model import TraceableModel  # noqa: F401
-from eland.ml.pytorch.transformers import task_type_from_model_config
+"""
+Public plotting API
+
+Based from https://github.com/pandas-dev/pandas/blob/v0.25.3/pandas/plotting/__init__.py
+but only supporting a subset of plotting methods (for now).
+"""
+
+from opensearch_py_ml.plotting._matplotlib.hist import hist_frame, hist_series
 
 __all__ = [
-    "PyTorchModel",
-    "TraceableModel",
-    "NlpTrainedModelConfig",
-    "NlpBertTokenizationConfig",
-    "NlpRobertaTokenizationConfig",
-    "NlpMPNetTokenizationConfig",
-    "task_type_from_model_config",
+    "hist_frame",
+    "hist_series",
 ]

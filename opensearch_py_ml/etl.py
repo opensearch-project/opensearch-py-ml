@@ -23,9 +23,9 @@ import pandas as pd  # type: ignore
 from elasticsearch import Elasticsearch
 from opensearchpy.helpers import parallel_bulk
 
-from eland import DataFrame
-from eland.common import DEFAULT_CHUNK_SIZE, PANDAS_VERSION, ensure_es_client
-from eland.field_mappings import FieldMappings, verify_mapping_compatibility
+from opensearch_py_ml import DataFrame
+from opensearch_py_ml.common import DEFAULT_CHUNK_SIZE, PANDAS_VERSION, ensure_es_client
+from opensearch_py_ml.field_mappings import FieldMappings, verify_mapping_compatibility
 
 try:
     from pandas.io.parsers import _c_parser_defaults  # type: ignore
@@ -86,8 +86,8 @@ def pandas_to_eland(
 
     Returns
     -------
-    eland.Dataframe
-        eland.DataFrame referencing data in destination_index
+    opensearch_py_ml.Dataframe
+        opensearch_py_ml.DataFrame referencing data in destination_index
 
     Examples
     --------
@@ -121,7 +121,7 @@ def pandas_to_eland(
     H            object
     dtype: object
 
-    Convert `pandas.DataFrame` to `eland.DataFrame` - this creates an Elasticsearch index called `pandas_to_eland`.
+    Convert `pandas.DataFrame` to `opensearch_py_ml.DataFrame` - this creates an Elasticsearch index called `pandas_to_eland`.
     Overwrite existing Elasticsearch index if it exists `if_exists="replace"`, and sync index so it is
     readable on return `refresh=True`
 
@@ -133,7 +133,7 @@ def pandas_to_eland(
     ...                            es_refresh=True,
     ...                            es_type_overrides={'H':'text'}) # index field 'H' as text not keyword
     >>> type(ed_df)
-    <class 'eland.dataframe.DataFrame'>
+    <class 'opensearch_py_ml.dataframe.DataFrame'>
     >>> ed_df
            A  B  ...  G                                          H
     0  3.141  1  ...  1  Long text - to be indexed as es type text
@@ -154,7 +154,7 @@ def pandas_to_eland(
 
     See Also
     --------
-    eland.eland_to_pandas: Create a pandas.Dataframe from eland.DataFrame
+    opensearch_py_ml.eland_to_pandas: Create a pandas.Dataframe from opensearch_py_ml.DataFrame
     """
     if chunksize is None:
         chunksize = DEFAULT_CHUNK_SIZE
@@ -231,28 +231,28 @@ def pandas_to_eland(
 
 def eland_to_pandas(ed_df: DataFrame, show_progress: bool = False) -> pd.DataFrame:
     """
-    Convert an eland.Dataframe to a pandas.DataFrame
+    Convert an opensearch_py_ml.Dataframe to a pandas.DataFrame
 
     **Note: this loads the entire Elasticsearch index into in core pandas.DataFrame structures. For large
     indices this can create significant load on the Elasticsearch cluster and require signficant memory**
 
     Parameters
     ----------
-    ed_df: eland.DataFrame
-        The source eland.Dataframe referencing the Elasticsearch index
+    ed_df: opensearch_py_ml.DataFrame
+        The source opensearch_py_ml.Dataframe referencing the Elasticsearch index
     show_progress: bool
         Output progress of option to stdout? By default False.
 
     Returns
     -------
     pandas.Dataframe
-        pandas.DataFrame contains all rows and columns in eland.DataFrame
+        pandas.DataFrame contains all rows and columns in opensearch_py_ml.DataFrame
 
     Examples
     --------
     >>> ed_df = ed.DataFrame('http://localhost:9200', 'flights').head()
     >>> type(ed_df)
-    <class 'eland.dataframe.DataFrame'>
+    <class 'opensearch_py_ml.dataframe.DataFrame'>
     >>> ed_df
        AvgTicketPrice  Cancelled  ... dayOfWeek           timestamp
     0      841.265642      False  ...         0 2018-01-01 00:00:00
@@ -263,7 +263,7 @@ def eland_to_pandas(ed_df: DataFrame, show_progress: bool = False) -> pd.DataFra
     <BLANKLINE>
     [5 rows x 27 columns]
 
-    Convert `eland.DataFrame` to `pandas.DataFrame` (Note: this loads entire Elasticsearch index into core memory)
+    Convert `opensearch_py_ml.DataFrame` to `pandas.DataFrame` (Note: this loads entire Elasticsearch index into core memory)
 
     >>> pd_df = ed.eland_to_pandas(ed_df)
     >>> type(pd_df)
@@ -278,7 +278,7 @@ def eland_to_pandas(ed_df: DataFrame, show_progress: bool = False) -> pd.DataFra
     <BLANKLINE>
     [5 rows x 27 columns]
 
-    Convert `eland.DataFrame` to `pandas.DataFrame` and show progress every 10000 rows
+    Convert `opensearch_py_ml.DataFrame` to `pandas.DataFrame` and show progress every 10000 rows
 
     >>> pd_df = ed.eland_to_pandas(ed.DataFrame('http://localhost:9200', 'flights'), show_progress=True) # doctest: +SKIP
     2020-01-29 12:43:36.572395: read 10000 rows
@@ -286,7 +286,7 @@ def eland_to_pandas(ed_df: DataFrame, show_progress: bool = False) -> pd.DataFra
 
     See Also
     --------
-    eland.pandas_to_eland: Create an eland.Dataframe from pandas.DataFrame
+    opensearch_py_ml.pandas_to_eland: Create an opensearch_py_ml.Dataframe from pandas.DataFrame
     """
     return ed_df.to_pandas(show_progress=show_progress)
 
@@ -358,7 +358,7 @@ def csv_to_eland(  # type: ignore
     float_precision=None,
 ) -> "DataFrame":
     """
-    Read a comma-separated values (csv) file into eland.DataFrame (i.e. an Elasticsearch index).
+    Read a comma-separated values (csv) file into opensearch_py_ml.DataFrame (i.e. an Elasticsearch index).
 
     **Modifies an Elasticsearch index**
 
@@ -407,7 +407,7 @@ def csv_to_eland(  # type: ignore
     >>> es.indices.exists(index="churn") # doctest: +SKIP
     False
 
-    Read 'churn.csv' and use first column as _id (and eland.DataFrame index)
+    Read 'churn.csv' and use first column as _id (and opensearch_py_ml.DataFrame index)
     ::
 
         # churn.csv
@@ -443,7 +443,7 @@ def csv_to_eland(  # type: ignore
     >>> es.search(index="churn", size=1) # doctest: +SKIP
     {'took': 1, 'timed_out': False, '_shards': {'total': 1, 'successful': 1, 'skipped': 0, 'failed': 0}, 'hits': {'total': {'value': 3333, 'relation': 'eq'}, 'max_score': 1.0, 'hits': [{'_index': 'churn', '_id': '0', '_score': 1.0, '_source': {'state': 'KS', 'account length': 128, 'area code': 415, 'phone number': '382-4657', 'international plan': 'no', 'voice mail plan': 'yes', 'number vmail messages': 25, 'total day minutes': 265.1, 'total day calls': 110, 'total day charge': 45.07, 'total eve minutes': 197.4, 'total eve calls': 99, 'total eve charge': 16.78, 'total night minutes': 244.7, 'total night calls': 91, 'total night charge': 11.01, 'total intl minutes': 10.0, 'total intl calls': 3, 'total intl charge': 2.7, 'customer service calls': 1, 'churn': 0}}]}}
 
-    TODO - currently the eland.DataFrame may not retain the order of the data in the csv.
+    TODO - currently the opensearch_py_ml.DataFrame may not retain the order of the data in the csv.
     """
     kwargs: Dict[str, Any] = {
         "sep": sep,
@@ -524,7 +524,7 @@ def csv_to_eland(  # type: ignore
 
         kwargs.pop("on_bad_lines")
 
-    # read csv in chunks to pandas DataFrame and dump to eland DataFrame (and Elasticsearch)
+    # read csv in chunks to pandas DataFrame and dump to opensearch_py_ml DataFrame (and Elasticsearch)
     reader = pd.read_csv(filepath_or_buffer, **kwargs)
 
     first_write = True
@@ -542,5 +542,5 @@ def csv_to_eland(  # type: ignore
         )
         first_write = False
 
-    # Now create an eland.DataFrame that references the new index
+    # Now create an opensearch_py_ml.DataFrame that references the new index
     return DataFrame(es_client, os_index_pattern=es_dest_index)

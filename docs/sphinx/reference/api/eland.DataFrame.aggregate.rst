@@ -1,4 +1,4 @@
-eland.DataFrame.aggregate
+opensearch_py_ml.DataFrame.aggregate
 =========================
 
 .. currentmodule:: eland

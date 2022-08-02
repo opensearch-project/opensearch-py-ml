@@ -1,4 +1,4 @@
-eland.Series.mad
+opensearch_py_ml.Series.mad
 ================
 
 .. currentmodule:: eland

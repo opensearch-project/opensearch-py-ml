@@ -32,16 +32,16 @@ from typing import (
 import numpy as np
 import pandas as pd  # type: ignore
 
-from eland.common import elasticsearch_date_to_pandas_date, ensure_es_client
-from eland.field_mappings import FieldMappings
-from eland.filter import BooleanFilter, QueryFilter
-from eland.index import Index
-from eland.operations import Operations
+from opensearch_py_ml.common import elasticsearch_date_to_pandas_date, ensure_es_client
+from opensearch_py_ml.field_mappings import FieldMappings
+from opensearch_py_ml.filter import BooleanFilter, QueryFilter
+from opensearch_py_ml.index import Index
+from opensearch_py_ml.operations import Operations
 
 if TYPE_CHECKING:
     from opensearchpy import OpenSearch
 
-    from eland.arithmetics import ArithmeticSeries
+    from opensearch_py_ml.arithmetics import ArithmeticSeries
 
     from .tasks import ArithmeticOpFieldsTask  # noqa: F401
 
@@ -236,7 +236,7 @@ class QueryCompiler:
         if not results:
             return self._empty_pd_ef()
 
-        # This is one of the most performance critical areas of eland, and it repeatedly calls
+        # This is one of the most performance critical areas of opensearch_py_ml, and it repeatedly calls
         # self._mappings.field_name_pd_dtype and self._mappings.date_field_format
         # therefore create a simple cache for this data
         field_mapping_cache = FieldMappingCache(self._mappings)

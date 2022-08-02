@@ -1,4 +1,4 @@
-eland.DataFrame.es_match
+opensearch_py_ml.DataFrame.es_match
 ========================
 
 .. currentmodule:: eland

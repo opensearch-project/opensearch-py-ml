@@ -1,4 +1,4 @@
-eland.Series.rmul
+opensearch_py_ml.Series.rmul
 =================
 
 .. currentmodule:: eland

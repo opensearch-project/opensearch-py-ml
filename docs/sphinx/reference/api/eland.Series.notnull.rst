@@ -1,4 +1,4 @@
-eland.Series.notnull
+opensearch_py_ml.Series.notnull
 ====================
 
 .. currentmodule:: eland

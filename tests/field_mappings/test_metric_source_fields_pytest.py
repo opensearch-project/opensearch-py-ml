@@ -19,15 +19,15 @@
 
 import numpy as np
 
-from eland.field_mappings import FieldMappings
-from tests import ECOMMERCE_INDEX_NAME, ES_TEST_CLIENT, FLIGHTS_INDEX_NAME
+from opensearch_py_ml.field_mappings import FieldMappings
+from tests import ECOMMERCE_INDEX_NAME, OPENSEARCH_TEST_CLIENT, FLIGHTS_INDEX_NAME
 from tests.common import TestData
 
 
 class TestMetricSourceFields(TestData):
     def test_flights_all_metric_source_fields(self):
         ed_field_mappings = FieldMappings(
-            client=ES_TEST_CLIENT, index_pattern=FLIGHTS_INDEX_NAME
+            client=OPENSEARCH_TEST_CLIENT, index_pattern=FLIGHTS_INDEX_NAME
         )
         pd_flights = self.pd_flights()
 
@@ -41,7 +41,7 @@ class TestMetricSourceFields(TestData):
 
     def test_flights_all_metric_source_fields_and_bool(self):
         ed_field_mappings = FieldMappings(
-            client=ES_TEST_CLIENT, index_pattern=FLIGHTS_INDEX_NAME
+            client=OPENSEARCH_TEST_CLIENT, index_pattern=FLIGHTS_INDEX_NAME
         )
         pd_flights = self.pd_flights()
 
@@ -57,7 +57,7 @@ class TestMetricSourceFields(TestData):
 
     def test_flights_all_metric_source_fields_bool_and_timestamp(self):
         ed_field_mappings = FieldMappings(
-            client=ES_TEST_CLIENT, index_pattern=FLIGHTS_INDEX_NAME
+            client=OPENSEARCH_TEST_CLIENT, index_pattern=FLIGHTS_INDEX_NAME
         )
         pd_flights = self.pd_flights()
 
@@ -88,7 +88,7 @@ class TestMetricSourceFields(TestData):
         user                           object
         """
         ed_field_mappings = FieldMappings(
-            client=ES_TEST_CLIENT,
+            client=OPENSEARCH_TEST_CLIENT,
             index_pattern=ECOMMERCE_INDEX_NAME,
             display_names=field_names,
         )
@@ -119,7 +119,7 @@ class TestMetricSourceFields(TestData):
         user                           object
         """
         ed_field_mappings = FieldMappings(
-            client=ES_TEST_CLIENT,
+            client=OPENSEARCH_TEST_CLIENT,
             index_pattern=ECOMMERCE_INDEX_NAME,
             display_names=field_names,
         )
@@ -142,7 +142,7 @@ class TestMetricSourceFields(TestData):
         taxless_total_price    float64
         """
         ed_field_mappings = FieldMappings(
-            client=ES_TEST_CLIENT,
+            client=OPENSEARCH_TEST_CLIENT,
             index_pattern=ECOMMERCE_INDEX_NAME,
             display_names=field_names,
         )

@@ -1,4 +1,4 @@
-eland.Series.size
+opensearch_py_ml.Series.size
 =================
 
 .. currentmodule:: eland

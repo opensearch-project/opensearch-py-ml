@@ -136,7 +136,7 @@ class FieldMappings:
     _mappings_capabilities: pandas.DataFrame
         A data frame summarising the capabilities of the index mapping
 
-        column (index)              - the eland display name
+        column (index)              - the opensearch_py_ml display name
 
         es_field_name               - the Elasticsearch field name
         is_source                   - is top level field (i.e. not a multi-field sub-field)
@@ -328,12 +328,12 @@ class FieldMappings:
                 properties = mappings[index]["mappings"]["properties"]
             else:
                 # Pre Elasticsearch 7.0 mappings had types. Support these
-                # in case eland is connected to 6.x index - this is not
+                # in case opensearch_py_ml is connected to 6.x index - this is not
                 # officially supported, but does help usability
                 es_types = list(mappings[index]["mappings"].keys())
                 if len(es_types) != 1:
                     raise NotImplementedError(
-                        f"eland only supports 0 or 1 Elasticsearch types. es_types={es_types}"
+                        f"opensearch_py_ml only supports 0 or 1 Elasticsearch types. es_types={es_types}"
                     )
                 properties = mappings[index]["mappings"][es_types[0]]["properties"]
 

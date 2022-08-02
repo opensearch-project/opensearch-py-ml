@@ -19,7 +19,7 @@
 import pytest
 from pandas.testing import assert_frame_equal
 
-from eland import eland_to_pandas
+from opensearch_py_ml import eland_to_pandas
 from tests.common import TestData
 
 

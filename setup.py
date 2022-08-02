@@ -24,7 +24,7 @@ from setuptools import find_packages, setup
 
 here = path.abspath(path.dirname(__file__))
 about = {}
-with open(path.join(here, "eland", "_version.py"), "r", "utf-8") as f:
+with open(path.join(here, "opensearch_py_ml", "_version.py"), "r", "utf-8") as f:
     exec(f.read(), about)
 
 CLASSIFIERS = [
@@ -79,8 +79,8 @@ setup(
     maintainer_email=about["__maintainer_email__"],
     license="Apache-2.0",
     classifiers=CLASSIFIERS,
-    keywords="elastic eland pandas python",
-    packages=find_packages(include=["eland", "eland.*"]),
+    keywords="elastic opensearch_py_ml pandas python",
+    packages=find_packages(include=["opensearch_py_ml", "opensearch_py_ml.*"]),
     install_requires=[
         "elasticsearch>=8,<9",
         "pandas>=1.2,<2",
@@ -89,7 +89,7 @@ setup(
     ],
     scripts=["bin/eland_import_hub_model"],
     python_requires=">=3.7",
-    package_data={"eland": ["py.typed"]},
+    package_data={"opensearch_py_ml": ["py.typed"]},
     include_package_data=True,
     zip_safe=False,
     extras_require=extras,

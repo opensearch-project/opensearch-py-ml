@@ -33,7 +33,7 @@ from pandas.plotting._matplotlib.tools import (  # type: ignore
     set_ticks_props,
 )
 
-from eland.utils import try_sort
+from opensearch_py_ml.utils import try_sort
 
 if TYPE_CHECKING:
     from numpy.typing import ArrayLike

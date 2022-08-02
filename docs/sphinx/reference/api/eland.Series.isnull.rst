@@ -1,4 +1,4 @@
-eland.Series.isnull
+opensearch_py_ml.Series.isnull
 ===================
 
 .. currentmodule:: eland

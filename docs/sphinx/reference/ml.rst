@@ -3,7 +3,7 @@
 ================
 Machine Learning
 ================
-.. currentmodule:: eland.ml
+.. currentmodule:: opensearch_py_ml.ml
 
 Machine learning is built into the Elastic Stack and enables users to gain insights into their Elasticsearch data. 
 There are a wide range of capabilities from identifying in
@@ -20,7 +20,7 @@ See `Elasticsearch Machine Learning documentation <https://www.elastic.co/guide/
 
 MLModel
 ~~~~~~~
-.. currentmodule:: eland.ml
+.. currentmodule:: opensearch_py_ml.ml
 
 Constructor
 ^^^^^^^^^^^

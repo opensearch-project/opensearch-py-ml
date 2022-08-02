@@ -1,4 +1,4 @@
-eland.pandas_to_eland
+opensearch_py_ml.pandas_to_eland
 =====================
 
 .. currentmodule:: eland

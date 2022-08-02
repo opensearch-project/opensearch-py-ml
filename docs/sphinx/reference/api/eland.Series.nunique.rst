@@ -1,4 +1,4 @@
-eland.Series.nunique
+opensearch_py_ml.Series.nunique
 ====================
 
 .. currentmodule:: eland

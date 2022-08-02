@@ -1,4 +1,4 @@
-eland.DataFrame.hist
+opensearch_py_ml.DataFrame.hist
 ====================
 
 .. currentmodule:: eland

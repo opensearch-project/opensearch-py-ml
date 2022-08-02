@@ -1,4 +1,4 @@
-eland.DataFrame.max
+opensearch_py_ml.DataFrame.max
 ===================
 
 .. currentmodule:: eland

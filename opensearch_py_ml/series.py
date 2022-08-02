@@ -23,12 +23,12 @@ One-dimensional ndarray with axis labels (including time series).
 The underlying data resides in Elasticsearch and the API aligns as much as
 possible with pandas.DataFrame API.
 
-This allows the eland.Series to access large datasets stored in Elasticsearch,
+This allows the opensearch_py_ml.Series to access large datasets stored in Elasticsearch,
 without storing the dataset in local memory.
 
 Implementation Details
 ----------------------
-Based on NDFrame which underpins eland.DataFrame
+Based on NDFrame which underpins opensearch_py_ml.DataFrame
 """
 
 import sys
@@ -42,10 +42,10 @@ import numpy as np
 import pandas as pd  # type: ignore
 from pandas.io.common import _expand_user, stringify_path  # type: ignore
 
-import eland.plotting
-from eland.arithmetics import ArithmeticNumber, ArithmeticSeries, ArithmeticString
-from eland.common import DEFAULT_NUM_ROWS_DISPLAYED, docstring_parameter
-from eland.filter import (
+import opensearch_py_ml.plotting
+from opensearch_py_ml.arithmetics import ArithmeticNumber, ArithmeticSeries, ArithmeticString
+from opensearch_py_ml.common import DEFAULT_NUM_ROWS_DISPLAYED, docstring_parameter
+from opensearch_py_ml.filter import (
     BooleanFilter,
     Equal,
     Greater,
@@ -59,13 +59,13 @@ from eland.filter import (
     QueryFilter,
     ScriptFilter,
 )
-from eland.ndframe import NDFrame
-from eland.utils import to_list
+from opensearch_py_ml.ndframe import NDFrame
+from opensearch_py_ml.utils import to_list
 
 if TYPE_CHECKING:
     from elasticsearch import Elasticsearch
 
-    from eland.query_compiler import QueryCompiler
+    from opensearch_py_ml.query_compiler import QueryCompiler
 
 
 def _get_method_name() -> str:
@@ -135,7 +135,7 @@ class Series(NDFrame):
             _query_compiler=_query_compiler,
         )
 
-    hist = eland.plotting.ed_hist_series
+    hist = opensearch_py_ml.plotting.ed_hist_series
 
     @property
     def empty(self) -> bool:
@@ -206,8 +206,8 @@ class Series(NDFrame):
 
         Returns
         -------
-        eland.Series
-            eland.Series with new name.
+        opensearch_py_ml.Series
+            opensearch_py_ml.Series with new name.
 
         See Also
         --------
@@ -276,7 +276,7 @@ class Series(NDFrame):
         ----------
         es_size: int, default 10
             Number of buckets to return counts for, automatically sorts by count descending.
-            This parameter is specific to `eland`, and determines how many term buckets
+            This parameter is specific to `opensearch_py_ml`, and determines how many term buckets
             elasticsearch should return out of the overall terms list.
 
         Returns
@@ -383,7 +383,7 @@ class Series(NDFrame):
             max_rows = DEFAULT_NUM_ROWS_DISPLAYED
 
         # because of the way pandas handles max_rows=0, not having this throws an error
-        # see eland issue #56
+        # see opensearch_py_ml issue #56
         if max_rows == 0:
             max_rows = 1
 
@@ -556,7 +556,7 @@ class Series(NDFrame):
 
         Returns
         -------
-        eland.Series
+        opensearch_py_ml.Series
             Mask of bool values for each element in Series that indicates whether an element is not an NA value.
 
         See Also
@@ -573,7 +573,7 @@ class Series(NDFrame):
 
         Returns
         -------
-        eland.Series
+        opensearch_py_ml.Series
             Mask of bool values for each element in Series that indicates whether an element is not an NA value
 
         See Also
@@ -666,7 +666,7 @@ class Series(NDFrame):
 
         Returns
         -------
-        eland.Series
+        opensearch_py_ml.Series
 
         See Also
         --------
@@ -819,11 +819,11 @@ class Series(NDFrame):
 
         Parameters
         ----------
-        right: eland.Series
+        right: opensearch_py_ml.Series
 
         Returns
         -------
-        eland.Series
+        opensearch_py_ml.Series
 
         Examples
         --------
@@ -879,11 +879,11 @@ class Series(NDFrame):
 
         Parameters
         ----------
-        right: eland.Series
+        right: opensearch_py_ml.Series
 
         Returns
         -------
-        eland.Series
+        opensearch_py_ml.Series
 
         Examples
         --------
@@ -918,11 +918,11 @@ class Series(NDFrame):
 
         Parameters
         ----------
-        right: eland.Series
+        right: opensearch_py_ml.Series
 
         Returns
         -------
-        eland.Series
+        opensearch_py_ml.Series
 
         Examples
         --------
@@ -957,11 +957,11 @@ class Series(NDFrame):
 
         Parameters
         ----------
-        right: eland.Series
+        right: opensearch_py_ml.Series
 
         Returns
         -------
-        eland.Series
+        opensearch_py_ml.Series
 
         Examples
         --------
@@ -996,11 +996,11 @@ class Series(NDFrame):
 
         Parameters
         ----------
-        right: eland.Series
+        right: opensearch_py_ml.Series
 
         Returns
         -------
-        eland.Series
+        opensearch_py_ml.Series
 
         Examples
         --------
@@ -1035,11 +1035,11 @@ class Series(NDFrame):
 
         Parameters
         ----------
-        right: eland.Series
+        right: opensearch_py_ml.Series
 
         Returns
         -------
-        eland.Series
+        opensearch_py_ml.Series
 
         Examples
         --------
@@ -1074,11 +1074,11 @@ class Series(NDFrame):
 
         Parameters
         ----------
-        right: eland.Series
+        right: opensearch_py_ml.Series
 
         Returns
         -------
-        eland.Series
+        opensearch_py_ml.Series
 
         Examples
         --------
@@ -1113,11 +1113,11 @@ class Series(NDFrame):
 
         Parameters
         ----------
-        left: eland.Series
+        left: opensearch_py_ml.Series
 
         Returns
         -------
-        eland.Series
+        opensearch_py_ml.Series
 
         Examples
         --------
@@ -1145,11 +1145,11 @@ class Series(NDFrame):
 
         Parameters
         ----------
-        left: eland.Series
+        left: opensearch_py_ml.Series
 
         Returns
         -------
-        eland.Series
+        opensearch_py_ml.Series
 
         Examples
         --------
@@ -1177,11 +1177,11 @@ class Series(NDFrame):
 
         Parameters
         ----------
-        left: eland.Series
+        left: opensearch_py_ml.Series
 
         Returns
         -------
-        eland.Series
+        opensearch_py_ml.Series
 
         Examples
         --------
@@ -1209,11 +1209,11 @@ class Series(NDFrame):
 
         Parameters
         ----------
-        left: eland.Series
+        left: opensearch_py_ml.Series
 
         Returns
         -------
-        eland.Series
+        opensearch_py_ml.Series
 
         Examples
         --------
@@ -1241,11 +1241,11 @@ class Series(NDFrame):
 
         Parameters
         ----------
-        left: eland.Series
+        left: opensearch_py_ml.Series
 
         Returns
         -------
-        eland.Series
+        opensearch_py_ml.Series
 
         Examples
         --------
@@ -1273,11 +1273,11 @@ class Series(NDFrame):
 
         Parameters
         ----------
-        left: eland.Series
+        left: opensearch_py_ml.Series
 
         Returns
         -------
-        eland.Series
+        opensearch_py_ml.Series
 
         Examples
         --------
@@ -1305,11 +1305,11 @@ class Series(NDFrame):
 
         Parameters
         ----------
-        left: eland.Series
+        left: opensearch_py_ml.Series
 
         Returns
         -------
-        eland.Series
+        opensearch_py_ml.Series
 
         Examples
         --------
@@ -1701,7 +1701,7 @@ class Series(NDFrame):
         >>> ed_s = ed.Series('http://localhost:9200', 'flights', name='Carrier').head(5)
         >>> pd_s = ed.eland_to_pandas(ed_s)
         >>> print(f"type(ed_s)={type(ed_s)}\\ntype(pd_s)={type(pd_s)}")
-        type(ed_s)=<class 'eland.series.Series'>
+        type(ed_s)=<class 'opensearch_py_ml.series.Series'>
         type(pd_s)=<class 'pandas.core.series.Series'>
         >>> ed_s
         0     Kibana Airlines
