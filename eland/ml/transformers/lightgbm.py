@@ -21,6 +21,7 @@ from .._model_serializer import Ensemble, Tree, TreeNode
 from .._optional import import_optional_dependency
 from ..common import TYPE_CLASSIFICATION, TYPE_REGRESSION
 from .base import ModelTransformer
+from warnings import warn
 
 import_optional_dependency("lightgbm", on_version="warn")
 
@@ -28,6 +29,7 @@ from lightgbm import Booster, LGBMClassifier, LGBMRegressor  # type: ignore
 
 
 def transform_decider(decider: str) -> str:
+    warn('func is deprecated, this currently only supports ElasticSearch client', DeprecationWarning, stacklevel=2)
     if decider == "<=":
         return "lte"
     if decider == "<":
@@ -43,6 +45,7 @@ def transform_decider(decider: str) -> str:
 
 class Counter:
     def __init__(self, start: int = 0):
+        warn('class is deprecated, this currently only supports ElasticSearch client', DeprecationWarning, stacklevel=2)
         self._value = start
 
     def inc(self) -> "Counter":
@@ -67,6 +70,7 @@ class LGBMForestTransformer(ModelTransformer):
         classification_labels: Optional[List[str]] = None,
         classification_weights: Optional[List[float]] = None,
     ):
+        warn('class is deprecated, this currently only supports ElasticSearch client', DeprecationWarning, stacklevel=2)
         super().__init__(
             model, feature_names, classification_labels, classification_weights
         )
@@ -172,6 +176,7 @@ class LGBMForestTransformer(ModelTransformer):
 
 class LGBMRegressorTransformer(LGBMForestTransformer):
     def __init__(self, model: LGBMRegressor, feature_names: List[str]):
+        warn('class is deprecated, this currently only supports ElasticSearch client', DeprecationWarning, stacklevel=2)
         super().__init__(model.booster_, feature_names)
         self.n_estimators = model.n_estimators
 
@@ -217,6 +222,7 @@ class LGBMClassifierTransformer(LGBMForestTransformer):
         classification_labels: List[str],
         classification_weights: List[float],
     ):
+        warn('class is deprecated, this currently only supports ElasticSearch client', DeprecationWarning, stacklevel=2)
         super().__init__(
             model.booster_, feature_names, classification_labels, classification_weights
         )

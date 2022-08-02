@@ -21,6 +21,7 @@ from typing import List, Optional, Union
 
 import torch  # type: ignore
 from torch import nn
+from warnings import warn
 
 TracedModelTypes = Union[
     torch.nn.Module,
@@ -37,6 +38,7 @@ class TraceableModel(ABC):
         self,
         model: nn.Module,
     ):
+        warn('class is deprecated, this currently only supports ElasticSearch client', DeprecationWarning, stacklevel=2)
         self._model = model
 
     def quantize(self) -> None:

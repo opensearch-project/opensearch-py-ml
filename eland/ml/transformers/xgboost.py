@@ -222,6 +222,7 @@ class XGBoostClassifierTransformer(XGBoostForestTransformer):
         feature_names: List[str],
         classification_labels: Optional[List[str]] = None,
     ):
+        warn('class is deprecated, this currently only supports ElasticSearch client', DeprecationWarning, stacklevel=2)
         super().__init__(
             model.get_booster(),
             feature_names,

@@ -26,6 +26,8 @@ from eland.utils import deprecated_api
 from .common import TYPE_CLASSIFICATION, TYPE_REGRESSION
 from .transformers import get_model_transformer
 
+from warnings import warn
+
 if TYPE_CHECKING:
     from elasticsearch import Elasticsearch
     from numpy.typing import ArrayLike, DTypeLike
@@ -51,7 +53,6 @@ if TYPE_CHECKING:
         from lightgbm import LGBMClassifier, LGBMRegressor  # type: ignore # noqa: F401
     except ImportError:
         pass
-
 
 class MLModel:
     """
@@ -79,6 +80,7 @@ class MLModel:
         model_id: str
             The unique identifier of the trained inference model in Elasticsearch.
         """
+        warn('class is deprecated, this currently only supports ElasticSearch client', DeprecationWarning, stacklevel=2)
         self._client: Elasticsearch = ensure_es_client(es_client)
         self._model_id = model_id
         self._trained_model_config_cache: Optional[Dict[str, Any]] = None

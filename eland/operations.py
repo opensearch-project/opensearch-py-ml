@@ -1565,30 +1565,3 @@ def _search_yield_hits(
         # Set the 'search_after' for the next request
         # to be the last sort value for this set of hits.
         body["search_after"] = hits[-1]["sort"]
-
-if __name__ == "__main__":
-    import eland as ed
-    from opensearchpy import OpenSearch
-
-
-    # try connecting to an actual cluster at some point
-    def get_os_client(cluster_url='https://localhost:9200',
-                      username='admin',
-                      password='admin'):
-        '''
-        Get OpenSearch client
-        :param cluster_url: cluster URL like https://ml-te-netwo-1s12ba42br23v-ff1736fa7db98ff2.elb.us-west-2.amazonaws.com:443
-        :return: OpenSearch client
-        '''
-        client = OpenSearch(
-            hosts=[cluster_url],
-            http_auth=(username, password),
-            verify_certs=False
-        )
-        return client
-
-    client = get_os_client()
-    ed_df = ed.DataFrame(client, 'sagemaker_demo_data')
-
-    indices = [index for index, _ in ed_df.iterrows('_doc')]
-    print(len(set(indices)))
