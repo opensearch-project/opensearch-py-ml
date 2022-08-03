@@ -64,7 +64,7 @@ class TestDataFrameUtils(TestData):
         # Now create index
         index_name = "eland_test_generate_es_mappings"
 
-        ed_df = ed.pandas_to_eland(
+        ed_df = ed.pandas_to_opensearch(
             df, OPENSEARCH_TEST_CLIENT, index_name, es_if_exists="replace", es_refresh=True
         )
         ed_df_head = ed_df.head()
@@ -92,13 +92,13 @@ class TestDataFrameUtils(TestData):
         # Now create index
         index_name = "test_pandas_to_eland_ignore_index"
 
-        ed_df = ed.pandas_to_eland(
+        ed_df = ed.pandas_to_opensearch(
             df,
             OPENSEARCH_TEST_CLIENT,
             index_name,
             es_if_exists="replace",
             es_refresh=True,
-            use_pandas_index_for_es_ids=False,
+            use_pandas_index_for_os_ids=False,
             es_type_overrides={"H": "text", "I": "geo_point"},
         )
 
@@ -129,7 +129,7 @@ class TestDataFrameUtils(TestData):
         assert expected_mapping == mapping
 
         # Convert back to pandas and compare with original
-        pd_df = ed.eland_to_pandas(ed_df)
+        pd_df = ed.opensearch_to_pandas(ed_df)
 
         # Compare values excluding index
         assert df.values.all() == pd_df.values.all()
@@ -141,7 +141,7 @@ class TestDataFrameUtils(TestData):
 
     def tests_to_pandas_performance(self):
         # TODO quantify this
-        ed.eland_to_pandas(self.ed_flights(), show_progress=True)
+        ed.opensearch_to_pandas(self.ed_flights(), show_progress=True)
 
         # This test calls the same method so is redundant
         # assert_pandas_eland_frame_equal(pd_df, self.ed_flights())
@@ -156,13 +156,13 @@ class TestDataFrameUtils(TestData):
 
         match = "'DistanceKilometers', 'DistanceMiles' column(s) not in given dataframe"
         with pytest.raises(KeyError) as e:
-            ed.pandas_to_eland(
+            ed.pandas_to_opensearch(
                 df,
                 OPENSEARCH_TEST_CLIENT,
                 index_name,
                 es_if_exists="replace",
                 es_refresh=True,
-                use_pandas_index_for_es_ids=False,
+                use_pandas_index_for_os_ids=False,
                 es_type_overrides={
                     "AvgTicketPrice": "long",
                     "DistanceKilometers": "text",

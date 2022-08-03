@@ -2114,13 +2114,13 @@ class DataFrame(NDFrame):
         In pandas this returns a Numpy representation of the DataFrame. This would involve scan/scrolling the
         entire index.
 
-        If this is required, call ``ed.eland_to_pandas(ed_df).values``, *but beware this will scan/scroll the entire
+        If this is required, call ``ed.opensearch_to_pandas(ed_df).values``, *but beware this will scan/scroll the entire
         Elasticsearch index(s) into memory.*
 
         See Also
         --------
         :pandas_api_docs:`pandas.DataFrame.values`
-        eland_to_pandas
+        opensearch_to_pandas
         to_numpy
         """
         return self.to_numpy()
@@ -2143,7 +2143,7 @@ class DataFrame(NDFrame):
         Examples
         --------
         >>> ed_df = ed.DataFrame('http://localhost:9200', 'flights', columns=['AvgTicketPrice', 'Carrier']).head(5)
-        >>> pd_df = ed.eland_to_pandas(ed_df)
+        >>> pd_df = ed.opensearch_to_pandas(ed_df)
         >>> print(f"type(ed_df)={type(ed_df)}\\ntype(pd_df)={type(pd_df)}")
         type(ed_df)=<class 'opensearch_py_ml.dataframe.DataFrame'>
         type(pd_df)=<class 'pandas.core.frame.DataFrame'>
@@ -2165,5 +2165,5 @@ class DataFrame(NDFrame):
         """
         raise AttributeError(
             "This method would scan/scroll the entire Elasticsearch index(s) into memory. "
-            "If this is explicitly required, and there is sufficient memory, call `ed.eland_to_pandas(ed_df).values`"
+            "If this is explicitly required, and there is sufficient memory, call `ed.opensearch_to_pandas(ed_df).values`"
         )

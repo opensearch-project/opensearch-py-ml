@@ -46,7 +46,7 @@ Added
 * Added support for ``number_samples`` to LightGBM and Scikit-Learn models (`#397`_, contributed by `@V1NAY8`_)
 * Added ability to use datetime types for filtering dataframes (`284`_, contributed by `@Fju`_)
 * Added pandas ``datetime64`` type to use the Elasticsearch ``date`` type (`#425`_, contributed by `@Ashton-Sidhu`_)
-* Added ``es_verify_mapping_compatibility`` parameter to disable schema enforcement with ``pandas_to_eland`` (`#423`_, contributed by `@Ashton-Sidhu`_)
+* Added ``es_verify_mapping_compatibility`` parameter to disable schema enforcement with ``pandas_to_opensearch`` (`#423`_, contributed by `@Ashton-Sidhu`_)
 
 Changed
 ^^^^^^^
@@ -197,7 +197,7 @@ Added
 * Added support for type hints of the ``elasticsearch-py`` package (`#295`_)
 
 * Added support for passing dictionaries to ``es_type_overrides`` parameter
-  in the ``pandas_to_eland()`` function to directly control the field mapping
+  in the ``pandas_to_opensearch()`` function to directly control the field mapping
   generated in Elasticsearch (`#310`_)
 
 * Added ``es_dtypes`` property to ``DataFrame`` and ``Series`` (`#285`_) 
@@ -205,18 +205,18 @@ Added
 Changed
 ^^^^^^^
 
-* Changed ``pandas_to_eland()`` to use the ``parallel_bulk()``
+* Changed ``pandas_to_opensearch()`` to use the ``parallel_bulk()``
   helper instead of single-threaded ``bulk()`` helper to improve
   performance (`#279`_, contributed by `@V1NAY8`_)
 
-* Changed the ``es_type_overrides`` parameter in ``pandas_to_eland()``
+* Changed the ``es_type_overrides`` parameter in ``pandas_to_opensearch()``
   to raise ``ValueError`` if an unknown column is given (`#302`_)
 
 * Changed ``DataFrame.filter()`` to preserve the order of items
   (`#283`_, contributed by `@V1NAY8`_)
 
 * Changed when setting ``es_type_overrides={"column": "text"}`` in
-  ``pandas_to_eland()`` will automatically add the ``column.keyword``
+  ``pandas_to_opensearch()`` will automatically add the ``column.keyword``
   sub-field so that aggregations are available for the field as well (`#310`_)
 
 Fixed
@@ -286,7 +286,7 @@ Added
 * Added support for LightGBM ``LGBMRegressor`` and ``LGBMClassifier`` to ``ImportedMLModel`` (`#247`_, `#252`_)
 * Added support for ``multi:softmax`` and ``multi:softprob`` XGBoost operators to ``ImportedMLModel`` (`#246`_)
 * Added column names to ``DataFrame.__dir__()`` for better auto-completion support (`#223`_, contributed by `@leonardbinet`_)
-* Added support for ``es_if_exists='append'`` to ``pandas_to_eland()`` (`#217`_)
+* Added support for ``es_if_exists='append'`` to ``pandas_to_opensearch()`` (`#217`_)
 * Added support for aggregating datetimes with ``nunique`` and ``mean`` (`#253`_)
 * Added ``es_compress_model_definition`` parameter to ``ImportedMLModel`` constructor (`#220`_)
 * Added ``.size`` and ``.ndim`` properties to ``DataFrame`` and ``Series`` (`#231`_ and `#233`_)
@@ -350,7 +350,7 @@ Deprecated
 ^^^^^^^^^^
 
 * Deprecated ``info_es()`` in favor of ``es_info()`` (`#208`_)
-* Deprecated ``opensearch_py_ml.read_csv()`` in favor of ``opensearch_py_ml.csv_to_eland()`` (`#208`_)
+* Deprecated ``opensearch_py_ml.read_csv()`` in favor of ``opensearch_py_ml.csv_to_opensearch()`` (`#208`_)
 * Deprecated ``opensearch_py_ml.read_es()`` in favor of ``opensearch_py_ml.DataFrame()`` (`#208`_)
 
 Changed
@@ -398,8 +398,8 @@ Added
 ^^^^^
 
 * Added support for Pandas v1.0.0 (`#141`_, contributed by `@mesejo`_)
-* Added ``use_pandas_index_for_es_ids`` parameter to ``pandas_to_eland()`` (`#154`_)
-* Added ``es_type_overrides`` parameter to ``pandas_to_eland()`` (`#181`_)
+* Added ``use_pandas_index_for_os_ids`` parameter to ``pandas_to_opensearch()`` (`#154`_)
+* Added ``es_type_overrides`` parameter to ``pandas_to_opensearch()`` (`#181`_)
 * Added ``NDFrame.var()``, ``.std()`` and ``.median()`` aggregations (`#175`_, `#176`_, contributed by `@mesejo`_)
 * Added ``DataFrame.es_query()`` to allow modifying ES queries directly (`#156`_)
 * Added ``opensearch_py_ml.__version__`` (`#153`_, contributed by `@mesejo`_)
@@ -411,7 +411,7 @@ Removed
 * Removed ``opensearch_py_ml.Client()`` interface, use
   ``elasticsearch.Elasticsearch()`` client instead (`#166`_)
 * Removed all private objects from top-level ``eland`` namespace (`#170`_)
-* Removed ``geo_points`` from ``pandas_to_eland()`` in favor of ``es_type_overrides`` (`#181`_)
+* Removed ``geo_points`` from ``pandas_to_opensearch()`` in favor of ``es_type_overrides`` (`#181`_)
 
 Changed
 ^^^^^^^

@@ -20,7 +20,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Tuple, Uni
 import elasticsearch
 import numpy as np
 
-from opensearch_py_ml.common import ensure_es_client, es_version
+from opensearch_py_ml.common import ensure_es_client, os_version
 from opensearch_py_ml.utils import deprecated_api
 
 from .common import TYPE_CLASSIFICATION, TYPE_REGRESSION
@@ -165,7 +165,7 @@ class MLModel:
 
         # field_mappings -> field_map in ES 7.7
         field_map_name = (
-            "field_map" if es_version(self._client) >= (7, 7) else "field_mappings"
+            "field_map" if os_version(self._client) >= (7, 7) else "field_mappings"
         )
 
         results = self._client.ingest.simulate(

@@ -27,7 +27,7 @@ from ._version import (  # noqa: F401
 )
 from .common import SortOrder
 from .dataframe import DataFrame
-from .etl import csv_to_eland, eland_to_pandas, pandas_to_eland
+from .etl import csv_to_opensearch, opensearch_to_pandas, pandas_to_opensearch
 from .index import Index
 from .ndframe import NDFrame
 from .series import Series
@@ -38,9 +38,9 @@ __all__ = [
     "Series",
     "NDFrame",
     "Index",
-    "pandas_to_eland",
-    "eland_to_pandas",
-    "csv_to_eland",
+    "pandas_to_opensearch",
+    "opensearch_to_pandas",
+    "csv_to_opensearch",
     "SortOrder",
     "make_sagemaker_prediction"
 ]

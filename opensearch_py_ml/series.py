@@ -1699,7 +1699,7 @@ class Series(NDFrame):
         Examples
         --------
         >>> ed_s = ed.Series('http://localhost:9200', 'flights', name='Carrier').head(5)
-        >>> pd_s = ed.eland_to_pandas(ed_s)
+        >>> pd_s = ed.opensearch_to_pandas(ed_s)
         >>> print(f"type(ed_s)={type(ed_s)}\\ntype(pd_s)={type(pd_s)}")
         type(ed_s)=<class 'opensearch_py_ml.series.Series'>
         type(pd_s)=<class 'pandas.core.series.Series'>
@@ -1716,5 +1716,5 @@ class Series(NDFrame):
         """
         raise NotImplementedError(
             "This method would scan/scroll the entire Elasticsearch index(s) into memory."
-            "If this is explicitly required and there is sufficient memory, call `ed.eland_to_pandas(ed_df).values`"
+            "If this is explicitly required and there is sufficient memory, call `ed.opensearch_to_pandas(ed_df).values`"
         )
