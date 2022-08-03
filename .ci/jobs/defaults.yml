@@ -20,7 +20,7 @@
           &lt;commitId&gt;, etc.)
     properties:
     - github:
-        url: https://github.com/elastic/eland
+        url: https://github.com/elastic/opensearch_py_ml
     - inject:
         properties-content: HOME=$JENKINS_HOME
     concurrent: true
@@ -29,10 +29,10 @@
     - git:
         name: origin
         credentials-id: f6c7695a-671e-4f4f-a331-acdce44ff9ba
-        reference-repo: /var/lib/jenkins/.git-references/eland.git
+        reference-repo: /var/lib/jenkins/.git-references/opensearch_py_ml.git
         branches:
         - ${branch_specifier}
-        url: git@github.com:elastic/eland.git
+        url: git@github.com:elastic/opensearch_py_ml.git
         basedir: ''
         wipe-workspace: 'True'
     triggers:

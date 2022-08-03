@@ -24,7 +24,7 @@ from elasticsearch import Elasticsearch
 from opensearchpy.helpers import parallel_bulk
 
 from opensearch_py_ml import DataFrame
-from opensearch_py_ml.common import DEFAULT_CHUNK_SIZE, PANDAS_VERSION, ensure_es_client
+from opensearch_py_ml.common import DEFAULT_CHUNK_SIZE, PANDAS_VERSION
 from opensearch_py_ml.field_mappings import FieldMappings, verify_mapping_compatibility
 
 try:
@@ -35,18 +35,18 @@ except ImportError:
 _DEFAULT_LOW_MEMORY: bool = _c_parser_defaults["low_memory"]
 
 
-def pandas_to_eland(
+def pandas_to_opensearch(
     pd_df: pd.DataFrame,
     es_client: Union[str, List[str], Tuple[str, ...], Elasticsearch],
-    es_dest_index: str,
+    os_dest_index: str,
     es_if_exists: str = "fail",
     es_refresh: bool = False,
-    es_dropna: bool = False,
+    os_dropna: bool = False,
     es_type_overrides: Optional[Mapping[str, str]] = None,
     es_verify_mapping_compatibility: bool = True,
     thread_count: int = 4,
     chunksize: Optional[int] = None,
-    use_pandas_index_for_es_ids: bool = True,
+    use_pandas_index_for_os_ids: bool = True,
 ) -> DataFrame:
     """
     Append a pandas DataFrame to an Elasticsearch index.
@@ -58,7 +58,7 @@ def pandas_to_eland(
     es_client: Elasticsearch client argument(s)
         - elasticsearch-py parameters or
         - elasticsearch-py instance
-    es_dest_index: str
+    os_dest_index: str
         Name of Elasticsearch index to be appended to
     es_if_exists : {'fail', 'replace', 'append'}, default 'fail'
         How to behave if the index already exists.
@@ -67,8 +67,8 @@ def pandas_to_eland(
         - replace: Delete the index before inserting new values.
         - append: Insert new values to the existing index. Create if does not exist.
     es_refresh: bool, default 'False'
-        Refresh es_dest_index after bulk index
-    es_dropna: bool, default 'False'
+        Refresh os_dest_index after bulk index
+    os_dropna: bool, default 'False'
         * True: Remove missing values (see pandas.Series.dropna)
         * False: Include missing values - may cause bulk to fail
     es_type_overrides: dict, default None
@@ -80,7 +80,7 @@ def pandas_to_eland(
         number of the threads to use for the bulk requests
     chunksize: int, default None
         Number of pandas.DataFrame rows to read before bulk index into Elasticsearch
-    use_pandas_index_for_es_ids: bool, default 'True'
+    use_pandas_index_for_os_ids: bool, default 'True'
         * True: pandas.DataFrame.index fields will be used to populate Elasticsearch '_id' fields.
         * False: Ignore pandas.DataFrame.index when indexing into Elasticsearch
 
@@ -126,9 +126,9 @@ def pandas_to_eland(
     readable on return `refresh=True`
 
 
-    >>> ed_df = ed.pandas_to_eland(pd_df,
+    >>> ed_df = ed.pandas_to_opensearch(pd_df,
     ...                            'http://localhost:9200',
-    ...                            'pandas_to_eland',
+    ...                            'pandas_to_opensearch',
     ...                            es_if_exists="replace",
     ...                            es_refresh=True,
     ...                            es_type_overrides={'H':'text'}) # index field 'H' as text not keyword
@@ -154,7 +154,7 @@ def pandas_to_eland(
 
     See Also
     --------
-    opensearch_py_ml.eland_to_pandas: Create a pandas.Dataframe from opensearch_py_ml.DataFrame
+    opensearch_py_ml.opensearch_to_pandas: Create a pandas.Dataframe from opensearch_py_ml.DataFrame
     """
     if chunksize is None:
         chunksize = DEFAULT_CHUNK_SIZE
@@ -162,22 +162,22 @@ def pandas_to_eland(
     mapping = FieldMappings._generate_es_mappings(pd_df, es_type_overrides)
 
     # If table exists, check if_exists parameter
-    if es_client.indices.exists(index=es_dest_index):
+    if es_client.indices.exists(index=os_dest_index):
         if es_if_exists == "fail":
             raise ValueError(
-                f"Could not create the index [{es_dest_index}] because it "
+                f"Could not create the index [{os_dest_index}] because it "
                 f"already exists. "
                 f"Change the 'es_if_exists' parameter to "
                 f"'append' or 'replace' data."
             )
 
         elif es_if_exists == "replace":
-            es_client.indices.delete(index=es_dest_index)
-            es_client.indices.create(index=es_dest_index, body={'mappings': mapping["mappings"]})
+            es_client.indices.delete(index=os_dest_index)
+            es_client.indices.create(index=os_dest_index, body={'mappings': mapping["mappings"]})
 
         elif es_if_exists == "append" and es_verify_mapping_compatibility:
-            dest_mapping = es_client.indices.get_mapping(index=es_dest_index)[
-                es_dest_index
+            dest_mapping = es_client.indices.get_mapping(index=os_dest_index)[
+                os_dest_index
             ]
             verify_mapping_compatibility(
                 ed_mapping=mapping,
@@ -185,27 +185,27 @@ def pandas_to_eland(
                 es_type_overrides=es_type_overrides,
             )
     else:
-        es_client.indices.create(index=es_dest_index, body={'mappings': mapping["mappings"]})
+        es_client.indices.create(index=os_dest_index, body={'mappings': mapping["mappings"]})
 
     def action_generator(
         pd_df: pd.DataFrame,
-        es_dropna: bool,
-        use_pandas_index_for_es_ids: bool,
-        es_dest_index: str,
+        os_dropna: bool,
+        use_pandas_index_for_os_ids: bool,
+        os_dest_index: str,
     ) -> Generator[Dict[str, Any], None, None]:
         for row in pd_df.iterrows():
-            if es_dropna:
+            if os_dropna:
                 values = row[1].dropna().to_dict()
             else:
                 values = row[1].to_dict()
 
-            if use_pandas_index_for_es_ids:
+            if use_pandas_index_for_os_ids:
                 # Use index as _id
                 id = row[0]
 
-                action = {"_index": es_dest_index, "_source": values, "_id": str(id)}
+                action = {"_index": os_dest_index, "_source": values, "_id": str(id)}
             else:
-                action = {"_index": es_dest_index, "_source": values}
+                action = {"_index": os_dest_index, "_source": values}
 
             yield action
 
@@ -215,7 +215,7 @@ def pandas_to_eland(
         parallel_bulk(
             client=es_client,
             actions=action_generator(
-                pd_df, es_dropna, use_pandas_index_for_es_ids, es_dest_index
+                pd_df, os_dropna, use_pandas_index_for_os_ids, os_dest_index
             ),
             thread_count=thread_count,
             chunk_size=int(chunksize / thread_count),
@@ -224,12 +224,12 @@ def pandas_to_eland(
     )
 
     if es_refresh:
-        es_client.indices.refresh(index=es_dest_index)
+        es_client.indices.refresh(index=os_dest_index)
 
-    return DataFrame(es_client, es_dest_index)
+    return DataFrame(es_client, os_dest_index)
 
 
-def eland_to_pandas(ed_df: DataFrame, show_progress: bool = False) -> pd.DataFrame:
+def opensearch_to_pandas(ed_df: DataFrame, show_progress: bool = False) -> pd.DataFrame:
     """
     Convert an opensearch_py_ml.Dataframe to a pandas.DataFrame
 
@@ -265,7 +265,7 @@ def eland_to_pandas(ed_df: DataFrame, show_progress: bool = False) -> pd.DataFra
 
     Convert `opensearch_py_ml.DataFrame` to `pandas.DataFrame` (Note: this loads entire Elasticsearch index into core memory)
 
-    >>> pd_df = ed.eland_to_pandas(ed_df)
+    >>> pd_df = ed.opensearch_to_pandas(ed_df)
     >>> type(pd_df)
     <class 'pandas.core.frame.DataFrame'>
     >>> pd_df
@@ -280,24 +280,24 @@ def eland_to_pandas(ed_df: DataFrame, show_progress: bool = False) -> pd.DataFra
 
     Convert `opensearch_py_ml.DataFrame` to `pandas.DataFrame` and show progress every 10000 rows
 
-    >>> pd_df = ed.eland_to_pandas(ed.DataFrame('http://localhost:9200', 'flights'), show_progress=True) # doctest: +SKIP
+    >>> pd_df = ed.opensearch_to_pandas(ed.DataFrame('http://localhost:9200', 'flights'), show_progress=True) # doctest: +SKIP
     2020-01-29 12:43:36.572395: read 10000 rows
     2020-01-29 12:43:37.309031: read 13059 rows
 
     See Also
     --------
-    opensearch_py_ml.pandas_to_eland: Create an opensearch_py_ml.Dataframe from pandas.DataFrame
+    opensearch_py_ml.pandas_to_opensearch: Create an opensearch_py_ml.Dataframe from pandas.DataFrame
     """
     return ed_df.to_pandas(show_progress=show_progress)
 
 
-def csv_to_eland(  # type: ignore
+def csv_to_opensearch(  # type: ignore
     filepath_or_buffer,
     es_client: Union[str, List[str], Tuple[str, ...], Elasticsearch],
-    es_dest_index: str,
+    os_dest_index: str,
     es_if_exists: str = "fail",
     es_refresh: bool = False,
-    es_dropna: bool = False,
+    os_dropna: bool = False,
     es_type_overrides: Optional[Mapping[str, str]] = None,
     sep=",",
     delimiter=None,
@@ -369,7 +369,7 @@ def csv_to_eland(  # type: ignore
     es_client: Elasticsearch client argument(s)
         - elasticsearch-py parameters or
         - elasticsearch-py instance
-    es_dest_index: str
+    os_dest_index: str
         Name of Elasticsearch index to be appended to
     es_if_exists : {'fail', 'replace', 'append'}, default 'fail'
         How to behave if the index already exists.
@@ -377,7 +377,7 @@ def csv_to_eland(  # type: ignore
         - fail: Raise a ValueError.
         - replace: Delete the index before inserting new values.
         - append: Insert new values to the existing index. Create if does not exist.
-    es_dropna: bool, default 'False'
+    os_dropna: bool, default 'False'
         * True: Remove missing values (see pandas.Series.dropna)
         * False: Include missing values - may cause bulk to fail
     es_type_overrides: dict, default None
@@ -416,10 +416,10 @@ def csv_to_eland(  # type: ignore
         1,OH,107,415,371-7191,no,yes,26,161.6,123,27.47,195.5,103,16.62,254.4,103,11.45,13.7,3,3.7,1,0
         ...
 
-    >>>  ed.csv_to_eland(
+    >>>  ed.csv_to_opensearch(
     ...      "churn.csv",
     ...      es_client='http://localhost:9200',
-    ...      es_dest_index='churn',
+    ...      os_dest_index='churn',
     ...      es_refresh=True,
     ...      index_col=0
     ... ) # doctest: +SKIP
@@ -529,18 +529,18 @@ def csv_to_eland(  # type: ignore
 
     first_write = True
     for chunk in reader:
-        pandas_to_eland(
+        pandas_to_opensearch(
             chunk,
             es_client,
-            es_dest_index,
+            os_dest_index,
             chunksize=chunksize,
             es_refresh=es_refresh,
-            es_dropna=es_dropna,
+            os_dropna=os_dropna,
             es_type_overrides=es_type_overrides,
-            # es_if_exists should be 'append' except on the first call to pandas_to_eland()
+            # es_if_exists should be 'append' except on the first call to pandas_to_opensearch()
             es_if_exists=(es_if_exists if first_write else "append"),
         )
         first_write = False
 
     # Now create an opensearch_py_ml.DataFrame that references the new index
-    return DataFrame(es_client, os_index_pattern=es_dest_index)
+    return DataFrame(es_client, os_index_pattern=os_dest_index)

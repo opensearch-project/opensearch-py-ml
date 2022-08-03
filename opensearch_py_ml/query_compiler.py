@@ -32,7 +32,7 @@ from typing import (
 import numpy as np
 import pandas as pd  # type: ignore
 
-from opensearch_py_ml.common import elasticsearch_date_to_pandas_date, ensure_es_client
+from opensearch_py_ml.common import elasticsearch_date_to_pandas_date
 from opensearch_py_ml.field_mappings import FieldMappings
 from opensearch_py_ml.filter import BooleanFilter, QueryFilter
 from opensearch_py_ml.index import Index

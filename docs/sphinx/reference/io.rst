@@ -10,4 +10,4 @@ Flat File
 .. autosummary::
    :toctree: api/
 
-    csv_to_eland
+    csv_to_opensearch

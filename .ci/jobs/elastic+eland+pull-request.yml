@@ -1,8 +1,8 @@
 ---
 - job:
-    name: elastic+eland+pull-request
-    display-name: 'elastic / eland # pull-request'
-    description: Testing of eland pull requests.
+    name: elastic+opensearch_py_ml+pull-request
+    display-name: 'elastic / opensearch_py_ml # pull-request'
+    description: Testing of opensearch_py_ml pull requests.
     scm:
     - git:
         branches:

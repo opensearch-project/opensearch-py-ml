@@ -20,7 +20,7 @@ import os
 import pandas as pd
 from opensearchpy import OpenSearch
 
-from opensearch_py_ml.common import es_version
+from opensearch_py_ml.common import os_version
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -33,7 +33,7 @@ OPENSEARCH_TEST_CLIENT = OpenSearch(hosts=[OPENSEARCH_HOST],
                                     http_auth=(OPENSEARCH_ADMIN_USER, OPENSEARCH_ADMIN_PASSWORD),
                                     verify_certs=False)
 
-ES_VERSION = es_version(OPENSEARCH_TEST_CLIENT)
+ES_VERSION = os_version(OPENSEARCH_TEST_CLIENT)
 
 FLIGHTS_INDEX_NAME = "opensearch_dashboards_sample_data_flights"
 FLIGHTS_MAPPING = {

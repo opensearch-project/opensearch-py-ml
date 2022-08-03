@@ -77,7 +77,7 @@ class TestDataFrameToCSV(TestData):
 
         test_index = FLIGHTS_INDEX_NAME + "." + str(now_millis)
 
-        ed_flights_from_csv = ed.csv_to_eland(
+        ed_flights_from_csv = ed.csv_to_opensearch(
             results_file,
             OPENSEARCH_TEST_CLIENT,
             test_index,
@@ -92,7 +92,7 @@ class TestDataFrameToCSV(TestData):
                 "OriginLocation": lambda x: ast.literal_eval(x),
             },
         )
-        pd_flights_from_csv = ed.eland_to_pandas(ed_flights_from_csv)
+        pd_flights_from_csv = ed.opensearch_to_pandas(ed_flights_from_csv)
 
         # TODO - there is a 'bug' where the Elasticsearch index returns data in a different order to the CSV
         print(ed_flights_from_csv.head())

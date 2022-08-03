@@ -43,7 +43,7 @@ class TestDataFrameQuery(TestData):
         # Now create index
         index_name = "eland_test_query"
 
-        ed_df = ed.pandas_to_eland(
+        ed_df = ed.pandas_to_opensearch(
             pd_df, OPENSEARCH_TEST_CLIENT, index_name, es_if_exists="replace", es_refresh=True
         )
 
@@ -109,7 +109,7 @@ class TestDataFrameQuery(TestData):
         # Now create index
         index_name = "eland_test_query"
 
-        ed_df = ed.pandas_to_eland(
+        ed_df = ed.pandas_to_opensearch(
             pd_df, OPENSEARCH_TEST_CLIENT, index_name, es_if_exists="replace", es_refresh=True
         )
 

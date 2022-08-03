@@ -25,7 +25,7 @@ echo -e "\033[34;1mINFO:\033[0m PANDAS_VERSION ${PANDAS_VERSION}\033[0m"
 
 echo -e "\033[1m>>>>> Build [elastic/eland container] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>\033[0m"
 
-docker build --file .ci/Dockerfile --tag elastic/eland --build-arg PYTHON_VERSION=${PYTHON_VERSION} .
+docker build --file .ci/Dockerfile --tag elastic/opensearch-py-ml --build-arg PYTHON_VERSION=${PYTHON_VERSION} .
 
 echo -e "\033[1m>>>>> Run [elastic/eland container] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>\033[0m"
 
@@ -33,7 +33,7 @@ docker run \
   --network=${NETWORK_NAME} \
   --env "ELASTICSEARCH_HOST=${ELASTICSEARCH_URL}" \
   --env "TEST_SUITE=${TEST_SUITE}" \
-  --name eland-test-runner \
+  --name opensearch-py-ml-test-runner \
   --rm \
-  elastic/eland \
+  elastic/opensearch-py-ml \
   nox -s "test-${PYTHON_VERSION}(pandas_version='${PANDAS_VERSION}')"

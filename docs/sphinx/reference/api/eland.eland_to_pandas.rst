@@ -1,6 +1,6 @@
-opensearch_py_ml.eland_to_pandas
+opensearch_py_ml.opensearch_to_pandas
 =====================
 
 .. currentmodule:: eland
 
-.. autofunction:: eland_to_pandas
+.. autofunction:: opensearch_to_pandas

@@ -32,8 +32,10 @@ from typing import (
 
 import pandas as pd  # type: ignore
 from elasticsearch import Elasticsearch
+from opensearchpy import OpenSearch
 
-from ._version import __version__ as _eland_version
+from ._version import __version__ as _opensearch_py_ml_version
+from warnings import warn
 
 if TYPE_CHECKING:
     from numpy.typing import DTypeLike
@@ -50,7 +52,7 @@ PANDAS_VERSION: Tuple[int, ...] = tuple(
     int(part) for part in pd.__version__.split(".") if part.isdigit()
 )[:2]
 
-_ELAND_MAJOR_VERSION = int(_eland_version.split(".")[0])
+_OPENSEARCH_PY_ML_MAJOR_VERSION = int(_opensearch_py_ml_version.split(".")[0])
 
 
 with warnings.catch_warnings():
@@ -308,6 +310,7 @@ def elasticsearch_date_to_pandas_date(
 def ensure_es_client(
     es_client: Union[str, List[str], Tuple[str, ...], Elasticsearch]
 ) -> Elasticsearch:
+    warn('function uses Elasticsearch and has been deprecated', DeprecationWarning, stacklevel=2)
     if isinstance(es_client, tuple):
         es_client = list(es_client)
     if not isinstance(es_client, Elasticsearch):
@@ -315,35 +318,35 @@ def ensure_es_client(
     return es_client
 
 
-def es_version(es_client: Elasticsearch) -> Tuple[int, int, int]:
+def os_version(os_client: OpenSearch) -> Tuple[int, int, int]:
     """Tags the current ES client with a cached '_eland_es_version'
     property if one doesn't exist yet for the current Elasticsearch version.
     """
-    eland_es_version: Tuple[int, int, int]
-    if not hasattr(es_client, "_eland_es_version"):
-        version_info = es_client.info()["version"]["number"]
+    opensearch_py_ml_os_version: Tuple[int, int, int]
+    if not hasattr(os_client, "_eland_es_version"):
+        version_info = os_client.info()["version"]["number"]
         match = re.match(r"^(\d+)\.(\d+)\.(\d+)", version_info)
         if match is None:
             raise ValueError(
-                f"Unable to determine Elasticsearch version. "
+                f"Unable to determine version. "
                 f"Received: {version_info}"
             )
-        eland_es_version = cast(
+        opensearch_py_ml_os_version = cast(
             Tuple[int, int, int], tuple(int(x) for x in match.groups())
         )
-        es_client._eland_es_version = eland_es_version  # type: ignore
+        os_client._eland_es_version = opensearch_py_ml_os_version  # type: ignore
 
         # Raise a warning if the major version of the library doesn't match the
         # the Elasticsearch server major version.
-        if eland_es_version[0] != _ELAND_MAJOR_VERSION:
+        if opensearch_py_ml_os_version[0] != _OPENSEARCH_PY_ML_MAJOR_VERSION:
             warnings.warn(
-                f"Eland major version ({_eland_version}) doesn't match the major "
-                f"version of the Elasticsearch server ({version_info}) which can lead "
-                f"to compatibility issues. Your Eland major version should be the same "
+                f"OpenSearch major version ({_opensearch_py_ml_version}) doesn't match the major "
+                f"version of the OpenSearch server ({version_info}) which can lead "
+                f"to compatibility issues. Your major version should be the same "
                 "as your cluster major version.",
                 stacklevel=2,
             )
 
     else:
-        eland_es_version = es_client._eland_es_version  # type: ignore
-    return eland_es_version
+        opensearch_py_ml_os_version = os_client._eland_es_version  # type: ignore
+    return opensearch_py_ml_os_version
