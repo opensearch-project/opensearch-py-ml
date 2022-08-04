@@ -64,6 +64,7 @@ from opensearch_py_ml.utils import to_list
 
 if TYPE_CHECKING:
     from elasticsearch import Elasticsearch
+    from opensearchpy import OpenSearch
 
     from opensearch_py_ml.query_compiler import QueryCompiler
 

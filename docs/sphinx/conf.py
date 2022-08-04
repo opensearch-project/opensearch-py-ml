@@ -41,6 +41,7 @@ sys.path.extend(
 
 # -- Project information -----------------------------------------------------
 
+#TODO: Change this information before going public
 project = "opensearch_py_ml"
 copyright = f"{datetime.date.today().year}, Elasticsearch BV"
 
