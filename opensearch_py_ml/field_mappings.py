@@ -44,6 +44,7 @@ from pandas.core.dtypes.inference import is_list_like
 
 if TYPE_CHECKING:
     from elasticsearch import Elasticsearch
+    from opensearchpy import OpenSearch
     from numpy.typing import DTypeLike
 
 

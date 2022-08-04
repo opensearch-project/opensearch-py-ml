@@ -25,6 +25,7 @@ from opensearch_py_ml.query_compiler import QueryCompiler
 
 if TYPE_CHECKING:
     from elasticsearch import Elasticsearch
+    from opensearchpy import OpenSearch
 
     from opensearch_py_ml.index import Index
 
