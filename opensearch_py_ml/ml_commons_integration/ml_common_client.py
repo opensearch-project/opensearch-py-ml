@@ -4,7 +4,7 @@ SPDX-License-Identifier: Apache-2.0
  """
 
 from opensearchpy import OpenSearch
-from upload.ml_common_upload_client import MLCommonUploadClient, DEFAULT_ML_COMMON_UPLOAD_CHUNK_SIZE
+from opensearch_py_ml.ml_commons_integration.upload.ml_common_upload_client import MLCommonUploadClient, DEFAULT_ML_COMMON_UPLOAD_CHUNK_SIZE
 
 
 class MLCommonClient:
@@ -17,5 +17,10 @@ class MLCommonClient:
         self._client = os_client
         self._upload_client = MLCommonUploadClient(os_client)
 
-    def put_model(self, model_path: str, chunk_size: int = DEFAULT_ML_COMMON_UPLOAD_CHUNK_SIZE):
-        self._upload_client.put_model(model_path, chunk_size)
+    def put_model(self,
+                  model_path: str,
+                  model_name: str,
+                  version_number: int,
+                  chunk_size: int = DEFAULT_ML_COMMON_UPLOAD_CHUNK_SIZE,
+                  verbose: bool = False) -> None:
+        self._upload_client.put_model(model_path, model_name, version_number, chunk_size, verbose)
