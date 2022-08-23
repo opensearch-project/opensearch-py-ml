@@ -5,9 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 
 from opensearchpy import OpenSearch
 import os
-import math
 from typing import Iterable
-import base64
 from opensearch_py_ml.ml_commons_integration.ml_common_utils import ML_BASE_URI
 
 from tqdm.auto import tqdm # type: ignore
@@ -45,6 +43,6 @@ class MLCommonUploadClient:
         for i, chunk in to_iterate_over:
             self._client.transport.perform_request(
                 method="POST",
-                url=f"/{ML_BASE_URI}/custom_model/upload/{model_name}/{version_number}/{i}",
+                url=f"{ML_BASE_URI}/custom_model/upload_chunk/{model_name}/{version_number}/{i}",
                 body=chunk
             )
