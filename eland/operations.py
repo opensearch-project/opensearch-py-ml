@@ -1537,6 +1537,7 @@ def _search_yield_hits(
     # care about the hit itself for these queries.
     body.setdefault("track_total_hits", False)
 
+    # TODO: re-implement point in time search after supporting in OpenSearch 2.3
     while max_number_of_hits is None or hits_yielded < max_number_of_hits:
         resp = client.search(body = body, index = query_compiler._index_pattern)
         hits: List[Dict[str, Any]] = resp["hits"]["hits"]

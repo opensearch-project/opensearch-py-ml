@@ -187,6 +187,14 @@ class FieldMappings:
         display_names: Optional[List[str]] = None,
     ):
         """
+        Parameters
+        ----------
+        client: elasticsearch.Elasticsearch
+            Elasticsearch client
+        index_pattern: str
+            Elasticsearch index pattern
+        display_names: list of str
+            Field names to display
         """
         if (client is None) or (index_pattern is None):
             raise ValueError(
