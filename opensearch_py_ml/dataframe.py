@@ -1497,7 +1497,7 @@ class DataFrame(NDFrame):
             yield from df.iterrows()
 
     def itertuples(
-        self, index: bool = True, name: Union[str, None] = "Eland", sort_index: Optional[str] = '_doc'
+        self, index: bool = True, name: Union[str, None] = "opensearch-py-ml", sort_index: Optional[str] = '_doc'
     ) -> Iterable[Tuple[Any, ...]]:
         """
         Iterate over opensearch_py_ml.DataFrame rows as namedtuples.
@@ -1506,7 +1506,7 @@ class DataFrame(NDFrame):
         ----------
         index: bool, default True
             If True, return the index as the first element of the tuple.
-        name: str or None, default "Eland"
+        name: str or None, default "opensearch-py-ml"
             The name of the returned namedtuples or None to return regular tuples.
         sort_index: str, default '_doc'
             What field to sort the OpenSearch data by.
