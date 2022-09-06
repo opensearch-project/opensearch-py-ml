@@ -1,7 +1,7 @@
 ---
 - job:
     name: elastic+opensearch_py_ml+pull-request
-    display-name: 'elastic / opensearch_py_ml # pull-request'
+    display-name: 'opensearch-project / opensearch-py-ml # pull-request'
     description: Testing of opensearch_py_ml pull requests.
     scm:
     - git:

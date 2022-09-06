@@ -20,7 +20,7 @@
           &lt;commitId&gt;, etc.)
     properties:
     - github:
-        url: https://github.com/elastic/opensearch_py_ml
+        url: https://github.com/opensearch-project/opensearch-py-ml
     - inject:
         properties-content: HOME=$JENKINS_HOME
     concurrent: true
@@ -32,7 +32,7 @@
         reference-repo: /var/lib/jenkins/.git-references/opensearch_py_ml.git
         branches:
         - ${branch_specifier}
-        url: git@github.com:elastic/opensearch_py_ml.git
+        url: git@github.com:opensearch-project/opensearch-py-ml.git
         basedir: ''
         wipe-workspace: 'True'
     triggers:
@@ -46,7 +46,7 @@
     - axis:
         type: yaml
         filename: .ci/test-matrix.yml
-        name: ELASTICSEARCH_VERSION
+        name: OPENSEARCH_VERSION
     - axis:
         type: yaml
         filename: .ci/test-matrix.yml

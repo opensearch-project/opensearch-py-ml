@@ -1,7 +1,7 @@
 ---
 - job:
     name: elastic+opensearch_py_ml+main
-    display-name: 'elastic / opensearch_py_ml # main'
+    display-name: 'opensearch-project / opensearch-py-ml # main'
     description: Eland is a data science client with a Pandas-like interface
     junit_results: "*-junit.xml"
     parameters:
