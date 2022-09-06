@@ -5,14 +5,11 @@ SPDX-License-Identifier: Apache-2.0
 
 from opensearchpy import OpenSearch
 import os
-import math
+from math import ceil
 from typing import Iterable
-import base64
 from opensearch_py_ml.ml_commons_integration.ml_common_utils import ML_BASE_URI
 
-from tqdm.auto import tqdm # type: ignore
-
-DEFAULT_ML_COMMON_UPLOAD_CHUNK_SIZE = 10_000_000 # 10MB
+DEFAULT_ML_COMMON_UPLOAD_CHUNK_SIZE = 10_000_000  # 10MB
 
 
 class MLCommonUploadClient:
@@ -28,7 +25,7 @@ class MLCommonUploadClient:
                   version_number: int,
                   chunk_size: int = DEFAULT_ML_COMMON_UPLOAD_CHUNK_SIZE,
                   verbose: bool = False) -> None:
-        total_model_size = os.stat(model_path).st_size
+        total_num_chunks = ceil(os.stat(model_path).st_size/chunk_size)
 
         def model_file_chunk_generator() -> Iterable[str]:
             with open(model_path, "rb") as f:
@@ -36,15 +33,15 @@ class MLCommonUploadClient:
                     data = f.read(chunk_size)
                     if not data:
                         break
-                    yield data # check if we actually need to do base64 encoding
+                    yield data  # check if we actually need to do base64 encoding
 
         to_iterate_over = enumerate(model_file_chunk_generator())
-        if verbose:
-            to_iterate_over = tqdm(to_iterate_over)
 
         for i, chunk in to_iterate_over:
+            if verbose:
+                print(f"uploading chunk {i+1} of {total_num_chunks}")
             self._client.transport.perform_request(
                 method="POST",
-                url=f"/{ML_BASE_URI}/custom_model/upload/{model_name}/{version_number}/{i}",
+                url=f"{ML_BASE_URI}/custom_model/upload_chunk/{model_name}/{version_number}/{i}/{total_num_chunks}",
                 body=chunk
             )
