@@ -24,7 +24,6 @@ import pandas as pd  # type: ignore
 from opensearch_py_ml.query_compiler import QueryCompiler
 
 if TYPE_CHECKING:
-    from elasticsearch import Elasticsearch
     from opensearchpy import OpenSearch
 
     from opensearch_py_ml.index import Index
@@ -34,23 +33,23 @@ NDFrame
 ---------
 Abstract base class for opensearch_py_ml.DataFrame and opensearch_py_ml.Series.
 
-The underlying data resides in Elasticsearch and the API aligns as much as
+The underlying data resides in OpenSearch and the API aligns as much as
 possible with pandas APIs.
 
-This allows the opensearch_py_ml.DataFrame to access large datasets stored in Elasticsearch,
+This allows the opensearch_py_ml.DataFrame to access large datasets stored in OpenSearch,
 without storing the dataset in local memory.
 
 Implementation Details
 ----------------------
 
-Elasticsearch indexes can be configured in many different ways, and these indexes
+OpenSearch indexes can be configured in many different ways, and these indexes
 utilise different data structures to pandas.
 
 opensearch_py_ml.DataFrame operations that return individual rows (e.g. df.head()) return
 _source data. If _source is not enabled, this data is not accessible.
 
-Similarly, only Elasticsearch searchable fields can be searched or filtered, and
-only Elasticsearch aggregatable fields can be aggregated or grouped.
+Similarly, only OpenSearch searchable fields can be searched or filtered, and
+only OpenSearch aggregatable fields can be aggregated or grouped.
 
 """
 
@@ -67,12 +66,12 @@ class NDFrame(ABC):
         _query_compiler: Optional[QueryCompiler] = None,
     ) -> None:
         """
-        pandas.DataFrame/Series like API that proxies into Elasticsearch index(es).
+        pandas.DataFrame/Series like API that proxies into OpenSearch index(es).
 
         Parameters
         ----------
-        client : elasticsearch.Elasticsearch
-            A reference to a Elasticsearch python client
+        client : opensearchpy.OpenSearch
+            A reference to a OpenSearch python client
         """
         if _query_compiler is None:
             _query_compiler = QueryCompiler(
@@ -86,7 +85,7 @@ class NDFrame(ABC):
     @property
     def index(self) -> "Index":
         """
-        Return opensearch_py_ml index referencing Elasticsearch field to index a DataFrame/Series
+        Return opensearch_py_ml index referencing OpenSearch field to index a DataFrame/Series
 
         Returns
         -------
@@ -102,11 +101,11 @@ class NDFrame(ABC):
         --------
         >>> df = ed.DataFrame('http://localhost:9200', 'flights')
         >>> assert isinstance(df.index, ed.Index)
-        >>> df.index.es_index_field
+        >>> df.index.os_index_field
         '_id'
         >>> s = df['Carrier']
         >>> assert isinstance(s.index, ed.Index)
-        >>> s.index.es_index_field
+        >>> s.index.os_index_field
         '_id'
         """
         return self._query_compiler.index
@@ -114,8 +113,8 @@ class NDFrame(ABC):
     @property
     def dtypes(self) -> pd.Series:
         """
-        Return the pandas dtypes in the DataFrame. Elasticsearch types are mapped
-        to pandas dtypes via Mappings._es_dtype_to_pd_dtype.__doc__
+        Return the pandas dtypes in the DataFrame. OpenSearch types are mapped
+        to pandas dtypes via Mappings._os_dtype_to_pd_dtype.__doc__
 
         Returns
         -------
@@ -139,9 +138,9 @@ class NDFrame(ABC):
         return self._query_compiler.dtypes
 
     @property
-    def es_dtypes(self) -> pd.Series:
+    def os_dtypes(self) -> pd.Series:
         """
-        Return the Elasticsearch dtypes in the index
+        Return the OpenSearch dtypes in the index
 
         Returns
         -------
@@ -151,14 +150,14 @@ class NDFrame(ABC):
         Examples
         --------
         >>> df = ed.DataFrame('http://localhost:9200', 'flights', columns=['Origin', 'AvgTicketPrice', 'timestamp', 'dayOfWeek'])
-        >>> df.es_dtypes
+        >>> df.os_dtypes
         Origin            keyword
         AvgTicketPrice      float
         timestamp            date
         dayOfWeek            byte
         dtype: object
         """
-        return self._query_compiler.es_dtypes
+        return self._query_compiler.os_dtypes
 
     def _build_repr(self, num_rows: int) -> pd.DataFrame:
         # self could be Series or DataFrame
@@ -187,8 +186,8 @@ class NDFrame(ABC):
         """
         return len(self.index)
 
-    def _es_info(self, buf: TextIO) -> None:
-        self._query_compiler.es_info(buf)
+    def _os_info(self, buf: TextIO) -> None:
+        self._query_compiler.os_info(buf)
 
     def mean(self, numeric_only: Optional[bool] = None) -> pd.Series:
         """
@@ -527,7 +526,7 @@ class NDFrame(ABC):
         """
         Return cardinality of each field.
 
-        **Note we can only do this for aggregatable Elasticsearch fields - (in general) numeric and keyword
+        **Note we can only do this for aggregatable OpenSearch fields - (in general) numeric and keyword
         rather than text fields**
 
         This method will try and field aggregatable fields if possible if mapping has::

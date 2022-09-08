@@ -34,14 +34,14 @@ class TestSeriesRename(TestData):
         print(pd_renamed)
         print(ed_renamed)
 
-        print(ed_renamed.es_info())
+        print(ed_renamed.os_info())
 
         assert_pandas_eland_series_equal(pd_renamed, ed_renamed)
 
         pd_renamed2 = pd_renamed.rename("renamed2")
         ed_renamed2 = ed_renamed.rename("renamed2")
 
-        print(ed_renamed2.es_info())
+        print(ed_renamed2.os_info())
 
         assert "renamed2" == ed_renamed2.name
 

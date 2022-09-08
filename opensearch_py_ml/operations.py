@@ -43,7 +43,7 @@ from opensearch_py_ml.common import (
     DEFAULT_SEARCH_SIZE,
     SortOrder,
     build_pd_series,
-    elasticsearch_date_to_pandas_date,
+    opensearch_date_to_pandas_date,
 )
 from opensearch_py_ml.index import Index
 from opensearch_py_ml.query import Query
@@ -229,8 +229,8 @@ class Operations:
 
         for field in fields:
             body.top_hits_agg(
-                name=f"top_hits_{field.es_field_name}",
-                source_columns=[field.es_field_name],
+                name=f"top_hits_{field.os_field_name}",
+                source_columns=[field.os_field_name],
                 sort_order=sort_order,
                 size=1,
             )
@@ -243,7 +243,7 @@ class Operations:
 
         results = {}
         for field in fields:
-            res = response[f"top_hits_{field.es_field_name}"]["hits"]
+            res = response[f"top_hits_{field.os_field_name}"]["hits"]
 
             if not res["total"]["value"] > 0:
                 raise ValueError("Empty Index with no rows")
@@ -253,7 +253,7 @@ class Operations:
                 # Implement this when skipna is implemented
                 continue
             else:
-                results[field.es_field_name] = res["hits"][0]["_id"]
+                results[field.os_field_name] = res["hits"][0]["_id"]
 
         return pd.Series(results)
 
@@ -366,38 +366,38 @@ class Operations:
         for field in fields:
             for es_agg in es_aggs:
                 # NaN/NaT fields are ignored
-                if not field.is_es_agg_compatible(es_agg):
+                if not field.is_os_agg_compatible(es_agg):
                     continue
 
                 # If we have multiple 'extended_stats' etc. here we simply NOOP on 2nd call
                 if isinstance(es_agg, tuple):
                     if es_agg[0] == "percentiles":
                         body.percentile_agg(
-                            name=f"{es_agg[0]}_{field.es_field_name}",
-                            field=field.es_field_name,
+                            name=f"{es_agg[0]}_{field.os_field_name}",
+                            field=field.os_field_name,
                             percents=es_agg[1],
                         )
                     else:
                         body.metric_aggs(
-                            name=f"{es_agg[0]}_{field.es_field_name}",
+                            name=f"{es_agg[0]}_{field.os_field_name}",
                             func=es_agg[0],
-                            field=field.aggregatable_es_field_name,
+                            field=field.aggregatable_os_field_name,
                         )
                 elif es_agg == "mode":
                     # TODO for dropna=False, Check If field is timestamp or boolean or numeric,
                     # then use missing parameter for terms aggregation.
                     body.terms_aggs(
-                        name=f"{es_agg}_{field.es_field_name}",
+                        name=f"{es_agg}_{field.os_field_name}",
                         func="terms",
-                        field=field.aggregatable_es_field_name,
+                        field=field.aggregatable_os_field_name,
                         es_size=es_mode_size,
                     )
 
                 else:
                     body.metric_aggs(
-                        name=f"{es_agg}_{field.es_field_name}",
+                        name=f"{es_agg}_{field.os_field_name}",
                         func=es_agg,
-                        field=field.aggregatable_es_field_name,
+                        field=field.aggregatable_os_field_name,
                     )
 
         response = query_compiler._client.search(
@@ -609,7 +609,7 @@ class Operations:
                 # is_dataframe_agg is used to differentiate agg() and an aggregation called through .mean()
                 # If the field and agg aren't compatible we add a NaN/NaT for agg
                 # If the field and agg aren't compatible we don't add NaN/NaT for an aggregation called through .mean()
-                if not field.is_es_agg_compatible(es_agg):
+                if not field.is_os_agg_compatible(es_agg):
                     if is_dataframe_agg and not numeric_only:
                         values.append(field.nan_value)
                     elif not is_dataframe_agg and numeric_only is False:
@@ -622,7 +622,7 @@ class Operations:
 
                 if isinstance(es_agg, tuple):
                     agg_value = response["aggregations"][
-                        f"{es_agg[0]}_{field.es_field_name}"
+                        f"{es_agg[0]}_{field.os_field_name}"
                     ]
 
                     # Pull multiple values from 'percentiles' result.
@@ -651,7 +651,7 @@ class Operations:
                     if es_agg[1] in ("std_deviation", "variance"):
                         # Neither transformation works with count <=1
                         count = response["aggregations"][
-                            f"{es_agg[0]}_{field.es_field_name}"
+                            f"{es_agg[0]}_{field.os_field_name}"
                         ]["count"]
 
                         # All of the below calculations result in NaN if count<=1
@@ -672,11 +672,11 @@ class Operations:
                     # For terms aggregation buckets are returned
                     # agg_value will be of type list
                     agg_value = response["aggregations"][
-                        f"{es_agg}_{field.es_field_name}"
+                        f"{es_agg}_{field.os_field_name}"
                     ]["buckets"]
                 else:
                     agg_value = response["aggregations"][
-                        f"{es_agg}_{field.es_field_name}"
+                        f"{es_agg}_{field.os_field_name}"
                     ]["value"]
 
                 if isinstance(agg_value, list):
@@ -723,22 +723,22 @@ class Operations:
                     if isinstance(agg_value, list):
                         # convert to timestamp results for mode
                         agg_value = [
-                            elasticsearch_date_to_pandas_date(
-                                value, field.es_date_format
+                            opensearch_date_to_pandas_date(
+                                value, field.os_date_format
                             )
                             for value in agg_value
                         ]
                     elif percentile_values:
                         percentile_values = [
-                            elasticsearch_date_to_pandas_date(
-                                value, field.es_date_format
+                            opensearch_date_to_pandas_date(
+                                value, field.os_date_format
                             )
                             for value in percentile_values
                         ]
                     else:
                         assert not isinstance(agg_value, dict)
-                        agg_value = elasticsearch_date_to_pandas_date(
-                            agg_value, field.es_date_format
+                        agg_value = opensearch_date_to_pandas_date(
+                            agg_value, field.os_date_format
                         )
                 # If numeric_only is False | None then maintain column datatype
                 elif not numeric_only and pd_agg != "quantile":
@@ -812,7 +812,7 @@ class Operations:
 
         body.composite_agg_bucket_terms(
             name=bucket_key,
-            field=field.aggregatable_es_field_name,
+            field=field.aggregatable_os_field_name,
         )
 
         # Composite aggregation
@@ -903,7 +903,7 @@ class Operations:
 
         # Construct Query
         for by_field in by_fields:
-            if by_field.aggregatable_es_field_name is None:
+            if by_field.aggregatable_os_field_name is None:
                 raise ValueError(
                     f"Cannot use {by_field.column!r} with groupby() because "
                     f"it has no aggregatable fields in Elasticsearch"
@@ -911,35 +911,35 @@ class Operations:
             # groupby fields will be term aggregations
             body.composite_agg_bucket_terms(
                 name=f"groupby_{by_field.column}",
-                field=by_field.aggregatable_es_field_name,
+                field=by_field.aggregatable_os_field_name,
             )
 
         for agg_field in agg_fields:
             for es_agg in es_aggs:
                 # Skip if the field isn't compatible or if the agg is
                 # 'value_count' as this value is pulled from bucket.doc_count.
-                if not agg_field.is_es_agg_compatible(es_agg):
+                if not agg_field.is_os_agg_compatible(es_agg):
                     continue
 
                 # If we have multiple 'extended_stats' etc. here we simply NOOP on 2nd call
                 if isinstance(es_agg, tuple):
                     if es_agg[0] == "percentiles":
                         body.percentile_agg(
-                            name=f"{es_agg[0]}_{agg_field.es_field_name}",
-                            field=agg_field.es_field_name,
+                            name=f"{es_agg[0]}_{agg_field.os_field_name}",
+                            field=agg_field.os_field_name,
                             percents=es_agg[1],
                         )
                     else:
                         body.metric_aggs(
-                            f"{es_agg[0]}_{agg_field.es_field_name}",
+                            f"{es_agg[0]}_{agg_field.os_field_name}",
                             es_agg[0],
-                            agg_field.aggregatable_es_field_name,
+                            agg_field.aggregatable_os_field_name,
                         )
                 else:
                     body.metric_aggs(
-                        f"{es_agg}_{agg_field.es_field_name}",
+                        f"{es_agg}_{agg_field.os_field_name}",
                         es_agg,
-                        agg_field.aggregatable_es_field_name,
+                        agg_field.aggregatable_os_field_name,
                     )
 
         # Composite aggregation
@@ -1181,7 +1181,7 @@ class Operations:
         # DataFrame.filter(..., axis="columns") calls .drop()
         if items is not None:
             self.filter_index_values(
-                query_compiler, field=query_compiler.index.es_index_field, items=items
+                query_compiler, field=query_compiler.index.os_index_field, items=items
             )
             return
         elif like is not None:
@@ -1450,7 +1450,7 @@ class Operations:
         # This can return None
         return size
 
-    def es_info(self, query_compiler: "QueryCompiler", buf: TextIO) -> None:
+    def os_info(self, query_compiler: "QueryCompiler", buf: TextIO) -> None:
         buf.write("Operations:\n")
         buf.write(f" tasks: {self._tasks}\n")
 

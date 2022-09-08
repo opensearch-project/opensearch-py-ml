@@ -27,11 +27,10 @@ class Index:
 
     TODO - This currently has very different behaviour than pandas.Index
 
-    Currently, the index is a field that exists in every document in an Elasticsearch index.
+    Currently, the index is a field that exists in every document in an OpenSearch index.
     For slicing and sorting operations it must be a docvalues field. By default _id is used,
-    which can't be used for range queries and is inefficient for sorting:
+    which can't be used for range queries and is inefficient for sorting.
 
-    https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-id-field.html
     (The value of the _id field is also accessible in aggregations or for sorting,
     but doing so is discouraged as it requires to load a lot of data in memory.
     In case sorting or aggregating on the _id field is required, it is advised to duplicate
@@ -42,7 +41,7 @@ class Index:
     ID_SORT_FIELD = "_doc"  # if index field is _id, sort by _doc
 
     def __init__(
-        self, query_compiler: "QueryCompiler", es_index_field: Optional[str] = None
+        self, query_compiler: "QueryCompiler", os_index_field: Optional[str] = None
     ):
         self._query_compiler = query_compiler
 
@@ -53,7 +52,7 @@ class Index:
         # The type:ignore is due to mypy not being smart enough
         # to recognize the property.setter has a different type
         # than the property.getter.
-        self.es_index_field = es_index_field  # type: ignore
+        self.os_index_field = os_index_field  # type: ignore
 
     @property
     def sort_field(self) -> str:
@@ -66,11 +65,11 @@ class Index:
         return self._is_source_field
 
     @property
-    def es_index_field(self) -> str:
+    def os_index_field(self) -> str:
         return self._index_field
 
-    @es_index_field.setter
-    def es_index_field(self, index_field: Optional[str]) -> None:
+    @os_index_field.setter
+    def os_index_field(self, index_field: Optional[str]) -> None:
         if index_field is None or index_field == Index.ID_INDEX_FIELD:
             self._index_field = Index.ID_INDEX_FIELD
             self._is_source_field = False
@@ -89,7 +88,7 @@ class Index:
     def __iter__(self) -> "Index":
         return self
 
-    def es_info(self, buf: TextIO) -> None:
+    def os_info(self, buf: TextIO) -> None:
         buf.write("Index:\n")
-        buf.write(f" es_index_field: {self.es_index_field}\n")
+        buf.write(f" os_index_field: {self.os_index_field}\n")
         buf.write(f" is_source_field: {self.is_source_field}\n")

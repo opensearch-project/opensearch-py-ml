@@ -57,7 +57,7 @@ class TestDataFrameUtils(TestData):
             }
         }
 
-        mappings = FieldMappings._generate_es_mappings(df)
+        mappings = FieldMappings._generate_os_mappings(df)
 
         assert expected_mappings == mappings
 

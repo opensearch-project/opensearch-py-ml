@@ -255,7 +255,7 @@ TEST_MAPPING1_EXPECTED = {
 }
 
 TEST_MAPPING1_EXPECTED_DF = pd.DataFrame.from_dict(
-    data=TEST_MAPPING1_EXPECTED, orient="index", columns=["es_dtype"]
+    data=TEST_MAPPING1_EXPECTED, orient="index", columns=["os_dtype"]
 )
 TEST_MAPPING1_EXPECTED_SOURCE_FIELD_DF = TEST_MAPPING1_EXPECTED_DF.drop(
     index=[
