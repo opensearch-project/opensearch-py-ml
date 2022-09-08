@@ -56,7 +56,7 @@ class TestScriptedFields(TestData):
 
         # note 'None' is printed as 'NaN' in index, but .index shows it is 'None'
         buf = StringIO()
-        ed_field_mappings.es_info(buf)
+        ed_field_mappings.os_info(buf)
         print(buf.getvalue())
 
         expected = self.pd_flights().columns.to_list()

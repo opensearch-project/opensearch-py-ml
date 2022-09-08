@@ -32,7 +32,7 @@ from typing import (
 import numpy as np
 import pandas as pd  # type: ignore
 
-from opensearch_py_ml.common import elasticsearch_date_to_pandas_date
+from opensearch_py_ml.common import opensearch_date_to_pandas_date
 from opensearch_py_ml.field_mappings import FieldMappings
 from opensearch_py_ml.filter import BooleanFilter, QueryFilter
 from opensearch_py_ml.index import Index
@@ -69,7 +69,7 @@ class QueryCompiler:
     /_search
     {'query': {'bool': {'must': [], 'must_not': [{'ids': {'values': ['1', '2']}}]}}, 'aggs': {}}
 
-    This doesn't work is size is set (e.g. head/tail) as we don't know in Elasticsearch if values '1' or '2' are
+    This doesn't work is size is set (e.g. head/tail) as we don't know in OpenSearch if values '1' or '2' are
     in the first/last n fields.
 
     A way to mitigate this would be to post process this drop - TODO
@@ -89,7 +89,7 @@ class QueryCompiler:
         if to_copy is not None:
             self._client = to_copy._client
             self._index_pattern = to_copy._index_pattern
-            self._index: "Index" = Index(self, to_copy._index.es_index_field)
+            self._index: "Index" = Index(self, to_copy._index.os_index_field)
             self._operations: "Operations" = copy.deepcopy(to_copy._operations)
             self._mappings: FieldMappings = copy.deepcopy(to_copy._mappings)
         else:
@@ -136,8 +136,8 @@ class QueryCompiler:
         return self._mappings.dtypes()
 
     @property
-    def es_dtypes(self) -> pd.Series:
-        return self._mappings.es_dtypes()
+    def os_dtypes(self) -> pd.Series:
+        return self._mappings.os_dtypes()
 
     # END Index, columns, and dtypes objects
 
@@ -149,7 +149,7 @@ class QueryCompiler:
         Parameters
         ----------
         results: List[Dict[str, Any]]
-            Elasticsearch results from self.client.search
+            OpenSearch results from self.client.search
 
         Returns
         -------
@@ -159,7 +159,7 @@ class QueryCompiler:
 
         Notes
         -----
-        Fields containing lists in Elasticsearch don't map easily to pandas.DataFrame
+        Fields containing lists in OpenSearch don't map easily to pandas.DataFrame
         For example, an index with mapping:
         ```
         "mappings" : {
@@ -197,8 +197,8 @@ class QueryCompiler:
           ]
         }
         ```
-        (https://www.elastic.co/guide/en/elasticsearch/reference/current/nested.html)
-        this would be transformed internally (in Elasticsearch) into a document that looks more like this:
+        (https://opensearch.org/docs/2.2/opensearch/supported-field-types/nested/)
+        this would be transformed internally (in OpenSearch) into a document that looks more like this:
         ```
         {
           "group" :        "amsterdam",
@@ -208,7 +208,7 @@ class QueryCompiler:
         ```
         When mapping this a pandas data frame we mimic this transformation.
 
-        Similarly, if a list is added to Elasticsearch:
+        Similarly, if a list is added to OpenSearch:
         ```
         PUT my_index/_doc/1
         {
@@ -227,10 +227,8 @@ class QueryCompiler:
           }
         }
         ```
-        TODO - explain how lists are handled
-            (https://www.elastic.co/guide/en/elasticsearch/reference/current/array.html)
-        TODO - an option here is to use Elasticsearch's multi-field matching instead of pandas treatment of lists
-            (which isn't great)
+        TODO - eland devs mentioned option here is to use Elasticsearch's multi-field matching instead of pandas
+        treatment of lists (which isn't great)
         NOTE - using this lists is generally not a good way to use this API
         """
         if not results:
@@ -260,9 +258,9 @@ class QueryCompiler:
 
             # get index value - can be _id or can be field value in source
             if self._index.is_source_field:
-                index_field = row[self._index.es_index_field]
+                index_field = row[self._index.os_index_field]
             else:
-                index_field = hit[self._index.es_index_field]
+                index_field = hit[self._index.os_index_field]
             index.append(index_field)
 
             # flatten row to map correctly to 2D DataFrame
@@ -320,7 +318,7 @@ class QueryCompiler:
 
                 # Coerce types - for now just datetime
                 if pd_dtype == "datetime64[ns]":
-                    x = elasticsearch_date_to_pandas_date(
+                    x = opensearch_date_to_pandas_date(
                         x, field_mapping_cache.date_field_format(field_name)
                     )
 
@@ -357,7 +355,7 @@ class QueryCompiler:
         index_count: int
             Count of docs where index_field exists
         """
-        return self._operations.index_count(self, self.index.es_index_field)
+        return self._operations.index_count(self, self.index.os_index_field)
 
     def _index_matches_count(self, items: List[Any]) -> int:
         """
@@ -367,7 +365,7 @@ class QueryCompiler:
             Count of docs where items exist
         """
         return self._operations.index_matches_count(
-            self, self.index.es_index_field, items
+            self, self.index.os_index_field, items
         )
 
     def _empty_pd_ef(self) -> "pd.DataFrame":
@@ -438,7 +436,7 @@ class QueryCompiler:
         if len(columns) < 1:
             raise ValueError("columns can't be empty")
 
-        es_dtypes = self.es_dtypes.to_dict()
+        os_dtypes = self.os_dtypes.to_dict()
 
         # Build the base options for the 'match_*' query
         options = {"query": text}
@@ -456,7 +454,7 @@ class QueryCompiler:
                 if "*" in column:
                     continue
 
-                es_dtype = es_dtypes[column]
+                es_dtype = os_dtypes[column]
                 if es_dtype != "text":
                     non_text_columns[column] = es_dtype
             if non_text_columns:
@@ -464,7 +462,7 @@ class QueryCompiler:
                     f"Attempting to run es_match() on non-text fields "
                     f"({', '.join([k + '=' + v for k, v in non_text_columns.items()])}) "
                     f"means that these fields may not be analyzed properly. "
-                    f"Consider reindexing these fields as text or use 'match_only_text_es_dtypes=False' "
+                    f"Consider reindexing these fields as text or use 'match_only_text_os_dtypes=False' "
                     f"to use match anyways"
                 )
         else:
@@ -551,7 +549,7 @@ class QueryCompiler:
             result._mappings.display_names = new_columns.to_list()
 
         if index is not None:
-            result._operations.drop_index_values(self, self.index.es_index_field, index)
+            result._operations.drop_index_values(self, self.index.os_index_field, index)
 
         return result
 
@@ -561,7 +559,7 @@ class QueryCompiler:
         like: Optional[str] = None,
         regex: Optional[str] = None,
     ) -> "QueryCompiler":
-        # field will be es_index_field for DataFrames or the column for Series.
+        # field will be os_index_field for DataFrames or the column for Series.
         # This function is only called for axis='index',
         # DataFrame.filter(..., axis="columns") calls .drop()
         result = self.copy()
@@ -694,12 +692,12 @@ class QueryCompiler:
     def value_counts(self, es_size: int) -> pd.Series:
         return self._operations.value_counts(self, es_size)
 
-    def es_info(self, buf: TextIO) -> None:
-        buf.write(f"es_index_pattern: {self._index_pattern}\n")
+    def os_info(self, buf: TextIO) -> None:
+        buf.write(f"os_index_pattern: {self._index_pattern}\n")
 
-        self._index.es_info(buf)
-        self._mappings.es_info(buf)
-        self._operations.es_info(self, buf)
+        self._index.os_info(buf)
+        self._mappings.os_info(buf)
+        self._operations.os_info(self, buf)
 
     def describe(self) -> pd.DataFrame:
         return self._operations.describe(self)
@@ -741,10 +739,10 @@ class QueryCompiler:
                 f"{self._client} != {right._client}"
             )
 
-        if self._index.es_index_field != right._index.es_index_field:
+        if self._index.os_index_field != right._index.os_index_field:
             raise ValueError(
                 f"Can not perform arithmetic operations across different index fields "
-                f"{self._index.es_index_field} != {right._index.es_index_field}"
+                f"{self._index.os_index_field} != {right._index.os_index_field}"
             )
 
         if self._index_pattern != right._index_pattern:

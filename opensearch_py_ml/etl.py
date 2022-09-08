@@ -20,7 +20,7 @@ from collections import deque
 from typing import Any, Dict, Generator, List, Mapping, Optional, Tuple, Union
 
 import pandas as pd  # type: ignore
-from elasticsearch import Elasticsearch
+from opensearchpy import OpenSearch
 from opensearchpy.helpers import parallel_bulk
 
 from opensearch_py_ml import DataFrame
@@ -37,7 +37,7 @@ _DEFAULT_LOW_MEMORY: bool = _c_parser_defaults["low_memory"]
 
 def pandas_to_opensearch(
     pd_df: pd.DataFrame,
-    es_client: Union[str, List[str], Tuple[str, ...], Elasticsearch],
+    os_client: Union[str, List[str], Tuple[str, ...], OpenSearch],
     os_dest_index: str,
     es_if_exists: str = "fail",
     es_refresh: bool = False,
@@ -49,17 +49,15 @@ def pandas_to_opensearch(
     use_pandas_index_for_os_ids: bool = True,
 ) -> DataFrame:
     """
-    Append a pandas DataFrame to an Elasticsearch index.
+    Append a pandas DataFrame to an OpenSearch index.
     Mainly used in testing.
-    Modifies the elasticsearch destination index
+    Modifies the OpenSearch destination index
 
     Parameters
     ----------
-    es_client: Elasticsearch client argument(s)
-        - elasticsearch-py parameters or
-        - elasticsearch-py instance
+    os_client: OpenSearch client
     os_dest_index: str
-        Name of Elasticsearch index to be appended to
+        Name of OpenSearch index to be appended to
     es_if_exists : {'fail', 'replace', 'append'}, default 'fail'
         How to behave if the index already exists.
 
@@ -74,15 +72,15 @@ def pandas_to_opensearch(
     es_type_overrides: dict, default None
         Dict of field_name: es_data_type that overrides default es data types
     es_verify_mapping_compatibility: bool, default 'True'
-        * True: Verify that the dataframe schema matches the Elasticsearch index schema
+        * True: Verify that the dataframe schema matches the OpenSearch index schema
         * False: Do not verify schema
     thread_count: int
         number of the threads to use for the bulk requests
     chunksize: int, default None
-        Number of pandas.DataFrame rows to read before bulk index into Elasticsearch
+        Number of pandas.DataFrame rows to read before bulk index into OpenSearch
     use_pandas_index_for_os_ids: bool, default 'True'
-        * True: pandas.DataFrame.index fields will be used to populate Elasticsearch '_id' fields.
-        * False: Ignore pandas.DataFrame.index when indexing into Elasticsearch
+        * True: pandas.DataFrame.index fields will be used to populate OpenSearch '_id' fields.
+        * False: Ignore pandas.DataFrame.index when indexing into OpenSearch
 
     Returns
     -------
@@ -121,8 +119,8 @@ def pandas_to_opensearch(
     H            object
     dtype: object
 
-    Convert `pandas.DataFrame` to `opensearch_py_ml.DataFrame` - this creates an Elasticsearch index called `pandas_to_eland`.
-    Overwrite existing Elasticsearch index if it exists `if_exists="replace"`, and sync index so it is
+    Convert `pandas.DataFrame` to `opensearch_py_ml.DataFrame` - this creates an OpenSearch index called `pandas_to_eland`.
+    Overwrite existing OpenSearch index if it exists `if_exists="replace"`, and sync index so it is
     readable on return `refresh=True`
 
 
@@ -159,10 +157,10 @@ def pandas_to_opensearch(
     if chunksize is None:
         chunksize = DEFAULT_CHUNK_SIZE
 
-    mapping = FieldMappings._generate_es_mappings(pd_df, es_type_overrides)
+    mapping = FieldMappings._generate_os_mappings(pd_df, es_type_overrides)
 
     # If table exists, check if_exists parameter
-    if es_client.indices.exists(index=os_dest_index):
+    if os_client.indices.exists(index=os_dest_index):
         if es_if_exists == "fail":
             raise ValueError(
                 f"Could not create the index [{os_dest_index}] because it "
@@ -172,20 +170,20 @@ def pandas_to_opensearch(
             )
 
         elif es_if_exists == "replace":
-            es_client.indices.delete(index=os_dest_index)
-            es_client.indices.create(index=os_dest_index, body={'mappings': mapping["mappings"]})
+            os_client.indices.delete(index=os_dest_index)
+            os_client.indices.create(index=os_dest_index, body={'mappings': mapping["mappings"]})
 
         elif es_if_exists == "append" and es_verify_mapping_compatibility:
-            dest_mapping = es_client.indices.get_mapping(index=os_dest_index)[
+            dest_mapping = os_client.indices.get_mapping(index=os_dest_index)[
                 os_dest_index
             ]
             verify_mapping_compatibility(
                 ed_mapping=mapping,
-                es_mapping=dest_mapping,
-                es_type_overrides=es_type_overrides,
+                os_mapping=dest_mapping,
+                os_type_overrides=es_type_overrides,
             )
     else:
-        es_client.indices.create(index=os_dest_index, body={'mappings': mapping["mappings"]})
+        os_client.indices.create(index=os_dest_index, body={'mappings': mapping["mappings"]})
 
     def action_generator(
         pd_df: pd.DataFrame,
@@ -213,7 +211,7 @@ def pandas_to_opensearch(
     # maxlen = 0 because don't need results of parallel_bulk
     deque(
         parallel_bulk(
-            client=es_client,
+            client=os_client,
             actions=action_generator(
                 pd_df, os_dropna, use_pandas_index_for_os_ids, os_dest_index
             ),
@@ -224,22 +222,22 @@ def pandas_to_opensearch(
     )
 
     if es_refresh:
-        es_client.indices.refresh(index=os_dest_index)
+        os_client.indices.refresh(index=os_dest_index)
 
-    return DataFrame(es_client, os_dest_index)
+    return DataFrame(os_client, os_dest_index)
 
 
 def opensearch_to_pandas(ed_df: DataFrame, show_progress: bool = False) -> pd.DataFrame:
     """
     Convert an opensearch_py_ml.Dataframe to a pandas.DataFrame
 
-    **Note: this loads the entire Elasticsearch index into in core pandas.DataFrame structures. For large
-    indices this can create significant load on the Elasticsearch cluster and require signficant memory**
+    **Note: this loads the entire OpenSearch index into in core pandas.DataFrame structures. For large
+    indices this can create significant load on the OpenSearch cluster and require signficant memory**
 
     Parameters
     ----------
     ed_df: opensearch_py_ml.DataFrame
-        The source opensearch_py_ml.Dataframe referencing the Elasticsearch index
+        The source opensearch_py_ml.Dataframe referencing the OpenSearch index
     show_progress: bool
         Output progress of option to stdout? By default False.
 
@@ -263,7 +261,7 @@ def opensearch_to_pandas(ed_df: DataFrame, show_progress: bool = False) -> pd.Da
     <BLANKLINE>
     [5 rows x 27 columns]
 
-    Convert `opensearch_py_ml.DataFrame` to `pandas.DataFrame` (Note: this loads entire Elasticsearch index into core memory)
+    Convert `opensearch_py_ml.DataFrame` to `pandas.DataFrame` (Note: this loads entire OpenSearch index into core memory)
 
     >>> pd_df = ed.opensearch_to_pandas(ed_df)
     >>> type(pd_df)
@@ -293,7 +291,7 @@ def opensearch_to_pandas(ed_df: DataFrame, show_progress: bool = False) -> pd.Da
 
 def csv_to_opensearch(  # type: ignore
     filepath_or_buffer,
-    es_client: Union[str, List[str], Tuple[str, ...], Elasticsearch],
+    os_client: Union[str, List[str], Tuple[str, ...], OpenSearch],
     os_dest_index: str,
     es_if_exists: str = "fail",
     es_refresh: bool = False,
@@ -358,19 +356,17 @@ def csv_to_opensearch(  # type: ignore
     float_precision=None,
 ) -> "DataFrame":
     """
-    Read a comma-separated values (csv) file into opensearch_py_ml.DataFrame (i.e. an Elasticsearch index).
+    Read a comma-separated values (csv) file into opensearch_py_ml.DataFrame (i.e. an OpenSearch index).
 
-    **Modifies an Elasticsearch index**
+    **Modifies an OpenSearch index**
 
     **Note pandas iteration options not supported**
 
     Parameters
     ----------
-    es_client: Elasticsearch client argument(s)
-        - elasticsearch-py parameters or
-        - elasticsearch-py instance
+    os_client: OpenSearch client
     os_dest_index: str
-        Name of Elasticsearch index to be appended to
+        Name of OpenSearch index to be appended to
     es_if_exists : {'fail', 'replace', 'append'}, default 'fail'
         How to behave if the index already exists.
 
@@ -383,7 +379,7 @@ def csv_to_opensearch(  # type: ignore
     es_type_overrides: dict, default None
         Dict of columns: es_type to override default es datatype mappings
     chunksize
-        number of csv rows to read before bulk index into Elasticsearch
+        number of csv rows to read before bulk index into OpenSearch
 
     Other Parameters
     ----------------
@@ -400,11 +396,11 @@ def csv_to_opensearch(  # type: ignore
     Examples
     --------
 
-    See if 'churn' index exists in Elasticsearch
+    See if 'churn' index exists in OpenSearch
 
-    >>> from elasticsearch import Elasticsearch # doctest: +SKIP
-    >>> es = Elasticsearch() # doctest: +SKIP
-    >>> es.indices.exists(index="churn") # doctest: +SKIP
+    >>> from opensearchpy import OpenSearch # doctest: +SKIP
+    >>> osclient = OpenSearch() # doctest: +SKIP
+    >>> osclient.indices.exists(index="churn") # doctest: +SKIP
     False
 
     Read 'churn.csv' and use first column as _id (and opensearch_py_ml.DataFrame index)
@@ -418,7 +414,7 @@ def csv_to_opensearch(  # type: ignore
 
     >>>  ed.csv_to_opensearch(
     ...      "churn.csv",
-    ...      es_client='http://localhost:9200',
+    ...      os_client='http://localhost:9200',
     ...      os_dest_index='churn',
     ...      es_refresh=True,
     ...      index_col=0
@@ -524,14 +520,14 @@ def csv_to_opensearch(  # type: ignore
 
         kwargs.pop("on_bad_lines")
 
-    # read csv in chunks to pandas DataFrame and dump to opensearch_py_ml DataFrame (and Elasticsearch)
+    # read csv in chunks to pandas DataFrame and dump to opensearch_py_ml DataFrame (and OpenSearch)
     reader = pd.read_csv(filepath_or_buffer, **kwargs)
 
     first_write = True
     for chunk in reader:
         pandas_to_opensearch(
             chunk,
-            es_client,
+            os_client,
             os_dest_index,
             chunksize=chunksize,
             es_refresh=es_refresh,
@@ -543,4 +539,4 @@ def csv_to_opensearch(  # type: ignore
         first_write = False
 
     # Now create an opensearch_py_ml.DataFrame that references the new index
-    return DataFrame(es_client, os_index_pattern=os_dest_index)
+    return DataFrame(os_client, os_index_pattern=os_dest_index)

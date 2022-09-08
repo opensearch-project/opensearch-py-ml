@@ -31,7 +31,6 @@ from typing import (
 )
 
 import pandas as pd  # type: ignore
-from elasticsearch import Elasticsearch
 from opensearchpy import OpenSearch
 
 from ._version import __version__ as _opensearch_py_ml_version
@@ -106,26 +105,25 @@ class SortOrder(Enum):
         return SortOrder.DESC
 
 
-def elasticsearch_date_to_pandas_date(
+def opensearch_date_to_pandas_date(
     value: Union[int, str, float], date_format: Optional[str]
 ) -> pd.Timestamp:
     """
-    Given a specific Elasticsearch format for a date datatype, returns the
+    Given a specific OpenSearch format for a date datatype, returns the
     'partial' `to_datetime` function to parse a given value in that format
 
-    **Date Formats: https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-date-format.html#built-in-date-formats
+    **Date Formats: https://opensearch.org/docs/2.2/opensearch/supported-field-types/date/
 
     Parameters
     ----------
     value: Union[int, str, float]
         The date value.
     date_format: str
-        The Elasticsearch date format (ex. 'epoch_millis', 'epoch_second', etc.)
+        The OpenSearch date format (ex. 'epoch_millis', 'epoch_second', etc.)
 
     Returns
     -------
     datetime: pd.Timestamp
-        From https://www.elastic.co/guide/en/elasticsearch/reference/current/date.html
         Date formats can be customised, but if no format is specified then it uses the default:
         "strict_date_optional_time||epoch_millis"
         Therefore if no format is specified we assume either strict_date_optional_time
@@ -307,23 +305,12 @@ def elasticsearch_date_to_pandas_date(
         return pd.to_datetime(value)
 
 
-def ensure_es_client(
-    es_client: Union[str, List[str], Tuple[str, ...], Elasticsearch]
-) -> Elasticsearch:
-    warn('function uses Elasticsearch and has been deprecated', DeprecationWarning, stacklevel=2)
-    if isinstance(es_client, tuple):
-        es_client = list(es_client)
-    if not isinstance(es_client, Elasticsearch):
-        es_client = Elasticsearch(es_client)  # type: ignore[arg-type]
-    return es_client
-
-
 def os_version(os_client: OpenSearch) -> Tuple[int, int, int]:
-    """Tags the current ES client with a cached '_eland_es_version'
-    property if one doesn't exist yet for the current Elasticsearch version.
+    """Tags the current OS client with a cached '_os_ml_py_version'
+    property if one doesn't exist yet for the current OpenSearch version.
     """
     opensearch_py_ml_os_version: Tuple[int, int, int]
-    if not hasattr(os_client, "_eland_es_version"):
+    if not hasattr(os_client, "_os_ml_py_version"):
         version_info = os_client.info()["version"]["number"]
         match = re.match(r"^(\d+)\.(\d+)\.(\d+)", version_info)
         if match is None:
@@ -334,10 +321,10 @@ def os_version(os_client: OpenSearch) -> Tuple[int, int, int]:
         opensearch_py_ml_os_version = cast(
             Tuple[int, int, int], tuple(int(x) for x in match.groups())
         )
-        os_client._eland_es_version = opensearch_py_ml_os_version  # type: ignore
+        os_client._os_ml_py_version = opensearch_py_ml_os_version  # type: ignore
 
         # Raise a warning if the major version of the library doesn't match the
-        # the Elasticsearch server major version.
+        # the OpenSearch server major version.
         if opensearch_py_ml_os_version[0] != _OPENSEARCH_PY_ML_MAJOR_VERSION:
             warnings.warn(
                 f"OpenSearch major version ({_opensearch_py_ml_version}) doesn't match the major "
@@ -348,5 +335,5 @@ def os_version(os_client: OpenSearch) -> Tuple[int, int, int]:
             )
 
     else:
-        opensearch_py_ml_os_version = os_client._eland_es_version  # type: ignore
+        opensearch_py_ml_os_version = os_client._os_ml_py_version  # type: ignore
     return opensearch_py_ml_os_version
