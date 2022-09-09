@@ -6,12 +6,12 @@ import json
 
 import numpy as np
 from opensearch_py_ml import DataFrame
-from typing import List, Optional
+from typing import List, Optional, Dict, Tuple, Any
 from math import ceil
 
 from sagemaker import RealTimePredictor, Session
 
-DEFAULT_UPLOAD_CHUNK_SIZE = 1000
+DEFAULT_SAGEMAKER_UPLOAD_CHUNK_SIZE = 1000
 
 
 def make_sagemaker_prediction(endpoint_name: str,
@@ -21,7 +21,7 @@ def make_sagemaker_prediction(endpoint_name: str,
                               column_order: Optional[List[str]] = None,
                               chunksize: int = None,
                               sort_index: Optional[str] = '_doc'
-                              )-> np.array:
+                              ) -> Tuple[List[Any], Dict[Any, Any]]:
     """
     Make a prediction on an opensearch_py_ml dataframe using a deployed SageMaker model endpoint.
 
@@ -44,7 +44,7 @@ def make_sagemaker_prediction(endpoint_name: str,
 
     Returns
     ----------
-    np.array representing the output of the model on input data
+    list representing the indices, dictionary representing the output of the model on input data
     """
     predictor = RealTimePredictor(endpoint=endpoint_name, sagemaker_session=sagemaker_session, content_type='text/csv')
     data = data.drop(columns=target_column)
@@ -52,7 +52,7 @@ def make_sagemaker_prediction(endpoint_name: str,
     if column_order is not None:
         data = data[column_order]
     if chunksize is None:
-        chunksize = DEFAULT_UPLOAD_CHUNK_SIZE
+        chunksize = DEFAULT_SAGEMAKER_UPLOAD_CHUNK_SIZE
 
     indices = [index for index, _ in data.iterrows(sort_index=sort_index)]
 

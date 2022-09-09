@@ -24,7 +24,7 @@ from opensearch_py_ml.filter import BooleanFilter, IsIn, IsNull, NotNull, Random
 
 class Query:
     """
-    Simple class to manage building Elasticsearch queries.
+    Simple class to manage building OpenSearch queries.
     """
 
     def __init__(self, query: Optional["Query"] = None):
@@ -46,7 +46,7 @@ class Query:
     def exists(self, field: str, must: bool = True) -> None:
         """
         Add exists query
-        https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-exists-query.html
+        https://opensearch.org/docs/latest/opensearch/rest-api/index-apis/exists/
         """
         if must:
             if self._query.empty():
@@ -62,7 +62,7 @@ class Query:
     def ids(self, items: List[Any], must: bool = True) -> None:
         """
         Add ids query
-        https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-ids-query.html
+        https://opensearch.org/docs/latest/opensearch/query-dsl/term/#ids
         """
         if must:
             if self._query.empty():
@@ -77,8 +77,8 @@ class Query:
 
     def terms(self, field: str, items: List[str], must: bool = True) -> None:
         """
-        Add ids query
-        https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-terms-query.html
+        Add terms query
+        https://opensearch.org/docs/latest/opensearch/query-dsl/term/#terms
         """
         if must:
             if self._query.empty():
@@ -94,7 +94,7 @@ class Query:
     def regexp(self, field: str, value: str) -> None:
         """
         Add regexp query
-        https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-regexp-query.html
+        https://opensearch.org/docs/latest/opensearch/query-dsl/term/#regex
         """
         if self._query.empty():
             self._query = Rlike(field, value)
@@ -148,7 +148,7 @@ class Query:
     def percentile_agg(self, name: str, field: str, percents: List[float]) -> None:
         """
 
-        Ref: https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-metrics-percentile-aggregation.html
+        Ref: https://opensearch.org/docs/latest/opensearch/metric-agg/#percentile-percentile_ranks
 
         "aggs": {
             "percentile_": {
@@ -221,7 +221,7 @@ class Query:
         Start a composite aggregation. This should be called
         after calls to composite_agg_bucket_*(), etc.
 
-        https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket-composite-aggregation.html
+        https://opensearch.org/docs/latest/opensearch/bucket-agg/
 
         "aggs": {
             "groupby_buckets": {

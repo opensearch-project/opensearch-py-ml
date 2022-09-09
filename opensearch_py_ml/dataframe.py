@@ -42,7 +42,6 @@ from opensearch_py_ml.series import Series
 from opensearch_py_ml.utils import is_valid_attr_name
 
 if TYPE_CHECKING:
-    from elasticsearch import Elasticsearch
     from opensearchpy import OpenSearch
 
     from .query_compiler import QueryCompiler
@@ -51,21 +50,19 @@ if TYPE_CHECKING:
 class DataFrame(NDFrame):
     """
     Two-dimensional size-mutable, potentially heterogeneous tabular data structure with labeled axes
-    (rows and columns) referencing data stored in Elasticsearch indices.
+    (rows and columns) referencing data stored in OpenSearch indices.
     Where possible APIs mirror pandas.DataFrame APIs.
-    The underlying data is stored in Elasticsearch rather than core memory.
+    The underlying data is stored in OpenSearch rather than core memory.
 
     Parameters
     ----------
-    es_client: Elasticsearch client argument(s) (e.g. 'http://localhost:9200')
-        - elasticsearch-py parameters or
-        - elasticsearch-py instance
-    es_index_pattern: str
-        Elasticsearch index pattern. This can contain wildcards. (e.g. 'flights')
+    os_client: OpenSearch client
+    os_index_pattern: str
+        OpenSearch index pattern. This can contain wildcards. (e.g. 'flights')
     columns: list of str, optional
-        List of DataFrame columns. A subset of the Elasticsearch index's fields.
-    es_index_field: str, optional
-        The Elasticsearch index field to use as the DataFrame index. Defaults to _id if None is used.
+        List of DataFrame columns. A subset of the OpenSearch index's fields.
+    os_index_field: str, optional
+        The OpenSearch index field to use as the DataFrame index. Defaults to _id if None is used.
 
     See Also
     --------
@@ -73,7 +70,7 @@ class DataFrame(NDFrame):
 
     Examples
     --------
-    Constructing DataFrame from an Elasticsearch configuration arguments and an Elasticsearch index
+    Constructing DataFrame from an OpenSearch configuration arguments and an OpenSearch index
 
     >>> df = ed.DataFrame('http://localhost:9200', 'flights')
     >>> df.head()
@@ -87,11 +84,11 @@ class DataFrame(NDFrame):
     [5 rows x 27 columns]
 
 
-    Constructing DataFrame from an Elasticsearch client and an Elasticsearch index
+    Constructing DataFrame from an OpenSearch client and an OpenSearch index
 
-    >>> from elasticsearch import Elasticsearch
-    >>> es = Elasticsearch("http://localhost:9200")
-    >>> df = ed.DataFrame(es_client=es, es_index_pattern='flights', columns=['AvgTicketPrice', 'Cancelled'])
+    >>> from opensearchpy import OpenSearch
+    >>> es = OpenSearch("http://localhost:9200")
+    >>> df = ed.DataFrame(os_client=es, os_index_pattern='flights', columns=['AvgTicketPrice', 'Cancelled'])
     >>> df.head()
        AvgTicketPrice  Cancelled
     0      841.265642      False
@@ -102,15 +99,15 @@ class DataFrame(NDFrame):
     <BLANKLINE>
     [5 rows x 2 columns]
 
-    Constructing DataFrame from an Elasticsearch client and an Elasticsearch index, with 'timestamp' as the  DataFrame
+    Constructing DataFrame from an OpenSearch client and an OpenSearch index, with 'timestamp' as the  DataFrame
     index field
     (TODO - currently index_field must also be a field if not _id)
 
     >>> df = ed.DataFrame(
-    ...     es_client='http://localhost:9200',
-    ...     es_index_pattern='flights',
+    ...     os_client='http://localhost:9200',
+    ...     os_index_pattern='flights',
     ...     columns=['AvgTicketPrice', 'timestamp'],
-    ...     es_index_field='timestamp'
+    ...     os_index_field='timestamp'
     ... )
     >>> df.head()
                          AvgTicketPrice           timestamp
@@ -162,7 +159,7 @@ class DataFrame(NDFrame):
         Returns
         -------
         pandas.Index
-            Elasticsearch field names as pandas.Index
+            OpenSearch field names as pandas.Index
 
         See Also
         --------
@@ -559,7 +556,7 @@ class DataFrame(NDFrame):
         An alternative approach is to use value_count aggregations. However, they have issues in that:
 
         - They can only be used with aggregatable fields (e.g. keyword not text)
-        - For list fields they return multiple counts. E.g. tags=['elastic', 'ml'] returns value_count=2 for a
+        - For list fields they return multiple counts. E.g. tags=['opensearch-project', 'ml'] returns value_count=2 for a
           single document.
 
         TODO - add additional pandas.DataFrame.count features
@@ -583,12 +580,12 @@ class DataFrame(NDFrame):
         """
         return self._query_compiler.count()
 
-    def es_info(self):
+    def os_info(self):
         # noinspection PyPep8
         """
         A debug summary of an opensearch_py_ml DataFrame internals.
 
-        This includes the Elasticsearch search queries and query compiler task list.
+        This includes the OpenSearch search queries and query compiler task list.
 
         Returns
         -------
@@ -610,14 +607,14 @@ class DataFrame(NDFrame):
         12907 2018-02-11 20:08:25             AMS           LIM             225
         <BLANKLINE>
         [5 rows x 4 columns]
-        >>> print(df.es_info())
-        es_index_pattern: flights
+        >>> print(df.os_info())
+        os_index_pattern: flights
         Index:
-         es_index_field: _id
+         os_index_field: _id
          is_source_field: False
         Mappings:
          capabilities:
-                           es_field_name  is_source es_dtype                  es_date_format        pd_dtype  is_searchable  is_aggregatable  is_scripted aggregatable_es_field_name
+                           es_field_name  is_source os_dtype                  es_date_format        pd_dtype  is_searchable  is_aggregatable  is_scripted aggregatable_es_field_name
         timestamp              timestamp       True     date  strict_date_hour_minute_second  datetime64[ns]           True             True        False                  timestamp
         OriginAirportID  OriginAirportID       True  keyword                            None          object           True             True        False            OriginAirportID
         DestAirportID      DestAirportID       True  keyword                            None          object           True             True        False              DestAirportID
@@ -633,7 +630,7 @@ class DataFrame(NDFrame):
         """
         buf = StringIO()
 
-        super()._es_info(buf)
+        super()._os_info(buf)
 
         return buf.getvalue()
 
@@ -650,12 +647,12 @@ class DataFrame(NDFrame):
         fuzziness: Optional[Union[int, str]] = None,
         **kwargs: Any,
     ) -> "DataFrame":
-        """Filters data with an Elasticsearch ``match``, ``match_phrase``, or
+        """Filters data with an OpenSearch ``match``, ``match_phrase``, or
         ``multi_match`` query depending on the given parameters and columns.
 
-        Read more about `Full-Text Queries in Elasticsearch <https://www.elastic.co/guide/en/elasticsearch/reference/current/full-text-queries.html>`_
+        Read more about `Full-Text Queries in OpenSearch <https://opensearch.org/docs/latest/opensearch/query-dsl/full-text/>`_
 
-        By default all fields of type 'text' within Elasticsearch are queried
+        By default all fields of type 'text' within OpenSearch are queried
         otherwise specific columns can be specified via the ``columns`` parameter
         or a single column can be filtered on with :py:meth:`opensearch_py_ml.Series.es_match`
 
@@ -666,7 +663,7 @@ class DataFrame(NDFrame):
         text: str
             String of text to search for
         columns: str, List[str], optional
-            List of columns to search over. Defaults to all 'text' fields in Elasticsearch
+            List of columns to search over. Defaults to all 'text' fields in OpenSearch
         match_phrase: bool, default False
             If True will use ``match_phrase`` instead of ``match`` query which takes into account
             the order of the ``text`` parameter.
@@ -710,10 +707,10 @@ class DataFrame(NDFrame):
         [2310 rows x 45 columns]
         """
         # Determine which columns will be used
-        es_dtypes = self.es_dtypes.to_dict()
+        os_dtypes = self.os_dtypes.to_dict()
         if columns is None:
             columns = [
-                column for column, es_dtype in es_dtypes.items() if es_dtype == "text"
+                column for column, os_dtype in os_dtypes.items() if os_dtype == "text"
             ]
         elif isinstance(columns, str):
             columns = [columns]
@@ -735,12 +732,12 @@ class DataFrame(NDFrame):
         return DataFrame(_query_compiler=qc._update_query(filter))
 
     def es_query(self, query) -> "DataFrame":
-        """Applies an Elasticsearch DSL query to the current DataFrame.
+        """Applies an OpenSearch DSL query to the current DataFrame.
 
         Parameters
         ----------
         query:
-            Dictionary of the Elasticsearch DSL query to apply
+            Dictionary of the OpenSearch DSL query to apply
 
         Returns
         -------
@@ -752,7 +749,7 @@ class DataFrame(NDFrame):
 
         Apply a `geo-distance query`_ to a dataset with a geo-point column ``geoip.location``.
 
-         .. _geo-distance query: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-distance-query.html
+         .. _geo-distance query documentation from Elasticsearch: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-distance-query.html
 
         >>> df = ed.DataFrame('http://localhost:9200', 'ecommerce', columns=['customer_first_name', 'geoip.city_name'])
         >>> df.es_query({"bool": {"filter": {"geo_distance": {"distance": "1km", "geoip.location": [55.3, 25.3]}}}}).head()
@@ -841,7 +838,7 @@ class DataFrame(NDFrame):
          1   geoip.city_name      4094 non-null   object
         dtypes: object(2)
         memory usage: ...
-        Elasticsearch storage usage: ...
+        OpenSearch storage usage: ...
         """
         if buf is None:  # pragma: no cover
             buf = sys.stdout
@@ -983,7 +980,7 @@ class DataFrame(NDFrame):
                 index=self._query_compiler._index_pattern, metric=["store"]
             )["_all"]["total"]["store"]["size_in_bytes"]
             lines.append(
-                f"Elasticsearch storage usage: {_sizeof_fmt(storage_usage,size_qualifier)}\n"
+                f"OpenSearch storage usage: {_sizeof_fmt(storage_usage,size_qualifier)}\n"
             )
 
         fmt.buffer_put_lines(buf, lines)
@@ -1015,7 +1012,7 @@ class DataFrame(NDFrame):
         render_links=False,
     ) -> Any:
         """
-        Render a Elasticsearch data as an HTML table.
+        Render a OpenSearch data as an HTML table.
 
         Follows pandas implementation except when ``max_rows=None``. In this scenario, we set ``max_rows={0}`` to avoid
         accidentally dumping an entire index. This can be overridden by explicitly setting ``max_rows``.
@@ -1311,7 +1308,7 @@ class DataFrame(NDFrame):
         decimal=".",
     ) -> Optional[str]:
         """
-        Write Elasticsearch data to a comma-separated values (csv) file.
+        Write OpenSearch data to a comma-separated values (csv) file.
 
         See Also
         --------
@@ -1402,7 +1399,7 @@ class DataFrame(NDFrame):
 
         Notes
         -----
-        - number of rows ``len(df)`` queries Elasticsearch
+        - number of rows ``len(df)`` queries OpenSearch
         - number of columns ``len(df.columns)`` is cached. If mappings are updated, DataFrame must be updated.
 
         Examples
@@ -1441,7 +1438,7 @@ class DataFrame(NDFrame):
         Returns
         -------
         pandas.Index
-            Elasticsearch field names as pandas.Index
+            OpenSearch field names as pandas.Index
         """
         return self.columns
 
@@ -2115,7 +2112,7 @@ class DataFrame(NDFrame):
         entire index.
 
         If this is required, call ``ed.opensearch_to_pandas(ed_df).values``, *but beware this will scan/scroll the entire
-        Elasticsearch index(s) into memory.*
+        OpenSearch index(s) into memory.*
 
         See Also
         --------
@@ -2133,7 +2130,7 @@ class DataFrame(NDFrame):
         entire index.
 
         If this is required, call ``ed.eland_to_pandas(ed_df).values``, *but beware this will scan/scroll the entire
-        Elasticsearch index(s) into memory.*
+        OpenSearch index(s) into memory.*
 
         See Also
         --------
@@ -2164,6 +2161,6 @@ class DataFrame(NDFrame):
                [730.041778346198, 'Kibana Airlines']], dtype=object)
         """
         raise AttributeError(
-            "This method would scan/scroll the entire Elasticsearch index(s) into memory. "
+            "This method would scan/scroll the entire OpenSearch index(s) into memory. "
             "If this is explicitly required, and there is sufficient memory, call `ed.opensearch_to_pandas(ed_df).values`"
         )

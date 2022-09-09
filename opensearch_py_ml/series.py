@@ -20,10 +20,10 @@ Series
 ---------
 One-dimensional ndarray with axis labels (including time series).
 
-The underlying data resides in Elasticsearch and the API aligns as much as
+The underlying data resides in OpenSearch and the API aligns as much as
 possible with pandas.DataFrame API.
 
-This allows the opensearch_py_ml.Series to access large datasets stored in Elasticsearch,
+This allows the opensearch_py_ml.Series to access large datasets stored in OpenSearch,
 without storing the dataset in local memory.
 
 Implementation Details
@@ -63,7 +63,6 @@ from opensearch_py_ml.ndframe import NDFrame
 from opensearch_py_ml.utils import to_list
 
 if TYPE_CHECKING:
-    from elasticsearch import Elasticsearch
     from opensearchpy import OpenSearch
 
     from opensearch_py_ml.query_compiler import QueryCompiler
@@ -75,22 +74,22 @@ def _get_method_name() -> str:
 
 class Series(NDFrame):
     """
-    pandas.Series like API that proxies into Elasticsearch index(es).
+    pandas.Series like API that proxies into OpenSearch index(es).
 
     Parameters
     ----------
-    os_client : elasticsearch.Elasticsearch
-        A reference to a Elasticsearch python client
+    os_client : opensearchpy.OpenSearch
+        A reference to a OpenSearch python client
 
     os_index_pattern : str
-        An Elasticsearch index pattern. This can contain wildcards.
+        An OpenSearch index pattern. This can contain wildcards.
 
     os_index_field : str
         The field to base the series on
 
     Notes
     -----
-    If the Elasticsearch index is deleted or index mappings are changed after this
+    If the OpenSearch index is deleted or index mappings are changed after this
     object is created, the object is not rebuilt and so inconsistencies can occur.
 
     See Also
@@ -99,7 +98,7 @@ class Series(NDFrame):
 
     Examples
     --------
-    >>> ed.Series(es_client='http://localhost:9200', es_index_pattern='flights', name='Carrier')
+    >>> ed.Series(os_client='http://localhost:9200', os_index_pattern='flights', name='Carrier')
     0         Kibana Airlines
     1        Logstash Airways
     2        Logstash Airways
@@ -162,7 +161,7 @@ class Series(NDFrame):
 
         Notes
         -----
-        - number of rows ``len(series)`` queries Elasticsearch
+        - number of rows ``len(series)`` queries OpenSearch
         - number of columns == 1
 
         Examples
@@ -182,7 +181,7 @@ class Series(NDFrame):
         Returns
         -------
         es_field_name: str
-            Return the Elasticsearch field name for this series
+            Return the OpenSearch field name for this series
         """
         return self._query_compiler.get_field_names(include_scripted_fields=True)[0]
 
@@ -197,7 +196,7 @@ class Series(NDFrame):
     def rename(self, new_name: str) -> "Series":
         """
         Rename name of series. Only column rename is supported. This does not change the underlying
-        Elasticsearch index, but adds a symbolic link from the new name (column) to the Elasticsearch field name.
+        index, but adds a symbolic link from the new name (column) to the OpenSearch field name.
 
         For instance, if a field was called 'total_quantity' it could be renamed 'Total Quantity'.
 
@@ -268,7 +267,7 @@ class Series(NDFrame):
         """
         Return the value counts for the specified field.
 
-        **Note we can only do this for aggregatable Elasticsearch fields - (in general) numeric and keyword
+        **Note we can only do this for aggregatable OpenSearch fields - (in general) numeric and keyword
         rather than text fields**
 
         TODO - implement remainder of pandas arguments
@@ -278,7 +277,7 @@ class Series(NDFrame):
         es_size: int, default 10
             Number of buckets to return counts for, automatically sorts by count descending.
             This parameter is specific to `opensearch_py_ml`, and determines how many term buckets
-            elasticsearch should return out of the overall terms list.
+            OpenSearch should return out of the overall terms list.
 
         Returns
         -------
@@ -456,11 +455,11 @@ class Series(NDFrame):
         return self._query_compiler.dtypes[0]
 
     @property
-    def es_dtype(self) -> str:
+    def os_dtype(self) -> str:
         """
-        Return the Elasticsearch type of the underlying data.
+        Return the OpenSearch type of the underlying data.
         """
-        return self._query_compiler.es_dtypes[0]
+        return self._query_compiler.os_dtypes[0]
 
     def __gt__(self, other: Union[int, float, "Series"]) -> BooleanFilter:
         if isinstance(other, np.datetime64):
@@ -749,10 +748,10 @@ class Series(NDFrame):
         fuzziness: Optional[Union[int, str]] = None,
         **kwargs: Any,
     ) -> QueryFilter:
-        """Filters data with an Elasticsearch ``match`` or ``match_phrase``
+        """Filters data with an OpenSearch ``match`` or ``match_phrase``
         query depending on the given parameters.
 
-        Read more about `Full-Text Queries in Elasticsearch <https://www.elastic.co/guide/en/elasticsearch/reference/current/full-text-queries.html>`_
+        Read more about `Full-Text Queries in OpenSearch <https://opensearch.org/docs/latest/opensearch/query-dsl/full-text/>`_
 
         All additional keyword arguments are passed in the body of the match query.
 
@@ -807,10 +806,10 @@ class Series(NDFrame):
             **kwargs,
         )
 
-    def es_info(self) -> str:
+    def os_info(self) -> str:
         buf = StringIO()
 
-        super()._es_info(buf)
+        super()._os_info(buf)
 
         return buf.getvalue()
 
@@ -1366,7 +1365,7 @@ class Series(NDFrame):
         return a op b
 
         a & b == Series
-            a & b must share same Elasticsearch client, index_pattern and index_field
+            a & b must share same OpenSearch client, index_pattern and index_field
         a == Series, b == numeric or string
 
         Naming of the resulting Series
@@ -1690,7 +1689,7 @@ class Series(NDFrame):
         entire index.
 
         If this is required, call ``ed.eland_to_pandas(ed_series).values``, *but beware this will scan/scroll the entire
-        Elasticsearch index(s) into memory.*
+        OpenSearch index(s) into memory.*
 
         See Also
         --------
@@ -1716,6 +1715,6 @@ class Series(NDFrame):
                'Kibana Airlines', 'Kibana Airlines'], dtype=object)
         """
         raise NotImplementedError(
-            "This method would scan/scroll the entire Elasticsearch index(s) into memory."
+            "This method would scan/scroll the entire OpenSearch index(s) into memory."
             "If this is explicitly required and there is sufficient memory, call `ed.opensearch_to_pandas(ed_df).values`"
         )
