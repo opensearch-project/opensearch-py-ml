@@ -29,3 +29,5 @@ code that is still adapted to `eland` and has not yet been changed. List of thin
 - Support for continuous integration
 - Regenerating Sphinx docs
 - Creating tutorials for `opensearch-py-ml` in both notebook and video form
+=======
+AWS SageMaker, allowing users to upload OpenSearch indices to deployed SageMaker endpoints for real-time prediction.
