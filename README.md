@@ -9,6 +9,8 @@ complex filtering and aggregation operations. It also provides rudimentary suppo
 clusters using the [ml-commons](https://github.com/opensearch-project/ml-commons) plugin, and provides integration with
 AWS SageMaker, allowing users to upload OpenSearch indices to deployed SageMaker endpoints for real-time prediction.
 
+Project hand-off doc: https://quip-amazon.com/XAIMAu2XK3Ph/opensearch-py-ml-project-handoff-doc
+
 ## Testing `opensearch-py-ml`
 
 This package relies on a *minimal-security* version of OpenSearch 2.2 running on a connection to localhost:9200, with a
