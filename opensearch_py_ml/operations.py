@@ -1285,7 +1285,6 @@ class Operations:
         ):
             df = query_compiler._es_results_to_pandas(hits)
             df = self._apply_df_post_processing(df, post_processing)
-            # df.to_csv(f'debug_{i}.csv')
             # i += 1
             yield df
 
