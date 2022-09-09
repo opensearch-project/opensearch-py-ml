@@ -18,15 +18,15 @@
 # File called _pytest for PyCharm compatability
 from pandas.testing import assert_series_equal
 
-from eland.field_mappings import FieldMappings
-from tests import ES_TEST_CLIENT, FLIGHTS_INDEX_NAME
+from opensearch_py_ml.field_mappings import FieldMappings
+from tests import OPENSEARCH_TEST_CLIENT, FLIGHTS_INDEX_NAME
 from tests.common import TestData
 
 
 class TestDTypes(TestData):
     def test_all_fields(self):
         field_mappings = FieldMappings(
-            client=ES_TEST_CLIENT, index_pattern=FLIGHTS_INDEX_NAME
+            client=OPENSEARCH_TEST_CLIENT, index_pattern=FLIGHTS_INDEX_NAME
         )
 
         pd_flights = self.pd_flights()
@@ -37,7 +37,7 @@ class TestDTypes(TestData):
         expected = ["timestamp", "DestWeather", "DistanceKilometers", "AvgTicketPrice"]
 
         field_mappings = FieldMappings(
-            client=ES_TEST_CLIENT,
+            client=OPENSEARCH_TEST_CLIENT,
             index_pattern=FLIGHTS_INDEX_NAME,
             display_names=expected,
         )

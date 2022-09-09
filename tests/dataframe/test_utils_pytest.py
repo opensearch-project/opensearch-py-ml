@@ -21,9 +21,9 @@ import numpy as np
 import pandas as pd
 import pytest
 
-import eland as ed
-from eland.field_mappings import FieldMappings
-from tests.common import ES_TEST_CLIENT, TestData, assert_pandas_eland_frame_equal
+import opensearch_py_ml as ed
+from opensearch_py_ml.field_mappings import FieldMappings
+from tests.common import OPENSEARCH_TEST_CLIENT, TestData, assert_pandas_eland_frame_equal
 
 
 class TestDataFrameUtils(TestData):
@@ -57,21 +57,21 @@ class TestDataFrameUtils(TestData):
             }
         }
 
-        mappings = FieldMappings._generate_es_mappings(df)
+        mappings = FieldMappings._generate_os_mappings(df)
 
         assert expected_mappings == mappings
 
         # Now create index
         index_name = "eland_test_generate_es_mappings"
 
-        ed_df = ed.pandas_to_eland(
-            df, ES_TEST_CLIENT, index_name, es_if_exists="replace", es_refresh=True
+        ed_df = ed.pandas_to_opensearch(
+            df, OPENSEARCH_TEST_CLIENT, index_name, es_if_exists="replace", es_refresh=True
         )
         ed_df_head = ed_df.head()
 
         assert_pandas_eland_frame_equal(df, ed_df_head)
 
-        ES_TEST_CLIENT.indices.delete(index=index_name)
+        OPENSEARCH_TEST_CLIENT.indices.delete(index=index_name)
 
     def test_pandas_to_eland_ignore_index(self):
         df = pd.DataFrame(
@@ -92,13 +92,13 @@ class TestDataFrameUtils(TestData):
         # Now create index
         index_name = "test_pandas_to_eland_ignore_index"
 
-        ed_df = ed.pandas_to_eland(
+        ed_df = ed.pandas_to_opensearch(
             df,
-            ES_TEST_CLIENT,
+            OPENSEARCH_TEST_CLIENT,
             index_name,
             es_if_exists="replace",
             es_refresh=True,
-            use_pandas_index_for_es_ids=False,
+            use_pandas_index_for_os_ids=False,
             es_type_overrides={"H": "text", "I": "geo_point"},
         )
 
@@ -124,12 +124,12 @@ class TestDataFrameUtils(TestData):
             }
         }
 
-        mapping = ES_TEST_CLIENT.indices.get_mapping(index=index_name)
+        mapping = OPENSEARCH_TEST_CLIENT.indices.get_mapping(index=index_name)
 
         assert expected_mapping == mapping
 
         # Convert back to pandas and compare with original
-        pd_df = ed.eland_to_pandas(ed_df)
+        pd_df = ed.opensearch_to_pandas(ed_df)
 
         # Compare values excluding index
         assert df.values.all() == pd_df.values.all()
@@ -137,11 +137,11 @@ class TestDataFrameUtils(TestData):
         # Ensure that index is populated by ES.
         assert not (df.index == pd_df.index).any()
 
-        ES_TEST_CLIENT.indices.delete(index=index_name)
+        OPENSEARCH_TEST_CLIENT.indices.delete(index=index_name)
 
     def tests_to_pandas_performance(self):
         # TODO quantify this
-        ed.eland_to_pandas(self.ed_flights(), show_progress=True)
+        ed.opensearch_to_pandas(self.ed_flights(), show_progress=True)
 
         # This test calls the same method so is redundant
         # assert_pandas_eland_frame_equal(pd_df, self.ed_flights())
@@ -156,13 +156,13 @@ class TestDataFrameUtils(TestData):
 
         match = "'DistanceKilometers', 'DistanceMiles' column(s) not in given dataframe"
         with pytest.raises(KeyError) as e:
-            ed.pandas_to_eland(
+            ed.pandas_to_opensearch(
                 df,
-                ES_TEST_CLIENT,
+                OPENSEARCH_TEST_CLIENT,
                 index_name,
                 es_if_exists="replace",
                 es_refresh=True,
-                use_pandas_index_for_es_ids=False,
+                use_pandas_index_for_os_ids=False,
                 es_type_overrides={
                     "AvgTicketPrice": "long",
                     "DistanceKilometers": "text",
@@ -170,4 +170,4 @@ class TestDataFrameUtils(TestData):
                 },
             )
             assert str(e.value) == match
-            ES_TEST_CLIENT.indices.delete(index=index_name)
+            OPENSEARCH_TEST_CLIENT.indices.delete(index=index_name)

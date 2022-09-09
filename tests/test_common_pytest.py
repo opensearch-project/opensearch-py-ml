@@ -20,8 +20,8 @@ import warnings
 
 import pytest
 
-import eland
-from eland.common import es_version
+import opensearch_py_ml
+from opensearch_py_ml.common import os_version
 
 
 @pytest.mark.parametrize(
@@ -32,9 +32,9 @@ def test_major_version_mismatch(version_number, version_tuple):
     client = mock.Mock(spec=["info"])
     client.info.return_value = {"version": {"number": version_number}}
     with warnings.catch_warnings(record=True) as w:
-        assert es_version(client) == version_tuple
+        assert os_version(client) == version_tuple
     assert len(w) == 1
     assert str(w[0].message) == (
-        f"Eland major version ({eland.__version__}) doesn't match the major version of the Elasticsearch server ({version_number}) "
-        "which can lead to compatibility issues. Your Eland major version should be the same as your cluster major version."
+        f"OpenSearch major version ({opensearch_py_ml.__version__}) doesn't match the major version of the OpenSearch server ({version_number}) "
+        "which can lead to compatibility issues. Your major version should be the same as your cluster major version."
     )

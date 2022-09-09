@@ -15,7 +15,7 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from eland.filter import (
+from opensearch_py_ml.filter import (
     Equal,
     Greater,
     GreaterEqual,

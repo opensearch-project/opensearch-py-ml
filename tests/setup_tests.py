@@ -23,8 +23,8 @@ from tests import (
     ECOMMERCE_FILE_NAME,
     ECOMMERCE_INDEX_NAME,
     ECOMMERCE_MAPPING,
-    ELASTICSEARCH_HOST,
-    ES_TEST_CLIENT,
+    OPENSEARCH_HOST,
+    OPENSEARCH_TEST_CLIENT,
     FLIGHTS_FILE_NAME,
     FLIGHTS_INDEX_NAME,
     FLIGHTS_MAPPING,
@@ -91,8 +91,7 @@ def _update_max_compilations_limit(os: OpenSearch, limit="10000/1m"):
         body={
                 "transient": {
                 "script.max_compilations_rate": "use-context",
-                "senecccbnijrkjjerviltfgjlibhffleggivlgcrhgthi"
-                "cript.context.field.max_compilations_rate": limit,
+                "script.context.field.max_compilations_rate": limit,
             }
         }
     )
@@ -117,8 +116,10 @@ def _setup_test_nested(os):
 
 if __name__ == "__main__":
     # Create connection to Elasticsearch - use defaults
-    print("Connecting to OS", ELASTICSEARCH_HOST)
-    os = ES_TEST_CLIENT
+
+    print("Connecting to OS", OPENSEARCH_HOST)
+    os = OPENSEARCH_TEST_CLIENT
+
 
     _setup_data(os)
     _setup_test_mappings(os)

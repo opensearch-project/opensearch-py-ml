@@ -440,7 +440,7 @@ class TestDataFrameMetrics(TestData):
         pd_mode = pd_flights.mode(numeric_only=numeric_only)[:es_size]
         ed_mode = ed_flights.mode(numeric_only=numeric_only, es_size=es_size)
 
-        # Skipping dtype check because eland is giving Cancelled dtype as bool
+        # Skipping dtype check because opensearch_py_ml is giving Cancelled dtype as bool
         # but pandas is referring it as object
         assert_frame_equal(
             pd_mode, ed_mode, check_dtype=(False if es_size == 1 else True)

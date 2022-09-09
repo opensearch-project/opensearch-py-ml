@@ -17,15 +17,15 @@
 
 # File called _pytest for PyCharm compatability
 
-from eland.field_mappings import FieldMappings
-from tests import ES_TEST_CLIENT, FLIGHTS_INDEX_NAME
+from opensearch_py_ml.field_mappings import FieldMappings
+from tests import OPENSEARCH_TEST_CLIENT, FLIGHTS_INDEX_NAME
 from tests.common import TestData
 
 
 class TestRename(TestData):
     def test_single_rename(self):
         ed_field_mappings = FieldMappings(
-            client=ES_TEST_CLIENT, index_pattern=FLIGHTS_INDEX_NAME
+            client=OPENSEARCH_TEST_CLIENT, index_pattern=FLIGHTS_INDEX_NAME
         )
 
         pd_flights_column_series = self.pd_flights().columns.to_series()
@@ -50,7 +50,7 @@ class TestRename(TestData):
 
     def test_non_exists_rename(self):
         ed_field_mappings = FieldMappings(
-            client=ES_TEST_CLIENT, index_pattern=FLIGHTS_INDEX_NAME
+            client=OPENSEARCH_TEST_CLIENT, index_pattern=FLIGHTS_INDEX_NAME
         )
 
         pd_flights_column_series = self.pd_flights().columns.to_series()
@@ -74,7 +74,7 @@ class TestRename(TestData):
 
     def test_exists_and_non_exists_rename(self):
         ed_field_mappings = FieldMappings(
-            client=ES_TEST_CLIENT, index_pattern=FLIGHTS_INDEX_NAME
+            client=OPENSEARCH_TEST_CLIENT, index_pattern=FLIGHTS_INDEX_NAME
         )
 
         pd_flights_column_series = self.pd_flights().columns.to_series()
@@ -107,7 +107,7 @@ class TestRename(TestData):
 
     def test_multi_rename(self):
         ed_field_mappings = FieldMappings(
-            client=ES_TEST_CLIENT, index_pattern=FLIGHTS_INDEX_NAME
+            client=OPENSEARCH_TEST_CLIENT, index_pattern=FLIGHTS_INDEX_NAME
         )
 
         pd_flights_column_series = self.pd_flights().columns.to_series()
