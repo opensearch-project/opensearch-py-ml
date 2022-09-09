@@ -44,7 +44,7 @@ DATA_LIST = [
 ]
 
 
-def _setup_data(es):
+def _setup_data(os):
     # Read json file and index records into Elasticsearch
     for data in DATA_LIST:
         json_file_name = data[0]
@@ -53,9 +53,9 @@ def _setup_data(es):
 
         # Delete index
         print("Deleting index:", index_name)
-        es.indices.delete(index=index_name, ignore_unavailable=True)
+        os.indices.delete(index=index_name, ignore_unavailable=True)
         print("Creating index:", index_name)
-        es.indices.create(index=index_name, body=mapping)
+        os.indices.create(index=index_name, body=mapping)
 
         df = pd.read_json(json_file_name, lines=True)
 
@@ -76,18 +76,18 @@ def _setup_data(es):
             n = n + 1
 
             if n % 10000 == 0:
-                helpers.bulk(es, actions)
+                helpers.bulk(os, actions)
                 actions = []
 
-        helpers.bulk(es, actions)
+        helpers.bulk(os, actions)
         actions = []
 
         print("Done", index_name)
 
 
-def _update_max_compilations_limit(es: OpenSearch, limit="10000/1m"):
+def _update_max_compilations_limit(os: OpenSearch, limit="10000/1m"):
     print("Updating script.max_compilations_rate to ", limit)
-    es.cluster.put_settings(
+    os.cluster.put_settings(
         body={
                 "transient": {
                 "script.max_compilations_rate": "use-context",
@@ -98,29 +98,29 @@ def _update_max_compilations_limit(es: OpenSearch, limit="10000/1m"):
     )
 
 
-def _setup_test_mappings(es: OpenSearch):
+def _setup_test_mappings(os: OpenSearch):
     # Create a complex mapping containing many Elasticsearch features
-    es.indices.delete(index=TEST_MAPPING1_INDEX_NAME, ignore_unavailable=True)
-    es.indices.create(index=TEST_MAPPING1_INDEX_NAME, body=TEST_MAPPING1)
+    os.indices.delete(index=TEST_MAPPING1_INDEX_NAME, ignore_unavailable=True)
+    os.indices.create(index=TEST_MAPPING1_INDEX_NAME, body=TEST_MAPPING1)
 
 
-def _setup_test_nested(es):
-    es.indices.delete(
+def _setup_test_nested(os):
+    os.indices.delete(
         index=TEST_NESTED_USER_GROUP_INDEX_NAME, ignore_unavailable=True
     )
-    es.indices.create(
+    os.indices.create(
         index=TEST_NESTED_USER_GROUP_INDEX_NAME, body=TEST_NESTED_USER_GROUP_MAPPING
     )
 
-    helpers.bulk(es, TEST_NESTED_USER_GROUP_DOCS)
+    helpers.bulk(os, TEST_NESTED_USER_GROUP_DOCS)
 
 
 if __name__ == "__main__":
     # Create connection to Elasticsearch - use defaults
-    print("Connecting to ES", ELASTICSEARCH_HOST)
-    es = ES_TEST_CLIENT
+    print("Connecting to OS", ELASTICSEARCH_HOST)
+    os = ES_TEST_CLIENT
 
-    _setup_data(es)
-    _setup_test_mappings(es)
-    _setup_test_nested(es)
-    _update_max_compilations_limit(es)
+    _setup_data(os)
+    _setup_test_mappings(os)
+    _setup_test_nested(os)
+    _update_max_compilations_limit(os)
