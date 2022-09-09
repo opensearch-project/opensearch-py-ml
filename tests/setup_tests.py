@@ -16,15 +16,15 @@
 #  under the License.
 
 import pandas as pd
-from elasticsearch import helpers
-from elasticsearch._sync.client import Elasticsearch
+from opensearchpy.client import OpenSearch
+from opensearchpy import helpers
 
 from tests import (
     ECOMMERCE_FILE_NAME,
     ECOMMERCE_INDEX_NAME,
     ECOMMERCE_MAPPING,
-    ELASTICSEARCH_HOST,
-    ES_TEST_CLIENT,
+    OPENSEARCH_HOST,
+    OPENSEARCH_TEST_CLIENT,
     FLIGHTS_FILE_NAME,
     FLIGHTS_INDEX_NAME,
     FLIGHTS_MAPPING,
@@ -44,7 +44,7 @@ DATA_LIST = [
 ]
 
 
-def _setup_data(es):
+def _setup_data(os):
     # Read json file and index records into Elasticsearch
     for data in DATA_LIST:
         json_file_name = data[0]
@@ -53,9 +53,9 @@ def _setup_data(es):
 
         # Delete index
         print("Deleting index:", index_name)
-        es.options(ignore_status=[400, 404]).indices.delete(index=index_name)
+        os.indices.delete(index=index_name, ignore_unavailable=True)
         print("Creating index:", index_name)
-        es.indices.create(index=index_name, **mapping)
+        os.indices.create(index=index_name, body=mapping)
 
         df = pd.read_json(json_file_name, lines=True)
 
@@ -76,48 +76,52 @@ def _setup_data(es):
             n = n + 1
 
             if n % 10000 == 0:
-                helpers.bulk(es, actions)
+                helpers.bulk(os, actions)
                 actions = []
 
-        helpers.bulk(es, actions)
+        helpers.bulk(os, actions)
         actions = []
 
         print("Done", index_name)
 
 
-def _update_max_compilations_limit(es: Elasticsearch, limit="10000/1m"):
+def _update_max_compilations_limit(os: OpenSearch, limit="10000/1m"):
     print("Updating script.max_compilations_rate to ", limit)
-    es.cluster.put_settings(
-        transient={
-            "script.max_compilations_rate": "use-context",
-            "script.context.field.max_compilations_rate": limit,
+    os.cluster.put_settings(
+        body={
+                "transient": {
+                "script.max_compilations_rate": "use-context",
+                "script.context.field.max_compilations_rate": limit,
+            }
         }
     )
 
 
-def _setup_test_mappings(es: Elasticsearch):
+def _setup_test_mappings(os: OpenSearch):
     # Create a complex mapping containing many Elasticsearch features
-    es.options(ignore_status=[400, 404]).indices.delete(index=TEST_MAPPING1_INDEX_NAME)
-    es.indices.create(index=TEST_MAPPING1_INDEX_NAME, **TEST_MAPPING1)
+    os.indices.delete(index=TEST_MAPPING1_INDEX_NAME, ignore_unavailable=True)
+    os.indices.create(index=TEST_MAPPING1_INDEX_NAME, body=TEST_MAPPING1)
 
 
-def _setup_test_nested(es):
-    es.options(ignore_status=[400, 404]).indices.delete(
-        index=TEST_NESTED_USER_GROUP_INDEX_NAME
+def _setup_test_nested(os):
+    os.indices.delete(
+        index=TEST_NESTED_USER_GROUP_INDEX_NAME, ignore_unavailable=True
     )
-    es.indices.create(
-        index=TEST_NESTED_USER_GROUP_INDEX_NAME, **TEST_NESTED_USER_GROUP_MAPPING
+    os.indices.create(
+        index=TEST_NESTED_USER_GROUP_INDEX_NAME, body=TEST_NESTED_USER_GROUP_MAPPING
     )
 
-    helpers.bulk(es, TEST_NESTED_USER_GROUP_DOCS)
+    helpers.bulk(os, TEST_NESTED_USER_GROUP_DOCS)
 
 
 if __name__ == "__main__":
     # Create connection to Elasticsearch - use defaults
-    print("Connecting to ES", ELASTICSEARCH_HOST)
-    es = ES_TEST_CLIENT
 
-    _setup_data(es)
-    _setup_test_mappings(es)
-    _setup_test_nested(es)
-    _update_max_compilations_limit(es)
+    print("Connecting to OS", OPENSEARCH_HOST)
+    os = OPENSEARCH_TEST_CLIENT
+
+
+    _setup_data(os)
+    _setup_test_mappings(os)
+    _setup_test_nested(os)
+    _update_max_compilations_limit(os)

@@ -54,9 +54,17 @@ class TestDataFrameFilter(TestData):
     def test_filter_columns_regex(self, df, regex):
         df.filter(regex=regex)
 
-    @pytest.mark.parametrize("items", [[], ["20"], [str(x) for x in range(30)]])
-    def test_filter_index_items(self, df, items):
-        df.filter(items=items, axis=0)
+    def test_filter_index_items(self, df):
+        # to properly test dropping of indices we must account for differently named indexes
+        pd_filter_one = ["20"]
+        pd_filter_many = [str(x) for x in range(30)]
+        ed_index = df.ed.to_pandas().index
+        ed_filter_one = [ed_index[20]]
+        ed_filter_many = list(ed_index[:30])
+
+        df.filter(items=[], axis=0)
+        df.check_values(df.ed.filter(items=ed_filter_one, axis=0), df.pd.filter(items=pd_filter_one, axis=0))
+        df.check_values(df.ed.filter(items=ed_filter_many, axis=0), df.pd.filter(items=pd_filter_many, axis=0))
 
     def test_filter_index_like_and_regex(self):
         ed_flights_small = self.ed_flights_small()
@@ -70,7 +78,9 @@ class TestDataFrameFilter(TestData):
         # Filtering dataframe should retain order of items
         ed_flights = self.ed_flights()
 
-        items = ["4", "2", "3", "1", "0"]
+        ed_index = ed_flights.to_pandas().index
+        items = list(ed_index[:5])
+        items.reverse()
 
         assert [
             i for i in ed_flights.filter(axis="index", items=items).to_pandas().index

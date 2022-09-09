@@ -21,7 +21,7 @@ from datetime import datetime
 import numpy as np
 import pytest
 
-from eland import Series
+from opensearch_py_ml import Series
 from tests.common import TestData, assert_pandas_eland_series_equal
 
 
@@ -41,16 +41,16 @@ class TestSeriesArithmetics(TestData):
         # The problem:
         # - the datetime objects of the pandas DataFrame are timezone aware and
         #   can't be compared with timezone naive datetime objects
-        # - the datetime objects of the eland DataFrame are timezone naive (which
+        # - the datetime objects of the opensearch_py_ml DataFrame are timezone naive (which
         #   should be fixed)
-        # - however if the eland DataFrame is converted to a pandas DataFrame
+        # - however if the opensearch_py_ml DataFrame is converted to a pandas DataFrame
         #   (using the `to_pandas` function) the datetime objects become timezone aware
         #
         # This tests converts the datetime objects of the pandas Series to
         # timezone naive ones and utilizes a class to make the datetime objects of the
-        # eland Series timezone naive before the result of `to_pandas` is returned.
+        # opensearch_py_ml Series timezone naive before the result of `to_pandas` is returned.
         # The `to_pandas` function is executed by the `assert_pandas_eland_series_equal`
-        # function, which compares the eland and pandas Series
+        # function, which compares the opensearch_py_ml and pandas Series
 
         # convert to timezone naive datetime object
         pd_df["order_date"] = pd_df["order_date"].dt.tz_localize(None)
@@ -81,7 +81,7 @@ class TestSeriesArithmetics(TestData):
         pd_df = self.pd_ecommerce()
         ed_df = self.ed_ecommerce()
 
-        # eland / pandas == error
+        # opensearch_py_ml / pandas == error
         with pytest.raises(TypeError):
             _ = ed_df["total_quantity"] / pd_df["taxful_total_price"]
 

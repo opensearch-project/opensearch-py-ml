@@ -34,10 +34,10 @@ class TestDataFrameDtypes:
         df.select_dtypes(include=np.float64)
         df.select_dtypes(exclude=np.float64)
 
-    def test_es_dtypes(self, testdata):
+    def test_os_dtypes(self, testdata):
         df = testdata.ed_flights_small()
         assert_series_equal(
-            df.es_dtypes,
+            df.os_dtypes,
             pd.Series(
                 {
                     "AvgTicketPrice": "float",

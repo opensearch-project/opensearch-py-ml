@@ -20,7 +20,7 @@ import warnings
 import numpy as np
 import pandas as pd
 
-from eland.common import EMPTY_SERIES_DTYPE, build_pd_series
+from opensearch_py_ml.common import EMPTY_SERIES_DTYPE, build_pd_series
 from tests.common import assert_series_equal
 
 
@@ -39,7 +39,7 @@ def test_empty_series_dtypes():
     assert w == []
 
 
-def test_series_es_dtypes(testdata):
+def test_series_os_dtypes(testdata):
     series = testdata.ed_flights_small().AvgTicketPrice
-    assert_series_equal(series.es_dtypes, pd.Series(data={"AvgTicketPrice": "float"}))
-    assert series.es_dtype == "float"
+    assert_series_equal(series.os_dtypes, pd.Series(data={"AvgTicketPrice": "float"}))
+    assert series.os_dtype == "float"

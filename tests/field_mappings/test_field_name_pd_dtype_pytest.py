@@ -19,15 +19,15 @@
 import pytest
 from pandas.testing import assert_series_equal
 
-from eland.field_mappings import FieldMappings
+from opensearch_py_ml.field_mappings import FieldMappings
 from tests import FLIGHTS_INDEX_NAME, FLIGHTS_MAPPING
-from tests.common import ES_TEST_CLIENT, TestData
+from tests.common import OPENSEARCH_TEST_CLIENT, TestData
 
 
 class TestFieldNamePDDType(TestData):
     def test_all_formats(self):
         ed_field_mappings = FieldMappings(
-            client=ES_TEST_CLIENT, index_pattern=FLIGHTS_INDEX_NAME
+            client=OPENSEARCH_TEST_CLIENT, index_pattern=FLIGHTS_INDEX_NAME
         )
 
         pd_flights = self.pd_flights()
@@ -41,7 +41,7 @@ class TestFieldNamePDDType(TestData):
 
     def test_non_existant(self):
         ed_field_mappings = FieldMappings(
-            client=ES_TEST_CLIENT, index_pattern=FLIGHTS_INDEX_NAME
+            client=OPENSEARCH_TEST_CLIENT, index_pattern=FLIGHTS_INDEX_NAME
         )
 
         with pytest.raises(KeyError):

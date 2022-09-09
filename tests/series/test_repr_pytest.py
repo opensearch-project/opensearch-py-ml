@@ -18,15 +18,15 @@
 # File called _pytest for PyCharm compatability
 import pandas as pd
 
-import eland as ed
-from tests import ES_TEST_CLIENT, FLIGHTS_INDEX_NAME
+import opensearch_py_ml as ed
+from tests import OPENSEARCH_TEST_CLIENT, FLIGHTS_INDEX_NAME
 from tests.common import TestData
 
 
 class TestSeriesRepr(TestData):
     def test_repr_flights_carrier(self):
         pd_s = self.pd_flights()["Carrier"]
-        ed_s = ed.Series(ES_TEST_CLIENT, FLIGHTS_INDEX_NAME, "Carrier")
+        ed_s = ed.Series(OPENSEARCH_TEST_CLIENT, FLIGHTS_INDEX_NAME, "Carrier")
 
         pd_repr = repr(pd_s)
         ed_repr = repr(ed_s)
@@ -35,7 +35,7 @@ class TestSeriesRepr(TestData):
 
     def test_repr_flights_carrier_5(self):
         pd_s = self.pd_flights()["Carrier"].head(5)
-        ed_s = ed.Series(ES_TEST_CLIENT, FLIGHTS_INDEX_NAME, "Carrier").head(5)
+        ed_s = ed.Series(OPENSEARCH_TEST_CLIENT, FLIGHTS_INDEX_NAME, "Carrier").head(5)
 
         pd_repr = repr(pd_s)
         ed_repr = repr(ed_s)
@@ -44,7 +44,7 @@ class TestSeriesRepr(TestData):
 
     def test_repr_empty_series(self):
         pd_s = self.pd_flights()["Carrier"].head(0)
-        ed_s = ed.Series(ES_TEST_CLIENT, FLIGHTS_INDEX_NAME, "Carrier").head(0)
+        ed_s = ed.Series(OPENSEARCH_TEST_CLIENT, FLIGHTS_INDEX_NAME, "Carrier").head(0)
         assert repr(pd_s) == repr(ed_s)
 
     def test_series_repr_pd_get_option_none(self):

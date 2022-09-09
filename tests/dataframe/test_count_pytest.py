@@ -31,6 +31,8 @@ class TestDataFrameCount(TestData):
     ]
 
     def test_count(self, df):
+
+
         df.load_dataset("ecommerce")
         df.count()
 

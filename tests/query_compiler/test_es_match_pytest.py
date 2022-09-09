@@ -19,7 +19,7 @@
 
 import pytest
 
-from eland.query_compiler import QueryCompiler
+from opensearch_py_ml.query_compiler import QueryCompiler
 from tests.common import TestData
 
 
@@ -166,7 +166,7 @@ class TestEsMatch(TestData):
         assert str(e.value) == (
             "Attempting to run es_match() on non-text fields (order_date=date, "
             "currency=keyword) means that these fields may not be analyzed properly. "
-            "Consider reindexing these fields as text or use 'match_only_text_es_dtypes=False' "
+            "Consider reindexing these fields as text or use 'match_only_text_os_dtypes=False' "
             "to use match anyways"
         )
 

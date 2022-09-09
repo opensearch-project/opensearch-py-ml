@@ -17,7 +17,7 @@
 
 # File called _pytest for PyCharm compatibility
 
-from eland.utils import is_valid_attr_name
+from opensearch_py_ml.utils import is_valid_attr_name
 
 
 class TestUtils:
