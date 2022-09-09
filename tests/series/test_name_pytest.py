@@ -16,8 +16,8 @@
 #  under the License.
 
 # File called _pytest for PyCharm compatability
-import eland as ed
-from tests import ES_TEST_CLIENT, FLIGHTS_INDEX_NAME
+import opensearch_py_ml as ed
+from tests import OPENSEARCH_TEST_CLIENT, FLIGHTS_INDEX_NAME
 from tests.common import TestData, assert_pandas_eland_series_equal
 
 
@@ -25,7 +25,7 @@ class TestSeriesName(TestData):
     def test_name(self):
         # deep copy pandas DataFrame as .name alters this reference frame
         pd_series = self.pd_flights()["Carrier"].copy(deep=True)
-        ed_series = ed.Series(ES_TEST_CLIENT, FLIGHTS_INDEX_NAME, "Carrier")
+        ed_series = ed.Series(OPENSEARCH_TEST_CLIENT, FLIGHTS_INDEX_NAME, "Carrier")
 
         assert_pandas_eland_series_equal(pd_series, ed_series)
         assert ed_series.name == pd_series.name

@@ -22,10 +22,10 @@ import numpy as np
 import pandas as pd
 from pandas.testing import assert_series_equal
 
-import eland as ed
-from eland.field_mappings import FieldMappings
+import opensearch_py_ml as ed
+from opensearch_py_ml.field_mappings import FieldMappings
 from tests.common import (
-    ES_TEST_CLIENT,
+    OPENSEARCH_TEST_CLIENT,
     TestData,
     assert_pandas_eland_frame_equal,
     assert_pandas_eland_series_equal,
@@ -41,7 +41,7 @@ class TestDataFrameDateTime(TestData):
         """setup any state specific to the execution of the given class (which
         usually contains tests).
         """
-        es = ES_TEST_CLIENT
+        es = OPENSEARCH_TEST_CLIENT
         if es.indices.exists(index=cls.time_index_name):
             es.indices.delete(index=cls.time_index_name)
         dts = [datetime.strptime(time, "%Y-%m-%dT%H:%M:%S.%f%z") for time in cls.times]
@@ -71,7 +71,7 @@ class TestDataFrameDateTime(TestData):
         setup_class.
         """
 
-        es = ES_TEST_CLIENT
+        es = OPENSEARCH_TEST_CLIENT
         es.indices.delete(index=cls.time_index_name)
 
     def test_datetime_to_ms(self):
@@ -102,15 +102,15 @@ class TestDataFrameDateTime(TestData):
             }
         }
 
-        mappings = FieldMappings._generate_es_mappings(df)
+        mappings = FieldMappings._generate_os_mappings(df)
 
         assert expected_mappings == mappings
 
         # Now create index
         index_name = "eland_test_generate_es_mappings"
 
-        ed_df = ed.pandas_to_eland(
-            df, ES_TEST_CLIENT, index_name, es_if_exists="replace", es_refresh=True
+        ed_df = ed.pandas_to_opensearch(
+            df, OPENSEARCH_TEST_CLIENT, index_name, es_if_exists="replace", es_refresh=True
         )
 
         # print(df.to_string())
@@ -124,7 +124,7 @@ class TestDataFrameDateTime(TestData):
 
     def test_all_formats(self):
         index_name = self.time_index_name
-        ed_df = ed.DataFrame(ES_TEST_CLIENT, index_name)
+        ed_df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, index_name)
 
         for format_name in self.time_formats.keys():
             times = [

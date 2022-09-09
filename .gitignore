@@ -18,7 +18,7 @@ result_images/
 
 # Python egg metadata, regenerated from source files by setuptools.
 /*.egg-info
-eland.egg-info/
+opensearch_py_ml.egg-info/
 
 # PyCharm files
 .idea/

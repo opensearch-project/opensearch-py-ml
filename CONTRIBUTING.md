@@ -143,7 +143,7 @@ currently using a minimum version of PyCharm 2019.2.4.
 
 * Enter the URL to your fork of eland
 
-    (e.g.  `git@github.com:stevedodson/eland.git` )
+    (e.g.  `git@github.com:stevedodson/opensearch_py_ml.git` )
 
 * Click \'Yes\' for \'Checkout from Version Control\'
 * Configure PyCharm environment:
@@ -190,7 +190,7 @@ currently using a minimum version of PyCharm 2019.2.4.
 * To validate installation, open python console and run
 
     ``` bash
-    > import eland as ed
+    > import opensearch_py_ml as ed
     > ed_df = ed.DataFrame('localhost', 'flights')
     ```
 

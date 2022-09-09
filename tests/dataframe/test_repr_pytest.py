@@ -20,7 +20,7 @@
 import pandas as pd
 import pytest
 
-from eland.dataframe import DEFAULT_NUM_ROWS_DISPLAYED
+from opensearch_py_ml.dataframe import DEFAULT_NUM_ROWS_DISPLAYED
 from tests.common import TestData, assert_pandas_eland_series_equal
 
 
@@ -80,14 +80,14 @@ class TestDataFrameRepr(TestData):
         # check setup works
         assert pd.get_option("display.max_rows") == 60
 
-        # Test eland.DataFrame.to_string vs pandas.DataFrame.to_string
+        # Test opensearch_py_ml.DataFrame.to_string vs pandas.DataFrame.to_string
         # In pandas calling 'to_string' without max_rows set, will dump ALL rows
 
         # Test n-1, n, n+1 for edge cases
         self.num_rows_to_string(DEFAULT_NUM_ROWS_DISPLAYED - 1)
         self.num_rows_to_string(DEFAULT_NUM_ROWS_DISPLAYED)
         with pytest.warns(UserWarning):
-            # UserWarning displayed by eland here (compare to pandas with max_rows set)
+            # UserWarning displayed by opensearch_py_ml here (compare to pandas with max_rows set)
             self.num_rows_to_string(
                 DEFAULT_NUM_ROWS_DISPLAYED + 1, None, DEFAULT_NUM_ROWS_DISPLAYED
             )
@@ -158,7 +158,7 @@ class TestDataFrameRepr(TestData):
         ed_ecom = self.ed_ecommerce()
         pd_ecom = self.pd_ecommerce()
 
-        # currently eland will show dimensions no matter what if pd's display.show_dimensions option
+        # currently opensearch_py_ml will show dimensions no matter what if pd's display.show_dimensions option
         # is set to 'truncate'; this is a fairly minor issue which is difficult to fix
         # we ignore it for now
         old_option = pd.get_option('display.show_dimensions')
@@ -182,14 +182,14 @@ class TestDataFrameRepr(TestData):
         # check setup works
         assert pd.get_option("display.max_rows") == 60
 
-        # Test eland.DataFrame.to_string vs pandas.DataFrame.to_string
+        # Test opensearch_py_ml.DataFrame.to_string vs pandas.DataFrame.to_string
         # In pandas calling 'to_string' without max_rows set, will dump ALL rows
 
         # Test n-1, n, n+1 for edge cases
         self.num_rows_to_html(DEFAULT_NUM_ROWS_DISPLAYED - 1)
         self.num_rows_to_html(DEFAULT_NUM_ROWS_DISPLAYED)
         with pytest.warns(UserWarning):
-            # UserWarning displayed by eland here
+            # UserWarning displayed by opensearch_py_ml here
             self.num_rows_to_html(
                 DEFAULT_NUM_ROWS_DISPLAYED + 1, None, DEFAULT_NUM_ROWS_DISPLAYED
             )
@@ -236,7 +236,7 @@ class TestDataFrameRepr(TestData):
             # For now test without this
             pd.set_option("display.show_dimensions", False)
 
-            # Test eland.DataFrame.to_string vs pandas.DataFrame.to_string
+            # Test opensearch_py_ml.DataFrame.to_string vs pandas.DataFrame.to_string
             # In pandas calling 'to_string' without max_rows set, will dump ALL rows
 
             # Test n-1, n, n+1 for edge cases

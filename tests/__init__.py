@@ -20,20 +20,20 @@ import os
 import pandas as pd
 from opensearchpy import OpenSearch
 
-from eland.common import es_version
+from opensearch_py_ml.common import os_version
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Define test files and indices
-ELASTICSEARCH_HOST = 'https://localhost:9200'
-ELASTICSEARCH_ADMIN_USER, ELASTICSEARCH_ADMIN_PASSWORD = 'admin', 'admin'
+OPENSEARCH_HOST = 'http://localhost:9200'
+OPENSEARCH_ADMIN_USER, OPENSEARCH_ADMIN_PASSWORD = 'admin', 'admin'
 
 # Define client to use in tests
-ES_TEST_CLIENT = OpenSearch(hosts=[ELASTICSEARCH_HOST],
-                            http_auth=(ELASTICSEARCH_ADMIN_USER, ELASTICSEARCH_ADMIN_PASSWORD),
-                            verify_certs=False)
+OPENSEARCH_TEST_CLIENT = OpenSearch(hosts=[OPENSEARCH_HOST],
+                                    http_auth=(OPENSEARCH_ADMIN_USER, OPENSEARCH_ADMIN_PASSWORD),
+                                    verify_certs=False)
 
-ES_VERSION = es_version(ES_TEST_CLIENT)
+ES_VERSION = os_version(OPENSEARCH_TEST_CLIENT)
 
 FLIGHTS_INDEX_NAME = "opensearch_dashboards_sample_data_flights"
 FLIGHTS_MAPPING = {
@@ -255,7 +255,7 @@ TEST_MAPPING1_EXPECTED = {
 }
 
 TEST_MAPPING1_EXPECTED_DF = pd.DataFrame.from_dict(
-    data=TEST_MAPPING1_EXPECTED, orient="index", columns=["es_dtype"]
+    data=TEST_MAPPING1_EXPECTED, orient="index", columns=["os_dtype"]
 )
 TEST_MAPPING1_EXPECTED_SOURCE_FIELD_DF = TEST_MAPPING1_EXPECTED_DF.drop(
     index=[

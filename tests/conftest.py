@@ -20,7 +20,7 @@ import inspect
 import pandas as pd
 import pytest
 
-import eland as ed
+import opensearch_py_ml as ed
 
 from .common import (
     TestData,
@@ -86,7 +86,7 @@ class SymmetricAPIChecker:
         return f
 
     def check_values(self, ed_obj, pd_obj):
-        """Checks that any two values coming from eland and pandas are equal"""
+        """Checks that any two values coming from opensearch_py_ml and pandas are equal"""
         if isinstance(ed_obj, ed.DataFrame):
             assert_pandas_eland_frame_equal(pd_obj, ed_obj)
         elif isinstance(ed_obj, ed.Series):
@@ -101,7 +101,7 @@ class SymmetricAPIChecker:
             assert ed_obj == pd_obj
 
     def check_exception(self, ed_exc, pd_exc):
-        """Checks that either an exception was raised or not from both eland and pandas"""
+        """Checks that either an exception was raised or not from both opensearch_py_ml and pandas"""
         assert (ed_exc is None) == (pd_exc is None) and type(ed_exc) == type(pd_exc)
         if pd_exc is not None:
             raise pd_exc

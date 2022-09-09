@@ -16,8 +16,8 @@
 #  under the License.
 
 # File called _pytest for PyCharm compatibility
-import eland as ed
-from tests import ES_TEST_CLIENT, FLIGHTS_INDEX_NAME
+import opensearch_py_ml as ed
+from tests import OPENSEARCH_TEST_CLIENT, FLIGHTS_INDEX_NAME
 from tests.common import TestData, assert_pandas_eland_series_equal
 
 
@@ -29,7 +29,7 @@ class TestSeriesSample(TestData):
         return self.pd_flights()["Carrier"].iloc[ed2pd_series.index]
 
     def test_sample(self):
-        ed_s = ed.Series(ES_TEST_CLIENT, FLIGHTS_INDEX_NAME, "Carrier")
+        ed_s = ed.Series(OPENSEARCH_TEST_CLIENT, FLIGHTS_INDEX_NAME, "Carrier")
         pd_s = self.build_from_index(ed_s.sample(n=10, random_state=self.SEED))
 
         ed_s_sample = ed_s.sample(n=10, random_state=self.SEED)

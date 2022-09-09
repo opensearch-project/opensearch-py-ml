@@ -24,8 +24,8 @@ from io import StringIO
 import pandas as pd
 from pandas.testing import assert_frame_equal
 
-import eland as ed
-from tests import ES_TEST_CLIENT, FLIGHTS_INDEX_NAME
+import opensearch_py_ml as ed
+from tests import OPENSEARCH_TEST_CLIENT, FLIGHTS_INDEX_NAME
 from tests.common import ROOT_DIR, TestData
 
 
@@ -77,9 +77,9 @@ class TestDataFrameToCSV(TestData):
 
         test_index = FLIGHTS_INDEX_NAME + "." + str(now_millis)
 
-        ed_flights_from_csv = ed.csv_to_eland(
+        ed_flights_from_csv = ed.csv_to_opensearch(
             results_file,
-            ES_TEST_CLIENT,
+            OPENSEARCH_TEST_CLIENT,
             test_index,
             index_col=0,
             es_refresh=True,
@@ -92,14 +92,14 @@ class TestDataFrameToCSV(TestData):
                 "OriginLocation": lambda x: ast.literal_eval(x),
             },
         )
-        pd_flights_from_csv = ed.eland_to_pandas(ed_flights_from_csv)
+        pd_flights_from_csv = ed.opensearch_to_pandas(ed_flights_from_csv)
 
         # TODO - there is a 'bug' where the Elasticsearch index returns data in a different order to the CSV
         print(ed_flights_from_csv.head())
         print(pd_flights_from_csv.head())
 
         # clean up index
-        ES_TEST_CLIENT.indices.delete(index=test_index)
+        OPENSEARCH_TEST_CLIENT.indices.delete(index=test_index)
 
     def test_pd_to_csv_without_filepath(self):
 

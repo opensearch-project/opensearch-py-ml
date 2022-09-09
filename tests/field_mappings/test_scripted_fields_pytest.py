@@ -20,15 +20,15 @@ from io import StringIO
 
 import numpy as np
 
-from eland.field_mappings import FieldMappings
-from tests import ES_TEST_CLIENT, FLIGHTS_INDEX_NAME
+from opensearch_py_ml.field_mappings import FieldMappings
+from tests import OPENSEARCH_TEST_CLIENT, FLIGHTS_INDEX_NAME
 from tests.common import TestData
 
 
 class TestScriptedFields(TestData):
     def test_add_new_scripted_field(self):
         ed_field_mappings = FieldMappings(
-            client=ES_TEST_CLIENT, index_pattern=FLIGHTS_INDEX_NAME
+            client=OPENSEARCH_TEST_CLIENT, index_pattern=FLIGHTS_INDEX_NAME
         )
 
         ed_field_mappings.add_scripted_field(
@@ -47,7 +47,7 @@ class TestScriptedFields(TestData):
 
     def test_add_duplicate_scripted_field(self):
         ed_field_mappings = FieldMappings(
-            client=ES_TEST_CLIENT, index_pattern=FLIGHTS_INDEX_NAME
+            client=OPENSEARCH_TEST_CLIENT, index_pattern=FLIGHTS_INDEX_NAME
         )
 
         ed_field_mappings.add_scripted_field(
@@ -56,7 +56,7 @@ class TestScriptedFields(TestData):
 
         # note 'None' is printed as 'NaN' in index, but .index shows it is 'None'
         buf = StringIO()
-        ed_field_mappings.es_info(buf)
+        ed_field_mappings.os_info(buf)
         print(buf.getvalue())
 
         expected = self.pd_flights().columns.to_list()
