@@ -15,11 +15,12 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+# TODO fill out this information
 __title__ = "opensearch_py_ml"
 __description__ = "Python Client and Toolkit for DataFrames, Big Data, Machine Learning and ETL in OpenSearch"
-__url__ = "https://github.com/elastic/eland"
+__url__ = "https://github.com/opensearch-project/opensearch-py-ml"
 __version__ = "8.2.0"
-__author__ = "Steve Dodson"
-__author_email__ = "steve.dodson@elastic.co"
-__maintainer__ = "Seth Michael Larson"
-__maintainer_email__ = "seth.larson@elastic.co"
+__author__ = ""
+__author_email__ = ""
+__maintainer__ = ""
+__maintainer_email__ = ""

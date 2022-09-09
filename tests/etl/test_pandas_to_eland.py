@@ -52,17 +52,17 @@ def delete_test_index():
 class TestPandasToEland:
     def test_returns_eland_dataframe(self):
         df = pandas_to_opensearch(
-            pd_df, es_client=OPENSEARCH_TEST_CLIENT, os_dest_index="test-index"
+            pd_df, os_client=OPENSEARCH_TEST_CLIENT, os_dest_index="test-index"
         )
 
         assert isinstance(df, DataFrame)
-        assert "es_index_pattern: test-index" in df.es_info()
+        assert "os_index_pattern: test-index" in df.os_info()
 
     def test_es_if_exists_fail(self):
-        pandas_to_opensearch(pd_df, es_client=OPENSEARCH_TEST_CLIENT, os_dest_index="test-index")
+        pandas_to_opensearch(pd_df, os_client=OPENSEARCH_TEST_CLIENT, os_dest_index="test-index")
 
         with pytest.raises(ValueError) as e:
-            pandas_to_opensearch(pd_df, es_client=OPENSEARCH_TEST_CLIENT, os_dest_index="test-index")
+            pandas_to_opensearch(pd_df, os_client=OPENSEARCH_TEST_CLIENT, os_dest_index="test-index")
 
         assert str(e.value) == (
             "Could not create the index [test-index] because it "
@@ -74,7 +74,7 @@ class TestPandasToEland:
         # Assert that 'replace' allows for creation
         df1 = pandas_to_opensearch(
             pd_df2,
-            es_client=OPENSEARCH_TEST_CLIENT,
+            os_client=OPENSEARCH_TEST_CLIENT,
             os_dest_index="test-index",
             es_if_exists="replace",
             es_refresh=True,
@@ -84,7 +84,7 @@ class TestPandasToEland:
         # Assert that 'replace' will replace existing mapping and entries
         df2 = pandas_to_opensearch(
             pd_df,
-            es_client=OPENSEARCH_TEST_CLIENT,
+            os_client=OPENSEARCH_TEST_CLIENT,
             os_dest_index="test-index",
             es_if_exists="replace",
             es_refresh=True,
@@ -93,7 +93,7 @@ class TestPandasToEland:
 
         df3 = pandas_to_opensearch(
             pd_df2,
-            es_client=OPENSEARCH_TEST_CLIENT,
+            os_client=OPENSEARCH_TEST_CLIENT,
             os_dest_index="test-index",
             es_if_exists="replace",
             es_refresh=True,
@@ -103,7 +103,7 @@ class TestPandasToEland:
     def test_es_if_exists_append(self):
         df1 = pandas_to_opensearch(
             pd_df,
-            es_client=OPENSEARCH_TEST_CLIENT,
+            os_client=OPENSEARCH_TEST_CLIENT,
             os_dest_index="test-index",
             es_if_exists="append",
             es_refresh=True,
@@ -126,7 +126,7 @@ class TestPandasToEland:
         )
         df2 = pandas_to_opensearch(
             pd_df2,
-            es_client=OPENSEARCH_TEST_CLIENT,
+            os_client=OPENSEARCH_TEST_CLIENT,
             os_dest_index="test-index",
             es_if_exists="append",
             es_refresh=True,
@@ -140,7 +140,7 @@ class TestPandasToEland:
     def test_es_if_exists_append_mapping_mismatch_schema_enforcement(self):
         df1 = pandas_to_opensearch(
             pd_df,
-            es_client=OPENSEARCH_TEST_CLIENT,
+            os_client=OPENSEARCH_TEST_CLIENT,
             os_dest_index="test-index",
             es_if_exists="append",
             es_refresh=True,
@@ -149,13 +149,13 @@ class TestPandasToEland:
         with pytest.raises(ValueError) as e:
             pandas_to_opensearch(
                 pd_df2,
-                es_client=OPENSEARCH_TEST_CLIENT,
+                os_client=OPENSEARCH_TEST_CLIENT,
                 os_dest_index="test-index",
                 es_if_exists="append",
             )
 
         assert str(e.value) == (
-            "DataFrame dtypes and Elasticsearch index mapping aren't compatible:\n"
+            "DataFrame dtypes and OpenSearch index mapping aren't compatible:\n"
             "- 'b' is missing from DataFrame columns\n"
             "- 'c' is missing from DataFrame columns\n"
             "- 'd' is missing from DataFrame columns\n"
@@ -169,7 +169,7 @@ class TestPandasToEland:
     def test_es_if_exists_append_mapping_mismatch_no_schema_enforcement(self):
         pandas_to_opensearch(
             pd_df,
-            es_client=OPENSEARCH_TEST_CLIENT,
+            os_client=OPENSEARCH_TEST_CLIENT,
             os_dest_index="test-index",
             es_if_exists="append",
             es_refresh=True,
@@ -187,7 +187,7 @@ class TestPandasToEland:
 
         pandas_to_opensearch(
             pd_df2,
-            es_client=OPENSEARCH_TEST_CLIENT,
+            os_client=OPENSEARCH_TEST_CLIENT,
             os_dest_index="test-index",
             es_if_exists="append",
             es_refresh=True,
@@ -219,7 +219,7 @@ class TestPandasToEland:
     def test_es_if_exists_append_es_type_coerce_error(self):
         df1 = pandas_to_opensearch(
             pd_df,
-            es_client=OPENSEARCH_TEST_CLIENT,
+            os_client=OPENSEARCH_TEST_CLIENT,
             os_dest_index="test-index",
             es_if_exists="append",
             es_refresh=True,
@@ -240,7 +240,7 @@ class TestPandasToEland:
         with pytest.raises(BulkIndexError) as e:
             pandas_to_opensearch(
                 pd_df_short,
-                es_client=OPENSEARCH_TEST_CLIENT,
+                os_client=OPENSEARCH_TEST_CLIENT,
                 os_dest_index="test-index",
                 es_if_exists="append",
             )
@@ -252,7 +252,7 @@ class TestPandasToEland:
         es = OPENSEARCH_TEST_CLIENT
         df1 = pandas_to_opensearch(
             pd_df,
-            es_client=es,
+            os_client=es,
             os_dest_index="test-index",
             es_if_exists="append",
             es_refresh=True,

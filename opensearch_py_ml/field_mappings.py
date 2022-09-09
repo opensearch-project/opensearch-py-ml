@@ -43,22 +43,21 @@ from pandas.core.dtypes.common import (  # type: ignore
 from pandas.core.dtypes.inference import is_list_like
 
 if TYPE_CHECKING:
-    from elasticsearch import Elasticsearch
     from opensearchpy import OpenSearch
     from numpy.typing import DTypeLike
 
 
-ES_FLOAT_TYPES: Set[str] = {"double", "float", "half_float", "scaled_float"}
-ES_INTEGER_TYPES: Set[str] = {"long", "integer", "short", "byte"}
-ES_COMPATIBLE_TYPES: Dict[str, Set[str]] = {
-    "double": ES_FLOAT_TYPES,
-    "scaled_float": ES_FLOAT_TYPES,
-    "float": ES_FLOAT_TYPES,
-    "half_float": ES_FLOAT_TYPES,
-    "long": ES_INTEGER_TYPES,
-    "integer": ES_INTEGER_TYPES,
-    "short": ES_INTEGER_TYPES,
-    "byte": ES_INTEGER_TYPES,
+OS_FLOAT_TYPES: Set[str] = {"double", "float", "half_float", "scaled_float"}
+OS_INTEGER_TYPES: Set[str] = {"long", "integer", "short", "byte"}
+OS_COMPATIBLE_TYPES: Dict[str, Set[str]] = {
+    "double": OS_FLOAT_TYPES,
+    "scaled_float": OS_FLOAT_TYPES,
+    "float": OS_FLOAT_TYPES,
+    "half_float": OS_FLOAT_TYPES,
+    "long": OS_INTEGER_TYPES,
+    "integer": OS_INTEGER_TYPES,
+    "short": OS_INTEGER_TYPES,
+    "byte": OS_INTEGER_TYPES,
     "date": {"date_nanos"},
     "date_nanos": {"date"},
     "keyword": {"text"},
@@ -69,15 +68,15 @@ class Field(NamedTuple):
     """Holds all information on a particular field in the mapping"""
 
     column: str
-    es_field_name: str
+    os_field_name: str
     is_source: bool
-    es_dtype: str
-    es_date_format: Optional[str]
+    os_dtype: str
+    os_date_format: Optional[str]
     pd_dtype: type
     is_searchable: bool
     is_aggregatable: bool
     is_scripted: bool
-    aggregatable_es_field_name: str
+    aggregatable_os_field_name: str
 
     @property
     def is_numeric(self) -> bool:
@@ -95,27 +94,27 @@ class Field(NamedTuple):
     def np_dtype(self):
         return np.dtype(self.pd_dtype)
 
-    def is_es_agg_compatible(self, es_agg) -> bool:
+    def is_os_agg_compatible(self, os_agg) -> bool:
         # Unpack the actual aggregation if this is 'extended_stats/percentiles'
-        if isinstance(es_agg, tuple):
-            if es_agg[0] == "extended_stats":
-                es_agg = es_agg[1]
-            elif es_agg[0] == "percentiles":
-                es_agg = "percentiles"
+        if isinstance(os_agg, tuple):
+            if os_agg[0] == "extended_stats":
+                os_agg = os_agg[1]
+            elif os_agg[0] == "percentiles":
+                os_agg = "percentiles"
 
         # Except "median_absolute_deviation" which doesn't support bool
-        if es_agg == "median_absolute_deviation" and self.is_bool:
+        if os_agg == "median_absolute_deviation" and self.is_bool:
             return False
         # Cardinality, Count and mode work for all types
         # Numerics and bools work for all aggs
         if (
-            es_agg in {"cardinality", "value_count", "mode"}
+            os_agg in {"cardinality", "value_count", "mode"}
             or self.is_numeric
             or self.is_bool
         ):
             return True
         # Timestamps also work for 'min', 'max' and 'avg'
-        if es_agg in {"min", "max", "avg", "percentiles"} and self.is_timestamp:
+        if os_agg in {"min", "max", "avg", "percentiles"} and self.is_timestamp:
             return True
         return False
 
@@ -129,7 +128,7 @@ class Field(NamedTuple):
 
 class FieldMappings:
     """
-    General purpose to manage Elasticsearch to/from pandas mappings
+    General purpose to manage OpenSearch to/from pandas mappings
 
     Attributes
     ----------
@@ -139,19 +138,19 @@ class FieldMappings:
 
         column (index)              - the opensearch_py_ml display name
 
-        es_field_name               - the Elasticsearch field name
+        os_field_name               - the OpenSearch field name
         is_source                   - is top level field (i.e. not a multi-field sub-field)
-        es_dtype                    - Elasticsearch field datatype
-        es_date_format              - Elasticsearch date format (or None)
+        os_dtype                    - OpenSearch field datatype
+        os_date_format              - OpenSearch date format (or None)
         pd_dtype                    - Pandas datatype
         is_searchable               - is the field searchable?
         is_aggregatable             - is the field aggregatable?
         is_scripted                 - is the field a scripted_field?
-        aggregatable_es_field_name  - either es_field_name (if aggregatable),
-                                      or es_field_name.keyword (if exists) or None
+        aggregatable_os_field_name  - either os_field_name (if aggregatable),
+                                      or os_field_name.keyword (if exists) or None
     """
 
-    ES_DTYPE_TO_PD_DTYPE: Dict[str, str] = {
+    OS_DTYPE_TO_PD_DTYPE: Dict[str, str] = {
         "text": "object",
         "keyword": "object",
         "long": "int64",
@@ -170,15 +169,15 @@ class FieldMappings:
 
     # the labels for each column (display_name is index)
     column_labels: List[str] = [
-        "es_field_name",
+        "os_field_name",
         "is_source",
-        "es_dtype",
-        "es_date_format",
+        "os_dtype",
+        "os_date_format",
         "pd_dtype",
         "is_searchable",
         "is_aggregatable",
         "is_scripted",
-        "aggregatable_es_field_name",
+        "aggregatable_os_field_name",
     ]
 
     def __init__(
@@ -331,12 +330,12 @@ class FieldMappings:
                 # Pre Elasticsearch 7.0 mappings had types. Support these
                 # in case opensearch_py_ml is connected to 6.x index - this is not
                 # officially supported, but does help usability
-                es_types = list(mappings[index]["mappings"].keys())
-                if len(es_types) != 1:
+                os_types = list(mappings[index]["mappings"].keys())
+                if len(os_types) != 1:
                     raise NotImplementedError(
-                        f"opensearch_py_ml only supports 0 or 1 Elasticsearch types. es_types={es_types}"
+                        f"opensearch_py_ml only supports 0 or 1 types. os_types={os_types}"
                     )
-                properties = mappings[index]["mappings"][es_types[0]]["properties"]
+                properties = mappings[index]["mappings"][os_types[0]]["properties"]
 
             flatten(properties)
 
@@ -380,25 +379,25 @@ class FieldMappings:
                 # v = {'long': {'type': 'long', 'searchable': True, 'aggregatable': True}}
                 for kk, vv in field_caps.items():
                     _source = field in source_fields
-                    es_field_name = field
-                    es_dtype = vv["type"]
-                    es_date_format = all_fields[field][1]
-                    pd_dtype = FieldMappings._es_dtype_to_pd_dtype(vv["type"])
+                    os_field_name = field
+                    os_dtype = vv["type"]
+                    os_date_format = all_fields[field][1]
+                    pd_dtype = FieldMappings._os_dtype_to_pd_dtype(vv["type"])
                     is_searchable = vv["searchable"]
                     is_aggregatable = vv["aggregatable"]
                     scripted = False
-                    aggregatable_es_field_name = None  # this is populated later
+                    aggregatable_os_field_name = None  # this is populated later
 
                     caps = [
-                        es_field_name,
+                        os_field_name,
                         _source,
-                        es_dtype,
-                        es_date_format,
+                        os_dtype,
+                        os_date_format,
                         pd_dtype,
                         is_searchable,
                         is_aggregatable,
                         scripted,
-                        aggregatable_es_field_name,
+                        aggregatable_os_field_name,
                     ]
 
                     capability_matrix[field] = caps
@@ -421,27 +420,27 @@ class FieldMappings:
         )
 
         def find_aggregatable(row, df):
-            # convert series to dict so we can add 'aggregatable_es_field_name'
+            # convert series to dict so we can add 'aggregatable_os_field_name'
             row_as_dict = row.to_dict()
             if not row_as_dict["is_aggregatable"]:
                 # if not aggregatable, then try field.keyword
-                es_field_name_keyword = row.es_field_name + ".keyword"
+                os_field_name_keyword = row.os_field_name + ".keyword"
                 try:
-                    series = df.loc[df.es_field_name == es_field_name_keyword]
+                    series = df.loc[df.os_field_name == os_field_name_keyword]
                     if not series.empty and series.is_aggregatable.squeeze():
                         row_as_dict[
-                            "aggregatable_es_field_name"
-                        ] = es_field_name_keyword
+                            "aggregatable_os_field_name"
+                        ] = os_field_name_keyword
                     else:
-                        row_as_dict["aggregatable_es_field_name"] = None
+                        row_as_dict["aggregatable_os_field_name"] = None
                 except KeyError:
-                    row_as_dict["aggregatable_es_field_name"] = None
+                    row_as_dict["aggregatable_os_field_name"] = None
             else:
-                row_as_dict["aggregatable_es_field_name"] = row_as_dict["es_field_name"]
+                row_as_dict["aggregatable_os_field_name"] = row_as_dict["os_field_name"]
 
             return pd.Series(data=row_as_dict)
 
-        # add aggregatable_es_field_name column by applying action to each row
+        # add aggregatable_os_field_name column by applying action to each row
         capability_matrix_df = capability_matrix_df.apply(
             find_aggregatable, args=(capability_matrix_df,), axis="columns"
         )
@@ -450,12 +449,12 @@ class FieldMappings:
         return capability_matrix_df[capability_matrix_df.is_source].sort_index()
 
     @classmethod
-    def _es_dtype_to_pd_dtype(cls, es_dtype):
+    def _os_dtype_to_pd_dtype(cls, os_dtype):
         """
-        Mapping Elasticsearch types to pandas dtypes
+        Mapping OpenSearch types to pandas dtypes
         --------------------------------------------
 
-        Elasticsearch field datatype              | Pandas dtype
+        OpenSearch field datatype              | Pandas dtype
         --
         text                                      | object
         keyword                                   | object
@@ -465,12 +464,12 @@ class FieldMappings:
         boolean                                   | bool
         TODO - add additional mapping types
         """
-        return cls.ES_DTYPE_TO_PD_DTYPE.get(es_dtype, "object")
+        return cls.OS_DTYPE_TO_PD_DTYPE.get(os_dtype, "object")
 
     @staticmethod
-    def _pd_dtype_to_es_dtype(pd_dtype) -> Optional[str]:
+    def _pd_dtype_to_os_dtype(pd_dtype) -> Optional[str]:
         """
-        Mapping pandas dtypes to Elasticsearch dtype
+        Mapping pandas dtypes to OpenSearch dtype
         --------------------------------------------
 
         ```
@@ -484,53 +483,53 @@ class FieldMappings:
         category NA NA Finite list of text values
         ```
         """
-        es_dtype: Optional[str] = None
+        os_dtype: Optional[str] = None
 
         # Map all to 64-bit - TODO map to specifics: int32 -> int etc.
         if is_float_dtype(pd_dtype):
-            es_dtype = "double"
+            os_dtype = "double"
         elif is_integer_dtype(pd_dtype):
-            es_dtype = "long"
+            os_dtype = "long"
         elif is_bool_dtype(pd_dtype):
-            es_dtype = "boolean"
+            os_dtype = "boolean"
         elif is_string_dtype(pd_dtype):
-            es_dtype = "keyword"
+            os_dtype = "keyword"
         elif is_datetime_or_timedelta_dtype(pd_dtype):
-            es_dtype = "date"
+            os_dtype = "date"
         elif is_datetime64_any_dtype(pd_dtype):
-            es_dtype = "date"
+            os_dtype = "date"
         else:
             warnings.warn(
                 f"No mapping for pd_dtype: [{pd_dtype}], using default mapping"
             )
 
-        return es_dtype
+        return os_dtype
 
     @staticmethod
-    def _generate_es_mappings(
-        dataframe: "pd.DataFrame", es_type_overrides: Optional[Mapping[str, str]] = None
+    def _generate_os_mappings(
+        dataframe: "pd.DataFrame", os_type_overrides: Optional[Mapping[str, str]] = None
     ) -> Dict[str, Dict[str, Any]]:
-        """Given a pandas dataframe, generate the associated Elasticsearch mapping
+        """Given a pandas dataframe, generate the associated OpenSearch mapping
 
         Parameters
         ----------
             dataframe : pandas.DataFrame
                 pandas.DataFrame to create schema from
-            es_type_overrides : dict
-                Dictionary of Elasticsearch types to override defaults  for certain fields
+            os_type_overrides : dict
+                Dictionary of OpenSearch types to override defaults  for certain fields
                 (e.g. { 'location': 'geo_point' })
 
         Returns
         -------
             mapping : str
         """
-        es_dtype: Union[str, Dict[str, Any]]
+        os_dtype: Union[str, Dict[str, Any]]
 
         mapping_props: Dict[str, Any] = {}
 
-        if es_type_overrides is not None:
+        if os_type_overrides is not None:
             non_existing_columns: List[str] = [
-                key for key in es_type_overrides.keys() if key not in dataframe.columns
+                key for key in os_type_overrides.keys() if key not in dataframe.columns
             ]
             if non_existing_columns:
                 raise KeyError(
@@ -538,20 +537,20 @@ class FieldMappings:
                 )
 
         for column, dtype in dataframe.dtypes.iteritems():
-            if es_type_overrides is not None and column in es_type_overrides:
-                es_dtype = es_type_overrides[column]
-                if es_dtype == "text":
-                    es_dtype = {
+            if os_type_overrides is not None and column in os_type_overrides:
+                os_dtype = os_type_overrides[column]
+                if os_dtype == "text":
+                    os_dtype = {
                         "type": "text",
                         "fields": {"keyword": {"type": "keyword"}},
                     }
             else:
-                es_dtype = FieldMappings._pd_dtype_to_es_dtype(dtype)
+                os_dtype = FieldMappings._pd_dtype_to_os_dtype(dtype)
 
-            if isinstance(es_dtype, str):
-                mapping_props[column] = {"type": es_dtype}
+            if isinstance(os_dtype, str):
+                mapping_props[column] = {"type": os_dtype}
             else:
-                mapping_props[column] = es_dtype
+                mapping_props[column] = os_dtype
 
         return {"mappings": {"properties": mapping_props}}
 
@@ -572,7 +571,7 @@ class FieldMappings:
 
         Returns
         -------
-        aggregatable_es_field_name: str or None
+        aggregatable_os_field_name: str or None
             The aggregatable field name associated with display_name. This could be the field_name, or the
             field_name.keyword.
 
@@ -587,14 +586,14 @@ class FieldMappings:
                 f"Can not get aggregatable field name for invalid display name {display_name}"
             ) from None
 
-        if mapping is not None and mapping.aggregatable_es_field_name is None:
+        if mapping is not None and mapping.aggregatable_os_field_name is None:
             warnings.warn(f"Aggregations not supported for '{display_name}'")
 
-        return mapping.aggregatable_es_field_name
+        return mapping.aggregatable_os_field_name
 
     def aggregatable_field_names(self) -> Dict[str, str]:
         """
-        Return a list of aggregatable Elasticsearch field_names for all display names.
+        Return a list of aggregatable OpenSearch field_names for all display names.
         If field is not aggregatable_field_names, return nothing.
 
         Logic here is that field_name names are '_source' fields and keyword fields
@@ -611,28 +610,28 @@ class FieldMappings:
             e.g. {'customer_full_name.keyword': 'customer_full_name', ...}
         """
         non_aggregatables = self._mappings_capabilities[
-            self._mappings_capabilities.aggregatable_es_field_name.isna()
+            self._mappings_capabilities.aggregatable_os_field_name.isna()
         ]
         if not non_aggregatables.empty:
             warnings.warn(f"Aggregations not supported for '{non_aggregatables}'")
 
         aggregatables = self._mappings_capabilities[
-            self._mappings_capabilities.aggregatable_es_field_name.notna()
+            self._mappings_capabilities.aggregatable_os_field_name.notna()
         ]
 
         # extract relevant fields and convert to dict
         # <class 'dict'>: {'category.keyword': 'category', 'currency': 'currency', ...
         return dict(
-            aggregatables[["aggregatable_es_field_name", "es_field_name"]].to_dict(
+            aggregatables[["aggregatable_os_field_name", "os_field_name"]].to_dict(
                 orient="split"
             )["data"]
         )
 
-    def date_field_format(self, es_field_name: str) -> str:
+    def date_field_format(self, os_field_name: str) -> str:
         """
         Parameters
         ----------
-        es_field_name: str
+        os_field_name: str
 
 
         Returns
@@ -641,14 +640,14 @@ class FieldMappings:
             A string (for date fields) containing the date format for the field
         """
         return self._mappings_capabilities.loc[
-            self._mappings_capabilities.es_field_name == es_field_name
-        ].es_date_format.squeeze()
+            self._mappings_capabilities.os_field_name == os_field_name
+            ].os_date_format.squeeze()
 
-    def field_name_pd_dtype(self, es_field_name: str) -> str:
+    def field_name_pd_dtype(self, os_field_name: str) -> str:
         """
         Parameters
         ----------
-        es_field_name: str
+        os_field_name: str
 
         Returns
         -------
@@ -658,14 +657,14 @@ class FieldMappings:
         Raises
         ------
         KeyError
-            If es_field_name does not exist in mapping
+            If os_field_name does not exist in mapping
         """
-        if es_field_name not in self._mappings_capabilities.es_field_name:
-            raise KeyError(f"es_field_name {es_field_name} does not exist")
+        if os_field_name not in self._mappings_capabilities.os_field_name:
+            raise KeyError(f"os_field_name {os_field_name} does not exist")
 
         pd_dtype = self._mappings_capabilities.loc[
-            self._mappings_capabilities.es_field_name == es_field_name
-        ].pd_dtype.squeeze()
+            self._mappings_capabilities.os_field_name == os_field_name
+            ].pd_dtype.squeeze()
         return pd_dtype
 
     def add_scripted_field(
@@ -677,14 +676,14 @@ class FieldMappings:
                 index=[display_name]
             )
 
-        # ['es_field_name', 'is_source', 'es_dtype', 'es_date_format', 'pd_dtype', 'is_searchable',
-        # 'is_aggregatable', 'is_scripted', 'aggregatable_es_field_name']
+        # ['os_field_name', 'is_source', 'os_dtype', 'os_date_format', 'pd_dtype', 'is_searchable',
+        # 'is_aggregatable', 'is_scripted', 'aggregatable_os_field_name']
 
         capabilities = {
             display_name: [
                 scripted_field_name,
                 False,
-                self._pd_dtype_to_es_dtype(pd_dtype),
+                self._pd_dtype_to_os_dtype(pd_dtype),
                 None,
                 pd_dtype,
                 True,
@@ -703,8 +702,8 @@ class FieldMappings:
         )
 
     def numeric_source_fields(self) -> List[str]:
-        _, es_field_names, _ = self.metric_source_fields()
-        return es_field_names
+        _, os_field_names, _ = self.metric_source_fields()
+        return os_field_names
 
     def all_source_fields(self) -> List[Field]:
         """
@@ -756,45 +755,45 @@ class FieldMappings:
         Returns
         -------
         pd_dtypes: list of np.dtype
-            List of pd_dtypes for es_field_names
-        es_field_names: list of str
+            List of pd_dtypes for os_field_names
+        os_field_names: list of str
             List of source fields where pd_dtype == (int64 or float64 or bool or timestamp)
-        es_date_formats: list of str (can be None)
-            List of es date formats for es_field
+        os_date_formats: list of str (can be None)
+            List of es date formats for os_field
 
         TODO - not very efficient, but unless called per row, this should be ok
         """
         pd_dtypes = []
-        es_field_names = []
-        es_date_formats = []
+        os_field_names = []
+        os_date_formats = []
         for index, row in self._mappings_capabilities.iterrows():
             pd_dtype = row["pd_dtype"]
-            es_field_name = row["es_field_name"]
-            es_date_format = row["es_date_format"]
+            os_field_name = row["os_field_name"]
+            os_date_format = row["os_date_format"]
 
             if is_integer_dtype(pd_dtype) or is_float_dtype(pd_dtype):
                 pd_dtypes.append(np.dtype(pd_dtype))
-                es_field_names.append(es_field_name)
-                es_date_formats.append(es_date_format)
+                os_field_names.append(os_field_name)
+                os_date_formats.append(os_date_format)
             elif include_bool and is_bool_dtype(pd_dtype):
                 pd_dtypes.append(np.dtype(pd_dtype))
-                es_field_names.append(es_field_name)
-                es_date_formats.append(es_date_format)
+                os_field_names.append(os_field_name)
+                os_date_formats.append(os_date_format)
             elif include_timestamp and is_datetime_or_timedelta_dtype(pd_dtype):
                 pd_dtypes.append(np.dtype(pd_dtype))
-                es_field_names.append(es_field_name)
-                es_date_formats.append(es_date_format)
+                os_field_names.append(os_field_name)
+                os_date_formats.append(os_date_format)
 
         # return in display_name order
-        return pd_dtypes, es_field_names, es_date_formats
+        return pd_dtypes, os_field_names, os_date_formats
 
     def get_field_names(self, include_scripted_fields: bool = True) -> List[str]:
         if include_scripted_fields:
-            return self._mappings_capabilities.es_field_name.to_list()
+            return self._mappings_capabilities.os_field_name.to_list()
 
         return self._mappings_capabilities[  # noqa: E712
             self._mappings_capabilities.is_scripted == False
-        ].es_field_name.to_list()
+        ].os_field_name.to_list()
 
     def _get_display_names(self):
         return self._mappings_capabilities.index.to_list()
@@ -826,21 +825,21 @@ class FieldMappings:
         # Convert return from 'str' to 'np.dtype'
         return pd_dtypes.apply(lambda x: np.dtype(x))
 
-    def es_dtypes(self):
+    def os_dtypes(self):
         """
         Returns
         -------
         dtypes: pd.Series
             Index: Display name
-            Values: es_dtype as a string
+            Values: os_dtype as a string
         """
-        es_dtypes = self._mappings_capabilities["es_dtype"]
+        os_dtypes = self._mappings_capabilities["os_dtype"]
 
         # Set name of the returned series as None
-        es_dtypes.name = None
-        return es_dtypes
+        os_dtypes.name = None
+        return os_dtypes
 
-    def es_info(self, buf: TextIO) -> None:
+    def os_info(self, buf: TextIO) -> None:
         buf.write("Mappings:\n")
         buf.write(f" capabilities:\n{self._mappings_capabilities.to_string()}\n")
 
@@ -869,7 +868,7 @@ class FieldMappings:
         renames = {}
 
         for display_name in self.display_names:
-            field_name = self._mappings_capabilities.loc[display_name].es_field_name
+            field_name = self._mappings_capabilities.loc[display_name].os_field_name
             if field_name != display_name:
                 renames[field_name] = display_name
 
@@ -878,41 +877,41 @@ class FieldMappings:
 
 def verify_mapping_compatibility(
     ed_mapping: Mapping[str, Mapping[str, Mapping[str, Mapping[str, str]]]],
-    es_mapping: Mapping[str, Mapping[str, Mapping[str, Mapping[str, str]]]],
-    es_type_overrides: Optional[Mapping[str, str]] = None,
+    os_mapping: Mapping[str, Mapping[str, Mapping[str, Mapping[str, str]]]],
+    os_type_overrides: Optional[Mapping[str, str]] = None,
 ) -> None:
     """Given a mapping generated by Eland and an existing ES index mapping
     attempt to see if the two are compatible. If not compatible raise ValueError
     with a list of problems between the two to be reported to the user.
     """
     problems = []
-    es_type_overrides = es_type_overrides or {}
+    os_type_overrides = os_type_overrides or {}
 
     ed_props = ed_mapping["mappings"]["properties"]
-    es_props = es_mapping["mappings"]["properties"]
+    os_props = os_mapping["mappings"]["properties"]
 
-    for key in sorted(es_props.keys()):
+    for key in sorted(os_props.keys()):
         if key not in ed_props:
             problems.append(f"- {key!r} is missing from DataFrame columns")
 
     for key, key_def in sorted(ed_props.items()):
-        if key not in es_props:
+        if key not in os_props:
             problems.append(f"- {key!r} is missing from ES index mapping")
             continue
 
-        key_type = es_type_overrides.get(key, key_def["type"])
-        es_key_type = es_props[key]["type"]
-        if key_type != es_key_type and es_key_type not in ES_COMPATIBLE_TYPES.get(
+        key_type = os_type_overrides.get(key, key_def["type"])
+        os_key_type = os_props[key]["type"]
+        if key_type != os_key_type and os_key_type not in OS_COMPATIBLE_TYPES.get(
             key_type, ()
         ):
             problems.append(
                 f"- {key!r} column type ({key_type!r}) not compatible with "
-                f"ES index mapping type ({es_key_type!r})"
+                f"ES index mapping type ({os_key_type!r})"
             )
 
     if problems:
         problems_message = "\n".join(problems)
         raise ValueError(
-            f"DataFrame dtypes and Elasticsearch index mapping "
+            f"DataFrame dtypes and OpenSearch index mapping "
             f"aren't compatible:\n{problems_message}"
         )

@@ -25,7 +25,7 @@ from opensearch_py_ml.common import os_version
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Define test files and indices
-OPENSEARCH_HOST = 'https://localhost:9200'
+OPENSEARCH_HOST = 'http://localhost:9200'
 OPENSEARCH_ADMIN_USER, OPENSEARCH_ADMIN_PASSWORD = 'admin', 'admin'
 
 # Define client to use in tests
@@ -255,7 +255,7 @@ TEST_MAPPING1_EXPECTED = {
 }
 
 TEST_MAPPING1_EXPECTED_DF = pd.DataFrame.from_dict(
-    data=TEST_MAPPING1_EXPECTED, orient="index", columns=["es_dtype"]
+    data=TEST_MAPPING1_EXPECTED, orient="index", columns=["os_dtype"]
 )
 TEST_MAPPING1_EXPECTED_SOURCE_FIELD_DF = TEST_MAPPING1_EXPECTED_DF.drop(
     index=[
