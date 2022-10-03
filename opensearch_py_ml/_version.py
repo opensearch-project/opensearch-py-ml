@@ -27,7 +27,7 @@
 __title__ = "opensearch_py_ml"
 __description__ = "Python Client and Toolkit for DataFrames, Big Data, Machine Learning and ETL in OpenSearch"
 __url__ = "https://github.com/opensearch-project/opensearch-py-ml"
-__version__ = "8.2.0"
+__version__ = "2.2.0"
 __author__ = ""
 __author_email__ = ""
 __maintainer__ = ""

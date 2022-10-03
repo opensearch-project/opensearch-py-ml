@@ -312,9 +312,7 @@ def csv_to_opensearch(  # type: ignore
     names=None,
     index_col=None,
     usecols=None,
-    squeeze=False,
     prefix=None,
-    mangle_dupe_cols=True,
     # General Parsing Configuration
     dtype=None,
     engine=None,
@@ -488,7 +486,6 @@ def csv_to_opensearch(  # type: ignore
         "usecols": usecols,
         "verbose": verbose,
         "encoding": encoding,
-        "squeeze": squeeze,
         "memory_map": memory_map,
         "float_precision": float_precision,
         "na_filter": na_filter,
@@ -497,7 +494,6 @@ def csv_to_opensearch(  # type: ignore
         "error_bad_lines": error_bad_lines,
         "on_bad_lines": on_bad_lines,
         "low_memory": low_memory,
-        "mangle_dupe_cols": mangle_dupe_cols,
         "infer_datetime_format": infer_datetime_format,
         "skip_blank_lines": skip_blank_lines,
     }

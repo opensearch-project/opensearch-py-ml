@@ -552,7 +552,7 @@ class FieldMappings:
                     f"{repr(non_existing_columns)[1:-1]} column(s) not in given dataframe"
                 )
 
-        for column, dtype in dataframe.dtypes.iteritems():
+        for column, dtype in dataframe.items():
             if os_type_overrides is not None and column in os_type_overrides:
                 os_dtype = os_type_overrides[column]
                 if os_dtype == "text":
@@ -713,9 +713,7 @@ class FieldMappings:
             capabilities, orient="index", columns=FieldMappings.column_labels
         )
 
-        self._mappings_capabilities = self._mappings_capabilities.append(
-            capability_matrix_row
-        )
+        self._mappings_capabilities = pd.concat([self._mappings_capabilities, capability_matrix_row])
 
     def numeric_source_fields(self) -> List[str]:
         _, os_field_names, _ = self.metric_source_fields()

@@ -12,7 +12,7 @@ from opensearch_py_ml import DataFrame
 from typing import List, Optional, Dict, Tuple, Any
 from math import ceil
 
-from sagemaker import RealTimePredictor, Session
+from sagemaker.predictor import Predictor, Session
 
 DEFAULT_SAGEMAKER_UPLOAD_CHUNK_SIZE = 1000
 
@@ -49,7 +49,7 @@ def make_sagemaker_prediction(endpoint_name: str,
     ----------
     list representing the indices, dictionary representing the output of the model on input data
     """
-    predictor = RealTimePredictor(endpoint=endpoint_name, sagemaker_session=sagemaker_session, content_type='text/csv')
+    predictor = Predictor(endpoint=endpoint_name, sagemaker_session=sagemaker_session, content_type='text/csv')
     data = data.drop(columns=target_column)
 
     if column_order is not None:
