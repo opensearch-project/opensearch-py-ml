@@ -134,7 +134,7 @@ class TestPandasToEland:
 
         # Assert that the second pandas dataframe is actually appended
         assert df2.shape == (6, 4)
-        pd_df3 = pd_df.append(pd_df2)
+        pd_df3 = pd.concat([pd_df, pd_df2])
         assert_pandas_eland_frame_equal(pd_df3, df2)
 
     def test_es_if_exists_append_mapping_mismatch_schema_enforcement(self):
