@@ -24,7 +24,7 @@
 
 # File called _pytest for PyCharm compatibility
 import opensearch_py_ml as ed
-from tests import OPENSEARCH_TEST_CLIENT, FLIGHTS_INDEX_NAME
+from tests import FLIGHTS_INDEX_NAME, OPENSEARCH_TEST_CLIENT
 from tests.common import TestData, assert_pandas_eland_series_equal
 
 

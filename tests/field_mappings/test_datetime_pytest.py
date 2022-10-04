@@ -55,7 +55,7 @@ class TestDateTime(TestData):
 
         index = "test_time_formats"
         es.indices.delete(index=index, ignore_unavailable=True)
-        es.indices.create(index=index, body={'mappings': mappings})
+        es.indices.create(index=index, body={"mappings": mappings})
 
         for i, time_formats in enumerate(time_formats_docs):
             es.index(index=index, id=i, body=time_formats)

@@ -38,9 +38,15 @@ class TestDataFrameDrop(TestData):
         ed_drop_one = ed_index[3]
 
         df.check_values(df.ed.drop(ed_drop_many), df.pd.drop(pd_drop_many))
-        df.check_values(df.ed.drop(labels=ed_drop_many, axis=0), df.pd.drop(labels=pd_drop_many, axis=0))
+        df.check_values(
+            df.ed.drop(labels=ed_drop_many, axis=0),
+            df.pd.drop(labels=pd_drop_many, axis=0),
+        )
         df.check_values(df.ed.drop(index=ed_drop_many), df.pd.drop(index=pd_drop_many))
-        df.check_values(df.ed.drop(labels=ed_drop_one, axis=0), df.pd.drop(labels=pd_drop_one, axis=0))
+        df.check_values(
+            df.ed.drop(labels=ed_drop_one, axis=0),
+            df.pd.drop(labels=pd_drop_one, axis=0),
+        )
 
     def test_drop_columns(self, df):
         df.drop(labels=["Carrier", "DestCityName"], axis=1)
@@ -68,9 +74,9 @@ class TestDataFrameDrop(TestData):
         cols = df.shape[1]
 
         for dropped_pd, dropped_ed in (
-                (df.pd.drop(all_index_pd), df.ed.drop(all_index_ed)),
-                (df.pd.drop(all_index_pd, axis=0), df.ed.drop(all_index_ed, axis=0)),
-                (df.pd.drop(index=all_index_pd), df.ed.drop(index=all_index_ed)),
+            (df.pd.drop(all_index_pd), df.ed.drop(all_index_ed)),
+            (df.pd.drop(all_index_pd, axis=0), df.ed.drop(all_index_ed, axis=0)),
+            (df.pd.drop(index=all_index_pd), df.ed.drop(index=all_index_ed)),
         ):
             assert dropped_pd.shape == (0, cols)
             assert dropped_ed.shape == (0, cols)

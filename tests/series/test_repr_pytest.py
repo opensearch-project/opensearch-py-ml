@@ -26,7 +26,7 @@
 import pandas as pd
 
 import opensearch_py_ml as ed
-from tests import OPENSEARCH_TEST_CLIENT, FLIGHTS_INDEX_NAME
+from tests import FLIGHTS_INDEX_NAME, OPENSEARCH_TEST_CLIENT
 from tests.common import TestData
 
 

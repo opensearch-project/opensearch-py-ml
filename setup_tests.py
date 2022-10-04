@@ -16,20 +16,20 @@
 #  under the License.
 
 import pandas as pd
-from opensearchpy.client import OpenSearch
 from opensearchpy import helpers
+from opensearchpy.client import OpenSearch
 
 from tests import (
     ECOMMERCE_FILE_NAME,
     ECOMMERCE_INDEX_NAME,
     ECOMMERCE_MAPPING,
-    OPENSEARCH_HOST,
-    OPENSEARCH_TEST_CLIENT,
     FLIGHTS_FILE_NAME,
     FLIGHTS_INDEX_NAME,
     FLIGHTS_MAPPING,
     FLIGHTS_SMALL_FILE_NAME,
     FLIGHTS_SMALL_INDEX_NAME,
+    OPENSEARCH_HOST,
+    OPENSEARCH_TEST_CLIENT,
     TEST_MAPPING1,
     TEST_MAPPING1_INDEX_NAME,
     TEST_NESTED_USER_GROUP_DOCS,
@@ -89,7 +89,7 @@ def _update_max_compilations_limit(os: OpenSearch, limit="10000/1m"):
     print("Updating script.max_compilations_rate to ", limit)
     os.cluster.put_settings(
         body={
-                "transient": {
+            "transient": {
                 "script.max_compilations_rate": "use-context",
                 "script.context.field.max_compilations_rate": limit,
             }
@@ -104,9 +104,7 @@ def _setup_test_mappings(os: OpenSearch):
 
 
 def _setup_test_nested(os):
-    os.indices.delete(
-        index=TEST_NESTED_USER_GROUP_INDEX_NAME, ignore_unavailable=True
-    )
+    os.indices.delete(index=TEST_NESTED_USER_GROUP_INDEX_NAME, ignore_unavailable=True)
     os.indices.create(
         index=TEST_NESTED_USER_GROUP_INDEX_NAME, body=TEST_NESTED_USER_GROUP_MAPPING
     )
@@ -115,11 +113,10 @@ def _setup_test_nested(os):
 
 
 if __name__ == "__main__":
-    # Create connection to Elasticsearch - use defaults
+    # Create connection to OpenSearch - use defaults
 
     print("Connecting to OS", OPENSEARCH_HOST)
     os = OPENSEARCH_TEST_CLIENT
-
 
     _setup_data(os)
     _setup_test_mappings(os)

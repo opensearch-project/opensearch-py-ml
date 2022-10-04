@@ -40,8 +40,8 @@ from typing import (
 
 import numpy as np
 import pandas as pd  # type: ignore
-from pandas.core.dtypes.common import (  # type: ignore
-    is_bool_dtype,
+from pandas.core.dtypes.common import is_bool_dtype  # type: ignore
+from pandas.core.dtypes.common import (
     is_datetime64_any_dtype,
     is_datetime_or_timedelta_dtype,
     is_float_dtype,
@@ -51,9 +51,8 @@ from pandas.core.dtypes.common import (  # type: ignore
 from pandas.core.dtypes.inference import is_list_like
 
 if TYPE_CHECKING:
-    from opensearchpy import OpenSearch
     from numpy.typing import DTypeLike
-
+    from opensearchpy import OpenSearch
 
 OS_FLOAT_TYPES: Set[str] = {"double", "float", "half_float", "scaled_float"}
 OS_INTEGER_TYPES: Set[str] = {"long", "integer", "short", "byte"}
@@ -657,7 +656,7 @@ class FieldMappings:
         """
         return self._mappings_capabilities.loc[
             self._mappings_capabilities.os_field_name == os_field_name
-            ].os_date_format.squeeze()
+        ].os_date_format.squeeze()
 
     def field_name_pd_dtype(self, os_field_name: str) -> str:
         """
@@ -680,7 +679,7 @@ class FieldMappings:
 
         pd_dtype = self._mappings_capabilities.loc[
             self._mappings_capabilities.os_field_name == os_field_name
-            ].pd_dtype.squeeze()
+        ].pd_dtype.squeeze()
         return pd_dtype
 
     def add_scripted_field(
@@ -713,7 +712,9 @@ class FieldMappings:
             capabilities, orient="index", columns=FieldMappings.column_labels
         )
 
-        self._mappings_capabilities = pd.concat([self._mappings_capabilities, capability_matrix_row])
+        self._mappings_capabilities = pd.concat(
+            [self._mappings_capabilities, capability_matrix_row]
+        )
 
     def numeric_source_fields(self) -> List[str]:
         _, os_field_names, _ = self.metric_source_fields()

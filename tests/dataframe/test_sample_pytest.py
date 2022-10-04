@@ -103,7 +103,9 @@ class TestDataFrameSample(TestData):
     def test_sample_head(self):
         ed_flights = self.ed_flights_small()
         sample_ed_flights = ed_flights.sample(n=10, random_state=self.SEED)
-        sample_pd_flights = self.build_from_index(opensearch_to_pandas(sample_ed_flights))
+        sample_pd_flights = self.build_from_index(
+            opensearch_to_pandas(sample_ed_flights)
+        )
 
         pd_head_5 = sample_pd_flights.head(5)
         ed_head_5 = sample_ed_flights.head(5)
@@ -112,6 +114,8 @@ class TestDataFrameSample(TestData):
     def test_sample_shape(self):
         ed_flights = self.ed_flights_small()
         sample_ed_flights = ed_flights.sample(n=10, random_state=self.SEED)
-        sample_pd_flights = self.build_from_index(opensearch_to_pandas(sample_ed_flights))
+        sample_pd_flights = self.build_from_index(
+            opensearch_to_pandas(sample_ed_flights)
+        )
 
         assert sample_pd_flights.shape == sample_ed_flights.shape

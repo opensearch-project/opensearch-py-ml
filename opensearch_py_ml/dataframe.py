@@ -159,6 +159,7 @@ class DataFrame(NDFrame):
             os_index_field=os_index_field,
             _query_compiler=_query_compiler,
         )
+
     @property
     def columns(self) -> pd.Index:
         """
@@ -988,7 +989,7 @@ class DataFrame(NDFrame):
                 index=self._query_compiler._index_pattern, metric=["store"]
             )["_all"]["total"]["store"]["size_in_bytes"]
             lines.append(
-                f"OpenSearch storage usage: {_sizeof_fmt(storage_usage,size_qualifier)}\n"
+                f"OpenSearch storage usage: {_sizeof_fmt(storage_usage, size_qualifier)}\n"
             )
 
         fmt.buffer_put_lines(buf, lines)
@@ -1450,7 +1451,9 @@ class DataFrame(NDFrame):
         """
         return self.columns
 
-    def iterrows(self, sort_index: Optional['str'] = '_doc') -> Iterable[Tuple[Union[str, Tuple[str, ...]], pd.Series]]:
+    def iterrows(
+        self, sort_index: Optional["str"] = "_doc"
+    ) -> Iterable[Tuple[Union[str, Tuple[str, ...]], pd.Series]]:
         """
         Iterate over opensearch_py_ml.DataFrame rows as (index, pandas.Series) pairs.
 
@@ -1501,11 +1504,16 @@ class DataFrame(NDFrame):
         Cancelled              False
         Name: 4, dtype: object
         """
-        for df in self._query_compiler.search_yield_pandas_dataframes(sort_index=sort_index):
+        for df in self._query_compiler.search_yield_pandas_dataframes(
+            sort_index=sort_index
+        ):
             yield from df.iterrows()
 
     def itertuples(
-        self, index: bool = True, name: Union[str, None] = "opensearch-py-ml", sort_index: Optional[str] = '_doc'
+        self,
+        index: bool = True,
+        name: Union[str, None] = "opensearch-py-ml",
+        sort_index: Optional[str] = "_doc",
     ) -> Iterable[Tuple[Any, ...]]:
         """
         Iterate over opensearch_py_ml.DataFrame rows as namedtuples.
@@ -1571,7 +1579,9 @@ class DataFrame(NDFrame):
         Flight(Index='3', AvgTicketPrice=181.69421554118, Cancelled=True)
         Flight(Index='4', AvgTicketPrice=730.041778346198, Cancelled=False)
         """
-        for df in self._query_compiler.search_yield_pandas_dataframes(sort_index=sort_index):
+        for df in self._query_compiler.search_yield_pandas_dataframes(
+            sort_index=sort_index
+        ):
             yield from df.itertuples(index=index, name=name)
 
     def aggregate(

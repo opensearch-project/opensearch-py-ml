@@ -35,11 +35,8 @@ except ImportError:
     # pandas>=1.3.0
     from pandas.core.dtypes.generic import ABCIndex
 
-from pandas.plotting._matplotlib.tools import (  # type: ignore
-    create_subplots,
-    flatten_axes,
-    set_ticks_props,
-)
+from pandas.plotting._matplotlib.tools import create_subplots  # type: ignore
+from pandas.plotting._matplotlib.tools import flatten_axes, set_ticks_props
 
 from opensearch_py_ml.utils import try_sort
 

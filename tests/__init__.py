@@ -32,13 +32,15 @@ from opensearch_py_ml.common import os_version
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Define test files and indices
-OPENSEARCH_HOST = 'https://localhost:9200'
-OPENSEARCH_ADMIN_USER, OPENSEARCH_ADMIN_PASSWORD = 'admin', 'admin'
+OPENSEARCH_HOST = "https://localhost:9200"
+OPENSEARCH_ADMIN_USER, OPENSEARCH_ADMIN_PASSWORD = "admin", "admin"
 
 # Define client to use in tests
-OPENSEARCH_TEST_CLIENT = OpenSearch(hosts=[OPENSEARCH_HOST],
-                                    http_auth=(OPENSEARCH_ADMIN_USER, OPENSEARCH_ADMIN_PASSWORD),
-                                    verify_certs=False)
+OPENSEARCH_TEST_CLIENT = OpenSearch(
+    hosts=[OPENSEARCH_HOST],
+    http_auth=(OPENSEARCH_ADMIN_USER, OPENSEARCH_ADMIN_PASSWORD),
+    verify_certs=False,
+)
 
 ES_VERSION = os_version(OPENSEARCH_TEST_CLIENT)
 

@@ -38,13 +38,10 @@ class TestDataFrameCount(TestData):
     ]
 
     def test_count(self, df):
-
-
         df.load_dataset("ecommerce")
         df.count()
 
     def test_count_flights(self):
-
         pd_flights = self.pd_flights().filter(self.filter_data)
         ed_flights = self.ed_flights().filter(self.filter_data)
 

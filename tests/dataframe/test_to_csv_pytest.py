@@ -32,7 +32,7 @@ import pandas as pd
 from pandas.testing import assert_frame_equal
 
 import opensearch_py_ml as ed
-from tests import OPENSEARCH_TEST_CLIENT, FLIGHTS_INDEX_NAME
+from tests import FLIGHTS_INDEX_NAME, OPENSEARCH_TEST_CLIENT
 from tests.common import ROOT_DIR, TestData
 
 
@@ -109,7 +109,6 @@ class TestDataFrameToCSV(TestData):
         OPENSEARCH_TEST_CLIENT.indices.delete(index=test_index)
 
     def test_pd_to_csv_without_filepath(self):
-
         ed_flights = self.ed_flights()
         pd_flights = self.pd_flights()
 

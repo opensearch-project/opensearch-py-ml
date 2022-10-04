@@ -5,26 +5,25 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
-import json
-
-import numpy as np
-from opensearch_py_ml import DataFrame
-from typing import List, Optional, Dict, Tuple, Any
 from math import ceil
+from typing import Any, Dict, List, Optional, Tuple
 
 from sagemaker.predictor import Predictor, Session
+
+from opensearch_py_ml import DataFrame
 
 DEFAULT_SAGEMAKER_UPLOAD_CHUNK_SIZE = 1000
 
 
-def make_sagemaker_prediction(endpoint_name: str,
-                              data: DataFrame,
-                              target_column: str,
-                              sagemaker_session: Optional[Session] = None,
-                              column_order: Optional[List[str]] = None,
-                              chunksize: int = None,
-                              sort_index: Optional[str] = '_doc'
-                              ) -> Tuple[List[Any], Dict[Any, Any]]:
+def make_sagemaker_prediction(
+    endpoint_name: str,
+    data: DataFrame,
+    target_column: str,
+    sagemaker_session: Optional[Session] = None,
+    column_order: Optional[List[str]] = None,
+    chunksize: int = None,
+    sort_index: Optional[str] = "_doc",
+) -> Tuple[List[Any], Dict[Any, Any]]:
     """
     Make a prediction on an opensearch_py_ml dataframe using a deployed SageMaker model endpoint.
 
@@ -49,7 +48,11 @@ def make_sagemaker_prediction(endpoint_name: str,
     ----------
     list representing the indices, dictionary representing the output of the model on input data
     """
-    predictor = Predictor(endpoint=endpoint_name, sagemaker_session=sagemaker_session, content_type='text/csv')
+    predictor = Predictor(
+        endpoint=endpoint_name,
+        sagemaker_session=sagemaker_session,
+        content_type="text/csv",
+    )
     data = data.drop(columns=target_column)
 
     if column_order is not None:
@@ -62,7 +65,7 @@ def make_sagemaker_prediction(endpoint_name: str,
     to_return = []
 
     for i in range(ceil(data.shape[0] / chunksize)):
-        df_slice = indices[chunksize * i: min(len(indices), chunksize * (i+1))]
+        df_slice = indices[chunksize * i : min(len(indices), chunksize * (i + 1))]
         to_process = data.filter(df_slice, axis=0)
         preds = predictor.predict(to_process.to_csv(header=False, index=False))
         to_return.append(preds)

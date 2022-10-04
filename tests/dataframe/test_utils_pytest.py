@@ -30,7 +30,11 @@ import pytest
 
 import opensearch_py_ml as ed
 from opensearch_py_ml.field_mappings import FieldMappings
-from tests.common import OPENSEARCH_TEST_CLIENT, TestData, assert_pandas_eland_frame_equal
+from tests.common import (
+    OPENSEARCH_TEST_CLIENT,
+    TestData,
+    assert_pandas_eland_frame_equal,
+)
 
 
 class TestDataFrameUtils(TestData):
@@ -72,7 +76,11 @@ class TestDataFrameUtils(TestData):
         index_name = "eland_test_generate_es_mappings"
 
         ed_df = ed.pandas_to_opensearch(
-            df, OPENSEARCH_TEST_CLIENT, index_name, es_if_exists="replace", es_refresh=True
+            df,
+            OPENSEARCH_TEST_CLIENT,
+            index_name,
+            es_if_exists="replace",
+            es_refresh=True,
         )
         ed_df_head = ed_df.head()
 
@@ -154,7 +162,6 @@ class TestDataFrameUtils(TestData):
         # assert_pandas_eland_frame_equal(pd_df, self.ed_flights())
 
     def test_es_type_override_error(self):
-
         df = self.pd_flights().filter(
             ["AvgTicketPrice", "Cancelled", "dayOfWeek", "timestamp", "DestCountry"]
         )

@@ -51,7 +51,11 @@ import pandas as pd  # type: ignore
 from pandas.io.common import _expand_user, stringify_path  # type: ignore
 
 import opensearch_py_ml.plotting
-from opensearch_py_ml.arithmetics import ArithmeticNumber, ArithmeticSeries, ArithmeticString
+from opensearch_py_ml.arithmetics import (
+    ArithmeticNumber,
+    ArithmeticSeries,
+    ArithmeticString,
+)
 from opensearch_py_ml.common import DEFAULT_NUM_ROWS_DISPLAYED, docstring_parameter
 from opensearch_py_ml.filter import (
     BooleanFilter,
