@@ -23,9 +23,9 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+from ._version import __author_email__  # noqa: F401
 from ._version import (  # noqa: F401
     __author__,
-    __author_email__,
     __description__,
     __maintainer__,
     __maintainer_email__,
@@ -38,8 +38,8 @@ from .dataframe import DataFrame
 from .etl import csv_to_opensearch, opensearch_to_pandas, pandas_to_opensearch
 from .index import Index
 from .ndframe import NDFrame
-from .series import Series
 from .sagemaker_tools import make_sagemaker_prediction
+from .series import Series
 
 __all__ = [
     "DataFrame",
@@ -50,5 +50,5 @@ __all__ = [
     "opensearch_to_pandas",
     "csv_to_opensearch",
     "SortOrder",
-    "make_sagemaker_prediction"
+    "make_sagemaker_prediction",
 ]

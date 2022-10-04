@@ -27,7 +27,7 @@
 import numpy as np
 
 from opensearch_py_ml.field_mappings import FieldMappings
-from tests import ECOMMERCE_INDEX_NAME, OPENSEARCH_TEST_CLIENT, FLIGHTS_INDEX_NAME
+from tests import ECOMMERCE_INDEX_NAME, FLIGHTS_INDEX_NAME, OPENSEARCH_TEST_CLIENT
 from tests.common import TestData
 
 

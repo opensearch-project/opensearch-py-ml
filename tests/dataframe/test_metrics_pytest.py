@@ -514,13 +514,17 @@ class TestDataFrameMetrics(TestData):
 
         pd_idxmax = list(pd_flights.idxmax())
         ed_idxmax = list(ed_flights.idxmax())
-        assert_frame_equal(pd_flights.filter(items=pd_idxmax, axis=0).reset_index(),
-                           ed_flights.filter(items=ed_idxmax, axis=0).to_pandas().reset_index())
+        assert_frame_equal(
+            pd_flights.filter(items=pd_idxmax, axis=0).reset_index(),
+            ed_flights.filter(items=ed_idxmax, axis=0).to_pandas().reset_index(),
+        )
 
         pd_idxmin = list(pd_flights.idxmin())
         ed_idxmin = list(ed_flights.idxmin())
-        assert_frame_equal(pd_flights.filter(items=pd_idxmin, axis=0).reset_index(),
-                           ed_flights.filter(items=ed_idxmin, axis=0).to_pandas().reset_index())
+        assert_frame_equal(
+            pd_flights.filter(items=pd_idxmin, axis=0).reset_index(),
+            ed_flights.filter(items=ed_idxmin, axis=0).to_pandas().reset_index(),
+        )
 
     def test_flights_idx_on_columns(self):
         match = "This feature is not implemented yet for 'axis = 1'"

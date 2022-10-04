@@ -25,23 +25,12 @@
 import re
 import warnings
 from enum import Enum
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    Dict,
-    List,
-    Optional,
-    Tuple,
-    Union,
-    cast,
-)
+from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Tuple, Union, cast
 
 import pandas as pd  # type: ignore
 from opensearchpy import OpenSearch
 
 from ._version import __version__ as _opensearch_py_ml_version
-from warnings import warn
 
 if TYPE_CHECKING:
     from numpy.typing import DTypeLike
@@ -59,7 +48,6 @@ PANDAS_VERSION: Tuple[int, ...] = tuple(
 )[:2]
 
 _OPENSEARCH_PY_ML_MAJOR_VERSION = int(_opensearch_py_ml_version.split(".")[0])
-
 
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
@@ -322,8 +310,7 @@ def os_version(os_client: OpenSearch) -> Tuple[int, int, int]:
         match = re.match(r"^(\d+)\.(\d+)\.(\d+)", version_info)
         if match is None:
             raise ValueError(
-                f"Unable to determine version. "
-                f"Received: {version_info}"
+                f"Unable to determine version. " f"Received: {version_info}"
             )
         opensearch_py_ml_os_version = cast(
             Tuple[int, int, int], tuple(int(x) for x in match.groups())

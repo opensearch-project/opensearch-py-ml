@@ -28,7 +28,7 @@ import pytest
 
 import opensearch_py_ml as ed
 from opensearch_py_ml.query_compiler import QueryCompiler
-from tests import OPENSEARCH_TEST_CLIENT, FLIGHTS_INDEX_NAME
+from tests import FLIGHTS_INDEX_NAME, OPENSEARCH_TEST_CLIENT
 
 
 class TestDataFrameInit:
@@ -47,7 +47,11 @@ class TestDataFrameInit:
 
         # Good constructors
         ed.DataFrame(OPENSEARCH_TEST_CLIENT, FLIGHTS_INDEX_NAME)
-        ed.DataFrame(os_client=OPENSEARCH_TEST_CLIENT, os_index_pattern=FLIGHTS_INDEX_NAME)
+        ed.DataFrame(
+            os_client=OPENSEARCH_TEST_CLIENT, os_index_pattern=FLIGHTS_INDEX_NAME
+        )
 
-        qc = QueryCompiler(client=OPENSEARCH_TEST_CLIENT, index_pattern=FLIGHTS_INDEX_NAME)
+        qc = QueryCompiler(
+            client=OPENSEARCH_TEST_CLIENT, index_pattern=FLIGHTS_INDEX_NAME
+        )
         ed.DataFrame(_query_compiler=qc)

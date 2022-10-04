@@ -30,37 +30,35 @@ from pathlib import Path
 import nox
 
 BASE_DIR = Path(__file__).parent
-SOURCE_FILES = ("setup.py", "noxfile.py", "eland/", "docs/", "utils/", "tests/", "bin/")
+# SOURCE_FILES = ("setup.py", "noxfile.py", "eland/", "docs/", "utils/", "tests/", "bin/")
+SOURCE_FILES = ("opensearch_py_ml/", "utils/", "tests/")
 
 # Whenever type-hints are completed on a file it should
 # be added here so that this file will continue to be checked
 # by mypy. Errors from other files are ignored.
 TYPED_FILES = (
-    "eland/actions.py",
-    "eland/arithmetics.py",
-    "eland/common.py",
-    "eland/etl.py",
-    "eland/filter.py",
-    "eland/index.py",
-    "eland/query.py",
-    "eland/tasks.py",
-    "eland/utils.py",
-    "eland/groupby.py",
-    "eland/operations.py",
-    "eland/ndframe.py",
-    "eland/ml/__init__.py",
-    "eland/ml/_optional.py",
-    "eland/ml/_model_serializer.py",
-    "eland/ml/ml_model.py",
-    "eland/ml/pytorch/__init__.py",
-    "eland/ml/pytorch/_pytorch_model.py",
-    "eland/ml/pytorch/transformers.py",
-    "eland/ml/transformers/__init__.py",
-    "eland/ml/transformers/base.py",
-    "eland/ml/transformers/lightgbm.py",
-    "eland/ml/transformers/sklearn.py",
-    "eland/ml/transformers/xgboost.py",
-    "eland/plotting/_matplotlib/__init__.py",
+    "opensearch_py_ml/actions.py",
+    "opensearch_py_ml/arithmetics.py",
+    "opensearch_py_ml/common.py",
+    "opensearch_py_ml/etl.py",
+    "opensearch_py_ml/filter.py",
+    "opensearch_py_ml/index.py",
+    "opensearch_py_ml/query.py",
+    "opensearch_py_ml/tasks.py",
+    "opensearch_py_ml/utils.py",
+    "opensearch_py_ml/groupby.py",
+    "opensearch_py_ml/operations.py",
+    "opensearch_py_ml/ndframe.py",
+    "opensearch_py_ml/ml_commons_integration/__init__.py",
+    "opensearch_py_ml/ml_commons_integration/ml_common_client.py",
+    "opensearch_py_ml/ml_commons_integration/ml_common_utils.py",
+    "opensearch_py_ml/ml_commons_integration/load/__init__.py",
+    "opensearch_py_ml/ml_commons_integration/load/ml_common_load_client.py",
+    "opensearch_py_ml/ml_commons_integration/predict/__init__.py",
+    "opensearch_py_ml/ml_commons_integration/predict/ml_common_predict_client.py",
+    "opensearch_py_ml/ml_commons_integration/upload/__init__.py",
+    "opensearch_py_ml/ml_commons_integration/upload/ml_common_upload_client.py",
+    "opensearch_py_ml/plotting/_matplotlib/__init__.py",
 )
 
 
@@ -79,7 +77,7 @@ def lint(session):
     # Install numpy to use its mypy plugin
     # https://numpy.org/devdocs/reference/typing.html#mypy-plugin
     session.install("black", "flake8", "mypy", "isort", "numpy")
-    session.install("--pre", "elasticsearch>=8.3,<9")
+    session.install("--pre", "opensearch-py>=2")
     session.run("python", "utils/license-headers.py", "check", *SOURCE_FILES)
     session.run("black", "--check", "--target-version=py37", *SOURCE_FILES)
     session.run("isort", "--check", "--profile=black", *SOURCE_FILES)
@@ -165,7 +163,7 @@ def docs(session):
         from elasticsearch import ConnectionError, Elasticsearch
 
         try:
-            es = Elasticsearch("http://localhost:9200")
+            es = Elasticsearch("https://localhost:9200")
             es.info()
             if not es.indices.exists(index="flights"):
                 session.run("python", "-m", "tests.setup_tests")

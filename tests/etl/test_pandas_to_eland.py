@@ -66,10 +66,14 @@ class TestPandasToEland:
         assert "os_index_pattern: test-index" in df.os_info()
 
     def test_es_if_exists_fail(self):
-        pandas_to_opensearch(pd_df, os_client=OPENSEARCH_TEST_CLIENT, os_dest_index="test-index")
+        pandas_to_opensearch(
+            pd_df, os_client=OPENSEARCH_TEST_CLIENT, os_dest_index="test-index"
+        )
 
         with pytest.raises(ValueError) as e:
-            pandas_to_opensearch(pd_df, os_client=OPENSEARCH_TEST_CLIENT, os_dest_index="test-index")
+            pandas_to_opensearch(
+                pd_df, os_client=OPENSEARCH_TEST_CLIENT, os_dest_index="test-index"
+            )
 
         assert str(e.value) == (
             "Could not create the index [test-index] because it "

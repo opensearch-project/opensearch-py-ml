@@ -16,20 +16,20 @@
 #  under the License.
 
 import pandas as pd
-from opensearchpy.client import OpenSearch
 from opensearchpy import helpers
+from opensearchpy.client import OpenSearch
 
 from tests import (
     ECOMMERCE_FILE_NAME,
     ECOMMERCE_INDEX_NAME,
     ECOMMERCE_MAPPING,
-    OPENSEARCH_HOST,
-    OPENSEARCH_TEST_CLIENT,
     FLIGHTS_FILE_NAME,
     FLIGHTS_INDEX_NAME,
     FLIGHTS_MAPPING,
     FLIGHTS_SMALL_FILE_NAME,
     FLIGHTS_SMALL_INDEX_NAME,
+    OPENSEARCH_HOST,
+    OPENSEARCH_TEST_CLIENT,
     TEST_MAPPING1,
     TEST_MAPPING1_INDEX_NAME,
     TEST_NESTED_USER_GROUP_DOCS,
@@ -113,9 +113,10 @@ def _setup_test_nested(os):
 
 
 if __name__ == "__main__":
-    # Create connection to Elasticsearch - use defaults
-    print("Connecting to ES", OPENSEARCH_HOST)
-    es = OPENSEARCH_TEST_CLIENT
+    # Create connection to OpenSearch - use defaults
+
+    print("Connecting to OS", OPENSEARCH_HOST)
+    os = OPENSEARCH_TEST_CLIENT
 
     _setup_data(os)
     _setup_test_mappings(os)

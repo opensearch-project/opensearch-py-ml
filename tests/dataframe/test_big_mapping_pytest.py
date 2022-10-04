@@ -36,7 +36,9 @@ class TestDataFrameBigMapping(TestData):
             field_name = "long_field_name_" + str(i)
             mapping["mappings"]["properties"][field_name] = {"type": "float"}
 
-        OPENSEARCH_TEST_CLIENT.indices.delete(index="thousand_fields", ignore=[400, 404])
+        OPENSEARCH_TEST_CLIENT.indices.delete(
+            index="thousand_fields", ignore=[400, 404]
+        )
         OPENSEARCH_TEST_CLIENT.indices.create(index="thousand_fields", body=mapping)
 
         ed_df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, "thousand_fields")

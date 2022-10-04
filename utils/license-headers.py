@@ -6,7 +6,6 @@
 # GitHub history for details.
 
 
-
 #  Licensed to Elasticsearch B.V. under one or more contributor
 #  license agreements. See the NOTICE file distributed with
 #  this work for additional information regarding copyright
@@ -41,7 +40,7 @@ license_header_lines = [
     "# The OpenSearch Contributors require contributions made to\n",
     "# this file be licensed under the Apache-2.0 license or a\n",
     "# compatible open source license.\n",
-    '# Any modifications Copyright OpenSearch Contributors. See\n',
+    "# Any modifications Copyright OpenSearch Contributors. See\n",
     "# GitHub history for details.\n",
 ]
 
@@ -107,6 +106,8 @@ def main():
     if mode == "fix":
         for filepath in files_to_fix:
             add_header_to_file(filepath)
+            if does_file_need_fix(filepath):
+                add_header_to_file(filepath)
     else:
         no_license_headers = list(files_to_fix)
         if no_license_headers:

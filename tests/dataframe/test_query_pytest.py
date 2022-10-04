@@ -27,7 +27,11 @@
 import pandas as pd
 
 import opensearch_py_ml as ed
-from tests.common import OPENSEARCH_TEST_CLIENT, TestData, assert_pandas_eland_frame_equal
+from tests.common import (
+    OPENSEARCH_TEST_CLIENT,
+    TestData,
+    assert_pandas_eland_frame_equal,
+)
 
 
 class TestDataFrameQuery(TestData):
@@ -51,7 +55,11 @@ class TestDataFrameQuery(TestData):
         index_name = "eland_test_query"
 
         ed_df = ed.pandas_to_opensearch(
-            pd_df, OPENSEARCH_TEST_CLIENT, index_name, es_if_exists="replace", es_refresh=True
+            pd_df,
+            OPENSEARCH_TEST_CLIENT,
+            index_name,
+            es_if_exists="replace",
+            es_refresh=True,
         )
 
         assert_pandas_eland_frame_equal(pd_df, ed_df)
@@ -117,7 +125,11 @@ class TestDataFrameQuery(TestData):
         index_name = "eland_test_query"
 
         ed_df = ed.pandas_to_opensearch(
-            pd_df, OPENSEARCH_TEST_CLIENT, index_name, es_if_exists="replace", es_refresh=True
+            pd_df,
+            OPENSEARCH_TEST_CLIENT,
+            index_name,
+            es_if_exists="replace",
+            es_refresh=True,
         )
 
         assert_pandas_eland_frame_equal(pd_df, ed_df)

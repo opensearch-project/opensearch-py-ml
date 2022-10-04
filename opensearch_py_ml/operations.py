@@ -46,7 +46,6 @@ import pandas as pd  # type: ignore
 from opensearch_py_ml.actions import PostProcessingAction
 from opensearch_py_ml.common import (
     DEFAULT_PAGINATION_SIZE,
-    DEFAULT_PIT_KEEP_ALIVE,
     DEFAULT_PROGRESS_REPORTING_NUM_ROWS,
     DEFAULT_SEARCH_SIZE,
     SortOrder,
@@ -731,16 +730,12 @@ class Operations:
                     if isinstance(agg_value, list):
                         # convert to timestamp results for mode
                         agg_value = [
-                            opensearch_date_to_pandas_date(
-                                value, field.os_date_format
-                            )
+                            opensearch_date_to_pandas_date(value, field.os_date_format)
                             for value in agg_value
                         ]
                     elif percentile_values:
                         percentile_values = [
-                            opensearch_date_to_pandas_date(
-                                value, field.os_date_format
-                            )
+                            opensearch_date_to_pandas_date(value, field.os_date_format)
                             for value in percentile_values
                         ]
                     else:
@@ -1265,7 +1260,7 @@ class Operations:
         ).to_csv(**kwargs)
 
     def search_yield_pandas_dataframes(
-        self, query_compiler: "QueryCompiler", sort_index: Optional['str'] = '_doc'
+        self, query_compiler: "QueryCompiler", sort_index: Optional["str"] = "_doc"
     ) -> Generator["pd.DataFrame", None, None]:
         query_params, post_processing = self._resolve_tasks(query_compiler)
 
@@ -1289,7 +1284,10 @@ class Operations:
 
         # i = 1
         for hits in _search_yield_hits(
-            query_compiler=query_compiler, body=body, max_number_of_hits=result_size, sort_index=sort_index
+            query_compiler=query_compiler,
+            body=body,
+            max_number_of_hits=result_size,
+            sort_index=sort_index,
         ):
             df = query_compiler._es_results_to_pandas(hits)
             df = self._apply_df_post_processing(df, post_processing)
@@ -1501,7 +1499,7 @@ def _search_yield_hits(
     query_compiler: "QueryCompiler",
     body: Dict[str, Any],
     max_number_of_hits: Optional[int],
-    sort_index: Optional[str] = '_doc',
+    sort_index: Optional[str] = "_doc",
 ) -> Generator[List[Dict[str, Any]], None, None]:
     """
     This is a generator used to initialize point in time API and query the
@@ -1537,7 +1535,6 @@ def _search_yield_hits(
 
     client = query_compiler._client
     hits_yielded = 0  # Track the total number of hits yielded.
-    pit_id: Optional[str] = None
 
     # Pagination with 'search_after' must have a 'sort' setting.
     # Using '_doc:asc' is the most efficient as reads documents
@@ -1550,7 +1547,7 @@ def _search_yield_hits(
 
     # TODO: re-implement point in time search after supporting in OpenSearch 2.3
     while max_number_of_hits is None or hits_yielded < max_number_of_hits:
-        resp = client.search(body = body, index = query_compiler._index_pattern)
+        resp = client.search(body=body, index=query_compiler._index_pattern)
         hits: List[Dict[str, Any]] = resp["hits"]["hits"]
 
         # If we didn't receive any hits it means we've reached the end.

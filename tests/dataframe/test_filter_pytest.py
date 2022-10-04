@@ -70,8 +70,14 @@ class TestDataFrameFilter(TestData):
         ed_filter_many = list(ed_index[:30])
 
         df.filter(items=[], axis=0)
-        df.check_values(df.ed.filter(items=ed_filter_one, axis=0), df.pd.filter(items=pd_filter_one, axis=0))
-        df.check_values(df.ed.filter(items=ed_filter_many, axis=0), df.pd.filter(items=pd_filter_many, axis=0))
+        df.check_values(
+            df.ed.filter(items=ed_filter_one, axis=0),
+            df.pd.filter(items=pd_filter_one, axis=0),
+        )
+        df.check_values(
+            df.ed.filter(items=ed_filter_many, axis=0),
+            df.pd.filter(items=pd_filter_many, axis=0),
+        )
 
     def test_filter_index_like_and_regex(self):
         ed_flights_small = self.ed_flights_small()

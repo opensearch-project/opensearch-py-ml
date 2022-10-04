@@ -117,7 +117,11 @@ class TestDataFrameDateTime(TestData):
         index_name = "eland_test_generate_es_mappings"
 
         ed_df = ed.pandas_to_opensearch(
-            df, OPENSEARCH_TEST_CLIENT, index_name, es_if_exists="replace", es_refresh=True
+            df,
+            OPENSEARCH_TEST_CLIENT,
+            index_name,
+            es_if_exists="replace",
+            es_refresh=True,
         )
 
         # print(df.to_string())

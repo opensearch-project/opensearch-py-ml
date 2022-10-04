@@ -168,7 +168,7 @@ def pandas_to_opensearch(
     mapping = FieldMappings._generate_os_mappings(pd_df, es_type_overrides)
 
     # If table exists, check if_exists parameter
-    if os_client.indices.exists(index=os_dest_index):
+    if os_client.indices.exists(index=os_dest_index):  # type: ignore
         if es_if_exists == "fail":
             raise ValueError(
                 f"Could not create the index [{os_dest_index}] because it "
@@ -178,11 +178,13 @@ def pandas_to_opensearch(
             )
 
         elif es_if_exists == "replace":
-            os_client.indices.delete(index=os_dest_index)
-            os_client.indices.create(index=os_dest_index, body={'mappings': mapping["mappings"]})
+            os_client.indices.delete(index=os_dest_index)  # type: ignore
+            os_client.indices.create(  # type: ignore
+                index=os_dest_index, body={"mappings": mapping["mappings"]}
+            )
 
         elif es_if_exists == "append" and es_verify_mapping_compatibility:
-            dest_mapping = os_client.indices.get_mapping(index=os_dest_index)[
+            dest_mapping = os_client.indices.get_mapping(index=os_dest_index)[  # type: ignore
                 os_dest_index
             ]
             verify_mapping_compatibility(
@@ -191,7 +193,9 @@ def pandas_to_opensearch(
                 os_type_overrides=es_type_overrides,
             )
     else:
-        os_client.indices.create(index=os_dest_index, body={'mappings': mapping["mappings"]})
+        os_client.indices.create(  # type: ignore
+            index=os_dest_index, body={"mappings": mapping["mappings"]}
+        )
 
     def action_generator(
         pd_df: pd.DataFrame,
@@ -219,7 +223,7 @@ def pandas_to_opensearch(
     # maxlen = 0 because don't need results of parallel_bulk
     deque(
         parallel_bulk(
-            client=os_client,
+            client=os_client,  # type: ignore
             actions=action_generator(
                 pd_df, os_dropna, use_pandas_index_for_os_ids, os_dest_index
             ),
@@ -230,7 +234,7 @@ def pandas_to_opensearch(
     )
 
     if es_refresh:
-        os_client.indices.refresh(index=os_dest_index)
+        os_client.indices.refresh(index=os_dest_index)  # type: ignore
 
     return DataFrame(os_client, os_dest_index)
 

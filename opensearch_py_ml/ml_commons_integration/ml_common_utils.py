@@ -5,4 +5,4 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
-ML_BASE_URI = '/_plugins/_ml'
+ML_BASE_URI = "/_plugins/_ml"

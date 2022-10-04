@@ -85,9 +85,7 @@ class QueryCompiler:
 
     def __init__(
         self,
-        client: Optional[
-            Union[str, List[str], Tuple[str, ...], "OpenSearch"]
-        ] = None,
+        client: Optional[Union[str, List[str], Tuple[str, ...], "OpenSearch"]] = None,
         index_pattern: Optional[str] = None,
         display_names=None,
         index_field=None,
@@ -521,7 +519,9 @@ class QueryCompiler:
         """
         return self._operations.to_csv(self, **kwargs)
 
-    def search_yield_pandas_dataframes(self, sort_index: Optional['str'] = "_doc") -> Generator["pd.DataFrame", None, None]:
+    def search_yield_pandas_dataframes(
+        self, sort_index: Optional["str"] = "_doc"
+    ) -> Generator["pd.DataFrame", None, None]:
         return self._operations.search_yield_pandas_dataframes(self, sort_index)
 
     # __getitem__ methods

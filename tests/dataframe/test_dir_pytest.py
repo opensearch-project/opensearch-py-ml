@@ -40,5 +40,5 @@ class TestDataFrameDir(TestData):
             # opensearch will save JSON values with sub-entries (like {A: {b: x}}) as A.b
             # these are not saved in pandas as attributes as they interfere with the naming convention
             # we ignore these for now
-            if '.' not in c:
+            if "." not in c:
                 assert c in autocomplete_attrs
