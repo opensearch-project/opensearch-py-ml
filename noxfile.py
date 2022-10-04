@@ -31,7 +31,7 @@ import nox
 
 BASE_DIR = Path(__file__).parent
 # SOURCE_FILES = ("setup.py", "noxfile.py", "eland/", "docs/", "utils/", "tests/", "bin/")
-SOURCE_FILES = ("opensearch_py_ml/", "utils/", "tests/")
+SOURCE_FILES = ("setup.py", "noxfile.py", "opensearch_py_ml/", "utils/", "tests/")
 
 # Whenever type-hints are completed on a file it should
 # be added here so that this file will continue to be checked
