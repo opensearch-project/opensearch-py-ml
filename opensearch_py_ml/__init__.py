@@ -40,6 +40,7 @@ from .index import Index
 from .ndframe import NDFrame
 from .sagemaker_tools import make_sagemaker_prediction
 from .series import Series
+from .semantic_search import Semantic_Search
 
 __all__ = [
     "DataFrame",
@@ -51,4 +52,5 @@ __all__ = [
     "csv_to_opensearch",
     "SortOrder",
     "make_sagemaker_prediction",
+    "Semantic_Search"
 ]

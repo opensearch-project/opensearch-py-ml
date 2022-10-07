@@ -1,3 +1,10 @@
+# SPDX-License-Identifier: Apache-2.0
+# The OpenSearch Contributors require contributions made to
+# this file be licensed under the Apache-2.0 license or a
+# compatible open source license.
+# Any modifications Copyright OpenSearch Contributors. See
+# GitHub history for details.
+
 import json, pyserini, os,  pickle
 from datetime import datetime
 import argparse, random, sys, time
@@ -106,65 +113,64 @@ output_dir = {}
 save_path = os.path.join(os.getcwd(), '/output')
 
 with torch.no_grad():
-    for step, batch in enumerate(train_dataloader):
-        for step in len(train_dataloader): 
-            numgens = 8
-            b_input_ids = batch[0]
-            for gen in range(numgens):    
-                if gen % 2 == 0:
-                    temp = 0.95
-                else:
-                    temp = 1.0        
+    for step, batch in track(enumerate(train_dataloader), description="Generating queries in progress"):
+        numgens = 8
+        b_input_ids = batch[0]
+        for gen in range(numgens):
+            if gen % 2 == 0:
+                temp = 0.95
+            else:
+                temp = 1.0
 
-                beam = model.generate(b_input_ids, do_sample = True, 
-                                        top_k = 50, 
-                                        max_length = len(b_input_ids[0])+125, 
-                                        #min_length = len(b_input_ids[0])+5, 
-                                        top_p = 0.95, 
-                                        temperature = temp, 
-                                        num_return_sequences = numseq,
-                                        #length_penalty = 20,
-                                        repetition_penalty = 1.2,
-                                        no_repeat_ngram_size = 3, 
-                                        return_dict_in_generate = True, 
-                                        output_scores = True)     
+            beam = model.generate(b_input_ids, do_sample = True,
+                                    top_k = 50,
+                                    max_length = len(b_input_ids[0])+125,
+                                    #min_length = len(b_input_ids[0])+5,
+                                    top_p = 0.95,
+                                    temperature = temp,
+                                    num_return_sequences = numseq,
+                                    #length_penalty = 20,
+                                    repetition_penalty = 1.2,
+                                    no_repeat_ngram_size = 3,
+                                    return_dict_in_generate = True,
+                                    output_scores = True)
 
-                mydict = {}   
-                myjac = {}
-                myjaclen = {}
-                docu = tokenizer.convert_ids_to_tokens(beam["sequences"][0][1:list(beam["sequences"][0]).index(50259)]) 
-                doc = tokenizer.decode(beam["sequences"][0], skip_special_tokens = False).split("QRY: ")[0][16:]
-                for i in range(numseq):    
-                    counter = 0
-                    prob = 1e3
-                    for k in range(len(b_input_ids[0]),beam["sequences"].shape[1]):        
-                        if beam["sequences"][i][k] == 50256:
-                            break 
-                        softmult = soft(beam["scores"][counter][i])[beam["sequences"][i][k]] 
-                        prob = prob*softmult
-                        counter += 1
-                    qu = tokenizer.convert_ids_to_tokens(beam["sequences"][i][list(beam["sequences"][i]).index(50259)+1:-1]) 
-                    q = tokenizer.decode(beam["sequences"][i], skip_special_tokens = False).split("QRY: ")[-1].split("<|")[0]    
+            mydict = {}
+            myjac = {}
+            myjaclen = {}
+            docu = tokenizer.convert_ids_to_tokens(beam["sequences"][0][1:list(beam["sequences"][0]).index(50259)])
+            doc = tokenizer.decode(beam["sequences"][0], skip_special_tokens = False).split("QRY: ")[0][16:]
+            for i in range(numseq):
+                counter = 0
+                prob = 1e3
+                for k in range(len(b_input_ids[0]),beam["sequences"].shape[1]):
+                    if beam["sequences"][i][k] == 50256:
+                        break
+                    softmult = soft(beam["scores"][counter][i])[beam["sequences"][i][k]]
+                    prob = prob*softmult
+                    counter += 1
+                qu = tokenizer.convert_ids_to_tokens(beam["sequences"][i][list(beam["sequences"][i]).index(50259)+1:-1])
+                q = tokenizer.decode(beam["sequences"][i], skip_special_tokens = False).split("QRY: ")[-1].split("<|")[0]
 
-                    prob = prob.cpu()
-                    mydict[prob] = q
-                    jac_score = jaccard_similarity(qu,docu)            
-                    jac_len_score = jaccard_len_similarity(qu,docu)            
-                    myjac[prob] = jac_score
-                    myjaclen[prob] = jac_len_score
-                mydict = dict(sorted(mydict.items()))
-                myjac = dict(sorted(myjac.items()))
-                myjaclen = dict(sorted(myjaclen.items()))                
-                output_dir[accelerator.process_index, step, gen, temp] = [mydict, myjac, myjaclen, tokenizer.decode(b_input_ids[0])]
-                del beam 
-                del mydict 
-                torch.cuda.empty_cache() 
+                prob = prob.cpu()
+                mydict[prob] = q
+                jac_score = jaccard_similarity(qu,docu)
+                jac_len_score = jaccard_len_similarity(qu,docu)
+                myjac[prob] = jac_score
+                myjaclen[prob] = jac_len_score
+            mydict = dict(sorted(mydict.items()))
+            myjac = dict(sorted(myjac.items()))
+            myjaclen = dict(sorted(myjaclen.items()))
+            output_dir[accelerator.process_index, step, gen, temp] = [mydict, myjac, myjaclen, tokenizer.decode(b_input_ids[0])]
+            del beam
+            del mydict
+            torch.cuda.empty_cache()
 
-            if step % 100 == 0:
-                print(accelerator.process_index, step, time.time())        
-                f = open(save_path + str(accelerator.process_index),"wb")
-                pickle.dump(output_dir, f)
-                f.close()
+        if step % 100 == 0:
+            print(accelerator.process_index, step, time.time())
+            f = open(save_path + str(accelerator.process_index),"wb")
+            pickle.dump(output_dir, f)
+            f.close()
 
 
     f = open(save_path + str(accelerator.process_index),"wb")
