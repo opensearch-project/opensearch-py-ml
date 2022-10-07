@@ -170,8 +170,8 @@ class TestPandasToEland:
             "- 'b' is missing from DataFrame columns\n"
             "- 'c' is missing from DataFrame columns\n"
             "- 'd' is missing from DataFrame columns\n"
-            "- 'Z' is missing from ES index mapping\n"
-            "- 'a' column type ('keyword') not compatible with ES index mapping type ('long')"
+            "- 'Z' is missing from opensearch index mapping\n"
+            "- 'a' column type ('keyword') not compatible with opensearch index mapping type ('long')"
         )
 
         # Assert that the index isn't modified

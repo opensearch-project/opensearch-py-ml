@@ -23,16 +23,7 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from ._version import __author_email__  # noqa: F401
-from ._version import (  # noqa: F401
-    __author__,
-    __description__,
-    __maintainer__,
-    __maintainer_email__,
-    __title__,
-    __url__,
-    __version__,
-)
+from ._version import __title__, __url__, __version__  # noqa: F401
 from .common import SortOrder
 from .dataframe import DataFrame
 from .etl import csv_to_opensearch, opensearch_to_pandas, pandas_to_opensearch

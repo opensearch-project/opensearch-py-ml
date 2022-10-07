@@ -20,3 +20,5 @@ jobs:
         run: python3 -m pip install nox
       - name: Lint the code
         run: nox -s lint
+      - name: Lint the code
+        run: nox -s test

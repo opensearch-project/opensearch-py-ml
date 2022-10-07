@@ -107,45 +107,28 @@ def lint(session):
 
 
 @nox.session(python=["3.7", "3.8", "3.9", "3.10"])
-@nox.parametrize("pandas_version", ["1.2.0", "1.3.0"])
+@nox.parametrize("pandas_version", ["1.5.0"])
 def test(session, pandas_version: str):
     session.install("-r", "requirements-dev.txt")
     session.install(".")
     session.run("python", "-m", "pip", "install", f"pandas~={pandas_version}")
-    session.run("python", "-m", "tests.setup_tests")
+    session.run("python", "-m", "setup_tests")
 
     pytest_args = (
         "python",
         "-m",
         "pytest",
         "--cov-report=term-missing",
-        "--cov=eland/",
+        "--cov=opensearch_py_ml/",
         "--cov-config=setup.cfg",
-        "--doctest-modules",
-        "--nbval",
+        # "--doctest-modules", //TODO: commenting for now.
+        # "--nbval",     //TODO: we need to revisit this part if we need to test jupyter notebooks
     )
 
-    # PyTorch doesn't support Python 3.10 yet
-    if session.python == "3.10":
-        pytest_args += ("--ignore=eland/ml/pytorch",)
     session.run(
         *pytest_args,
-        *(session.posargs or ("eland/", "tests/")),
+        *(session.posargs or ("opensearch_py_ml/", "tests/")),
     )
-
-    # Only run during default test execution
-    if not session.posargs:
-        session.run(
-            "python",
-            "-m",
-            "pip",
-            "uninstall",
-            "--yes",
-            "scikit-learn",
-            "xgboost",
-            "lightgbm",
-        )
-        session.run("pytest", "tests/ml/")
 
 
 @nox.session(reuse_venv=True)

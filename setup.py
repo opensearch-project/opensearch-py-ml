@@ -79,7 +79,7 @@ setup(
     license="Apache-2.0",
     classifiers=CLASSIFIERS,
     keywords="Opensearch opensearch_py_ml pandas python",
-    packages=find_packages(include=["eland", "eland.*"]),
+    packages=find_packages(include=["opensearch_py_ml", "opensearch_py_ml.*"]),
     install_requires=[
         "opensearch-py>=2",
         "pandas>=1.5,<2",
