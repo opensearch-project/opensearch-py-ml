@@ -32,7 +32,8 @@ from opensearch_py_ml.common import os_version
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Define test files and indices
-OPENSEARCH_HOST = "https://localhost:9200"
+# OPENSEARCH_HOST = "https://localhost:9200"
+OPENSEARCH_HOST = "https://instance:9200"
 OPENSEARCH_ADMIN_USER, OPENSEARCH_ADMIN_PASSWORD = "admin", "admin"
 
 # Define client to use in tests
