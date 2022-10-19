@@ -1,0 +1,9 @@
+#
+# Basic requirements
+#
+pandas>=1.5,<2
+matplotlib>=3.6.0,<4
+numpy>=1.23.3,<2
+opensearch-py>=2
+sagemaker>=2.110
+protobuf==3.20.*

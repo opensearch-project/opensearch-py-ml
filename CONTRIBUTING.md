@@ -57,3 +57,100 @@ If you discover a potential security issue in this project we ask that you notif
 ## Licensing
 
 See the [LICENSE](LICENSE) file for our project's licensing. We will ask you to confirm the licensing of your contribution.
+**Repository:** <https://github.com/elastic/eland>
+
+We internally develop using the PyCharm IDE. For PyCharm, we are
+currently using a minimum version of PyCharm 2019.2.4.
+
+### Configuring PyCharm And Running Tests
+
+(All commands should be run from module root)
+
+* Create a new project via \'Check out from Version
+
+    Control\'-\>\'Git\' on the \"Welcome to PyCharm\" page (or other)
+
+* Enter the URL to your fork of eland
+
+    (e.g.  `git@github.com:stevedodson/opensearch_py_ml.git` )
+
+* Click \'Yes\' for \'Checkout from Version Control\'
+* Configure PyCharm environment:
+* In \'Preferences\' configure a \'Project: eland\'-\>\'Project
+
+    Interpreter\'. Generally, we recommend creating a virtual
+    environment (TODO link to installing for python version support).
+
+* In \'Preferences\' set \'Tools\'-\>\'Python Integrated
+
+    Tools\'-\>\'Default test runner\' to `pytest`
+
+* In \'Preferences\' set \'Tools\'-\>\'Python Integrated
+
+    Tools\'-\>\'Docstring format\' to `numpy`
+
+* To install development requirements. Open terminal in virtual environment and run
+
+    ``` bash
+    > pip install -r requirements-dev.txt
+    ```
+
+* Setup Elasticsearch instance with docker
+
+    ``` bash
+    > ELASTICSEARCH_VERSION=elasticsearch:7.x-SNAPSHOT .ci/run-elasticsearch.sh
+    ```
+
+* Now check `http://localhost:9200`
+* Install local `eland` module (required to execute notebook tests)
+
+    ``` bash
+    > python setup.py install
+    ```
+
+* To setup test environment:
+
+    ``` bash
+    > python -m tests.setup_tests
+    ```
+
+    (Note this modifies Elasticsearch indices)
+
+* To validate installation, open python console and run
+
+    ``` bash
+    > import opensearch_py_ml as ed
+    > ed_df = ed.DataFrame('localhost', 'flights')
+    ```
+
+* To run the automatic formatter and check for lint issues run
+
+    ``` bash
+    > nox -s format
+    ```
+
+* To test specific versions of Python run
+
+    ``` bash
+    > nox -s test-3.8
+    ```
+
+### Documentation
+
+* [Install pandoc on your system](https://pandoc.org/installing.html) . For Ubuntu or Debian you can do
+
+    ``` bash
+    > sudo apt-get install -y pandoc
+    ```
+
+* Install documentation requirements. Open terminal in virtual environment and run
+
+    ``` bash
+    > pip install -r docs/requirements-docs.txt
+    ```
+
+* To verify/generate documentation run
+
+    ``` bash
+    > nox -s docs
+    ```

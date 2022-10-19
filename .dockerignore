@@ -1,0 +1,5 @@
+docs/*
+example/*
+.git
+.nox
+venv

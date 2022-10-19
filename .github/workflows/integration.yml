@@ -1,0 +1,21 @@
+name: Integration tests
+
+on: [push, pull_request]
+
+jobs:
+  integration:
+    name: Integ
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        cluster: ["opensearch"]
+        secured: ["true"]
+        entry:
+          - { opensearch_version: 2.3.0 }
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Integ ${{ matrix.cluster }} secured=${{ matrix.secured }} version=${{matrix.entry.opensearch_version}}
+        run: "./.ci/run-tests ${{ matrix.cluster }} ${{ matrix.secured }} ${{ matrix.entry.opensearch_version }}"
