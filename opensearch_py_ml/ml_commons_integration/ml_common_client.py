@@ -10,8 +10,8 @@ from opensearchpy import OpenSearch
 from opensearch_py_ml.ml_commons_integration.load.ml_common_load_client import (
     MLCommonLoadClient,
 )
-from opensearch_py_ml.ml_commons_integration.upload.ml_common_upload_model import (
-    MLCommonUploadModel,
+from opensearch_py_ml.ml_commons_integration.upload.ml_common_model_uploader import (
+    MLCommonModelUploader,
 )
 
 
@@ -23,16 +23,16 @@ class MLCommonClient:
 
     def __init__(self, os_client: OpenSearch):
         self._client = os_client
-        self._upload_model = MLCommonUploadModel(os_client)
+        self._model_uploader = MLCommonModelUploader(os_client)
         self._load_client = MLCommonLoadClient(os_client)
 
-    def put_model(
+    def upload_model(
         self,
         model_path: str,
         model_config_path: str,
         verbose: bool = False,
     ) -> None:
-        self._upload_model.put_model(model_path, model_config_path, verbose)
+        self._model_uploader.upload_model(model_path, model_config_path, verbose)
 
     def load_model(self, model_name: str, version_number: int):  # type: ignore
         return self._load_client.load_model(model_name, version_number)

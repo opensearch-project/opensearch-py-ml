@@ -5,6 +5,7 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
+import hashlib
 import json
 import os
 from math import ceil
@@ -13,12 +14,13 @@ from typing import Any, Iterable, Union
 from opensearchpy import OpenSearch
 
 from opensearch_py_ml.ml_commons_integration.ml_common_utils import (
+    BUF_SIZE,
     ML_BASE_URI,
     MODEL_UPLOAD_CHUNK_SIZE,
 )
 
 
-class MLCommonUploadModel:
+class MLCommonModelUploader:
     """
     Class for uploading model using ml-commons apis in opensearch cluster.
     """
@@ -32,11 +34,14 @@ class MLCommonUploadModel:
     MODEL_TYPE = "model_type"
     EMBEDDING_DIMENSION = "embedding_dimension"
     FRAMEWORK_TYPE = "framework_type"
+    MODEL_CONTENT_HASH_VALUE = "model_content_hash_value"
 
     def __init__(self, os_client: OpenSearch):
         self._client = os_client
 
-    def put_model(self, model_path: str, model_meta_path: str, isVerbose: bool) -> None:
+    def upload_model(
+        self, model_path: str, model_meta_path: str, isVerbose: bool
+    ) -> None:
 
         """
         This method uploads model into opensearch cluster using ml-common plugin's api.
@@ -51,8 +56,13 @@ class MLCommonUploadModel:
         total_num_chunks: int = ceil(
             os.stat(model_path).st_size / MODEL_UPLOAD_CHUNK_SIZE
         )
+
+        # we are generating the sha1 hash for the model zip file
+        hash_val_model_file = self.generate_hash(model_path)
+
         if isVerbose:
             print("Total number of chunks", total_num_chunks)
+            print("Sha1 value of the model file: ", hash_val_model_file)
 
         model_meta_json_file = open(model_meta_path)
 
@@ -60,6 +70,7 @@ class MLCommonUploadModel:
             model_meta_json_file
         )
         model_meta_json[self.TOTAL_CHUNKS_FIELD] = total_num_chunks
+        model_meta_json[self.MODEL_CONTENT_HASH_VALUE] = hash_val_model_file
 
         if self.check_mandatory_field(model_meta_json):
             meta_output: Union[bool, Any] = self._client.transport.perform_request(
@@ -104,6 +115,15 @@ class MLCommonUploadModel:
                 )
 
     def check_mandatory_field(self, model_meta: dict) -> bool:
+        """
+        This method checks if model meta doc has all the required fields to create a model meta doc in opensearch.
+
+        @param model_meta         dict     content of the model meta file
+
+        @return                   boolean  if all the required fields are present returns True otherwise
+                                            raise exception
+        """
+
         if model_meta:
             if not model_meta.get(self.MODEL_NAME_FIELD):
                 raise ValueError(f"{self.MODEL_NAME_FIELD} can not be empty")
@@ -111,6 +131,8 @@ class MLCommonUploadModel:
                 raise ValueError(f"{self.MODEL_VERSION_FIELD} can not be empty")
             if not model_meta.get(self.MODEL_FORMAT_FIELD):
                 raise ValueError(f"{self.MODEL_FORMAT_FIELD} can not be empty")
+            if not model_meta.get(self.MODEL_CONTENT_HASH_VALUE):
+                raise ValueError(f"{self.MODEL_CONTENT_HASH_VALUE} can not be empty")
             if not model_meta.get(self.TOTAL_CHUNKS_FIELD):
                 raise ValueError(f"{self.TOTAL_CHUNKS_FIELD} can not be empty")
             if not model_meta.get(self.MODEL_CONFIG_FIELD):
@@ -130,3 +152,23 @@ class MLCommonUploadModel:
             return True
         else:
             raise ValueError("Model metadata can't be empty")
+
+    def generate_hash(self, model_file_path: str) -> str:
+        """
+        Generate sha1 hash value for the model zip file.
+
+        @param model_meta         dict     content of the model meta file
+
+        @return                   boolean  if all the required fields are present returns True otherwise
+                                            raise exception
+        """
+
+        sha1 = hashlib.sha1()
+        with open(model_file_path, "rb") as file:
+            while True:
+                chunk = file.read(BUF_SIZE)
+                if not chunk:
+                    break
+                sha1.update(chunk)
+        sha1_value = sha1.hexdigest()
+        return sha1_value
