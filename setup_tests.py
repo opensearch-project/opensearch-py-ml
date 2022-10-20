@@ -85,18 +85,6 @@ def _setup_data(os):
         print("Done", index_name)
 
 
-def _update_max_compilations_limit(os: OpenSearch, limit="10000/1m"):
-    print("Updating script.max_compilations_rate to ", limit)
-    os.cluster.put_settings(
-        body={
-            "transient": {
-                "script.max_compilations_rate": "use-context",
-                "script.context.field.max_compilations_rate": limit,
-            }
-        }
-    )
-
-
 def _setup_test_mappings(os: OpenSearch):
     # Create a complex mapping containing many Elasticsearch features
     os.indices.delete(index=TEST_MAPPING1_INDEX_NAME, ignore_unavailable=True)
@@ -110,6 +98,18 @@ def _setup_test_nested(os):
     )
 
     helpers.bulk(os, TEST_NESTED_USER_GROUP_DOCS)
+
+
+def _update_max_compilations_limit(os: OpenSearch, limit="10000/1m"):
+    print("Updating script.max_compilations_rate to ", limit)
+    os.cluster.put_settings(
+        body={
+            "transient": {
+                "script.max_compilations_rate": "use-context",
+                "script.context.field.max_compilations_rate": limit,
+            }
+        }
+    )
 
 
 if __name__ == "__main__":

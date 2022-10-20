@@ -56,8 +56,6 @@ TYPED_FILES = (
     "opensearch_py_ml/ml_commons_integration/load/ml_common_load_client.py",
     "opensearch_py_ml/ml_commons_integration/predict/__init__.py",
     "opensearch_py_ml/ml_commons_integration/predict/ml_common_predict_client.py",
-    "opensearch_py_ml/ml_commons_integration/upload/__init__.py",
-    "opensearch_py_ml/ml_commons_integration/upload/ml_common_upload_client.py",
     "opensearch_py_ml/plotting/_matplotlib/__init__.py",
 )
 
@@ -83,8 +81,8 @@ def lint(session):
     session.run("isort", "--check", "--profile=black", *SOURCE_FILES)
     session.run("flake8", "--ignore=E501,W503,E402,E712,E203", *SOURCE_FILES)
 
-    # TODO: When all files are typed we can change this to .run("mypy", "--strict", "eland/")
-    session.log("mypy --show-error-codes --strict eland/")
+    # TODO: When all files are typed we can change this to .run("mypy", "--strict", "opensearch_py_ml/")
+    session.log("mypy --show-error-codes --strict opensearch_py_ml/")
     for typed_file in TYPED_FILES:
         if not os.path.isfile(typed_file):
             session.error(f"The file {typed_file!r} couldn't be found")
