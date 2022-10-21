@@ -4,7 +4,3 @@
 # compatible open source license.
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
-
-ML_BASE_URI = "/_plugins/_ml"
-MODEL_UPLOAD_CHUNK_SIZE = 10_000_000
-BUF_SIZE = 65536  # lets read stuff in 64kb chunks!

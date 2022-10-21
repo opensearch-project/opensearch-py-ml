@@ -1,33 +1,44 @@
-## About
 
-`opensearch-py-ml` is a Python client that provides a suite of data analytics and machine learning tools for OpenSearch.
-It is a fork of [eland](https://github.com/elastic/eland), which provides data analysis and machine learning
-support for Elasticsearch.
+[![CI](https://github.com/opensearch-project/opensearch-py-ml/actions/workflows/ci.yml/badge.svg)](https://github.com/opensearch-project/opensearch-py-ml/actions/workflows/ci.yml)
+[![Integration](https://github.com/opensearch-project/opensearch-py-ml/actions/workflows/integration.yml/badge.svg)](https://github.com/opensearch-project/opensearch-py-ml/actions/workflows/integration.yml)
+![PRs welcome!](https://img.shields.io/badge/PRs-welcome!-success)
 
-`opensearch-py-ml` lets users call OpenSearch indices and manipulate them as if they were pandas DataFrames, supporting
+![OpenSearch logo](https://github.com/opensearch-project/opensearch-py/raw/main/OpenSearch.svg)
+
+OpenSearch-py-ml
+
+- [Welcome!](https://github.com/opensearch-project/opensearch-py-ml#welcome)
+- [Getting Started](https://github.com/opensearch-project/opensearch-py-ml#getting-started)
+- [Compatibility with OpenSearch](https://github.com/opensearch-project/opensearch-py-ml#compatibility-with-opensearch)
+- [Project Resources](https://github.com/opensearch-project/opensearch-py-ml#project-resources)
+- [Code of Conduct](https://github.com/opensearch-project/opensearch-py-ml#code-of-conduct)
+- [License](https://github.com/opensearch-project/opensearch-py-ml#license)
+- [Copyright](https://github.com/opensearch-project/opensearch-py-ml#copyright)
+
+## Welcome!
+
+**opensearch-py-ml** is a Python client that provides a suite of data analytics and machine learning tools for OpenSearch.
+It is [a community-driven, open source fork](https://aws.amazon.com/blogs/opensource/introducing-opensearch/) a fork of [eland](https://github.com/elastic/eland), which provides data analysis and machine learning
+licensed under the [Apache v2.0 License](https://github.com/opensearch-project/opensearch-py/blob/main/LICENSE.txt). 
+
+**opensearch-py-ml** lets users call OpenSearch indices and manipulate them as if they were pandas DataFrames, supporting
 complex filtering and aggregation operations. It also provides rudimentary support for uploading models to OpenSearch
-clusters using the [ml-commons](https://github.com/opensearch-project/ml-commons) plugin, and provides integration with
-AWS SageMaker, allowing users to upload OpenSearch indices to deployed SageMaker endpoints for real-time prediction.
+clusters using the [ml-commons](https://github.com/opensearch-project/ml-commons) plugin.
 
-Project hand-off doc: https://quip-amazon.com/XAIMAu2XK3Ph/opensearch-py-ml-project-handoff-doc
 
-## Testing `opensearch-py-ml`
+## Code of Conduct
 
-This package relies on a *minimal-security* version of OpenSearch 2.2 running on a connection to localhost:9200, with a
-dev fork of `ml-commons` installed on the OpenSearch cluster: https://github.com/LEFTA98/ml-commons/tree/opensearch-2.2
+This project has adopted the 
+[Amazon Open Source Code of Conduct](https://github.com/opensearch-project/opensearch-py-ml/blob/main/CODE_OF_CONDUCT.md).
+For more information see the [Code of Conduct FAQ](https://aws.github.io/code-of-conduct-faq), or contact 
+[opensource-codeofconduct@amazon.com](mailto:opensource-codeofconduct@amazon.com) with any additional questions or comments.
 
-Once this is up and running, run the `setup_tests.py` file, then run the pytests in whatever manner you would prefer to
-run unit tests.
+## License
 
-## To-dos
+This project is licensed under the
+[Apache v2.0 License](https://github.com/opensearch-project/opensearch-py-ml/blob/main/LICENSE).
 
-This is an early proof-of-concept missing many features, and a lot of work still needs to be done to bring this in-line
-with a package like eland. Many files in the `full_fork` branch have been deleted from this branch, because they are
-code that is still adapted to `eland` and has not yet been changed. List of things to do:
+## Copyright
 
-- Write integration tests
-- Rewriting `LICENSE.txt`, `CHANGELOG.rst`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, and this `README` to reflect OpenSearch
-- Support for Docker
-- Support for continuous integration
-- Regenerating Sphinx docs
-- Creating tutorials for `opensearch-py-ml` in both notebook and video form
+Copyright OpenSearch Contributors. See 
+[NOTICE](https://github.com/opensearch-project/opensearch-py-ml/blob/main/NOTICE) for details.
