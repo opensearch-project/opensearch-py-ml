@@ -163,12 +163,12 @@ class MLCommonModelUploader:
                                             raise exception
         """
 
-        sha1 = hashlib.sha1()
+        sha256 = hashlib.sha256()
         with open(model_file_path, "rb") as file:
             while True:
                 chunk = file.read(BUF_SIZE)
                 if not chunk:
                     break
-                sha1.update(chunk)
-        sha1_value = sha1.hexdigest()
-        return sha1_value
+                sha256.update(chunk)
+        sha256_value = sha256.hexdigest()
+        return sha256_value
