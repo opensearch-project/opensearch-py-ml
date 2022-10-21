@@ -91,6 +91,7 @@ def test_check_mandatory_field():
 
 
 def test_generate_hash():
-    assert "a4258ea3967e103496cf3dd802882cc8c5c0cd95" == model_uploader.generate_hash(
-        FLIGHTS_SMALL_FILE_NAME
+    assert (
+        "18521f420cf85149025b75df329689c416be0ce3fc78b2afdfdf177654b77b34"
+        == model_uploader.generate_hash(FLIGHTS_SMALL_FILE_NAME)
     )
