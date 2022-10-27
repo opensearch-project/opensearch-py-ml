@@ -24,6 +24,7 @@
 
 import os
 
+import opensearchpy
 import pandas as pd
 from opensearchpy import OpenSearch
 
@@ -33,9 +34,10 @@ ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Define test files and indices
 # OPENSEARCH_HOST = "https://localhost:9200"
-OPENSEARCH_HOST = "https://instance:9200"
+
 OPENSEARCH_ADMIN_USER, OPENSEARCH_ADMIN_PASSWORD = "admin", "admin"
 
+OPENSEARCH_HOST = "https://instance:9200"
 # Define client to use in tests
 OPENSEARCH_TEST_CLIENT = OpenSearch(
     hosts=[OPENSEARCH_HOST],
@@ -43,7 +45,20 @@ OPENSEARCH_TEST_CLIENT = OpenSearch(
     verify_certs=False,
 )
 
-ES_VERSION = os_version(OPENSEARCH_TEST_CLIENT)
+# in github integration test, host url is: https://instance:9200
+# in development, usually host url is: https://localhost:9200
+# it's hard to remember changing the host url. So applied a try catch so that we don't have to keep change this config
+try:
+    ES_VERSION = os_version(OPENSEARCH_TEST_CLIENT)
+except opensearchpy.exceptions.ConnectionError:
+    OPENSEARCH_HOST = "https://localhost:9200"
+    # Define client to use in tests
+    OPENSEARCH_TEST_CLIENT = OpenSearch(
+        hosts=[OPENSEARCH_HOST],
+        http_auth=(OPENSEARCH_ADMIN_USER, OPENSEARCH_ADMIN_PASSWORD),
+        verify_certs=False,
+    )
+    ES_VERSION = os_version(OPENSEARCH_TEST_CLIENT)
 
 FLIGHTS_INDEX_NAME = "opensearch_dashboards_sample_data_flights"
 FLIGHTS_MAPPING = {

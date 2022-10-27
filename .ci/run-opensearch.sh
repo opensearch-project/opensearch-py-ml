@@ -13,7 +13,7 @@ echo -e "\033[34;1mINFO:\033[0m Take down node if called twice with the same arg
 cleanup_node $opensearch_node_name
 
 master_node_name=${opensearch_node_name}
-cluster_name=search-py-ml-test
+cluster_name=os-py-ml-test
 
 declare -a volumes
 environment=($(cat <<-END
