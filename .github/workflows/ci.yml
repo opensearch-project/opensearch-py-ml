@@ -2,21 +2,41 @@ name: CI
 
 on: [push, pull_request]
 
-defaults:
-  run:
-    shell: bash
-
 jobs:
   lint:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest, windows-latest, macOS-latest ]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
       - name: Set up Python 3
         uses: actions/setup-python@v2
         with:
-          python-version: 3
+          python-version: '3.x'
       - name: Install dependencies
         run: python3 -m pip install nox
       - name: Lint the code
         run: nox -s lint
+
+  test-build-distribution:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest, windows-latest, macOS-latest ]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v1
+      - name: Set Up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      - name: Install build tools
+        run: |
+          python -m pip install --upgrade build
+      - name: Build project for distribution
+        run: |
+          python -m build
