@@ -22,20 +22,30 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-import torch, transformers, pickle, sklearn, numpy as np, pandas as pd, matplotlib.pyplot as plt
-import argparse, random, time, tqdm, yaml, os, shutil
-from tqdm import tqdm
-from transformers import GPT2LMHeadModel, GPT2Tokenizer, get_linear_schedule_with_warmup, TrainingArguments, Trainer, \
-    logging
-from sentence_transformers import SentenceTransformer, InputExample, losses
+import argparse
+import os
+import pickle
+import random
+import shutil
+import time
 from zipfile import ZipFile
 
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import torch
+from sentence_transformers import InputExample, SentenceTransformer
+from tqdm import tqdm
+from transformers import get_linear_schedule_with_warmup
 
-def train_semantic_search_model(read_path: str = None,
-                                model_url: str = None,
-                                output_model_name: str = None,
-                                output_model_path: str = None,
-                                zip_file_name: str = None) -> None:
+
+def train_semantic_search_model(
+    read_path: str = None,
+    model_url: str = None,
+    output_model_name: str = None,
+    output_model_path: str = None,
+    zip_file_name: str = None,
+) -> None:
     """
     Description:
     read the synthetic queries and use it to fine tune/train a sentence transformer model to save a zip file
@@ -57,12 +67,8 @@ def train_semantic_search_model(read_path: str = None,
 
     query_df = read_queries(read_path)
     train_examples = load_sentence_transformer_example(query_df)
-    train_model(train_examples,
-                model_url,
-                output_model_path,
-                output_model_name)
-    zip_model(output_model_path,
-              zip_file_name)
+    train_model(train_examples, model_url, output_model_path, output_model_name)
+    zip_model(output_model_path, zip_file_name)
     return None
 
 
@@ -85,12 +91,14 @@ def read_queries(read_path: str = None) -> pd.DataFrame:
     file_list = []
 
     if read_path is None:
-        raise Exception('No file provided. Please provide the path to synthetic query zip file.')
+        raise Exception(
+            "No file provided. Please provide the path to synthetic query zip file."
+        )
 
     # assign a local folder 'synthetic_queries/' to store the unzip file,
     # check if the folder contains sub-folders and files, remove and clean up the folder before unzip.
     # walk through the zip file and read the file paths into file_list
-    unzip_path = os.path.join(os.getcwd(), 'synthetic_queries/')
+    unzip_path = os.path.join(os.getcwd(), "synthetic_queries/")
 
     if os.path.exists(unzip_path):
         if len(os.listdir(unzip_path)) > 0:
@@ -101,7 +109,7 @@ def read_queries(read_path: str = None) -> pd.DataFrame:
                 except OSError:
                     os.remove(sub_path)
 
-    with ZipFile(read_path, 'r') as zip_ref:
+    with ZipFile(read_path, "r") as zip_ref:
         zip_ref.extractall(unzip_path)
 
     for root, dirnames, filenames in os.walk(unzip_path):
@@ -112,7 +120,9 @@ def read_queries(read_path: str = None) -> pd.DataFrame:
     num_file = len(file_list)
 
     if num_file == 0:
-        raise Exception("Zipped file is empty. Please provide a zip file with nonzero synthetic queries.")
+        raise Exception(
+            "Zipped file is empty. Please provide a zip file with nonzero synthetic queries."
+        )
 
     for file_path in file_list:
         f = open(file_path, "rb")
@@ -135,8 +145,10 @@ def read_queries(read_path: str = None) -> pd.DataFrame:
                 prob.append(probs)
                 query.append(queries)
 
-    df = pd.DataFrame(list(zip(prob, query, passages)), columns=['prob', 'query', 'passages'])
-    df = df.drop_duplicates(subset=['query'])
+    df = pd.DataFrame(
+        list(zip(prob, query, passages)), columns=["prob", "query", "passages"]
+    )
+    df = df.drop_duplicates(subset=["query"])
     df["passages"] = df.apply(lambda x: qryrem(x), axis=1)
     df = df.sample(frac=1)
     return df
@@ -159,15 +171,22 @@ def load_sentence_transformer_example(df) -> [str]:
     print("Loading training examples... ")
     for i in tqdm(range(len(df)), total=len(df)):
         train_examples.append(
-            InputExample(texts=[df[i:i + 1]["passages"].values[0], df[i:i + 1]["query"].values[0]]))
+            InputExample(
+                texts=[
+                    df[i : i + 1]["passages"].values[0],
+                    df[i : i + 1]["query"].values[0],
+                ]
+            )
+        )
     return train_examples
 
 
 def train_model(
-        train_examples: [str],
-        model_url: str = None,
-        output_path: str = None,
-        output_model_name: str = None):
+    train_examples: [str],
+    model_url: str = None,
+    output_path: str = None,
+    output_model_name: str = None,
+):
     """
     Description:
     pass on train examples, sentences transformer url to train a custom semantic search model
@@ -189,14 +208,14 @@ def train_model(
     if output_path is None:
         output_path = os.getcwd()
     if output_model_name is None:
-        output_model_name = 'trained_model.pt'
+        output_model_name = "trained_model.pt"
     if model_url is None:
-        model_url = 'sentence-transformers/msmarco-distilbert-base-tas-b'
+        model_url = "sentence-transformers/msmarco-distilbert-base-tas-b"
 
     # Load a model from HuggingFace
     model = SentenceTransformer(model_url)
     # prepare an output model path for later saving the pt model.
-    output_model_path = output_path + '/' + output_model_name
+    output_model_path = output_path + "/" + output_model_name
     # identify if running on gpu or cpu
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model.to(device)
@@ -214,11 +233,14 @@ def train_model(
     num_epochs = 20
     batch_size = 32
     total_steps = (len(train_examples) // batch_size) * num_epochs
-    steps_size = (len(train_examples) // batch_size)
+    steps_size = len(train_examples) // batch_size
 
     optimizer = torch.optim.Adam(model.parameters(), lr=2e-5)
-    scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=max(10000, total_steps * 0.05),
-                                                num_training_steps=total_steps)
+    scheduler = get_linear_schedule_with_warmup(
+        optimizer,
+        num_warmup_steps=max(10000, total_steps * 0.05),
+        num_training_steps=total_steps,
+    )
     loss = []
     init_time = time.time()
 
@@ -228,7 +250,7 @@ def train_model(
         for j in tqdm(range(steps_size), total=steps_size):
             batch = []
             batch_q = []
-            for example in train_examples[j * batch_size:(j + 1) * batch_size]:
+            for example in train_examples[j * batch_size : (j + 1) * batch_size]:
                 batch_q.append(example.texts[1])
                 batch.append(example.texts[0])
 
@@ -248,9 +270,11 @@ def train_model(
             den0 = torch.sum(XY, dim=0)
             den1 = torch.sum(XY, dim=1)
 
-            l = - torch.sum(torch.log(num / den0)) - torch.sum(torch.log(num / den1))
-            loss.append(l.item())
-            l.backward()
+            train_loss = -torch.sum(torch.log(num / den0)) - torch.sum(
+                torch.log(num / den1)
+            )
+            loss.append(train_loss.item())
+            train_loss.backward()
             optimizer.step()
             scheduler.step()
             optimizer.zero_grad()
@@ -260,16 +284,18 @@ def train_model(
                 plt.show()
 
     # saving the pytorch model and the tokenizers.json file is saving at this step
-    model.save('trained_pytorch_model/')
+    model.save("trained_pytorch_model/")
     cpu_model = model.to(device)
-    print(f' Total training time: {time.time() - init_time}')
+    print(f" Total training time: {time.time() - init_time}")
 
     out_q = model.tokenize(batch_q)
     for key in out_q.keys():
         out_q[key] = out_q[key].to(device)
-    traced_cpu = torch.jit.trace(cpu_model,
-                                 ({'input_ids': out_q['input_ids'], 'attention_mask': out_q['attention_mask']}),
-                                 strict=False)
+    traced_cpu = torch.jit.trace(
+        cpu_model,
+        ({"input_ids": out_q["input_ids"], "attention_mask": out_q["attention_mask"]}),
+        strict=False,
+    )
 
     print("Preparing model to save")
     torch.jit.save(traced_cpu, output_model_path)
@@ -278,9 +304,7 @@ def train_model(
     return model
 
 
-def zip_model(
-        model_path: str = None,
-        zip_file_name: str = None) -> None:
+def zip_model(model_path: str = None, zip_file_name: str = None) -> None:
     """
     Description:
     zip the model file and its tokenizer.json file to prepare to upload to the Open Search cluster
@@ -296,16 +320,16 @@ def zip_model(
     """
 
     if model_path is None:
-        model_path = os.path.join(os.getcwd(), 'trained_model.pt')
+        model_path = os.path.join(os.getcwd(), "trained_model.pt")
 
     if zip_file_name is None:
-        zip_file_name = 'zip_model.zip'
+        zip_file_name = "zip_model.zip"
 
     # Create a ZipFile Object
-    with ZipFile('zip_model.zip', 'w') as zipObj:
+    with ZipFile("zip_model.zip", "w") as zipObj:
         zipObj.write(model_path)
-        zipObj.write('trained_pytorch_model/tokenizer.json')
-    print('zip file is saved to' + os.getcwd() + '/' + zip_file_name)
+        zipObj.write("trained_pytorch_model/tokenizer.json")
+    print("zip file is saved to" + os.getcwd() + "/" + zip_file_name)
 
 
 def qryrem(x):
@@ -314,8 +338,10 @@ def qryrem(x):
     return y[1]
 
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Please enter argument to start semantic search training.')
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Please enter argument to start semantic search training."
+    )
     parser.add_argument("--read_path", type=str, default=None)
     parser.add_argument("--model_url", type=str, default=None)
     parser.add_argument("--model_name", type=list, default=None)
@@ -331,8 +357,6 @@ if __name__ == '__main__':
 
     print("initiated a semantic search training.. ")
 
-    train_semantic_search_model(read_path,
-                                model_url,
-                                model_name,
-                                output_model_path,
-                                zip_file_name)
+    train_semantic_search_model(
+        read_path, model_url, model_name, output_model_path, zip_file_name
+    )

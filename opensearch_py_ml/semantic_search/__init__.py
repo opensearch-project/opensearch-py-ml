@@ -23,9 +23,6 @@
 #  under the License.
 
 
-
 from opensearch_py_ml.semantic_search import train
 
-__all__ = [
-    "train"
-]
+__all__ = ["train"]
