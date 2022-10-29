@@ -90,8 +90,13 @@ def read_queries(read_path: str = None) -> pd.DataFrame:
                 sub_path = os.path.join(unzip_path, files)
                 try:
                     shutil.rmtree(sub_path)
-                except OSError:
-                    os.remove(sub_path)
+                except OSError as err:
+                    print(
+                        "Fail to delete files, please delete all files in "
+                        + str(unzip_path)
+                        + " "
+                        + str(err)
+                    )
 
     with ZipFile(read_path, "r") as zip_ref:
         zip_ref.extractall(unzip_path)
