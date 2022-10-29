@@ -5,29 +5,13 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
-#  Licensed to Elasticsearch B.V. under one or more contributor
-#  license agreements. See the NOTICE file distributed with
-#  this work for additional information regarding copyright
-#  ownership. Elasticsearch B.V. licenses this file to you under
-#  the Apache License, Version 2.0 (the "License"); you may
-#  not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
-#
-# 	http://www.apache.org/licenses/LICENSE-2.0
-#
-#  Unless required by applicable law or agreed to in writing,
-#  software distributed under the License is distributed on an
-#  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-#  KIND, either express or implied.  See the License for the
-#  specific language governing permissions and limitations
-#  under the License.
-
 import argparse
 import os
 import pickle
 import random
 import shutil
 import time
+from typing import List
 from zipfile import ZipFile
 
 import matplotlib.pyplot as plt
@@ -55,9 +39,9 @@ def train_semantic_search_model(
         Optional, path to read the generated queries zip file, if None, default as 'synthetic_query' folder in current directory
     model_url: str = None
         the url to download sentence transformer model, if None, default as 'sentence-transformers/msmarco-distilbert-base-tas-b'
-    output_model_path: str=None #MSC
+    output_model_path: str=None
         the path to store trained custom model. If None, default as current folder path
-    output_model_name: str=None #MSC
+    output_model_name: str=None
         the name of the trained custom model. If None, default as 'trained_model.pt'
     zip_file_name: str =None
         Optional, file name for zip file. if None, default as zip_model.zip
@@ -82,7 +66,7 @@ def read_queries(read_path: str = None) -> pd.DataFrame:
 
     Parameters:
     read_path: str
-        Optional, path to read the generated queries, if None, raise exception
+        required, path to read the generated queries, if None, raise exception
     Return:
         The data frame of queries.
     """
@@ -131,7 +115,7 @@ def read_queries(read_path: str = None) -> pd.DataFrame:
         f.close()
 
     # reading the files and get the probability, queries and passages,
-    # this input part will change after the generate.py change the output format
+    # TODO: this input part will change after the generate.py change the output format
 
     prob = []
     query = []
@@ -154,7 +138,7 @@ def read_queries(read_path: str = None) -> pd.DataFrame:
     return df
 
 
-def load_sentence_transformer_example(df) -> [str]:
+def load_sentence_transformer_example(df) -> List[str]:
     """
     Description:
     Create input data for the sentence transformer by using InputExample
@@ -182,7 +166,7 @@ def load_sentence_transformer_example(df) -> [str]:
 
 
 def train_model(
-    train_examples: [str],
+    train_examples: List[str],
     model_url: str = None,
     output_path: str = None,
     output_model_name: str = None,
@@ -285,6 +269,7 @@ def train_model(
 
     # saving the pytorch model and the tokenizers.json file is saving at this step
     model.save("trained_pytorch_model/")
+    device = "cpu"
     cpu_model = model.to(device)
     print(f" Total training time: {time.time() - init_time}")
 
@@ -325,6 +310,12 @@ def zip_model(model_path: str = None, zip_file_name: str = None) -> None:
     if zip_file_name is None:
         zip_file_name = "zip_model.zip"
 
+    if not os.path.exists("trained_pytorch_model/tokenizer.json"):
+        raise Exception(
+            "Cannot find tokenizer.json in trained_pytorch_model/tokenizer.json"
+        )
+    if not os.path.exists(model_path):
+        raise Exception("Cannot find model in the model path")
     # Create a ZipFile Object
     with ZipFile("zip_model.zip", "w") as zipObj:
         zipObj.write(model_path)
