@@ -42,6 +42,7 @@ from pandas.io.formats.printing import pprint_thing  # type: ignore
 from pandas.util._validators import validate_bool_kwarg  # type: ignore
 
 import opensearch_py_ml.plotting as gfx
+from opensearch_py_ml.common import OPENSEARCH_TEST_CLIENT  # noqa: F401
 from opensearch_py_ml.common import DEFAULT_NUM_ROWS_DISPLAYED, docstring_parameter
 from opensearch_py_ml.filter import BooleanFilter
 from opensearch_py_ml.groupby import DataFrameGroupBy
@@ -65,12 +66,9 @@ class DataFrame(NDFrame):
     Parameters
     ----------
     os_client: OpenSearch client
-    os_index_pattern: str
-        OpenSearch index pattern. This can contain wildcards. (e.g. 'flights')
-    columns: list of str, optional
-        List of DataFrame columns. A subset of the OpenSearch index's fields.
-    os_index_field: str, optional
-        The OpenSearch index field to use as the DataFrame index. Defaults to _id if None is used.
+    os_index_pattern: str OpenSearch index pattern. This can contain wildcards. (e.g. 'flights')
+    columns: list of str, optional List of DataFrame columns. A subset of the OpenSearch index's fields.
+    os_index_field: str, optional The OpenSearch index field to use as the DataFrame index. Defaults to _id if None is used.
 
     See Also
     --------
@@ -80,7 +78,7 @@ class DataFrame(NDFrame):
     --------
     Constructing DataFrame from an OpenSearch configuration arguments and an OpenSearch index
 
-    >>> df = ed.DataFrame('http://localhost:9200', 'flights')
+    >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')
     >>> df.head()
        AvgTicketPrice  Cancelled  ... dayOfWeek           timestamp
     0      841.265642      False  ...         0 2018-01-01 00:00:00
@@ -94,9 +92,7 @@ class DataFrame(NDFrame):
 
     Constructing DataFrame from an OpenSearch client and an OpenSearch index
 
-    >>> from opensearchpy import OpenSearch
-    >>> es = OpenSearch("http://localhost:9200")
-    >>> df = ed.DataFrame(os_client=es, os_index_pattern='flights', columns=['AvgTicketPrice', 'Cancelled'])
+    >>> df = ed.DataFrame(os_client=OPENSEARCH_TEST_CLIENT, os_index_pattern='flights', columns=['AvgTicketPrice', 'Cancelled'])
     >>> df.head()
        AvgTicketPrice  Cancelled
     0      841.265642      False
@@ -112,7 +108,7 @@ class DataFrame(NDFrame):
     (TODO - currently index_field must also be a field if not _id)
 
     >>> df = ed.DataFrame(
-    ...     os_client='http://localhost:9200',
+    ...     os_client=OPENSEARCH_TEST_CLIENT,
     ...     os_index_pattern='flights',
     ...     columns=['AvgTicketPrice', 'timestamp'],
     ...     os_index_field='timestamp'
@@ -126,13 +122,12 @@ class DataFrame(NDFrame):
     2018-01-01T00:36:51      803.015200 2018-01-01 00:36:51
     <BLANKLINE>
     [5 rows x 2 columns]
+
     """
 
     def __init__(
         self,
-        os_client: Optional[
-            Union[str, List[str], Tuple[str, ...], "OpenSearch"]
-        ] = None,
+        os_client: "OpenSearch" = None,
         os_index_pattern: Optional[str] = None,
         columns: Optional[List[str]] = None,
         os_index_field: Optional[str] = None,
@@ -176,7 +171,7 @@ class DataFrame(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame('http://localhost:9200', 'flights')
+        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')
         >>> assert isinstance(df.columns, pd.Index)
         >>> df.columns
         Index(['AvgTicketPrice', 'Cancelled', 'Carrier', 'Dest', 'DestAirportID', 'DestCityName',
@@ -204,7 +199,7 @@ class DataFrame(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame('http://localhost:9200', 'flights')
+        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')
         >>> df.empty
         False
         """
@@ -234,7 +229,7 @@ class DataFrame(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame('http://localhost:9200', 'flights', columns=['Origin', 'Dest'])
+        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights', columns=['Origin', 'Dest'])
         >>> df.head(3)
                                     Origin                                          Dest
         0        Frankfurt am Main Airport  Sydney Kingsford Smith International Airport
@@ -269,7 +264,7 @@ class DataFrame(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame('http://localhost:9200', 'flights', columns=['Origin', 'Dest'])
+        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights', columns=['Origin', 'Dest'])
         >>> df.tail()
                                                                     Origin  \\
         13054                                   Pisa International Airport...
@@ -371,7 +366,7 @@ class DataFrame(NDFrame):
         --------
         Drop a column
 
-        >>> df = ed.DataFrame('http://localhost:9200', 'ecommerce', columns=['customer_first_name', 'email', 'user'])
+        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce', columns=['customer_first_name', 'email', 'user'])
         >>> df.drop(columns=['user'])
              customer_first_name                       email
         0                  Eddie  eddie@underwood-family.zzz
@@ -581,7 +576,7 @@ class DataFrame(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame('http://localhost:9200', 'ecommerce', columns=['customer_first_name', 'geoip.city_name'])
+        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce', columns=['customer_first_name', 'geoip.city_name'])
         >>> df.count()
         customer_first_name    4675
         geoip.city_name        4094
@@ -603,7 +598,7 @@ class DataFrame(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame('http://localhost:9200', 'flights')
+        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')
         >>> df = df[(df.OriginAirportID == 'AMS') & (df.FlightDelayMin > 60)]
         >>> df = df[['timestamp', 'OriginAirportID', 'DestAirportID', 'FlightDelayMin']]
         >>> df = df.tail()
@@ -623,7 +618,7 @@ class DataFrame(NDFrame):
          is_source_field: False
         Mappings:
          capabilities:
-                           es_field_name  is_source os_dtype                  es_date_format        pd_dtype  is_searchable  is_aggregatable  is_scripted aggregatable_es_field_name
+                           os_field_name  is_source os_dtype                  os_date_format        pd_dtype  is_searchable  is_aggregatable  is_scripted aggregatable_os_field_name
         timestamp              timestamp       True     date  strict_date_hour_minute_second  datetime64[ns]           True             True        False                  timestamp
         OriginAirportID  OriginAirportID       True  keyword                            None          object           True             True        False            OriginAirportID
         DestAirportID      DestAirportID       True  keyword                            None          object           True             True        False              DestAirportID
@@ -698,7 +693,7 @@ class DataFrame(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame("http://localhost:9200", "ecommerce")
+        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, "ecommerce")
         >>> df.es_match("Men's", columns=["category"])
                                                       category currency  ...   type     user
         0                                     [Men's Clothing]      EUR  ...  order    eddie
@@ -760,7 +755,7 @@ class DataFrame(NDFrame):
 
          .. _geo-distance query documentation from Elasticsearch: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-distance-query.html
 
-        >>> df = ed.DataFrame('http://localhost:9200', 'ecommerce', columns=['customer_first_name', 'geoip.city_name'])
+        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce', columns=['customer_first_name', 'geoip.city_name'])
         >>> df.es_query({"bool": {"filter": {"geo_distance": {"distance": "1km", "geoip.location": [55.3, 25.3]}}}}).head()
            customer_first_name geoip.city_name
         1                 Mary           Dubai
@@ -836,7 +831,7 @@ class DataFrame(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame('http://localhost:9200', 'ecommerce', columns=['customer_first_name', 'geoip.city_name'])
+        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce', columns=['customer_first_name', 'geoip.city_name'])
         >>> df.info()
         <class 'opensearch_py_ml.dataframe.DataFrame'>
         Index: 4675 entries, 0 to 4674
@@ -1372,7 +1367,7 @@ class DataFrame(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame('http://localhost:9200', 'flights',
+        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights',
         ... columns=['AvgTicketPrice', 'Dest', 'Cancelled', 'timestamp', 'dayOfWeek'])
         >>> df.dtypes
         AvgTicketPrice           float64
@@ -1413,7 +1408,7 @@ class DataFrame(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame('http://localhost:9200', 'ecommerce')
+        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce')
         >>> df.shape
         (4675, 45)
         """
@@ -1475,7 +1470,7 @@ class DataFrame(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame('http://localhost:9200', 'flights', columns=['AvgTicketPrice', 'Cancelled']).head()
+        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights', columns=['AvgTicketPrice', 'Cancelled']).head()
         >>> df
            AvgTicketPrice  Cancelled
         0      841.265642      False
@@ -1512,7 +1507,7 @@ class DataFrame(NDFrame):
     def itertuples(
         self,
         index: bool = True,
-        name: Union[str, None] = "opensearch-py-ml",
+        name: Union[str, None] = "opensearch_py_ml",
         sort_index: Optional[str] = "_doc",
     ) -> Iterable[Tuple[Any, ...]]:
         """
@@ -1540,7 +1535,7 @@ class DataFrame(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame('http://localhost:9200', 'flights', columns=['AvgTicketPrice', 'Cancelled']).head()
+        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights', columns=['AvgTicketPrice', 'Cancelled']).head()
         >>> df
            AvgTicketPrice  Cancelled
         0      841.265642      False
@@ -1553,21 +1548,21 @@ class DataFrame(NDFrame):
 
         >>> for row in df.itertuples():
         ...     print(row)
-        Eland(Index='0', AvgTicketPrice=841.2656419677076, Cancelled=False)
-        Eland(Index='1', AvgTicketPrice=882.9826615595518, Cancelled=False)
-        Eland(Index='2', AvgTicketPrice=190.6369038508356, Cancelled=False)
-        Eland(Index='3', AvgTicketPrice=181.69421554118, Cancelled=True)
-        Eland(Index='4', AvgTicketPrice=730.041778346198, Cancelled=False)
+        opensearch_py_ml(Index='0', AvgTicketPrice=841.2656419677076, Cancelled=False)
+        opensearch_py_ml(Index='1', AvgTicketPrice=882.9826615595518, Cancelled=False)
+        opensearch_py_ml(Index='2', AvgTicketPrice=190.6369038508356, Cancelled=False)
+        opensearch_py_ml(Index='3', AvgTicketPrice=181.69421554118, Cancelled=True)
+        opensearch_py_ml(Index='4', AvgTicketPrice=730.041778346198, Cancelled=False)
 
         By setting the `index` parameter to False we can remove the index as the first element of the tuple:
 
         >>> for row in df.itertuples(index=False):
         ...     print(row)
-        Eland(AvgTicketPrice=841.2656419677076, Cancelled=False)
-        Eland(AvgTicketPrice=882.9826615595518, Cancelled=False)
-        Eland(AvgTicketPrice=190.6369038508356, Cancelled=False)
-        Eland(AvgTicketPrice=181.69421554118, Cancelled=True)
-        Eland(AvgTicketPrice=730.041778346198, Cancelled=False)
+        opensearch_py_ml(AvgTicketPrice=841.2656419677076, Cancelled=False)
+        opensearch_py_ml(AvgTicketPrice=882.9826615595518, Cancelled=False)
+        opensearch_py_ml(AvgTicketPrice=190.6369038508356, Cancelled=False)
+        opensearch_py_ml(AvgTicketPrice=181.69421554118, Cancelled=True)
+        opensearch_py_ml(AvgTicketPrice=730.041778346198, Cancelled=False)
 
         With the `name` parameter set we set a custom name for the yielded namedtuples:
 
@@ -1636,7 +1631,7 @@ class DataFrame(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame('http://localhost:9200', 'flights', columns=['AvgTicketPrice', 'DistanceKilometers', 'timestamp', 'DestCountry'])
+        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights', columns=['AvgTicketPrice', 'DistanceKilometers', 'timestamp', 'DestCountry'])
         >>> df.aggregate(['sum', 'min', 'std'], numeric_only=True).astype(int)
              AvgTicketPrice  DistanceKilometers
         sum         8204364            92616288
@@ -1711,7 +1706,7 @@ class DataFrame(NDFrame):
 
         Examples
         --------
-        >>> ed_flights = ed.DataFrame('http://localhost:9200', 'flights', columns=["AvgTicketPrice", "Cancelled", "dayOfWeek", "timestamp", "DestCountry"])
+        >>> ed_flights = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights', columns=["AvgTicketPrice", "Cancelled", "dayOfWeek", "timestamp", "DestCountry"])
         >>> ed_flights.groupby(["DestCountry", "Cancelled"]).agg(["min", "max"], numeric_only=True) # doctest: +NORMALIZE_WHITESPACE
                               AvgTicketPrice              dayOfWeek
                                          min          max       min  max
@@ -1806,7 +1801,7 @@ class DataFrame(NDFrame):
 
         Examples
         --------
-        >>> ed_ecommerce = ed.DataFrame('http://localhost:9200', 'ecommerce')
+        >>> ed_ecommerce = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce')
         >>> ed_df = ed_ecommerce.filter(["total_quantity", "geoip.city_name", "customer_birth_date", "day_of_week", "taxful_total_price"])
         >>> ed_df.mode(numeric_only=False)
            total_quantity geoip.city_name customer_birth_date day_of_week  taxful_total_price
@@ -1871,7 +1866,7 @@ class DataFrame(NDFrame):
 
         Examples
         --------
-        >>> ed_df = ed.DataFrame('http://localhost:9200', 'flights')
+        >>> ed_df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')
         >>> ed_flights = ed_df.filter(["AvgTicketPrice", "FlightDelayMin", "dayOfWeek", "timestamp"])
         >>> ed_flights.quantile() # doctest: +SKIP
         AvgTicketPrice    640.387285
@@ -1914,7 +1909,7 @@ class DataFrame(NDFrame):
 
         Examples
         --------
-        >>> ed_df = ed.DataFrame('http://localhost:9200', 'flights')
+        >>> ed_df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')
         >>> ed_flights = ed_df.filter(["AvgTicketPrice", "FlightDelayMin", "dayOfWeek", "timestamp"])
         >>> ed_flights.idxmax()
         AvgTicketPrice    1843
@@ -1946,7 +1941,7 @@ class DataFrame(NDFrame):
 
         Examples
         --------
-        >>> ed_df = ed.DataFrame('http://localhost:9200', 'flights')
+        >>> ed_df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')
         >>> ed_flights = ed_df.filter(["AvgTicketPrice", "FlightDelayMin", "dayOfWeek", "timestamp"])
         >>> ed_flights.idxmin()
         AvgTicketPrice    5454
@@ -1982,7 +1977,7 @@ class DataFrame(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame('http://localhost:9200', 'flights')
+        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')
         >>> df.shape
         (13059, 27)
         >>> df.query('FlightDelayMin > 60').shape
@@ -2026,7 +2021,7 @@ class DataFrame(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame('http://localhost:9200', 'flights')
+        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')
         >>> df.get('Carrier')
         0         Kibana Airlines
         1        Logstash Airways
@@ -2157,7 +2152,7 @@ class DataFrame(NDFrame):
 
         Examples
         --------
-        >>> ed_df = ed.DataFrame('http://localhost:9200', 'flights', columns=['AvgTicketPrice', 'Carrier']).head(5)
+        >>> ed_df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights', columns=['AvgTicketPrice', 'Carrier']).head(5)
         >>> pd_df = ed.opensearch_to_pandas(ed_df)
         >>> print(f"type(ed_df)={type(ed_df)}\\ntype(pd_df)={type(pd_df)}")
         type(ed_df)=<class 'opensearch_py_ml.dataframe.DataFrame'>

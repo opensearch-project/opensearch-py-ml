@@ -32,6 +32,7 @@ from opensearchpy import OpenSearch
 from opensearchpy.helpers import parallel_bulk
 
 from opensearch_py_ml import DataFrame
+from opensearch_py_ml.common import OPENSEARCH_TEST_CLIENT  # noqa: F401
 from opensearch_py_ml.common import DEFAULT_CHUNK_SIZE, PANDAS_VERSION
 from opensearch_py_ml.field_mappings import FieldMappings, verify_mapping_compatibility
 
@@ -133,7 +134,7 @@ def pandas_to_opensearch(
 
 
     >>> ed_df = ed.pandas_to_opensearch(pd_df,
-    ...                            'http://localhost:9200',
+    ...                            OPENSEARCH_TEST_CLIENT,
     ...                            'pandas_to_opensearch',
     ...                            es_if_exists="replace",
     ...                            es_refresh=True,
@@ -260,7 +261,7 @@ def opensearch_to_pandas(ed_df: DataFrame, show_progress: bool = False) -> pd.Da
 
     Examples
     --------
-    >>> ed_df = ed.DataFrame('http://localhost:9200', 'flights').head()
+    >>> ed_df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights').head()
     >>> type(ed_df)
     <class 'opensearch_py_ml.dataframe.DataFrame'>
     >>> ed_df
@@ -290,7 +291,7 @@ def opensearch_to_pandas(ed_df: DataFrame, show_progress: bool = False) -> pd.Da
 
     Convert `opensearch_py_ml.DataFrame` to `pandas.DataFrame` and show progress every 10000 rows
 
-    >>> pd_df = ed.opensearch_to_pandas(ed.DataFrame('http://localhost:9200', 'flights'), show_progress=True) # doctest: +SKIP
+    >>> pd_df = ed.opensearch_to_pandas(ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights'), show_progress=True) # doctest: +SKIP
     2020-01-29 12:43:36.572395: read 10000 rows
     2020-01-29 12:43:37.309031: read 13059 rows
 
@@ -424,7 +425,7 @@ def csv_to_opensearch(  # type: ignore
 
     >>>  ed.csv_to_opensearch(
     ...      "churn.csv",
-    ...      os_client='http://localhost:9200',
+    ...      os_client=OPENSEARCH_TEST_CLIENT,
     ...      os_dest_index='churn',
     ...      es_refresh=True,
     ...      index_col=0

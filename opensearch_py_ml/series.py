@@ -56,6 +56,7 @@ from opensearch_py_ml.arithmetics import (
     ArithmeticSeries,
     ArithmeticString,
 )
+from opensearch_py_ml.common import OPENSEARCH_TEST_CLIENT  # noqa: F401
 from opensearch_py_ml.common import DEFAULT_NUM_ROWS_DISPLAYED, docstring_parameter
 from opensearch_py_ml.filter import (
     BooleanFilter,
@@ -110,7 +111,7 @@ class Series(NDFrame):
 
     Examples
     --------
-    >>> ed.Series(os_client='http://localhost:9200', os_index_pattern='flights', name='Carrier')
+    >>> ed.Series(os_client=OPENSEARCH_TEST_CLIENT, os_index_pattern='flights', name='Carrier')
     0         Kibana Airlines
     1        Logstash Airways
     2        Logstash Airways
@@ -178,7 +179,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> df = ed.Series('http://localhost:9200', 'ecommerce', name='total_quantity')
+        >>> df = ed.Series(OPENSEARCH_TEST_CLIENT, 'ecommerce', name='total_quantity')
         >>> df.shape
         (4675, 1)
         """
@@ -227,7 +228,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame('http://localhost:9200', 'flights')
+        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')
         >>> df.Carrier
         0         Kibana Airlines
         1        Logstash Airways
@@ -303,7 +304,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame('http://localhost:9200', 'flights')
+        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')
         >>> df['Carrier'].value_counts()
         Logstash Airways    3331
         JetBeats            3274
@@ -619,7 +620,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> ed_flights = ed.DataFrame('http://localhost:9200', 'flights')
+        >>> ed_flights = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')
         >>> ed_flights["timestamp"].quantile([.2,.5,.75]) # doctest: +SKIP
         0.20   2018-01-09 04:30:57.289159912
         0.50   2018-01-21 23:39:27.031627441
@@ -723,10 +724,10 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> ed_ecommerce = ed.DataFrame('http://localhost:9200', 'ecommerce')
+        >>> ed_ecommerce = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce')
         >>> ed_ecommerce["day_of_week"].mode()
         0    Thursday
-        dtype: object
+        Name: day_of_week, dtype: object
 
         >>> ed_ecommerce["order_date"].mode()
         0   2016-12-02 20:36:58
@@ -739,13 +740,13 @@ class Series(NDFrame):
         7   2016-12-15 11:38:24
         8   2016-12-22 19:39:22
         9   2016-12-24 06:21:36
-        dtype: datetime64[ns]
+        Name: order_date, dtype: datetime64[ns]
 
         >>> ed_ecommerce["order_date"].mode(es_size=3)
         0   2016-12-02 20:36:58
         1   2016-12-04 23:44:10
         2   2016-12-08 06:21:36
-        dtype: datetime64[ns]
+        Name: order_date, dtype: datetime64[ns]
 
         """
         return self._query_compiler.mode(is_dataframe=False, es_size=es_size)
@@ -792,7 +793,7 @@ class Series(NDFrame):
         Examples
         --------
         >>> df = ed.DataFrame(
-        ...   "http://localhost:9200", "ecommerce",
+        ...   OPENSEARCH_TEST_CLIENT, "ecommerce",
         ...   columns=["category", "taxful_total_price"]
         ... )
         >>> df[
@@ -839,7 +840,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame('http://localhost:9200', 'ecommerce').head(5)
+        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
         >>> df.taxful_total_price
         0     36.98
         1     53.98
@@ -899,7 +900,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame('http://localhost:9200', 'ecommerce').head(5)
+        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
         >>> df.taxful_total_price
         0     36.98
         1     53.98
@@ -938,7 +939,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame('http://localhost:9200', 'ecommerce').head(5)
+        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
         >>> df.taxful_total_price
         0     36.98
         1     53.98
@@ -977,7 +978,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame('http://localhost:9200', 'ecommerce').head(5)
+        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
         >>> df.taxful_total_price
         0     36.98
         1     53.98
@@ -1016,7 +1017,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame('http://localhost:9200', 'ecommerce').head(5)
+        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
         >>> df.taxful_total_price
         0     36.98
         1     53.98
@@ -1055,7 +1056,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame('http://localhost:9200', 'ecommerce').head(5)
+        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
         >>> df.taxful_total_price
         0     36.98
         1     53.98
@@ -1094,7 +1095,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame('http://localhost:9200', 'ecommerce').head(5)
+        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
         >>> df.taxful_total_price
         0     36.98
         1     53.98
@@ -1133,7 +1134,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame('http://localhost:9200', 'ecommerce').head(5)
+        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
         >>> df.taxful_total_price
         0     36.98
         1     53.98
@@ -1165,7 +1166,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame('http://localhost:9200', 'ecommerce').head(5)
+        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
         >>> df.taxful_total_price
         0     36.98
         1     53.98
@@ -1197,7 +1198,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame('http://localhost:9200', 'ecommerce').head(5)
+        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
         >>> df.taxful_total_price
         0     36.98
         1     53.98
@@ -1229,7 +1230,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame('http://localhost:9200', 'ecommerce').head(5)
+        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
         >>> df.taxful_total_price
         0     36.98
         1     53.98
@@ -1261,7 +1262,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame('http://localhost:9200', 'ecommerce').head(5)
+        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
         >>> df.taxful_total_price
         0     36.98
         1     53.98
@@ -1293,7 +1294,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame('http://localhost:9200', 'ecommerce').head(5)
+        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
         >>> df.total_quantity
         0    2
         1    2
@@ -1325,7 +1326,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame('http://localhost:9200', 'ecommerce').head(5)
+        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
         >>> df.taxful_total_price
         0     36.98
         1     53.98
@@ -1447,7 +1448,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> s = ed.DataFrame('http://localhost:9200', 'flights')['AvgTicketPrice']
+        >>> s = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')['AvgTicketPrice']
         >>> int(s.max())
         1199
         """
@@ -1471,7 +1472,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> s = ed.DataFrame('http://localhost:9200', 'flights')['AvgTicketPrice']
+        >>> s = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')['AvgTicketPrice']
         >>> int(s.mean())
         628
         """
@@ -1495,7 +1496,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> s = ed.DataFrame('http://localhost:9200', 'flights')['AvgTicketPrice']
+        >>> s = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')['AvgTicketPrice']
         >>> int(s.median())
         640
         """
@@ -1519,7 +1520,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> s = ed.DataFrame('http://localhost:9200', 'flights')['AvgTicketPrice']
+        >>> s = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')['AvgTicketPrice']
         >>> int(s.min())
         100
         """
@@ -1543,7 +1544,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> s = ed.DataFrame('http://localhost:9200', 'flights')['AvgTicketPrice']
+        >>> s = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')['AvgTicketPrice']
         >>> int(s.sum())
         8204364
         """
@@ -1565,7 +1566,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> s = ed.DataFrame('http://localhost:9200', 'flights')['Carrier']
+        >>> s = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')['Carrier']
         >>> s.nunique()
         4
         """
@@ -1576,7 +1577,7 @@ class Series(NDFrame):
         """
             Returns all unique values within a Series.
             Note that behavior is slightly different between pandas and Eland: pandas will return values in the order
-            they're first seen and Eland returns values in sorted order.
+            they're first seen and opensearch-py-ml returns values in sorted order.
 
         Returns
         -------
@@ -1605,7 +1606,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> s = ed.DataFrame('http://localhost:9200', 'flights')['AvgTicketPrice']
+        >>> s = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')['AvgTicketPrice']
         >>> int(s.var())
         70964
         """
@@ -1627,7 +1628,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> s = ed.DataFrame('http://localhost:9200', 'flights')['AvgTicketPrice']
+        >>> s = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')['AvgTicketPrice']
         >>> int(s.std())
         266
         """
@@ -1649,7 +1650,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> s = ed.DataFrame('http://localhost:9200', 'flights')['AvgTicketPrice']
+        >>> s = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')['AvgTicketPrice']
         >>> int(s.mad())
         213
         """
@@ -1677,7 +1678,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame('http://localhost:9200', 'flights') # ignoring percentiles as they don't generate consistent results
+        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights') # ignoring percentiles as they don't generate consistent results
         >>> df.AvgTicketPrice.describe()  # doctest: +SKIP
         count    13059.000000
         mean       628.253689
@@ -1710,7 +1711,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> ed_s = ed.Series('http://localhost:9200', 'flights', name='Carrier').head(5)
+        >>> ed_s = ed.Series(OPENSEARCH_TEST_CLIENT, 'flights', name='Carrier').head(5)
         >>> pd_s = ed.opensearch_to_pandas(ed_s)
         >>> print(f"type(ed_s)={type(ed_s)}\\ntype(pd_s)={type(pd_s)}")
         type(ed_s)=<class 'opensearch_py_ml.series.Series'>

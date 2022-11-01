@@ -24,12 +24,11 @@
 #  under the License.
 
 from ._version import __title__, __url__, __version__  # noqa: F401
-from .common import SortOrder
+from .common import SortOrder, os_version  # noqa: F401
 from .dataframe import DataFrame
 from .etl import csv_to_opensearch, opensearch_to_pandas, pandas_to_opensearch
 from .index import Index
 from .ndframe import NDFrame
-from .sagemaker_tools import make_sagemaker_prediction
 from .series import Series
 
 __all__ = [
@@ -41,5 +40,6 @@ __all__ = [
     "opensearch_to_pandas",
     "csv_to_opensearch",
     "SortOrder",
-    "make_sagemaker_prediction",
 ]
+
+# Define test files and indices

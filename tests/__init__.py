@@ -47,7 +47,7 @@ OPENSEARCH_TEST_CLIENT = OpenSearch(
 # in development, usually host url is: https://localhost:9200
 # it's hard to remember changing the host url. So applied a try catch so that we don't have to keep change this config
 try:
-    ES_VERSION = os_version(OPENSEARCH_TEST_CLIENT)
+    OS_VERSION = os_version(OPENSEARCH_TEST_CLIENT)
 except opensearchpy.exceptions.ConnectionError:
     OPENSEARCH_HOST = "https://localhost:9200"
     # Define client to use in tests
@@ -56,9 +56,9 @@ except opensearchpy.exceptions.ConnectionError:
         http_auth=(OPENSEARCH_ADMIN_USER, OPENSEARCH_ADMIN_PASSWORD),
         verify_certs=False,
     )
-    ES_VERSION = os_version(OPENSEARCH_TEST_CLIENT)
+    OS_VERSION = os_version(OPENSEARCH_TEST_CLIENT)
 
-FLIGHTS_INDEX_NAME = "opensearch_dashboards_sample_data_flights"
+FLIGHTS_INDEX_NAME = "flights"
 FLIGHTS_MAPPING = {
     "mappings": {
         "properties": {
@@ -95,11 +95,11 @@ FLIGHTS_MAPPING = {
 FLIGHTS_FILE_NAME = ROOT_DIR + "/flights.json.gz"
 FLIGHTS_DF_FILE_NAME = ROOT_DIR + "/flights_df.json.gz"
 
-FLIGHTS_SMALL_INDEX_NAME = "opensearch_dashboards_sample_data_flights_small"
+FLIGHTS_SMALL_INDEX_NAME = "flights_small"
 FLIGHTS_SMALL_MAPPING = FLIGHTS_MAPPING
 FLIGHTS_SMALL_FILE_NAME = ROOT_DIR + "/flights_small.json.gz"
 
-ECOMMERCE_INDEX_NAME = "opensearch_dashboards_sample_data_ecommerce"
+ECOMMERCE_INDEX_NAME = "ecommerce"
 ECOMMERCE_MAPPING = {
     "mappings": {
         "properties": {
