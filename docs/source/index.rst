@@ -56,11 +56,6 @@ If you're new to Opensearch we recommend `reading the documentation <https://ope
   * :doc:`reference/general_utility_functions`
   * :doc:`reference/io`
 
-* :doc:`development/index`
-
-  * `Contributing <https://github.com/opensearch-project/opensearch-py-ml/blob/main/CONTRIBUTING.md>`_
-  * :doc:`development/implementation`
-
 * :doc:`examples/index`
 
   * :doc:`examples/demo_notebook`
