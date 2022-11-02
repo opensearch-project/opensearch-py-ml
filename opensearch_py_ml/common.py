@@ -27,6 +27,7 @@ import warnings
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Callable, Dict, Optional, Tuple, Union, cast
 
+import opensearchpy
 import pandas as pd  # type: ignore
 from opensearchpy import OpenSearch
 
@@ -331,3 +332,28 @@ def os_version(os_client: OpenSearch) -> Tuple[int, int, int]:
     else:
         opensearch_py_ml_os_version = os_client._os_ml_py_version  # type: ignore
     return opensearch_py_ml_os_version
+
+
+OPENSEARCH_HOST = "https://instance:9200"
+OPENSEARCH_ADMIN_USER, OPENSEARCH_ADMIN_PASSWORD = "admin", "admin"
+
+# Define client to use in tests
+OPENSEARCH_TEST_CLIENT = OpenSearch(
+    hosts=[OPENSEARCH_HOST],
+    http_auth=(OPENSEARCH_ADMIN_USER, OPENSEARCH_ADMIN_PASSWORD),
+    verify_certs=False,
+)
+# in github integration test, host url is: https://instance:9200
+# in development, usually host url is: https://localhost:9200
+# it's hard to remember changing the host url. So applied a try catch so that we don't have to keep change this config
+try:
+    OS_VERSION = os_version(OPENSEARCH_TEST_CLIENT)
+except opensearchpy.exceptions.ConnectionError:
+    OPENSEARCH_HOST = "https://localhost:9200"
+    # Define client to use in tests
+    OPENSEARCH_TEST_CLIENT = OpenSearch(
+        hosts=[OPENSEARCH_HOST],
+        http_auth=(OPENSEARCH_ADMIN_USER, OPENSEARCH_ADMIN_PASSWORD),
+        verify_certs=False,
+    )
+    OS_VERSION = os_version(OPENSEARCH_TEST_CLIENT)

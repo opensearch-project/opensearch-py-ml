@@ -23,7 +23,6 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-import os
 from pathlib import Path
 
 import nox
@@ -119,8 +118,8 @@ def test(session, pandas_version: str):
         "--cov-report=term-missing",
         "--cov=opensearch_py_ml/",
         "--cov-config=setup.cfg",
-        # "--doctest-modules", //TODO: commenting for now.
-        # "--nbval",     //TODO: we need to revisit this part if we need to test jupyter notebooks
+        "--doctest-modules",
+        "--nbval",
     )
 
     session.run(
@@ -132,45 +131,11 @@ def test(session, pandas_version: str):
 @nox.session(reuse_venv=True)
 def docs(session):
     # Run this so users get an error if they don't have Pandoc installed.
-    session.run("pandoc", "--version", external=True)
 
     session.install("-r", "docs/requirements-docs.txt")
     session.install(".")
 
-    # See if we have an Elasticsearch cluster active
-    # to rebuild the Jupyter notebooks with.
-    es_active = False
-    try:
-        from elasticsearch import ConnectionError, Elasticsearch
-
-        try:
-            es = Elasticsearch("https://localhost:9200")
-            es.info()
-            if not es.indices.exists(index="flights"):
-                session.run("python", "-m", "tests.setup_tests")
-            es_active = True
-        except ConnectionError:
-            pass
-    except ImportError:
-        pass
-
-    # Rebuild all the example notebooks inplace
-    if es_active:
-        session.install("jupyter-client", "ipykernel")
-        for filename in os.listdir(BASE_DIR / "docs/sphinx/examples"):
-            if (
-                filename.endswith(".ipynb")
-                and filename != "introduction_to_eland_webinar.ipynb"
-            ):
-                session.run(
-                    "jupyter",
-                    "nbconvert",
-                    "--to",
-                    "notebook",
-                    "--inplace",
-                    "--execute",
-                    str(BASE_DIR / "docs/sphinx/examples" / filename),
-                )
+    session.run("python", "-m", "setup_tests")
 
     session.cd("docs")
     session.run("make", "clean", external=True)

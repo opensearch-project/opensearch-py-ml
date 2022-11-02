@@ -16,6 +16,7 @@ from opensearchpy import OpenSearch
 from opensearch_py_ml.ml_commons_integration.ml_common_utils import (
     BUF_SIZE,
     ML_BASE_URI,
+    MODEL_MAX_SIZE,
     MODEL_UPLOAD_CHUNK_SIZE,
 )
 
@@ -52,6 +53,8 @@ class MLCommonModelUploader:
         @param model_meta_path    string     filepath of the model metadata. A json file of model metadata is expected
         @param isVerbose          bool       if isVerbose is true method will print more messages.
         """
+        if os.stat(model_path).st_size > MODEL_MAX_SIZE:
+            raise Exception("Model file size exceeds the limit of 4GB")
 
         total_num_chunks: int = ceil(
             os.stat(model_path).st_size / MODEL_UPLOAD_CHUNK_SIZE

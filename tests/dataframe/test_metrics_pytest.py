@@ -50,7 +50,7 @@ class TestDataFrameMetrics(TestData):
 
         for func in self.funcs:
             # Pandas v1.0 doesn't support mean() on datetime
-            # Pandas and Eland don't support sum() on datetime
+            # Pandas and opensearch_py_ml don't support sum() on datetime
             if not numeric_only:
                 dtype_include = (
                     [np.number, np.datetime64]
