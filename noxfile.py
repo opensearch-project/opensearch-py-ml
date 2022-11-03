@@ -135,8 +135,6 @@ def docs(session):
     session.install("-r", "docs/requirements-docs.txt")
     session.install(".")
 
-    session.run("python", "-m", "setup_tests")
-
     session.cd("docs")
     session.run("make", "clean", external=True)
     session.run("make", "html", external=True)
