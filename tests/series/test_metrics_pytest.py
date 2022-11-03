@@ -38,52 +38,52 @@ class TestSeriesMetrics(TestData):
     all_funcs = ["max", "min", "mean", "sum", "nunique", "var", "std", "mad"]
     timestamp_funcs = ["max", "min", "mean", "nunique"]
 
-    def assert_almost_equal_for_agg(self, func, pd_metric, ed_metric):
+    def assert_almost_equal_for_agg(self, func, pd_metric, oml_metric):
         if func in ("nunique", "var", "mad"):
-            np.testing.assert_almost_equal(pd_metric, ed_metric, decimal=-3)
+            np.testing.assert_almost_equal(pd_metric, oml_metric, decimal=-3)
         else:
-            np.testing.assert_almost_equal(pd_metric, ed_metric, decimal=2)
+            np.testing.assert_almost_equal(pd_metric, oml_metric, decimal=2)
 
     def test_flights_metrics(self):
         pd_flights = self.pd_flights()["AvgTicketPrice"]
-        ed_flights = self.ed_flights()["AvgTicketPrice"]
+        oml_flights = self.oml_flights()["AvgTicketPrice"]
 
         for func in self.all_funcs:
             pd_metric = getattr(pd_flights, func)()
-            ed_metric = getattr(ed_flights, func)()
+            oml_metric = getattr(oml_flights, func)()
 
-            self.assert_almost_equal_for_agg(func, pd_metric, ed_metric)
+            self.assert_almost_equal_for_agg(func, pd_metric, oml_metric)
 
     def test_flights_timestamp(self):
         pd_flights = self.pd_flights()["timestamp"]
-        ed_flights = self.ed_flights()["timestamp"]
+        oml_flights = self.oml_flights()["timestamp"]
 
         for func in self.timestamp_funcs:
             pd_metric = getattr(pd_flights, func)()
-            ed_metric = getattr(ed_flights, func)()
+            oml_metric = getattr(oml_flights, func)()
 
             if func == "nunique":
-                print(pd_metric, ed_metric)
-                self.assert_almost_equal_for_agg(func, pd_metric, ed_metric)
+                print(pd_metric, oml_metric)
+                self.assert_almost_equal_for_agg(func, pd_metric, oml_metric)
             elif func == "mean":
                 offset = timedelta(seconds=0.001)
-                assert (ed_metric - offset) < pd_metric < (ed_metric + offset)
+                assert (oml_metric - offset) < pd_metric < (oml_metric + offset)
             else:
-                assert pd_metric == ed_metric
+                assert pd_metric == oml_metric
 
     def test_ecommerce_selected_non_numeric_source_fields(self):
         # None of these are numeric, will result in NaNs
         column = "category"
 
-        ed_ecommerce = self.ed_ecommerce()[column]
+        oml_ecommerce = self.oml_ecommerce()[column]
 
         for func in self.all_funcs:
             if func == "nunique":  # nunique never returns 'NaN'
                 continue
 
-            ed_metric = getattr(ed_ecommerce, func)(numeric_only=False)
-            print(func, ed_metric)
-            assert np.isnan(ed_metric)
+            oml_metric = getattr(oml_ecommerce, func)(numeric_only=False)
+            print(func, oml_metric)
+            assert np.isnan(oml_metric)
 
     def test_ecommerce_selected_all_numeric_source_fields(self):
         # All of these are numeric
@@ -91,32 +91,32 @@ class TestSeriesMetrics(TestData):
 
         for column in columns:
             pd_ecommerce = self.pd_ecommerce()[column]
-            ed_ecommerce = self.ed_ecommerce()[column]
+            oml_ecommerce = self.oml_ecommerce()[column]
 
             for func in self.all_funcs:
                 pd_metric = getattr(pd_ecommerce, func)()
-                ed_metric = getattr(ed_ecommerce, func)(
+                oml_metric = getattr(oml_ecommerce, func)(
                     **({"numeric_only": True} if (func != "nunique") else {})
                 )
-                self.assert_almost_equal_for_agg(func, pd_metric, ed_metric)
+                self.assert_almost_equal_for_agg(func, pd_metric, oml_metric)
 
     @pytest.mark.parametrize("agg", ["mean", "min", "max"])
     def test_flights_datetime_metrics_agg(self, agg):
-        ed_timestamps = self.ed_flights()["timestamp"]
+        oml_timestamps = self.oml_flights()["timestamp"]
         expected_values = {
             "min": pd.Timestamp("2018-01-01 00:00:00"),
             "mean": pd.Timestamp("2018-01-21 19:20:45.564438232"),
             "max": pd.Timestamp("2018-02-11 23:50:12"),
         }
-        ed_metric = getattr(ed_timestamps, agg)()
+        oml_metric = getattr(oml_timestamps, agg)()
 
-        assert_almost_equal(ed_metric, expected_values[agg])
+        assert_almost_equal(oml_metric, expected_values[agg])
 
     @pytest.mark.parametrize("agg", ["median", "quantile"])
     def test_flights_datetime_median_metric(self, agg):
-        ed_series = self.ed_flights_small()["timestamp"]
+        oml_series = self.oml_flights_small()["timestamp"]
 
-        agg_value = getattr(ed_series, agg)()
+        agg_value = getattr(oml_series, agg)()
         assert isinstance(agg_value, pd.Timestamp)
         assert (
             pd.to_datetime("2018-01-01 10:00:00.000")
@@ -128,23 +128,23 @@ class TestSeriesMetrics(TestData):
         "column", ["day_of_week", "geoip.region_name", "taxful_total_price", "user"]
     )
     def test_ecommerce_mode(self, column):
-        ed_series = self.ed_ecommerce()
+        oml_series = self.oml_ecommerce()
         pd_series = self.pd_ecommerce()
 
-        ed_mode = ed_series[column].mode()
+        oml_mode = oml_series[column].mode()
         pd_mode = pd_series[column].mode()
 
-        assert_series_equal(ed_mode, pd_mode)
+        assert_series_equal(oml_mode, pd_mode)
 
     @pytest.mark.parametrize("es_size", [1, 2, 10, 20])
     def test_ecommerce_mode_es_size(self, es_size):
-        ed_series = self.ed_ecommerce()
+        oml_series = self.oml_ecommerce()
         pd_series = self.pd_ecommerce()
 
         pd_mode = pd_series["order_date"].mode()[:es_size]
-        ed_mode = ed_series["order_date"].mode(es_size)
+        oml_mode = oml_series["order_date"].mode(es_size)
 
-        assert_series_equal(pd_mode, ed_mode)
+        assert_series_equal(pd_mode, oml_mode)
 
     @pytest.mark.parametrize(
         "quantile_list", [0.2, 0.5, [0.2, 0.5], [0.75, 0.2, 0.1, 0.5]]
@@ -154,43 +154,43 @@ class TestSeriesMetrics(TestData):
     )
     def test_flights_quantile(self, column, quantile_list):
         pd_flights = self.pd_flights()[column]
-        ed_flights = self.ed_flights()[column]
+        oml_flights = self.oml_flights()[column]
 
         pd_quantile = pd_flights.quantile(quantile_list)
-        ed_quantile = ed_flights.quantile(quantile_list)
+        oml_quantile = oml_flights.quantile(quantile_list)
         if isinstance(quantile_list, list):
-            assert_series_equal(pd_quantile, ed_quantile, check_exact=False, rtol=2)
+            assert_series_equal(pd_quantile, oml_quantile, check_exact=False, rtol=2)
         else:
-            assert pd_quantile * 0.9 <= ed_quantile <= pd_quantile * 1.1
+            assert pd_quantile * 0.9 <= oml_quantile <= pd_quantile * 1.1
 
     @pytest.mark.parametrize("column", ["FlightDelayMin", "dayOfWeek"])
     def test_flights_unique_numeric(self, column):
         pd_flights = self.pd_flights()[column]
-        ed_flights = self.ed_flights()[column]
+        oml_flights = self.oml_flights()[column]
 
         # Pandas returns unique values in order of their appearance
         # ES returns results in ascending order, hence sort the pandas array to check equality
         pd_unique = np.sort(pd_flights.unique())
-        ed_unique = ed_flights.unique()
+        oml_unique = oml_flights.unique()
 
-        np.testing.assert_allclose(pd_unique, ed_unique)
+        np.testing.assert_allclose(pd_unique, oml_unique)
 
     @pytest.mark.parametrize("column", ["Cancelled", "DestCountry"])
     def test_flights_unique_strings(self, column):
         pd_flights = self.pd_flights()[column]
-        ed_flights = self.ed_flights()[column]
+        oml_flights = self.oml_flights()[column]
 
         # Pandas returns unique values in order of their appearance
         # ES returns results in ascending order, hence sort the pandas array to check equality
         pd_unique = np.sort(pd_flights.unique())
-        ed_unique = ed_flights.unique()
+        oml_unique = oml_flights.unique()
 
-        np.equal(pd_unique, ed_unique)
+        np.equal(pd_unique, oml_unique)
 
     @pytest.mark.parametrize("quantiles_list", [[np.array([1, 2])], ["1", 2]])
     def test_quantile_non_numeric_values(self, quantiles_list):
-        ed_flights = self.ed_flights()["dayOfWeek"]
+        oml_flights = self.oml_flights()["dayOfWeek"]
 
         match = "quantile should be of type int or float"
         with pytest.raises(TypeError, match=match):
-            ed_flights.quantile(q=quantiles_list)
+            oml_flights.quantile(q=quantiles_list)

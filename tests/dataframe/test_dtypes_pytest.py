@@ -42,7 +42,7 @@ class TestDataFrameDtypes:
         df.select_dtypes(exclude=np.float64)
 
     def test_os_dtypes(self, testdata):
-        df = testdata.ed_flights_small()
+        df = testdata.oml_flights_small()
         assert_series_equal(
             df.os_dtypes,
             pd.Series(

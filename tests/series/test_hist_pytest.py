@@ -35,7 +35,7 @@ from tests.common import TestData
 class TestSeriesFrameHist(TestData):
     def test_flight_delay_min_hist(self):
         pd_flights = self.pd_flights()
-        ed_flights = self.ed_flights()
+        oml_flights = self.oml_flights()
 
         num_bins = 10
 
@@ -45,16 +45,16 @@ class TestSeriesFrameHist(TestData):
         pd_bins = pd.DataFrame({"FlightDelayMin": pd_flightdelaymin[1]})
         pd_weights = pd.DataFrame({"FlightDelayMin": pd_flightdelaymin[0]})
 
-        ed_bins, ed_weights = ed_flights["FlightDelayMin"]._hist(num_bins=num_bins)
+        oml_bins, oml_weights = oml_flights["FlightDelayMin"]._hist(num_bins=num_bins)
 
         # Numbers are slightly different
-        print(pd_bins, ed_bins)
-        assert_frame_equal(pd_bins, ed_bins, check_exact=False)
-        assert_frame_equal(pd_weights, ed_weights, check_exact=False)
+        print(pd_bins, oml_bins)
+        assert_frame_equal(pd_bins, oml_bins, check_exact=False)
+        assert_frame_equal(pd_weights, oml_weights, check_exact=False)
 
     def test_filtered_hist(self):
         pd_flights = self.pd_flights()
-        ed_flights = self.ed_flights()
+        oml_flights = self.oml_flights()
 
         num_bins = 10
 
@@ -66,17 +66,17 @@ class TestSeriesFrameHist(TestData):
         pd_bins = pd.DataFrame({"FlightDelayMin": pd_filteredhist[1]})
         pd_weights = pd.DataFrame({"FlightDelayMin": pd_filteredhist[0]})
 
-        d = ed_flights[ed_flights.FlightDelay == True].FlightDelayMin
+        d = oml_flights[oml_flights.FlightDelay == True].FlightDelayMin
         print(d.os_info())
 
-        ed_bins, ed_weights = ed_flights[
-            ed_flights.FlightDelay == True
+        oml_bins, oml_weights = oml_flights[
+            oml_flights.FlightDelay == True
         ].FlightDelayMin._hist(num_bins=num_bins)
 
         # Numbers are slightly different
-        assert_frame_equal(pd_bins, ed_bins, check_exact=False)
-        assert_frame_equal(pd_weights, ed_weights, check_exact=False)
+        assert_frame_equal(pd_bins, oml_bins, check_exact=False)
+        assert_frame_equal(pd_weights, oml_weights, check_exact=False)
 
     def test_invalid_hist(self):
         with pytest.raises(ValueError):
-            assert self.ed_ecommerce()["products.tax_amount"].hist()
+            assert self.oml_ecommerce()["products.tax_amount"].hist()

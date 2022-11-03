@@ -48,11 +48,11 @@ def pandas_to_opensearch(
     pd_df: pd.DataFrame,
     os_client: Union[str, List[str], Tuple[str, ...], OpenSearch],
     os_dest_index: str,
-    es_if_exists: str = "fail",
-    es_refresh: bool = False,
+    os_if_exists: str = "fail",
+    os_refresh: bool = False,
     os_dropna: bool = False,
-    es_type_overrides: Optional[Mapping[str, str]] = None,
-    es_verify_mapping_compatibility: bool = True,
+    os_type_overrides: Optional[Mapping[str, str]] = None,
+    os_verify_mapping_compatibility: bool = True,
     thread_count: int = 4,
     chunksize: Optional[int] = None,
     use_pandas_index_for_os_ids: bool = True,
@@ -67,20 +67,20 @@ def pandas_to_opensearch(
     os_client: OpenSearch client
     os_dest_index: str
         Name of OpenSearch index to be appended to
-    es_if_exists : {'fail', 'replace', 'append'}, default 'fail'
+    os_if_exists : {'fail', 'replace', 'append'}, default 'fail'
         How to behave if the index already exists.
 
         - fail: Raise a ValueError.
         - replace: Delete the index before inserting new values.
         - append: Insert new values to the existing index. Create if does not exist.
-    es_refresh: bool, default 'False'
+    os_refresh: bool, default 'False'
         Refresh os_dest_index after bulk index
     os_dropna: bool, default 'False'
         * True: Remove missing values (see pandas.Series.dropna)
         * False: Include missing values - may cause bulk to fail
-    es_type_overrides: dict, default None
-        Dict of field_name: es_data_type that overrides default es data types
-    es_verify_mapping_compatibility: bool, default 'True'
+    os_type_overrides: dict, default None
+        Dict of field_name: es_data_type that overrides default os data types
+    os_verify_mapping_compatibility: bool, default 'True'
         * True: Verify that the dataframe schema matches the OpenSearch index schema
         * False: Do not verify schema
     thread_count: int
@@ -106,15 +106,15 @@ def pandas_to_opensearch(
     ...                            'E': [1.0, 2.0, 3.0],
     ...                            'F': False,
     ...                            'G': [1, 2, 3],
-    ...                            'H': 'Long text - to be indexed as es type text'},
+    ...                            'H': 'Long text - to be indexed as os type text'},
     ...                      index=['0', '1', '2'])
     >>> type(pd_df)
     <class 'pandas.core.frame.DataFrame'>
     >>> pd_df
            A  B  ...  G                                          H
-    0  3.141  1  ...  1  Long text - to be indexed as es type text
-    1  3.141  1  ...  2  Long text - to be indexed as es type text
-    2  3.141  1  ...  3  Long text - to be indexed as es type text
+    0  3.141  1  ...  1  Long text - to be indexed as os type text
+    1  3.141  1  ...  2  Long text - to be indexed as os type text
+    2  3.141  1  ...  3  Long text - to be indexed as os type text
     <BLANKLINE>
     [3 rows x 8 columns]
     >>> pd_df.dtypes
@@ -128,27 +128,27 @@ def pandas_to_opensearch(
     H            object
     dtype: object
 
-    Convert `pandas.DataFrame` to `opensearch_py_ml.DataFrame` - this creates an OpenSearch index called `pandas_to_eland`.
-    Overwrite existing OpenSearch index if it exists `if_exists="replace"`, and sync index so it is
-    readable on return `refresh=True`
+    Convert `pandas.DataFrame` to `opensearch_py_ml.DataFrame` - this creates an OpenSearch index called
+    `pandas_to_opensearch`. Overwrite existing OpenSearch index if it exists `if_exists="replace"`, and sync index, so
+    it is readable on return `refresh=True`
 
 
-    >>> ed_df = ed.pandas_to_opensearch(pd_df,
+    >>> oml_df = oml.pandas_to_opensearch(pd_df,
     ...                            OPENSEARCH_TEST_CLIENT,
     ...                            'pandas_to_opensearch',
-    ...                            es_if_exists="replace",
-    ...                            es_refresh=True,
-    ...                            es_type_overrides={'H':'text'}) # index field 'H' as text not keyword
-    >>> type(ed_df)
+    ...                            os_if_exists="replace",
+    ...                            os_refresh=True,
+    ...                            os_type_overrides={'H':'text'}) # index field 'H' as text not keyword
+    >>> type(oml_df)
     <class 'opensearch_py_ml.dataframe.DataFrame'>
-    >>> ed_df
+    >>> oml_df
            A  B  ...  G                                          H
-    0  3.141  1  ...  1  Long text - to be indexed as es type text
-    1  3.141  1  ...  2  Long text - to be indexed as es type text
-    2  3.141  1  ...  3  Long text - to be indexed as es type text
+    0  3.141  1  ...  1  Long text - to be indexed as os type text
+    1  3.141  1  ...  2  Long text - to be indexed as os type text
+    2  3.141  1  ...  3  Long text - to be indexed as os type text
     <BLANKLINE>
     [3 rows x 8 columns]
-    >>> ed_df.dtypes
+    >>> oml_df.dtypes
     A           float64
     B             int64
     C            object
@@ -166,32 +166,32 @@ def pandas_to_opensearch(
     if chunksize is None:
         chunksize = DEFAULT_CHUNK_SIZE
 
-    mapping = FieldMappings._generate_os_mappings(pd_df, es_type_overrides)
+    mapping = FieldMappings._generate_os_mappings(pd_df, os_type_overrides)
 
     # If table exists, check if_exists parameter
     if os_client.indices.exists(index=os_dest_index):  # type: ignore
-        if es_if_exists == "fail":
+        if os_if_exists == "fail":
             raise ValueError(
                 f"Could not create the index [{os_dest_index}] because it "
                 f"already exists. "
-                f"Change the 'es_if_exists' parameter to "
+                f"Change the 'os_if_exists' parameter to "
                 f"'append' or 'replace' data."
             )
 
-        elif es_if_exists == "replace":
+        elif os_if_exists == "replace":
             os_client.indices.delete(index=os_dest_index)  # type: ignore
             os_client.indices.create(  # type: ignore
                 index=os_dest_index, body={"mappings": mapping["mappings"]}
             )
 
-        elif es_if_exists == "append" and es_verify_mapping_compatibility:
+        elif os_if_exists == "append" and os_verify_mapping_compatibility:
             dest_mapping = os_client.indices.get_mapping(index=os_dest_index)[  # type: ignore
                 os_dest_index
             ]
             verify_mapping_compatibility(
-                ed_mapping=mapping,
+                oml_mapping=mapping,
                 os_mapping=dest_mapping,
-                os_type_overrides=es_type_overrides,
+                os_type_overrides=os_type_overrides,
             )
     else:
         os_client.indices.create(  # type: ignore
@@ -234,13 +234,15 @@ def pandas_to_opensearch(
         maxlen=0,
     )
 
-    if es_refresh:
+    if os_refresh:
         os_client.indices.refresh(index=os_dest_index)  # type: ignore
 
     return DataFrame(os_client, os_dest_index)
 
 
-def opensearch_to_pandas(ed_df: DataFrame, show_progress: bool = False) -> pd.DataFrame:
+def opensearch_to_pandas(
+    oml_df: DataFrame, show_progress: bool = False
+) -> pd.DataFrame:
     """
     Convert an opensearch_py_ml.Dataframe to a pandas.DataFrame
 
@@ -249,10 +251,10 @@ def opensearch_to_pandas(ed_df: DataFrame, show_progress: bool = False) -> pd.Da
 
     Parameters
     ----------
-    ed_df: opensearch_py_ml.DataFrame
+    oml_df: opensearch_py_ml.DataFrame
         The source opensearch_py_ml.Dataframe referencing the OpenSearch index
     show_progress: bool
-        Output progress of option to stdout? By default False.
+        Output progress of option to stdout? By default, False.
 
     Returns
     -------
@@ -261,10 +263,10 @@ def opensearch_to_pandas(ed_df: DataFrame, show_progress: bool = False) -> pd.Da
 
     Examples
     --------
-    >>> ed_df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights').head()
-    >>> type(ed_df)
+    >>> oml_df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights').head()
+    >>> type(oml_df)
     <class 'opensearch_py_ml.dataframe.DataFrame'>
-    >>> ed_df
+    >>> oml_df
        AvgTicketPrice  Cancelled  ... dayOfWeek           timestamp
     0      841.265642      False  ...         0 2018-01-01 00:00:00
     1      882.982662      False  ...         0 2018-01-01 18:27:00
@@ -276,7 +278,7 @@ def opensearch_to_pandas(ed_df: DataFrame, show_progress: bool = False) -> pd.Da
 
     Convert `opensearch_py_ml.DataFrame` to `pandas.DataFrame` (Note: this loads entire OpenSearch index into core memory)
 
-    >>> pd_df = ed.opensearch_to_pandas(ed_df)
+    >>> pd_df = oml.opensearch_to_pandas(oml_df)
     >>> type(pd_df)
     <class 'pandas.core.frame.DataFrame'>
     >>> pd_df
@@ -291,7 +293,7 @@ def opensearch_to_pandas(ed_df: DataFrame, show_progress: bool = False) -> pd.Da
 
     Convert `opensearch_py_ml.DataFrame` to `pandas.DataFrame` and show progress every 10000 rows
 
-    >>> pd_df = ed.opensearch_to_pandas(ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights'), show_progress=True) # doctest: +SKIP
+    >>> pd_df = oml.opensearch_to_pandas(oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights'), show_progress=True) # doctest: +SKIP
     2020-01-29 12:43:36.572395: read 10000 rows
     2020-01-29 12:43:37.309031: read 13059 rows
 
@@ -299,17 +301,17 @@ def opensearch_to_pandas(ed_df: DataFrame, show_progress: bool = False) -> pd.Da
     --------
     opensearch_py_ml.pandas_to_opensearch: Create an opensearch_py_ml.Dataframe from pandas.DataFrame
     """
-    return ed_df.to_pandas(show_progress=show_progress)
+    return oml_df.to_pandas(show_progress=show_progress)
 
 
 def csv_to_opensearch(  # type: ignore
     filepath_or_buffer,
     os_client: Union[str, List[str], Tuple[str, ...], OpenSearch],
     os_dest_index: str,
-    es_if_exists: str = "fail",
-    es_refresh: bool = False,
+    os_if_exists: str = "fail",
+    os_refresh: bool = False,
     os_dropna: bool = False,
-    es_type_overrides: Optional[Mapping[str, str]] = None,
+    os_type_overrides: Optional[Mapping[str, str]] = None,
     sep=",",
     delimiter=None,
     # Column and Index Locations and Names
@@ -378,7 +380,7 @@ def csv_to_opensearch(  # type: ignore
     os_client: OpenSearch client
     os_dest_index: str
         Name of OpenSearch index to be appended to
-    es_if_exists : {'fail', 'replace', 'append'}, default 'fail'
+    os_if_exists : {'fail', 'replace', 'append'}, default 'fail'
         How to behave if the index already exists.
 
         - fail: Raise a ValueError.
@@ -387,8 +389,8 @@ def csv_to_opensearch(  # type: ignore
     os_dropna: bool, default 'False'
         * True: Remove missing values (see pandas.Series.dropna)
         * False: Include missing values - may cause bulk to fail
-    es_type_overrides: dict, default None
-        Dict of columns: es_type to override default es datatype mappings
+    os_type_overrides: dict, default None
+        Dict of columns: es_type to override default os datatype mappings
     chunksize
         number of csv rows to read before bulk index into OpenSearch
 
@@ -423,11 +425,11 @@ def csv_to_opensearch(  # type: ignore
         1,OH,107,415,371-7191,no,yes,26,161.6,123,27.47,195.5,103,16.62,254.4,103,11.45,13.7,3,3.7,1,0
         ...
 
-    >>>  ed.csv_to_opensearch(
+    >>>  oml.csv_to_opensearch(
     ...      "churn.csv",
     ...      os_client=OPENSEARCH_TEST_CLIENT,
     ...      os_dest_index='churn',
-    ...      es_refresh=True,
+    ...      os_refresh=True,
     ...      index_col=0
     ... ) # doctest: +SKIP
               account length  area code  churn  customer service calls  ... total night calls  total night charge total night minutes voice mail plan
@@ -447,7 +449,7 @@ def csv_to_opensearch(  # type: ignore
 
     Validate data now exists in 'churn' index:
 
-    >>> es.search(index="churn", size=1) # doctest: +SKIP
+    >>> oml.search(index="churn", size=1) # doctest: +SKIP
     {'took': 1, 'timed_out': False, '_shards': {'total': 1, 'successful': 1, 'skipped': 0, 'failed': 0}, 'hits': {'total': {'value': 3333, 'relation': 'eq'}, 'max_score': 1.0, 'hits': [{'_index': 'churn', '_id': '0', '_score': 1.0, '_source': {'state': 'KS', 'account length': 128, 'area code': 415, 'phone number': '382-4657', 'international plan': 'no', 'voice mail plan': 'yes', 'number vmail messages': 25, 'total day minutes': 265.1, 'total day calls': 110, 'total day charge': 45.07, 'total eve minutes': 197.4, 'total eve calls': 99, 'total eve charge': 16.78, 'total night minutes': 244.7, 'total night calls': 91, 'total night charge': 11.01, 'total intl minutes': 10.0, 'total intl calls': 3, 'total intl charge': 2.7, 'customer service calls': 1, 'churn': 0}}]}}
 
     TODO - currently the opensearch_py_ml.DataFrame may not retain the order of the data in the csv.
@@ -539,11 +541,11 @@ def csv_to_opensearch(  # type: ignore
             os_client,
             os_dest_index,
             chunksize=chunksize,
-            es_refresh=es_refresh,
+            os_refresh=os_refresh,
             os_dropna=os_dropna,
-            es_type_overrides=es_type_overrides,
+            os_type_overrides=os_type_overrides,
             # es_if_exists should be 'append' except on the first call to pandas_to_opensearch()
-            es_if_exists=(es_if_exists if first_write else "append"),
+            os_if_exists=(os_if_exists if first_write else "append"),
         )
         first_write = False
 

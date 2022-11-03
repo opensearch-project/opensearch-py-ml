@@ -25,7 +25,7 @@
 # File called _pytest for PyCharm compatability
 import pandas as pd
 
-import opensearch_py_ml as ed
+import opensearch_py_ml as oml
 from tests import FLIGHTS_INDEX_NAME, OPENSEARCH_TEST_CLIENT
 from tests.common import TestData
 
@@ -33,26 +33,30 @@ from tests.common import TestData
 class TestSeriesRepr(TestData):
     def test_repr_flights_carrier(self):
         pd_s = self.pd_flights()["Carrier"]
-        ed_s = ed.Series(OPENSEARCH_TEST_CLIENT, FLIGHTS_INDEX_NAME, "Carrier")
+        oml_s = oml.Series(OPENSEARCH_TEST_CLIENT, FLIGHTS_INDEX_NAME, "Carrier")
 
         pd_repr = repr(pd_s)
-        ed_repr = repr(ed_s)
+        oml_repr = repr(oml_s)
 
-        assert pd_repr == ed_repr
+        assert pd_repr == oml_repr
 
     def test_repr_flights_carrier_5(self):
         pd_s = self.pd_flights()["Carrier"].head(5)
-        ed_s = ed.Series(OPENSEARCH_TEST_CLIENT, FLIGHTS_INDEX_NAME, "Carrier").head(5)
+        oml_s = oml.Series(OPENSEARCH_TEST_CLIENT, FLIGHTS_INDEX_NAME, "Carrier").head(
+            5
+        )
 
         pd_repr = repr(pd_s)
-        ed_repr = repr(ed_s)
+        oml_repr = repr(oml_s)
 
-        assert pd_repr == ed_repr
+        assert pd_repr == oml_repr
 
     def test_repr_empty_series(self):
         pd_s = self.pd_flights()["Carrier"].head(0)
-        ed_s = ed.Series(OPENSEARCH_TEST_CLIENT, FLIGHTS_INDEX_NAME, "Carrier").head(0)
-        assert repr(pd_s) == repr(ed_s)
+        oml_s = oml.Series(OPENSEARCH_TEST_CLIENT, FLIGHTS_INDEX_NAME, "Carrier").head(
+            0
+        )
+        assert repr(pd_s) == repr(oml_s)
 
     def test_series_repr_pd_get_option_none(self):
         show_dimensions = pd.get_option("display.show_dimensions")
@@ -61,10 +65,10 @@ class TestSeriesRepr(TestData):
             pd.set_option("display.show_dimensions", False)
             pd.set_option("display.max_rows", None)
 
-            ed_flights = self.ed_flights()["Cancelled"].head(40).__repr__()
+            oml_flights = self.oml_flights()["Cancelled"].head(40).__repr__()
             pd_flights = self.pd_flights()["Cancelled"].head(40).__repr__()
 
-            assert ed_flights == pd_flights
+            assert oml_flights == pd_flights
         finally:
             pd.set_option("display.max_rows", show_rows)
             pd.set_option("display.show_dimensions", show_dimensions)

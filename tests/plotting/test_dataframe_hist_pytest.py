@@ -37,7 +37,7 @@ def test_plot_hist(fig_test, fig_ref):
     pd_flights = test_data.pd_flights()[
         ["DistanceKilometers", "DistanceMiles", "FlightDelayMin", "FlightTimeHour"]
     ]
-    ed_flights = test_data.ed_flights()[
+    oml_flights = test_data.oml_flights()[
         ["DistanceKilometers", "DistanceMiles", "FlightDelayMin", "FlightTimeHour"]
     ]
 
@@ -50,8 +50,8 @@ def test_plot_hist(fig_test, fig_ref):
     # This throws a userwarning
     # (https://github.com/pandas-dev/pandas/blob/171c71611886aab8549a8620c5b0071a129ad685/pandas/plotting/_matplotlib/tools.py#L222)
     with pytest.warns(UserWarning):
-        ed_ax = fig_test.subplots()
-        ed_flights.hist(ax=ed_ax)
+        oml_ax = fig_test.subplots()
+        oml_flights.hist(ax=oml_ax)
 
 
 @check_figures_equal(extensions=["png"])
@@ -61,12 +61,12 @@ def test_plot_filtered_hist(fig_test, fig_ref):
     pd_flights = test_data.pd_flights()[
         ["DistanceKilometers", "DistanceMiles", "FlightDelayMin", "FlightTimeHour"]
     ]
-    ed_flights = test_data.ed_flights()[
+    oml_flights = test_data.oml_flights()[
         ["DistanceKilometers", "DistanceMiles", "FlightDelayMin", "FlightTimeHour"]
     ]
 
     pd_flights = pd_flights[pd_flights.FlightDelayMin > 0]
-    ed_flights = ed_flights[ed_flights.FlightDelayMin > 0]
+    oml_flights = oml_flights[oml_flights.FlightDelayMin > 0]
 
     # This throws a userwarning
     # (https://github.com/pandas-dev/pandas/blob/171c71611886aab8549a8620c5b0071a129ad685/pandas/plotting/_matplotlib/tools.py#L222)
@@ -77,5 +77,5 @@ def test_plot_filtered_hist(fig_test, fig_ref):
     # This throws a userwarning
     # (https://github.com/pandas-dev/pandas/blob/171c71611886aab8549a8620c5b0071a129ad685/pandas/plotting/_matplotlib/tools.py#L222)
     with pytest.warns(UserWarning):
-        ed_ax = fig_test.subplots()
-        ed_flights.hist(ax=ed_ax)
+        oml_ax = fig_test.subplots()
+        oml_flights.hist(ax=oml_ax)

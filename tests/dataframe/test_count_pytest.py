@@ -43,9 +43,9 @@ class TestDataFrameCount(TestData):
 
     def test_count_flights(self):
         pd_flights = self.pd_flights().filter(self.filter_data)
-        ed_flights = self.ed_flights().filter(self.filter_data)
+        oml_flights = self.oml_flights().filter(self.filter_data)
 
         pd_count = pd_flights.count()
-        ed_count = ed_flights.count()
+        oml_count = oml_flights.count()
 
-        assert_series_equal(pd_count, ed_count)
+        assert_series_equal(pd_count, oml_count)

@@ -76,7 +76,7 @@ class DataFrameGroupBy(GroupBy):
 
         Examples
         --------
-        >>> df = ed.DataFrame(
+        >>> df = oml.DataFrame(
         ...   OPENSEARCH_TEST_CLIENT, "flights",
         ...   columns=["AvgTicketPrice", "Cancelled", "dayOfWeek", "timestamp", "DestCountry"]
         ... )
@@ -127,7 +127,7 @@ class DataFrameGroupBy(GroupBy):
 
         Examples
         --------
-        >>> df = ed.DataFrame(
+        >>> df = oml.DataFrame(
         ...   OPENSEARCH_TEST_CLIENT, "flights",
         ...   columns=["AvgTicketPrice", "Cancelled", "dayOfWeek", "timestamp", "DestCountry"]
         ... )
@@ -178,7 +178,7 @@ class DataFrameGroupBy(GroupBy):
 
         Examples
         --------
-        >>> df = ed.DataFrame(
+        >>> df = oml.DataFrame(
         ...   OPENSEARCH_TEST_CLIENT, "flights",
         ...   columns=["AvgTicketPrice", "Cancelled", "dayOfWeek", "DestCountry"]
         ... )
@@ -229,7 +229,7 @@ class DataFrameGroupBy(GroupBy):
 
         Examples
         --------
-        >>> df = ed.DataFrame(
+        >>> df = oml.DataFrame(
         ...   OPENSEARCH_TEST_CLIENT, "flights",
         ...   columns=["AvgTicketPrice", "Cancelled", "dayOfWeek", "timestamp", "DestCountry"]
         ... )
@@ -280,7 +280,7 @@ class DataFrameGroupBy(GroupBy):
 
         Examples
         --------
-        >>> df = ed.DataFrame(
+        >>> df = oml.DataFrame(
         ...   OPENSEARCH_TEST_CLIENT, "flights",
         ...   columns=["AvgTicketPrice", "Cancelled", "dayOfWeek", "timestamp", "DestCountry"]
         ... )
@@ -331,7 +331,7 @@ class DataFrameGroupBy(GroupBy):
 
         Examples
         --------
-        >>> df = ed.DataFrame(
+        >>> df = oml.DataFrame(
         ...   OPENSEARCH_TEST_CLIENT, "flights",
         ...   columns=["AvgTicketPrice", "Cancelled", "dayOfWeek", "DestCountry"]
         ... )
@@ -382,7 +382,7 @@ class DataFrameGroupBy(GroupBy):
 
         Examples
         --------
-        >>> df = ed.DataFrame(
+        >>> df = oml.DataFrame(
         ...   OPENSEARCH_TEST_CLIENT, "flights",
         ...   columns=["AvgTicketPrice", "Cancelled", "dayOfWeek", "timestamp", "DestCountry"]
         ... )
@@ -433,7 +433,7 @@ class DataFrameGroupBy(GroupBy):
 
         Examples
         --------
-        >>> df = ed.DataFrame(
+        >>> df = oml.DataFrame(
         ...   OPENSEARCH_TEST_CLIENT, "flights",
         ...   columns=["AvgTicketPrice", "Cancelled", "dayOfWeek", "timestamp", "DestCountry"]
         ... )
@@ -484,7 +484,7 @@ class DataFrameGroupBy(GroupBy):
 
         Examples
         --------
-        >>> df = ed.DataFrame(
+        >>> df = oml.DataFrame(
         ...   OPENSEARCH_TEST_CLIENT, "flights",
         ...   columns=["AvgTicketPrice", "Cancelled", "dayOfWeek", "DestCountry"]
         ... )
@@ -535,9 +535,9 @@ class DataFrameGroupBy(GroupBy):
 
         Examples
         --------
-        >>> ed_df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')
-        >>> ed_flights = ed_df.filter(["AvgTicketPrice", "FlightDelayMin", "dayOfWeek", "timestamp"])
-        >>> ed_flights.groupby(["dayOfWeek", "Cancelled"]).quantile() # doctest: +SKIP
+        >>> oml_df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')
+        >>> oml_flights = oml_df.filter(["AvgTicketPrice", "FlightDelayMin", "dayOfWeek", "timestamp"])
+        >>> oml_flights.groupby(["dayOfWeek", "Cancelled"]).quantile() # doctest: +SKIP
                              AvgTicketPrice  FlightDelayMin
         dayOfWeek Cancelled
         0         False          572.290384             0.0
@@ -555,7 +555,7 @@ class DataFrameGroupBy(GroupBy):
         6         False          817.378523             0.0
                   True           766.855530             0.0
 
-        >>> ed_flights.groupby(["dayOfWeek", "Cancelled"]).quantile(q=[.2, .5]) # doctest: +SKIP
+        >>> oml_flights.groupby(["dayOfWeek", "Cancelled"]).quantile(q=[.2, .5]) # doctest: +SKIP
                                  AvgTicketPrice  FlightDelayMin
         dayOfWeek Cancelled
         0         False     0.2      319.925979             0.0
@@ -624,7 +624,7 @@ class DataFrameGroupBy(GroupBy):
 
         Examples
         --------
-        >>> df = ed.DataFrame(
+        >>> df = oml.DataFrame(
         ...   OPENSEARCH_TEST_CLIENT, "flights",
         ...   columns=["AvgTicketPrice", "Cancelled", "dayOfWeek", "DestCountry"]
         ... )
@@ -678,7 +678,7 @@ class DataFrameGroupBy(GroupBy):
 
         Examples
         --------
-        >>> df = ed.DataFrame(
+        >>> df = oml.DataFrame(
         ...   OPENSEARCH_TEST_CLIENT, "flights",
         ...   columns=["AvgTicketPrice", "Cancelled", "dayOfWeek", "DestCountry"]
         ... )

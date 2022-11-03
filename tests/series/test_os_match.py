@@ -29,18 +29,18 @@ from tests.common import TestData
 
 class TestEsMatch(TestData):
     def test_match(self):
-        df = self.ed_ecommerce()
+        df = self.oml_ecommerce()
 
-        categories = list(df[df.category.es_match("Men's")].category.to_pandas())
+        categories = list(df[df.category.os_match("Men's")].category.to_pandas())
         assert len(categories) > 0
         assert all(any("Men's" in y for y in x) for x in categories)
 
     def test_must_not_match(self):
-        df = self.ed_ecommerce()
+        df = self.oml_ecommerce()
 
         categories = list(
             df[
-                ~df.category.es_match("Men's") & df.category.es_match("Women's")
+                ~df.category.os_match("Men's") & df.category.os_match("Women's")
             ].category.to_pandas()
         )
         assert len(categories) > 0

@@ -32,29 +32,29 @@ from tests.common import TestData
 
 class TestDataFrameIterrowsItertuples(TestData):
     def test_iterrows(self):
-        ed_flights = self.ed_flights()
+        oml_flights = self.oml_flights()
         pd_flights = self.pd_flights()
 
-        ed_flights_iterrows = ed_flights.iterrows()
+        oml_flights_iterrows = oml_flights.iterrows()
         pd_flights_iterrows = pd_flights.iterrows()
 
-        for ed_index, ed_row in ed_flights_iterrows:
+        for oml_index, oml_row in oml_flights_iterrows:
             pd_index, pd_row = next(pd_flights_iterrows)
 
-            assert ed_index == pd_index
-            assert_series_equal(ed_row, pd_row)
+            assert oml_index == pd_index
+            assert_series_equal(oml_row, pd_row)
 
         # Assert that both are the same length and are exhausted.
         with pytest.raises(StopIteration):
-            next(ed_flights_iterrows)
+            next(oml_flights_iterrows)
         with pytest.raises(StopIteration):
             next(pd_flights_iterrows)
 
     def test_itertuples(self):
-        ed_flights = self.ed_flights()
+        oml_flights = self.oml_flights()
         pd_flights = self.pd_flights()
 
-        ed_flights_itertuples = list(ed_flights.itertuples(name=None))
+        oml_flights_itertuples = list(oml_flights.itertuples(name=None))
         pd_flights_itertuples = list(pd_flights.itertuples(name=None))
 
         def assert_tuples_almost_equal(left, right):
@@ -67,5 +67,5 @@ class TestDataFrameIterrowsItertuples(TestData):
                 for lt, rt in zip(left, right)
             )
 
-        for ed_tuple, pd_tuple in zip(ed_flights_itertuples, pd_flights_itertuples):
-            assert_tuples_almost_equal(ed_tuple, pd_tuple)
+        for oml_tuple, pd_tuple in zip(oml_flights_itertuples, pd_flights_itertuples):
+            assert_tuples_almost_equal(oml_tuple, pd_tuple)

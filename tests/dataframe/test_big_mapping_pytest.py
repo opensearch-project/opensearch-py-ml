@@ -24,7 +24,7 @@
 
 # File called _pytest for PyCharm compatability
 
-import opensearch_py_ml as ed
+import opensearch_py_ml as oml
 from tests.common import OPENSEARCH_TEST_CLIENT, TestData
 
 
@@ -41,7 +41,7 @@ class TestDataFrameBigMapping(TestData):
         )
         OPENSEARCH_TEST_CLIENT.indices.create(index="thousand_fields", body=mapping)
 
-        ed_df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, "thousand_fields")
-        ed_df.info()
+        oml_df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, "thousand_fields")
+        oml_df.info()
 
         OPENSEARCH_TEST_CLIENT.indices.delete(index="thousand_fields")

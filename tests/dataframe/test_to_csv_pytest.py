@@ -31,7 +31,7 @@ from io import StringIO
 import pandas as pd
 from pandas.testing import assert_frame_equal
 
-import opensearch_py_ml as ed
+import opensearch_py_ml as oml
 from tests import FLIGHTS_INDEX_NAME, OPENSEARCH_TEST_CLIENT
 from tests.common import ROOT_DIR, TestData
 
@@ -40,9 +40,9 @@ class TestDataFrameToCSV(TestData):
     def test_to_csv_head(self):
         results_file = ROOT_DIR + "/dataframe/results/test_to_csv_head.csv"
 
-        ed_flights = self.ed_flights().head()
+        oml_flights = self.oml_flights().head()
         pd_flights = self.pd_flights().head()
-        ed_flights.to_csv(results_file)
+        oml_flights.to_csv(results_file)
         # Converting back from csv is messy as pd_flights is created from a json file
         pd_from_csv = pd.read_csv(
             results_file,
@@ -61,10 +61,10 @@ class TestDataFrameToCSV(TestData):
         results_file = ROOT_DIR + "/dataframe/results/test_to_csv_full.csv"
 
         # Test is slow as it's for the full dataset, but it is useful as it goes over 10000 docs
-        ed_flights = self.ed_flights()
+        oml_flights = self.oml_flights()
         pd_flights = self.pd_flights()
 
-        ed_flights.to_csv(results_file)
+        oml_flights.to_csv(results_file)
         # Converting back from csv is messy as pd_flights is created from a json file
         pd_from_csv = pd.read_csv(
             results_file,
@@ -84,13 +84,13 @@ class TestDataFrameToCSV(TestData):
 
         test_index = FLIGHTS_INDEX_NAME + "." + str(now_millis)
 
-        ed_flights_from_csv = ed.csv_to_opensearch(
+        oml_flights_from_csv = oml.csv_to_opensearch(
             results_file,
             OPENSEARCH_TEST_CLIENT,
             test_index,
             index_col=0,
-            es_refresh=True,
-            es_type_overrides={
+            os_refresh=True,
+            os_type_overrides={
                 "OriginLocation": "geo_point",
                 "DestLocation": "geo_point",
             },
@@ -99,20 +99,20 @@ class TestDataFrameToCSV(TestData):
                 "OriginLocation": lambda x: ast.literal_eval(x),
             },
         )
-        pd_flights_from_csv = ed.opensearch_to_pandas(ed_flights_from_csv)
+        pd_flights_from_csv = oml.opensearch_to_pandas(oml_flights_from_csv)
 
         # TODO - there is a 'bug' where the Elasticsearch index returns data in a different order to the CSV
-        print(ed_flights_from_csv.head())
+        print(oml_flights_from_csv.head())
         print(pd_flights_from_csv.head())
 
         # clean up index
         OPENSEARCH_TEST_CLIENT.indices.delete(index=test_index)
 
     def test_pd_to_csv_without_filepath(self):
-        ed_flights = self.ed_flights()
+        oml_flights = self.oml_flights()
         pd_flights = self.pd_flights()
 
-        ret = ed_flights.to_csv()
+        ret = oml_flights.to_csv()
         results = StringIO(ret)
         # Converting back from csv is messy as pd_flights is created from a json file
         pd_from_csv = pd.read_csv(

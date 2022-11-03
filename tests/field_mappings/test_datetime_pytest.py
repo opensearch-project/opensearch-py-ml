@@ -71,19 +71,19 @@ class TestDateTime(TestData):
         es.indices.delete(index=cls.time_index_name)
 
     def test_all_formats(self):
-        ed_field_mappings = FieldMappings(
+        oml_field_mappings = FieldMappings(
             client=OPENSEARCH_TEST_CLIENT, index_pattern=self.time_index_name
         )
 
         # do a rename so display_name for a field is different to es_field_name
-        ed_field_mappings.rename({"strict_year_month": "renamed_strict_year_month"})
+        oml_field_mappings.rename({"strict_year_month": "renamed_strict_year_month"})
 
         # buf = StringIO()
-        # ed_field_mappings.info_es(buf)
+        # oml_field_mappings.info_es(buf)
         # print(buf.getvalue())
 
         for format_name in self.time_formats.keys():
-            es_date_format = ed_field_mappings.date_field_format(format_name)
+            es_date_format = oml_field_mappings.date_field_format(format_name)
 
             assert format_name == es_date_format
 

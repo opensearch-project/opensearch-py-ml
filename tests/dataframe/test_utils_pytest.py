@@ -28,17 +28,17 @@ import numpy as np
 import pandas as pd
 import pytest
 
-import opensearch_py_ml as ed
+import opensearch_py_ml as oml
 from opensearch_py_ml.field_mappings import FieldMappings
 from tests.common import (
     OPENSEARCH_TEST_CLIENT,
     TestData,
-    assert_pandas_eland_frame_equal,
+    assert_pandas_opensearch_py_ml_frame_equal,
 )
 
 
 class TestDataFrameUtils(TestData):
-    def test_generate_es_mappings(self):
+    def test_generate_os_mappings(self):
         df = pd.DataFrame(
             data={
                 "A": np.random.rand(3),
@@ -75,20 +75,20 @@ class TestDataFrameUtils(TestData):
         # Now create index
         index_name = "eland_test_generate_es_mappings"
 
-        ed_df = ed.pandas_to_opensearch(
+        oml_df = oml.pandas_to_opensearch(
             df,
             OPENSEARCH_TEST_CLIENT,
             index_name,
-            es_if_exists="replace",
-            es_refresh=True,
+            os_if_exists="replace",
+            os_refresh=True,
         )
-        ed_df_head = ed_df.head()
+        oml_df_head = oml_df.head()
 
-        assert_pandas_eland_frame_equal(df, ed_df_head)
+        assert_pandas_opensearch_py_ml_frame_equal(df, oml_df_head)
 
         OPENSEARCH_TEST_CLIENT.indices.delete(index=index_name)
 
-    def test_pandas_to_eland_ignore_index(self):
+    def test_pandas_to_oml_ignore_index(self):
         df = pd.DataFrame(
             data={
                 "A": np.random.rand(3),
@@ -107,14 +107,14 @@ class TestDataFrameUtils(TestData):
         # Now create index
         index_name = "test_pandas_to_eland_ignore_index"
 
-        ed_df = ed.pandas_to_opensearch(
+        oml_df = oml.pandas_to_opensearch(
             df,
             OPENSEARCH_TEST_CLIENT,
             index_name,
-            es_if_exists="replace",
-            es_refresh=True,
+            os_if_exists="replace",
+            os_refresh=True,
             use_pandas_index_for_os_ids=False,
-            es_type_overrides={"H": "text", "I": "geo_point"},
+            os_type_overrides={"H": "text", "I": "geo_point"},
         )
 
         # Check types
@@ -144,7 +144,7 @@ class TestDataFrameUtils(TestData):
         assert expected_mapping == mapping
 
         # Convert back to pandas and compare with original
-        pd_df = ed.opensearch_to_pandas(ed_df)
+        pd_df = oml.opensearch_to_pandas(oml_df)
 
         # Compare values excluding index
         assert df.values.all() == pd_df.values.all()
@@ -156,10 +156,10 @@ class TestDataFrameUtils(TestData):
 
     def tests_to_pandas_performance(self):
         # TODO quantify this
-        ed.opensearch_to_pandas(self.ed_flights(), show_progress=True)
+        oml.opensearch_to_pandas(self.oml_flights(), show_progress=True)
 
         # This test calls the same method so is redundant
-        # assert_pandas_eland_frame_equal(pd_df, self.ed_flights())
+        # assert_pandas_eland_frame_equal(pd_df, self.oml_flights())
 
     def test_es_type_override_error(self):
         df = self.pd_flights().filter(
@@ -170,14 +170,14 @@ class TestDataFrameUtils(TestData):
 
         match = "'DistanceKilometers', 'DistanceMiles' column(s) not in given dataframe"
         with pytest.raises(KeyError) as e:
-            ed.pandas_to_opensearch(
+            oml.pandas_to_opensearch(
                 df,
                 OPENSEARCH_TEST_CLIENT,
                 index_name,
-                es_if_exists="replace",
-                es_refresh=True,
+                os_if_exists="replace",
+                os_refresh=True,
                 use_pandas_index_for_os_ids=False,
-                es_type_overrides={
+                os_type_overrides={
                     "AvgTicketPrice": "long",
                     "DistanceKilometers": "text",
                     "DistanceMiles": "text",

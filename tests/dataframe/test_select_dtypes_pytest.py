@@ -25,28 +25,28 @@
 # File called _pytest for PyCharm compatability
 import numpy as np
 
-from tests.common import TestData, assert_pandas_eland_frame_equal
+from tests.common import TestData, assert_pandas_opensearch_py_ml_frame_equal
 
 
 class TestDataFrameSelectDTypes(TestData):
     def test_select_dtypes_include_number(self):
-        ed_flights = self.ed_flights()
+        oml_flights = self.oml_flights()
         pd_flights = self.pd_flights()
 
-        ed_flights_numeric = ed_flights.select_dtypes(include=[np.number])
+        oml_flights_numeric = oml_flights.select_dtypes(include=[np.number])
         pd_flights_numeric = pd_flights.select_dtypes(include=[np.number])
 
-        assert_pandas_eland_frame_equal(
-            pd_flights_numeric.head(103), ed_flights_numeric.head(103)
+        assert_pandas_opensearch_py_ml_frame_equal(
+            pd_flights_numeric.head(103), oml_flights_numeric.head(103)
         )
 
     def test_select_dtypes_exclude_number(self):
-        ed_flights = self.ed_flights()
+        oml_flights = self.oml_flights()
         pd_flights = self.pd_flights()
 
-        ed_flights_non_numeric = ed_flights.select_dtypes(exclude=[np.number])
+        oml_flights_non_numeric = oml_flights.select_dtypes(exclude=[np.number])
         pd_flights_non_numeric = pd_flights.select_dtypes(exclude=[np.number])
 
-        assert_pandas_eland_frame_equal(
-            pd_flights_non_numeric.head(103), ed_flights_non_numeric.head(103)
+        assert_pandas_opensearch_py_ml_frame_equal(
+            pd_flights_non_numeric.head(103), oml_flights_non_numeric.head(103)
         )

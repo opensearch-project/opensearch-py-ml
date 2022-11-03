@@ -32,53 +32,53 @@ from tests.common import TestData
 class TestSeriesValueCounts(TestData):
     def test_value_counts(self):
         pd_s = self.pd_flights()["Carrier"]
-        ed_s = self.ed_flights()["Carrier"]
+        oml_s = self.oml_flights()["Carrier"]
 
         pd_vc = pd_s.value_counts()
-        ed_vc = ed_s.value_counts()
+        oml_vc = oml_s.value_counts()
 
-        assert_series_equal(pd_vc, ed_vc)
+        assert_series_equal(pd_vc, oml_vc)
 
     def test_value_counts_size(self):
         pd_s = self.pd_flights()["Carrier"]
-        ed_s = self.ed_flights()["Carrier"]
+        oml_s = self.oml_flights()["Carrier"]
 
         pd_vc = pd_s.value_counts()[:1]
-        ed_vc = ed_s.value_counts(es_size=1)
+        oml_vc = oml_s.value_counts(os_size=1)
 
-        assert_series_equal(pd_vc, ed_vc)
+        assert_series_equal(pd_vc, oml_vc)
 
     def test_value_counts_keyerror(self):
-        ed_f = self.ed_flights()
+        oml_f = self.oml_flights()
         with pytest.raises(KeyError):
-            assert ed_f["not_a_column"].value_counts()
+            assert oml_f["not_a_column"].value_counts()
 
     def test_value_counts_dataframe(self):
         # value_counts() is a series method, should raise AttributeError if called on a DataFrame
-        ed_f = self.ed_flights()
+        oml_f = self.oml_flights()
         with pytest.raises(AttributeError):
-            assert ed_f.value_counts()
+            assert oml_f.value_counts()
 
     def test_value_counts_non_int(self):
-        ed_s = self.ed_flights()["Carrier"]
+        oml_s = self.oml_flights()["Carrier"]
         with pytest.raises(TypeError):
-            assert ed_s.value_counts(es_size="foo")
+            assert oml_s.value_counts(os_size="foo")
 
     def test_value_counts_non_positive_int(self):
-        ed_s = self.ed_flights()["Carrier"]
+        oml_s = self.oml_flights()["Carrier"]
         with pytest.raises(ValueError):
-            assert ed_s.value_counts(es_size=-9)
+            assert oml_s.value_counts(os_size=-9)
 
     @pytest.mark.filterwarnings("ignore:Aggregations not supported")
     def test_value_counts_non_aggregatable(self):
-        ed_s = self.ed_ecommerce()["customer_first_name"]
+        oml_s = self.oml_ecommerce()["customer_first_name"]
         pd_s = self.pd_ecommerce()["customer_first_name"]
 
         pd_vc = pd_s.value_counts().head(20).sort_index()
-        ed_vc = ed_s.value_counts(es_size=20).sort_index()
+        oml_vc = oml_s.value_counts(os_size=20).sort_index()
 
-        assert_series_equal(pd_vc, ed_vc)
+        assert_series_equal(pd_vc, oml_vc)
 
-        ed_s = self.ed_ecommerce()["customer_gender"]
+        oml_s = self.oml_ecommerce()["customer_gender"]
         with pytest.raises(ValueError):
-            assert ed_s.value_counts()
+            assert oml_s.value_counts()

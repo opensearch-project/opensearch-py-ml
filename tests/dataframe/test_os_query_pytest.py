@@ -26,36 +26,36 @@
 
 import pytest
 
-from tests.common import TestData, assert_eland_frame_equal
+from tests.common import TestData, assert_opensearch_py_ml_frame_equal
 
 
 class TestDataEsQuery(TestData):
     def test_flights_match_query(self):
-        ed_flights = self.ed_flights()
+        oml_flights = self.oml_flights()
 
-        left = ed_flights.es_query({"match": {"OriginCityName": "Rome"}})[
-            ed_flights["Carrier"] == "Kibana Airlines"
+        left = oml_flights.os_query({"match": {"OriginCityName": "Rome"}})[
+            oml_flights["Carrier"] == "Kibana Airlines"
         ]
 
-        right = ed_flights[ed_flights["Carrier"] == "Kibana Airlines"].es_query(
+        right = oml_flights[oml_flights["Carrier"] == "Kibana Airlines"].os_query(
             {"match": {"OriginCityName": "Rome"}}
         )
 
         assert len(left) > 0
-        assert_eland_frame_equal(left, right)
+        assert_opensearch_py_ml_frame_equal(left, right)
 
-    def test_es_query_allows_query_in_dict(self):
-        ed_flights = self.ed_flights()
+    def test_os_query_allows_query_in_dict(self):
+        oml_flights = self.oml_flights()
 
-        left = ed_flights.es_query({"match": {"OriginCityName": "Rome"}})
-        right = ed_flights.es_query({"query": {"match": {"OriginCityName": "Rome"}}})
+        left = oml_flights.os_query({"match": {"OriginCityName": "Rome"}})
+        right = oml_flights.os_query({"query": {"match": {"OriginCityName": "Rome"}}})
 
         assert len(left) > 0
-        assert_eland_frame_equal(left, right)
+        assert_opensearch_py_ml_frame_equal(left, right)
 
-    def test_es_query_geo_location(self):
-        df = self.ed_ecommerce()
-        cur_nearby = df.es_query(
+    def test_os_query_geo_location(self):
+        df = self.oml_ecommerce()
+        cur_nearby = df.os_query(
             {
                 "bool": {
                     "filter": {
@@ -71,8 +71,8 @@ class TestDataEsQuery(TestData):
         assert cur_nearby["EUR"] == 476
 
     @pytest.mark.parametrize("query", [(), [], 1, True])
-    def test_es_query_wrong_type(self, query):
-        ed_flights = self.ed_flights_small()
+    def test_os_query_wrong_type(self, query):
+        oml_flights = self.oml_flights_small()
 
         with pytest.raises(TypeError):
-            ed_flights.es_query(query)
+            oml_flights.os_query(query)

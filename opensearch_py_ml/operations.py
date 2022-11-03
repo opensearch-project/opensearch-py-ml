@@ -158,7 +158,7 @@ class Operations:
     def count(self, query_compiler: "QueryCompiler") -> pd.Series:
         query_params, post_processing = self._resolve_tasks(query_compiler)
 
-        # Elasticsearch _count is very efficient and so used to return results here. This means that
+        # Opensearch _count is very efficient and so used to return results here. This means that
         # data frames that have restricted size or sort params will not return valid results
         # (_count doesn't support size).
         # Longer term we may fall back to pandas, but this may result in loading all index into memory.
@@ -206,8 +206,8 @@ class Operations:
                 dtype = "object"
             return build_pd_series(results, index=results.keys(), dtype=dtype)
 
-    def value_counts(self, query_compiler: "QueryCompiler", es_size: int) -> pd.Series:
-        return self._terms_aggs(query_compiler, "terms", es_size)
+    def value_counts(self, query_compiler: "QueryCompiler", os_size: int) -> pd.Series:
+        return self._terms_aggs(query_compiler, "terms", os_size)
 
     def hist(
         self, query_compiler: "QueryCompiler", bins: int
@@ -282,7 +282,7 @@ class Operations:
         query_compiler: "QueryCompiler",
         pd_aggs: List[str],
         is_dataframe: bool,
-        es_size: int,
+        os_size: int,
         numeric_only: bool = False,
         dropna: bool = True,
     ) -> Union[pd.DataFrame, pd.Series]:
@@ -292,7 +292,7 @@ class Operations:
             pd_aggs=pd_aggs,
             numeric_only=numeric_only,
             dropna=dropna,
-            es_mode_size=es_size,
+            os_mode_size=os_size,
         )
 
         pd_dict: Dict[str, Any] = {}
@@ -323,13 +323,13 @@ class Operations:
         pd_aggs: List[str],
         numeric_only: Optional[bool] = None,
         is_dataframe_agg: bool = False,
-        es_mode_size: Optional[int] = None,
+        os_mode_size: Optional[int] = None,
         dropna: bool = True,
         percentiles: Optional[List[float]] = None,
     ) -> Dict[str, Any]:
         """
         Used to calculate metric aggregations
-        https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-metrics.html
+        https://opensearch.org/docs/latest/opensearch/metric-agg/
 
         Parameters
         ----------
@@ -341,7 +341,7 @@ class Operations:
             return either all numeric values or NaN/NaT
         is_dataframe_agg:
             know if this method is called from single-agg or aggreagation method
-        es_mode_size:
+        os_mode_size:
             number of rows to return when multiple mode values are present.
         dropna:
             drop NaN/NaT for a dataframe
@@ -368,42 +368,42 @@ class Operations:
         body = Query(query_params.query)
 
         # Convert pandas aggs to ES equivalent
-        es_aggs = self._map_pd_aggs_to_es_aggs(pd_aggs, percentiles)
+        os_aggs = self._map_pd_aggs_to_os_aggs(pd_aggs, percentiles)
 
         for field in fields:
-            for es_agg in es_aggs:
+            for os_agg in os_aggs:
                 # NaN/NaT fields are ignored
-                if not field.is_os_agg_compatible(es_agg):
+                if not field.is_os_agg_compatible(os_agg):
                     continue
 
                 # If we have multiple 'extended_stats' etc. here we simply NOOP on 2nd call
-                if isinstance(es_agg, tuple):
-                    if es_agg[0] == "percentiles":
+                if isinstance(os_agg, tuple):
+                    if os_agg[0] == "percentiles":
                         body.percentile_agg(
-                            name=f"{es_agg[0]}_{field.os_field_name}",
+                            name=f"{os_agg[0]}_{field.os_field_name}",
                             field=field.os_field_name,
-                            percents=es_agg[1],
+                            percents=os_agg[1],
                         )
                     else:
                         body.metric_aggs(
-                            name=f"{es_agg[0]}_{field.os_field_name}",
-                            func=es_agg[0],
+                            name=f"{os_agg[0]}_{field.os_field_name}",
+                            func=os_agg[0],
                             field=field.aggregatable_os_field_name,
                         )
-                elif es_agg == "mode":
+                elif os_agg == "mode":
                     # TODO for dropna=False, Check If field is timestamp or boolean or numeric,
                     # then use missing parameter for terms aggregation.
                     body.terms_aggs(
-                        name=f"{es_agg}_{field.os_field_name}",
+                        name=f"{os_agg}_{field.os_field_name}",
                         func="terms",
                         field=field.aggregatable_os_field_name,
-                        es_size=es_mode_size,
+                        os_size=os_mode_size,
                     )
 
                 else:
                     body.metric_aggs(
-                        name=f"{es_agg}_{field.os_field_name}",
-                        func=es_agg,
+                        name=f"{os_agg}_{field.os_field_name}",
+                        func=os_agg,
                         field=field.aggregatable_os_field_name,
                     )
 
@@ -421,7 +421,7 @@ class Operations:
 
         return self._unpack_metric_aggs(
             fields=fields,
-            es_aggs=es_aggs,
+            os_aggs=os_aggs,
             pd_aggs=pd_aggs,
             response=response,
             numeric_only=numeric_only,
@@ -430,12 +430,12 @@ class Operations:
         )
 
     def _terms_aggs(
-        self, query_compiler: "QueryCompiler", func: str, es_size: int
+        self, query_compiler: "QueryCompiler", func: str, os_size: int
     ) -> pd.Series:
         """
         Parameters
         ----------
-        es_size: int, default None
+        os_size: int, default None
             Parameter used by Series.value_counts()
 
         Returns
@@ -457,7 +457,7 @@ class Operations:
         body = Query(query_params.query)
 
         for field in aggregatable_field_names.keys():
-            body.terms_aggs(field, func, field, es_size=es_size)
+            body.terms_aggs(field, func, field, os_size=os_size)
 
         response = query_compiler._client.search(
             index=query_compiler._index_pattern, size=0, body=body.to_search_body()
@@ -538,7 +538,7 @@ class Operations:
         # So sum last 2 buckets
         for field in numeric_source_fields:
 
-            # in case of series let plotting.ed_hist_series thrown an exception
+            # in case of series let plotting.oml_hist_series thrown an exception
             if not response.get("aggregations"):
                 continue
 
@@ -571,7 +571,7 @@ class Operations:
     def _unpack_metric_aggs(
         self,
         fields: List["Field"],
-        es_aggs: Union[List[str], List[Tuple[str, List[float]]]],
+        os_aggs: Union[List[str], List[Tuple[str, List[float]]]],
         pd_aggs: List[str],
         response: Dict[str, Any],
         numeric_only: Optional[bool],
@@ -588,12 +588,12 @@ class Operations:
         ----------
         fields:
             a list of Field Mappings
-        es_aggs:
-            Eland Equivalent of aggs
+        os_aggs:
+            Opensearch_py_ml Equivalent of aggs
         pd_aggs:
             a list of aggs
         response:
-            a dict containing response from Elasticsearch
+            a dict containing response from Opensearch
         numeric_only:
             return either numeric values or NaN/NaT
         is_dataframe_agg:
@@ -612,11 +612,11 @@ class Operations:
 
         for field in fields:
             values = []
-            for es_agg, pd_agg in zip(es_aggs, pd_aggs):
+            for os_agg, pd_agg in zip(os_aggs, pd_aggs):
                 # is_dataframe_agg is used to differentiate agg() and an aggregation called through .mean()
                 # If the field and agg aren't compatible we add a NaN/NaT for agg
                 # If the field and agg aren't compatible we don't add NaN/NaT for an aggregation called through .mean()
-                if not field.is_os_agg_compatible(es_agg):
+                if not field.is_os_agg_compatible(os_agg):
                     if is_dataframe_agg and not numeric_only:
                         values.append(field.nan_value)
                     elif not is_dataframe_agg and numeric_only is False:
@@ -627,13 +627,13 @@ class Operations:
                             values.append(field.nan_value)
                     continue
 
-                if isinstance(es_agg, tuple):
+                if isinstance(os_agg, tuple):
                     agg_value = response["aggregations"][
-                        f"{es_agg[0]}_{field.os_field_name}"
+                        f"{os_agg[0]}_{field.os_field_name}"
                     ]
 
                     # Pull multiple values from 'percentiles' result.
-                    if es_agg[0] == "percentiles":
+                    if os_agg[0] == "percentiles":
                         agg_value = agg_value["values"]  # Returns dictionary
                         if pd_agg == "median":
                             agg_value = agg_value["50.0"]
@@ -651,39 +651,39 @@ class Operations:
                                 ]
 
                     if not percentile_values and pd_agg not in ("quantile", "median"):
-                        agg_value = agg_value[es_agg[1]]
+                        agg_value = agg_value[os_agg[1]]
                     # Need to convert 'Population' stddev and variance
-                    # from Elasticsearch into 'Sample' stddev and variance
+                    # from Opensearch into 'Sample' stddev and variance
                     # which is what pandas uses.
-                    if es_agg[1] in ("std_deviation", "variance"):
+                    if os_agg[1] in ("std_deviation", "variance"):
                         # Neither transformation works with count <=1
                         count = response["aggregations"][
-                            f"{es_agg[0]}_{field.os_field_name}"
+                            f"{os_agg[0]}_{field.os_field_name}"
                         ]["count"]
 
                         # All of the below calculations result in NaN if count<=1
                         if count <= 1:
                             agg_value = np.NaN
 
-                        elif es_agg[1] == "std_deviation":
+                        elif os_agg[1] == "std_deviation":
                             agg_value *= count / (count - 1.0)
 
-                        else:  # es_agg[1] == "variance"
+                        else:  # os_agg[1] == "variance"
                             # sample_std=\sqrt{\frac{1}{N-1}\sum_{i=1}^N(x_i-\bar{x})^2}
                             # population_std=\sqrt{\frac{1}{N}\sum_{i=1}^N(x_i-\bar{x})^2}
                             # sample_std=\sqrt{\frac{N}{N-1}population_std}
                             agg_value = np.sqrt(
                                 (count / (count - 1.0)) * agg_value * agg_value
                             )
-                elif es_agg == "mode":
+                elif os_agg == "mode":
                     # For terms aggregation buckets are returned
                     # agg_value will be of type list
                     agg_value = response["aggregations"][
-                        f"{es_agg}_{field.os_field_name}"
+                        f"{os_agg}_{field.os_field_name}"
                     ]["buckets"]
                 else:
                     agg_value = response["aggregations"][
-                        f"{es_agg}_{field.os_field_name}"
+                        f"{os_agg}_{field.os_field_name}"
                     ]["value"]
 
                 if isinstance(agg_value, list):
@@ -902,14 +902,14 @@ class Operations:
             len_percentiles = len(percentiles)
 
         # Convert pandas aggs to ES equivalent
-        es_aggs = self._map_pd_aggs_to_es_aggs(pd_aggs=pd_aggs, percentiles=percentiles)
+        os_aggs = self._map_pd_aggs_to_os_aggs(pd_aggs=pd_aggs, percentiles=percentiles)
 
         # Construct Query
         for by_field in by_fields:
             if by_field.aggregatable_os_field_name is None:
                 raise ValueError(
                     f"Cannot use {by_field.column!r} with groupby() because "
-                    f"it has no aggregatable fields in Elasticsearch"
+                    f"it has no aggregatable fields in Opensearch"
                 )
             # groupby fields will be term aggregations
             body.composite_agg_bucket_terms(
@@ -918,30 +918,30 @@ class Operations:
             )
 
         for agg_field in agg_fields:
-            for es_agg in es_aggs:
+            for os_agg in os_aggs:
                 # Skip if the field isn't compatible or if the agg is
                 # 'value_count' as this value is pulled from bucket.doc_count.
-                if not agg_field.is_os_agg_compatible(es_agg):
+                if not agg_field.is_os_agg_compatible(os_agg):
                     continue
 
                 # If we have multiple 'extended_stats' etc. here we simply NOOP on 2nd call
-                if isinstance(es_agg, tuple):
-                    if es_agg[0] == "percentiles":
+                if isinstance(os_agg, tuple):
+                    if os_agg[0] == "percentiles":
                         body.percentile_agg(
-                            name=f"{es_agg[0]}_{agg_field.os_field_name}",
+                            name=f"{os_agg[0]}_{agg_field.os_field_name}",
                             field=agg_field.os_field_name,
-                            percents=es_agg[1],
+                            percents=os_agg[1],
                         )
                     else:
                         body.metric_aggs(
-                            f"{es_agg[0]}_{agg_field.os_field_name}",
-                            es_agg[0],
+                            f"{os_agg[0]}_{agg_field.os_field_name}",
+                            os_agg[0],
                             agg_field.aggregatable_os_field_name,
                         )
                 else:
                     body.metric_aggs(
-                        f"{es_agg}_{agg_field.os_field_name}",
-                        es_agg,
+                        f"{os_agg}_{agg_field.os_field_name}",
+                        os_agg,
                         agg_field.aggregatable_os_field_name,
                     )
 
@@ -972,7 +972,7 @@ class Operations:
 
                 agg_calculation = self._unpack_metric_aggs(
                     fields=agg_fields,
-                    es_aggs=es_aggs,
+                    os_aggs=os_aggs,
                     pd_aggs=pd_aggs,
                     response={"aggregations": bucket},
                     numeric_only=numeric_only,
@@ -1067,7 +1067,7 @@ class Operations:
                 return buckets
 
     @staticmethod
-    def _map_pd_aggs_to_es_aggs(
+    def _map_pd_aggs_to_os_aggs(
         pd_aggs: List[str], percentiles: Optional[List[float]] = None
     ) -> Union[List[str], List[Tuple[str, List[float]]]]:
         """
@@ -1076,10 +1076,10 @@ class Operations:
             percentiles - list of percentiles for 'quantile' agg
 
         Returns:
-            ed_aggs - list of corresponding es_aggs (e.g. ['median_absolute_deviation', 'min', 'std'] etc.)
+            oml_aggs - list of corresponding os_aggs (e.g. ['median_absolute_deviation', 'min', 'std'] etc.)
 
         Pandas supports a lot of options here, and these options generally work on text and numerics in pandas.
-        Elasticsearch has metric aggs and terms aggs so will have different behaviour.
+        Opensearch has metric aggs and terms aggs so will have different behaviour.
 
         Pandas aggs that return field_names (as opposed to transformed rows):
 
@@ -1101,47 +1101,47 @@ class Operations:
         var
         nunique
         """
-        # pd aggs that will be mapped to es aggs
+        # pd aggs that will be mapped to os aggs
         # that can use 'extended_stats'.
         extended_stats_pd_aggs = {"mean", "min", "max", "sum", "var", "std"}
-        extended_stats_es_aggs = {"avg", "min", "max", "sum"}
+        extended_stats_os_aggs = {"avg", "min", "max", "sum"}
         extended_stats_calls = 0
 
-        es_aggs: List[Any] = []
+        os_aggs: List[Any] = []
         for pd_agg in pd_aggs:
             if pd_agg in extended_stats_pd_aggs:
                 extended_stats_calls += 1
 
             # Aggs that are 'extended_stats' compatible
             if pd_agg == "count":
-                es_aggs.append("value_count")
+                os_aggs.append("value_count")
             elif pd_agg == "max":
-                es_aggs.append("max")
+                os_aggs.append("max")
             elif pd_agg == "min":
-                es_aggs.append("min")
+                os_aggs.append("min")
             elif pd_agg == "mean":
-                es_aggs.append("avg")
+                os_aggs.append("avg")
             elif pd_agg == "sum":
-                es_aggs.append("sum")
+                os_aggs.append("sum")
             elif pd_agg == "std":
-                es_aggs.append(("extended_stats", "std_deviation"))
+                os_aggs.append(("extended_stats", "std_deviation"))
             elif pd_agg == "var":
-                es_aggs.append(("extended_stats", "variance"))
+                os_aggs.append(("extended_stats", "variance"))
 
             # Aggs that aren't 'extended_stats' compatible
             elif pd_agg == "nunique":
-                es_aggs.append("cardinality")
+                os_aggs.append("cardinality")
             elif pd_agg == "mad":
-                es_aggs.append("median_absolute_deviation")
+                os_aggs.append("median_absolute_deviation")
             elif pd_agg == "median":
-                es_aggs.append(("percentiles", (50.0,)))
+                os_aggs.append(("percentiles", (50.0,)))
             elif pd_agg == "quantile":
                 # None when 'quantile' is called in df.agg[...]
                 # Behaves same as median because pandas does the same.
                 if percentiles is not None:
-                    es_aggs.append(("percentiles", tuple(percentiles)))
+                    os_aggs.append(("percentiles", tuple(percentiles)))
                 else:
-                    es_aggs.append(("percentiles", (50.0,)))
+                    os_aggs.append(("percentiles", (50.0,)))
 
             elif pd_agg == "mode":
                 if len(pd_aggs) != 1:
@@ -1149,7 +1149,7 @@ class Operations:
                         "Currently mode is not supported in df.agg(...). Try df.mode()"
                     )
                 else:
-                    es_aggs.append("mode")
+                    os_aggs.append("mode")
 
             # Not implemented
             elif pd_agg == "rank":
@@ -1164,14 +1164,14 @@ class Operations:
         # If two aggs compatible with 'extended_stats' is called we can
         # piggy-back on that single aggregation.
         if extended_stats_calls >= 2:
-            es_aggs = [
-                ("extended_stats", es_agg)
-                if es_agg in extended_stats_es_aggs
-                else es_agg
-                for es_agg in es_aggs
+            os_aggs = [
+                ("extended_stats", os_agg)
+                if os_agg in extended_stats_os_aggs
+                else os_agg
+                for os_agg in os_aggs
             ]
 
-        return es_aggs
+        return os_aggs
 
     def filter(
         self,
@@ -1195,7 +1195,7 @@ class Operations:
 
         raise NotImplementedError(
             f".filter({arg_name}='...', axis='index') is currently not supported due "
-            f"to substring and regex operations not being available for Elasticsearch document IDs."
+            f"to substring and regex operations not being available for Opensearch document IDs."
         )
 
     def describe(self, query_compiler: "QueryCompiler") -> pd.DataFrame:
@@ -1289,7 +1289,7 @@ class Operations:
             max_number_of_hits=result_size,
             sort_index=sort_index,
         ):
-            df = query_compiler._es_results_to_pandas(hits)
+            df = query_compiler._os_results_to_pandas(hits)
             df = self._apply_df_post_processing(df, post_processing)
             # i += 1
             yield df
@@ -1417,7 +1417,7 @@ class Operations:
         return df
 
     def _resolve_tasks(self, query_compiler: "QueryCompiler") -> RESOLVED_TASK_TYPE:
-        # We now try and combine all tasks into an Elasticsearch query
+        # We now try and combine all tasks into an Opensearch query
         # Some operations can be simply combined into a single query
         # other operations require pre-queries and then combinations
         # other operations require in-core post-processing of results

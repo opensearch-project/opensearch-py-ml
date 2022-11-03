@@ -30,13 +30,13 @@ from tests.common import TestData
 
 class TestDataFrameDir(TestData):
     def test_flights_dir(self):
-        ed_flights = self.ed_flights()
+        oml_flights = self.oml_flights()
 
-        print(dir(ed_flights))
+        print(dir(oml_flights))
 
-        autocomplete_attrs = dir(ed_flights)
+        autocomplete_attrs = dir(oml_flights)
 
-        for c in ed_flights.columns:
+        for c in oml_flights.columns:
             # opensearch will save JSON values with sub-entries (like {A: {b: x}}) as A.b
             # these are not saved in pandas as attributes as they interfere with the naming convention
             # we ignore these for now
