@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>opensearch_py_ml.groupby &mdash; Opensearch-py-ml  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/plot_directive.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Opensearch-py-ml
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/index.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Opensearch-py-ml</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">opensearch_py_ml.groupby</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for opensearch_py_ml.groupby</h1><div class="highlight"><pre>
+<span></span><span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
+<span class="c1"># The OpenSearch Contributors require contributions made to</span>
+<span class="c1"># this file be licensed under the Apache-2.0 license or a</span>
+<span class="c1"># compatible open source license.</span>
+<span class="c1"># Any modifications Copyright OpenSearch Contributors. See</span>
+<span class="c1"># GitHub history for details.</span>
+
+
+<span class="c1">#  Licensed to Elasticsearch B.V. under one or more contributor</span>
+<span class="c1">#  license agreements. See the NOTICE file distributed with</span>
+<span class="c1">#  this work for additional information regarding copyright</span>
+<span class="c1">#  ownership. Elasticsearch B.V. licenses this file to you under</span>
+<span class="c1">#  the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1">#  not use this file except in compliance with the License.</span>
+<span class="c1">#  You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1"># 	http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1">#  Unless required by applicable law or agreed to in writing,</span>
+<span class="c1">#  software distributed under the License is distributed on an</span>
+<span class="c1">#  &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY</span>
+<span class="c1">#  KIND, either express or implied.  See the License for the</span>
+<span class="c1">#  specific language governing permissions and limitations</span>
+<span class="c1">#  under the License.</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span> <span class="nn">opensearch_py_ml.common</span> <span class="kn">import</span> <span class="n">OPENSEARCH_TEST_CLIENT</span>  <span class="c1"># noqa: F401</span>
+<span class="kn">from</span> <span class="nn">opensearch_py_ml.query_compiler</span> <span class="kn">import</span> <span class="n">QueryCompiler</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>  <span class="c1"># type: ignore</span>
+
+
+<span class="k">class</span> <span class="nc">GroupBy</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base class for calls to :py:func:`opensearch_py_ml.DataFrame.groupby`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">by</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">query_compiler</span><span class="p">:</span> <span class="s2">&quot;QueryCompiler&quot;</span><span class="p">,</span>
+        <span class="n">dropna</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="p">:</span> <span class="s2">&quot;QueryCompiler&quot;</span> <span class="o">=</span> <span class="n">QueryCompiler</span><span class="p">(</span><span class="n">to_copy</span><span class="o">=</span><span class="n">query_compiler</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dropna</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">dropna</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_by</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">by</span>
+
+
+<div class="viewcode-block" id="DataFrameGroupBy"><a class="viewcode-back" href="../../reference/api/groupby.DataFrameGroupBy.html#opensearch_py_ml.groupby.DataFrameGroupBy">[docs]</a><span class="k">class</span> <span class="nc">DataFrameGroupBy</span><span class="p">(</span><span class="n">GroupBy</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This holds all the groupby methods for :py:func:`opensearch_py_ml.DataFrame.groupby`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="DataFrameGroupBy.mean"><a class="viewcode-back" href="../../reference/api/groupby.DataFrameGroupBy.mean.html#opensearch_py_ml.groupby.DataFrameGroupBy.mean">[docs]</a>    <span class="k">def</span> <span class="nf">mean</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pd.DataFrame&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the mean value for each group.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        numeric_only: {True, False, None} Default is True</span>
+<span class="sd">            Which datatype to be returned</span>
+<span class="sd">            - True: Returns all values as float64, NaN/NaT values are removed</span>
+<span class="sd">            - None: Returns all values as the same dtype where possible, NaN/NaT are removed</span>
+<span class="sd">            - False: Returns all values as the same dtype where possible, NaN/NaT are preserved</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pandas.DataFrame</span>
+<span class="sd">            mean value for each numeric column of each group</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        :pandas_api_docs:`pandas.core.groupby.GroupBy.mean`</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; df = ed.DataFrame(</span>
+<span class="sd">        ...   OPENSEARCH_TEST_CLIENT, &quot;flights&quot;,</span>
+<span class="sd">        ...   columns=[&quot;AvgTicketPrice&quot;, &quot;Cancelled&quot;, &quot;dayOfWeek&quot;, &quot;timestamp&quot;, &quot;DestCountry&quot;]</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; df.groupby(&quot;DestCountry&quot;).mean(numeric_only=False) # doctest: +SKIP</span>
+<span class="sd">                     AvgTicketPrice  Cancelled  dayOfWeek                     timestamp</span>
+<span class="sd">        DestCountry</span>
+<span class="sd">        AE               605.132970   0.152174   2.695652 2018-01-21 16:58:07.891304443</span>
+<span class="sd">        AR               674.827252   0.147541   2.744262 2018-01-21 22:18:06.593442627</span>
+<span class="sd">        AT               646.650530   0.175066   2.872679 2018-01-21 15:54:42.469496094</span>
+<span class="sd">        AU               669.558832   0.129808   2.843750 2018-01-22 02:28:39.199519287</span>
+<span class="sd">        CA               648.747109   0.134534   2.951271 2018-01-22 14:40:47.165254150</span>
+<span class="sd">        ...                     ...        ...        ...                           ...</span>
+<span class="sd">        RU               662.994963   0.131258   2.832206 2018-01-21 07:11:16.534506104</span>
+<span class="sd">        SE               660.612988   0.149020   2.682353 2018-01-22 07:48:23.447058838</span>
+<span class="sd">        TR               485.253247   0.100000   1.900000 2018-01-16 16:02:33.000000000</span>
+<span class="sd">        US               595.774391   0.125315   2.753900 2018-01-21 16:55:04.456970215</span>
+<span class="sd">        ZA               643.053057   0.148410   2.766784 2018-01-22 15:17:56.141342773</span>
+<span class="sd">        &lt;BLANKLINE&gt;</span>
+<span class="sd">        [32 rows x 4 columns]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">aggs_groupby</span><span class="p">(</span>
+            <span class="n">by</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_by</span><span class="p">,</span>
+            <span class="n">pd_aggs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;mean&quot;</span><span class="p">],</span>
+            <span class="n">dropna</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dropna</span><span class="p">,</span>
+            <span class="n">numeric_only</span><span class="o">=</span><span class="n">numeric_only</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="DataFrameGroupBy.var"><a class="viewcode-back" href="../../reference/api/groupby.DataFrameGroupBy.var.html#opensearch_py_ml.groupby.DataFrameGroupBy.var">[docs]</a>    <span class="k">def</span> <span class="nf">var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pd.DataFrame&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the variance value for each group.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        numeric_only: {True, False, None} Default is True</span>
+<span class="sd">            Which datatype to be returned</span>
+<span class="sd">            - True: Returns all values as float64, NaN/NaT values are removed</span>
+<span class="sd">            - None: Returns all values as the same dtype where possible, NaN/NaT are removed</span>
+<span class="sd">            - False: Returns all values as the same dtype where possible, NaN/NaT are preserved</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pandas.DataFrame</span>
+<span class="sd">            variance value for each numeric column of each group</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        :pandas_api_docs:`pandas.core.groupby.GroupBy.var`</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; df = ed.DataFrame(</span>
+<span class="sd">        ...   OPENSEARCH_TEST_CLIENT, &quot;flights&quot;,</span>
+<span class="sd">        ...   columns=[&quot;AvgTicketPrice&quot;, &quot;Cancelled&quot;, &quot;dayOfWeek&quot;, &quot;timestamp&quot;, &quot;DestCountry&quot;]</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; df.groupby(&quot;DestCountry&quot;).var() # doctest: +NORMALIZE_WHITESPACE</span>
+<span class="sd">                     AvgTicketPrice  Cancelled  dayOfWeek</span>
+<span class="sd">        DestCountry</span>
+<span class="sd">        AE             75789.979090   0.130443   3.950549</span>
+<span class="sd">        AR             59683.055316   0.125979   3.783429</span>
+<span class="sd">        AT             65726.669676   0.144610   4.090013</span>
+<span class="sd">        AU             65088.483446   0.113094   3.833562</span>
+<span class="sd">        CA             68149.950516   0.116496   3.688139</span>
+<span class="sd">        ...                     ...        ...        ...</span>
+<span class="sd">        RU             67305.277617   0.114107   3.852666</span>
+<span class="sd">        SE             53740.570338   0.127062   3.942132</span>
+<span class="sd">        TR             61245.521047   0.094868   4.100420</span>
+<span class="sd">        US             74349.939410   0.109638   3.758700</span>
+<span class="sd">        ZA             62920.072901   0.126608   3.775609</span>
+<span class="sd">        &lt;BLANKLINE&gt;</span>
+<span class="sd">        [32 rows x 3 columns]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">aggs_groupby</span><span class="p">(</span>
+            <span class="n">by</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_by</span><span class="p">,</span>
+            <span class="n">pd_aggs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;var&quot;</span><span class="p">],</span>
+            <span class="n">dropna</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dropna</span><span class="p">,</span>
+            <span class="n">numeric_only</span><span class="o">=</span><span class="n">numeric_only</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="DataFrameGroupBy.std"><a class="viewcode-back" href="../../reference/api/groupby.DataFrameGroupBy.std.html#opensearch_py_ml.groupby.DataFrameGroupBy.std">[docs]</a>    <span class="k">def</span> <span class="nf">std</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pd.DataFrame&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the standard deviation value for each group.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        numeric_only: {True, False, None} Default is True</span>
+<span class="sd">            Which datatype to be returned</span>
+<span class="sd">            - True: Returns all values as float64, NaN/NaT values are removed</span>
+<span class="sd">            - None: Returns all values as the same dtype where possible, NaN/NaT are removed</span>
+<span class="sd">            - False: Returns all values as the same dtype where possible, NaN/NaT are preserved</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pandas.DataFrame</span>
+<span class="sd">            standard deviation value for each numeric column of each group</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        :pandas_api_docs:`pandas.core.groupby.GroupBy.std`</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; df = ed.DataFrame(</span>
+<span class="sd">        ...   OPENSEARCH_TEST_CLIENT, &quot;flights&quot;,</span>
+<span class="sd">        ...   columns=[&quot;AvgTicketPrice&quot;, &quot;Cancelled&quot;, &quot;dayOfWeek&quot;, &quot;DestCountry&quot;]</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; df.groupby(&quot;DestCountry&quot;).std() # doctest: +NORMALIZE_WHITESPACE</span>
+<span class="sd">                     AvgTicketPrice  Cancelled  dayOfWeek</span>
+<span class="sd">        DestCountry</span>
+<span class="sd">        AE               279.875500   0.367171   2.020634</span>
+<span class="sd">        AR               244.903626   0.355811   1.949901</span>
+<span class="sd">        AT               256.883342   0.381035   2.026411</span>
+<span class="sd">        AU               255.585377   0.336902   1.961486</span>
+<span class="sd">        CA               261.263054   0.341587   1.921980</span>
+<span class="sd">        ...                     ...        ...        ...</span>
+<span class="sd">        RU               259.696213   0.338140   1.964815</span>
+<span class="sd">        SE               232.504297   0.357510   1.991340</span>
+<span class="sd">        TR               267.827572   0.333333   2.191454</span>
+<span class="sd">        US               272.774819   0.331242   1.939469</span>
+<span class="sd">        ZA               251.505568   0.356766   1.948258</span>
+<span class="sd">        &lt;BLANKLINE&gt;</span>
+<span class="sd">        [32 rows x 3 columns]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">aggs_groupby</span><span class="p">(</span>
+            <span class="n">by</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_by</span><span class="p">,</span>
+            <span class="n">pd_aggs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;std&quot;</span><span class="p">],</span>
+            <span class="n">dropna</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dropna</span><span class="p">,</span>
+            <span class="n">numeric_only</span><span class="o">=</span><span class="n">numeric_only</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="DataFrameGroupBy.mad"><a class="viewcode-back" href="../../reference/api/groupby.DataFrameGroupBy.mad.html#opensearch_py_ml.groupby.DataFrameGroupBy.mad">[docs]</a>    <span class="k">def</span> <span class="nf">mad</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pd.DataFrame&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the median absolute deviation value for each group.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        numeric_only: {True, False, None} Default is True</span>
+<span class="sd">            Which datatype to be returned</span>
+<span class="sd">            - True: Returns all values as float64, NaN/NaT values are removed</span>
+<span class="sd">            - None: Returns all values as the same dtype where possible, NaN/NaT are removed</span>
+<span class="sd">            - False: Returns all values as the same dtype where possible, NaN/NaT are preserved</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pandas.DataFrame</span>
+<span class="sd">            median absolute deviation value for each numeric column of each group</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        :pandas_api_docs:`pandas.core.groupby.GroupBy.mad`</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; df = ed.DataFrame(</span>
+<span class="sd">        ...   OPENSEARCH_TEST_CLIENT, &quot;flights&quot;,</span>
+<span class="sd">        ...   columns=[&quot;AvgTicketPrice&quot;, &quot;Cancelled&quot;, &quot;dayOfWeek&quot;, &quot;timestamp&quot;, &quot;DestCountry&quot;]</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; df.groupby(&quot;DestCountry&quot;).mad() # doctest: +SKIP</span>
+<span class="sd">                     AvgTicketPrice  Cancelled  dayOfWeek</span>
+<span class="sd">        DestCountry</span>
+<span class="sd">        AE               233.697174        NaN        1.5</span>
+<span class="sd">        AR               189.250061        NaN        2.0</span>
+<span class="sd">        AT               195.823669        NaN        2.0</span>
+<span class="sd">        AU               202.539764        NaN        2.0</span>
+<span class="sd">        CA               203.344696        NaN        2.0</span>
+<span class="sd">        ...                     ...        ...        ...</span>
+<span class="sd">        RU               206.431702        NaN        2.0</span>
+<span class="sd">        SE               178.658447        NaN        2.0</span>
+<span class="sd">        TR               221.863434        NaN        1.0</span>
+<span class="sd">        US               228.461365        NaN        2.0</span>
+<span class="sd">        ZA               192.162842        NaN        2.0</span>
+<span class="sd">        &lt;BLANKLINE&gt;</span>
+<span class="sd">        [32 rows x 3 columns]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">aggs_groupby</span><span class="p">(</span>
+            <span class="n">by</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_by</span><span class="p">,</span>
+            <span class="n">pd_aggs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;mad&quot;</span><span class="p">],</span>
+            <span class="n">dropna</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dropna</span><span class="p">,</span>
+            <span class="n">numeric_only</span><span class="o">=</span><span class="n">numeric_only</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="DataFrameGroupBy.median"><a class="viewcode-back" href="../../reference/api/groupby.DataFrameGroupBy.median.html#opensearch_py_ml.groupby.DataFrameGroupBy.median">[docs]</a>    <span class="k">def</span> <span class="nf">median</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pd.DataFrame&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the median value for each group.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        numeric_only: {True, False, None} Default is True</span>
+<span class="sd">            Which datatype to be returned</span>
+<span class="sd">            - True: Returns all values as float64, NaN/NaT values are removed</span>
+<span class="sd">            - None: Returns all values as the same dtype where possible, NaN/NaT are removed</span>
+<span class="sd">            - False: Returns all values as the same dtype where possible, NaN/NaT are preserved</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pandas.DataFrame</span>
+<span class="sd">            median absolute deviation value for each numeric column of each group</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        :pandas_api_docs:`pandas.core.groupby.GroupBy.median`</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; df = ed.DataFrame(</span>
+<span class="sd">        ...   OPENSEARCH_TEST_CLIENT, &quot;flights&quot;,</span>
+<span class="sd">        ...   columns=[&quot;AvgTicketPrice&quot;, &quot;Cancelled&quot;, &quot;dayOfWeek&quot;, &quot;timestamp&quot;, &quot;DestCountry&quot;]</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; df.groupby(&quot;DestCountry&quot;).median(numeric_only=False) # doctest: +SKIP</span>
+<span class="sd">                     AvgTicketPrice  Cancelled  dayOfWeek               timestamp</span>
+<span class="sd">        DestCountry</span>
+<span class="sd">        AE               585.720490      False          2 2018-01-19 23:56:44.000</span>
+<span class="sd">        AR               678.447433      False          3 2018-01-22 10:18:50.000</span>
+<span class="sd">        AT               659.715592      False          3 2018-01-20 20:40:10.000</span>
+<span class="sd">        AU               689.241348      False          3 2018-01-22 18:46:11.000</span>
+<span class="sd">        CA               663.516057      False          3 2018-01-22 21:35:09.500</span>
+<span class="sd">        ...                     ...        ...        ...                     ...</span>
+<span class="sd">        RU               670.714956      False          3 2018-01-20 16:48:16.000</span>
+<span class="sd">        SE               680.111084      False          3 2018-01-22 20:53:44.000</span>
+<span class="sd">        TR               441.681122      False          1 2018-01-13 23:17:27.000</span>
+<span class="sd">        US               600.591525      False          3 2018-01-22 04:09:50.000</span>
+<span class="sd">        ZA               633.935425      False          3 2018-01-23 17:42:57.000</span>
+<span class="sd">        &lt;BLANKLINE&gt;</span>
+<span class="sd">        [32 rows x 4 columns]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">aggs_groupby</span><span class="p">(</span>
+            <span class="n">by</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_by</span><span class="p">,</span>
+            <span class="n">pd_aggs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;median&quot;</span><span class="p">],</span>
+            <span class="n">dropna</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dropna</span><span class="p">,</span>
+            <span class="n">numeric_only</span><span class="o">=</span><span class="n">numeric_only</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="DataFrameGroupBy.sum"><a class="viewcode-back" href="../../reference/api/groupby.DataFrameGroupBy.sum.html#opensearch_py_ml.groupby.DataFrameGroupBy.sum">[docs]</a>    <span class="k">def</span> <span class="nf">sum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pd.DataFrame&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the sum value for each group.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        numeric_only: {True, False, None} Default is True</span>
+<span class="sd">            Which datatype to be returned</span>
+<span class="sd">            - True: Returns all values as float64, NaN/NaT values are removed</span>
+<span class="sd">            - None: Returns all values as the same dtype where possible, NaN/NaT are removed</span>
+<span class="sd">            - False: Returns all values as the same dtype where possible, NaN/NaT are preserved</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pandas.DataFrame</span>
+<span class="sd">            sum value for each numeric column of each group</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        :pandas_api_docs:`pandas.core.groupby.GroupBy.sum`</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; df = ed.DataFrame(</span>
+<span class="sd">        ...   OPENSEARCH_TEST_CLIENT, &quot;flights&quot;,</span>
+<span class="sd">        ...   columns=[&quot;AvgTicketPrice&quot;, &quot;Cancelled&quot;, &quot;dayOfWeek&quot;, &quot;DestCountry&quot;]</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; df.groupby(&quot;DestCountry&quot;).sum() # doctest: +NORMALIZE_WHITESPACE</span>
+<span class="sd">                     AvgTicketPrice  Cancelled  dayOfWeek</span>
+<span class="sd">        DestCountry</span>
+<span class="sd">        AE             2.783612e+04        7.0      124.0</span>
+<span class="sd">        AR             2.058223e+05       45.0      837.0</span>
+<span class="sd">        AT             2.437872e+05       66.0     1083.0</span>
+<span class="sd">        AU             2.785365e+05       54.0     1183.0</span>
+<span class="sd">        CA             6.124173e+05      127.0     2786.0</span>
+<span class="sd">        ...                     ...        ...        ...</span>
+<span class="sd">        RU             4.899533e+05       97.0     2093.0</span>
+<span class="sd">        SE             1.684563e+05       38.0      684.0</span>
+<span class="sd">        TR             4.852532e+03        1.0       19.0</span>
+<span class="sd">        US             1.183804e+06      249.0     5472.0</span>
+<span class="sd">        ZA             1.819840e+05       42.0      783.0</span>
+<span class="sd">        &lt;BLANKLINE&gt;</span>
+<span class="sd">        [32 rows x 3 columns]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">aggs_groupby</span><span class="p">(</span>
+            <span class="n">by</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_by</span><span class="p">,</span>
+            <span class="n">pd_aggs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;sum&quot;</span><span class="p">],</span>
+            <span class="n">dropna</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dropna</span><span class="p">,</span>
+            <span class="n">numeric_only</span><span class="o">=</span><span class="n">numeric_only</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="DataFrameGroupBy.min"><a class="viewcode-back" href="../../reference/api/groupby.DataFrameGroupBy.min.html#opensearch_py_ml.groupby.DataFrameGroupBy.min">[docs]</a>    <span class="k">def</span> <span class="nf">min</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pd.DataFrame&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the min value for each group.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        numeric_only: {True, False, None} Default is True</span>
+<span class="sd">            Which datatype to be returned</span>
+<span class="sd">            - True: Returns all values as float64, NaN/NaT values are removed</span>
+<span class="sd">            - None: Returns all values as the same dtype where possible, NaN/NaT are removed</span>
+<span class="sd">            - False: Returns all values as the same dtype where possible, NaN/NaT are preserved</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pandas.DataFrame</span>
+<span class="sd">            min value for each numeric column of each group</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        :pandas_api_docs:`pandas.core.groupby.GroupBy.min`</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; df = ed.DataFrame(</span>
+<span class="sd">        ...   OPENSEARCH_TEST_CLIENT, &quot;flights&quot;,</span>
+<span class="sd">        ...   columns=[&quot;AvgTicketPrice&quot;, &quot;Cancelled&quot;, &quot;dayOfWeek&quot;, &quot;timestamp&quot;, &quot;DestCountry&quot;]</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; df.groupby(&quot;DestCountry&quot;).min(numeric_only=False) # doctest: +NORMALIZE_WHITESPACE</span>
+<span class="sd">                     AvgTicketPrice  Cancelled  dayOfWeek           timestamp</span>
+<span class="sd">        DestCountry</span>
+<span class="sd">        AE               110.799911      False          0 2018-01-01 19:31:30</span>
+<span class="sd">        AR               125.589394      False          0 2018-01-01 01:30:47</span>
+<span class="sd">        AT               100.020531      False          0 2018-01-01 05:24:19</span>
+<span class="sd">        AU               102.294312      False          0 2018-01-01 00:00:00</span>
+<span class="sd">        CA               100.557251      False          0 2018-01-01 00:44:08</span>
+<span class="sd">        ...                     ...        ...        ...                 ...</span>
+<span class="sd">        RU               101.004005      False          0 2018-01-01 01:01:51</span>
+<span class="sd">        SE               102.877190      False          0 2018-01-01 04:09:38</span>
+<span class="sd">        TR               142.876465      False          0 2018-01-01 06:45:17</span>
+<span class="sd">        US               100.145966      False          0 2018-01-01 00:06:27</span>
+<span class="sd">        ZA               102.002663      False          0 2018-01-01 06:44:44</span>
+<span class="sd">        &lt;BLANKLINE&gt;</span>
+<span class="sd">        [32 rows x 4 columns]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">aggs_groupby</span><span class="p">(</span>
+            <span class="n">by</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_by</span><span class="p">,</span>
+            <span class="n">pd_aggs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;min&quot;</span><span class="p">],</span>
+            <span class="n">dropna</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dropna</span><span class="p">,</span>
+            <span class="n">numeric_only</span><span class="o">=</span><span class="n">numeric_only</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="DataFrameGroupBy.max"><a class="viewcode-back" href="../../reference/api/groupby.DataFrameGroupBy.max.html#opensearch_py_ml.groupby.DataFrameGroupBy.max">[docs]</a>    <span class="k">def</span> <span class="nf">max</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pd.DataFrame&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the max value for each group.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        numeric_only: {True, False, None} Default is True</span>
+<span class="sd">            Which datatype to be returned</span>
+<span class="sd">            - True: Returns all values as float64, NaN/NaT values are removed</span>
+<span class="sd">            - None: Returns all values as the same dtype where possible, NaN/NaT are removed</span>
+<span class="sd">            - False: Returns all values as the same dtype where possible, NaN/NaT are preserved</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pandas.DataFrame</span>
+<span class="sd">            max value for each numeric column of each group</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        :pandas_api_docs:`pandas.core.groupby.GroupBy.max`</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; df = ed.DataFrame(</span>
+<span class="sd">        ...   OPENSEARCH_TEST_CLIENT, &quot;flights&quot;,</span>
+<span class="sd">        ...   columns=[&quot;AvgTicketPrice&quot;, &quot;Cancelled&quot;, &quot;dayOfWeek&quot;, &quot;timestamp&quot;, &quot;DestCountry&quot;]</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; df.groupby(&quot;DestCountry&quot;).max(numeric_only=False) # doctest: +NORMALIZE_WHITESPACE</span>
+<span class="sd">                     AvgTicketPrice  Cancelled  dayOfWeek           timestamp</span>
+<span class="sd">        DestCountry</span>
+<span class="sd">        AE              1126.148682       True          6 2018-02-11 04:11:14</span>
+<span class="sd">        AR              1199.642822       True          6 2018-02-11 17:09:05</span>
+<span class="sd">        AT              1181.835815       True          6 2018-02-11 23:12:33</span>
+<span class="sd">        AU              1197.632690       True          6 2018-02-11 21:39:01</span>
+<span class="sd">        CA              1198.852539       True          6 2018-02-11 23:04:08</span>
+<span class="sd">        ...                     ...        ...        ...                 ...</span>
+<span class="sd">        RU              1196.742310       True          6 2018-02-11 20:03:31</span>
+<span class="sd">        SE              1198.621582       True          6 2018-02-11 22:06:14</span>
+<span class="sd">        TR               855.935547       True          6 2018-02-04 01:59:23</span>
+<span class="sd">        US              1199.729004       True          6 2018-02-11 23:27:00</span>
+<span class="sd">        ZA              1196.186157       True          6 2018-02-11 23:29:45</span>
+<span class="sd">        &lt;BLANKLINE&gt;</span>
+<span class="sd">        [32 rows x 4 columns]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">aggs_groupby</span><span class="p">(</span>
+            <span class="n">by</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_by</span><span class="p">,</span>
+            <span class="n">pd_aggs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;max&quot;</span><span class="p">],</span>
+            <span class="n">dropna</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dropna</span><span class="p">,</span>
+            <span class="n">numeric_only</span><span class="o">=</span><span class="n">numeric_only</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="DataFrameGroupBy.nunique"><a class="viewcode-back" href="../../reference/api/groupby.DataFrameGroupBy.nunique.html#opensearch_py_ml.groupby.DataFrameGroupBy.nunique">[docs]</a>    <span class="k">def</span> <span class="nf">nunique</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pd.DataFrame&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the nunique value for each group.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        numeric_only: {True, False, None} Default is True</span>
+<span class="sd">            Which datatype to be returned</span>
+<span class="sd">            - True: Returns all values as float64, NaN/NaT values are removed</span>
+<span class="sd">            - None: Returns all values as the same dtype where possible, NaN/NaT are removed</span>
+<span class="sd">            - False: Returns all values as the same dtype where possible, NaN/NaT are preserved</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pandas.DataFrame</span>
+<span class="sd">            nunique value for each numeric column of each group</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        :pandas_api_docs:`pandas.core.groupby.GroupBy.nunique`</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; df = ed.DataFrame(</span>
+<span class="sd">        ...   OPENSEARCH_TEST_CLIENT, &quot;flights&quot;,</span>
+<span class="sd">        ...   columns=[&quot;AvgTicketPrice&quot;, &quot;Cancelled&quot;, &quot;dayOfWeek&quot;, &quot;DestCountry&quot;]</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; df.groupby(&quot;DestCountry&quot;).nunique() # doctest: +NORMALIZE_WHITESPACE</span>
+<span class="sd">                     AvgTicketPrice  Cancelled  dayOfWeek</span>
+<span class="sd">        DestCountry</span>
+<span class="sd">        AE                       46          2          7</span>
+<span class="sd">        AR                      305          2          7</span>
+<span class="sd">        AT                      377          2          7</span>
+<span class="sd">        AU                      416          2          7</span>
+<span class="sd">        CA                      944          2          7</span>
+<span class="sd">        ...                     ...        ...        ...</span>
+<span class="sd">        RU                      739          2          7</span>
+<span class="sd">        SE                      255          2          7</span>
+<span class="sd">        TR                       10          2          5</span>
+<span class="sd">        US                     1987          2          7</span>
+<span class="sd">        ZA                      283          2          7</span>
+<span class="sd">        &lt;BLANKLINE&gt;</span>
+<span class="sd">        [32 rows x 3 columns]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">aggs_groupby</span><span class="p">(</span>
+            <span class="n">by</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_by</span><span class="p">,</span>
+            <span class="n">pd_aggs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;nunique&quot;</span><span class="p">],</span>
+            <span class="n">dropna</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dropna</span><span class="p">,</span>
+            <span class="n">numeric_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="DataFrameGroupBy.quantile"><a class="viewcode-back" href="../../reference/api/groupby.DataFrameGroupBy.quantile.html#opensearch_py_ml.groupby.DataFrameGroupBy.quantile">[docs]</a>    <span class="k">def</span> <span class="nf">quantile</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="mf">0.5</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pd.DataFrame&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Used to groupby and calculate quantile for a given DataFrame.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        q:</span>
+<span class="sd">            float or array like, default 0.5</span>
+<span class="sd">            Value between 0 &lt;= q &lt;= 1, the quantile(s) to compute.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pandas.DataFrame</span>
+<span class="sd">            quantile value for each grouped column</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        :pandas_api_docs:`pandas.core.groupby.GroupBy.quantile`</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; ed_df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;flights&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; ed_flights = ed_df.filter([&quot;AvgTicketPrice&quot;, &quot;FlightDelayMin&quot;, &quot;dayOfWeek&quot;, &quot;timestamp&quot;])</span>
+<span class="sd">        &gt;&gt;&gt; ed_flights.groupby([&quot;dayOfWeek&quot;, &quot;Cancelled&quot;]).quantile() # doctest: +SKIP</span>
+<span class="sd">                             AvgTicketPrice  FlightDelayMin</span>
+<span class="sd">        dayOfWeek Cancelled</span>
+<span class="sd">        0         False          572.290384             0.0</span>
+<span class="sd">                  True           578.140564             0.0</span>
+<span class="sd">        1         False          567.980560             0.0</span>
+<span class="sd">                  True           582.618713             0.0</span>
+<span class="sd">        2         False          590.170986             0.0</span>
+<span class="sd">                  True           579.811890             0.0</span>
+<span class="sd">        3         False          574.131340             0.0</span>
+<span class="sd">                  True           572.852264             0.0</span>
+<span class="sd">        4         False          591.533699             0.0</span>
+<span class="sd">                  True           582.877014             0.0</span>
+<span class="sd">        5         False          791.622625             0.0</span>
+<span class="sd">                  True           793.362946             0.0</span>
+<span class="sd">        6         False          817.378523             0.0</span>
+<span class="sd">                  True           766.855530             0.0</span>
+
+<span class="sd">        &gt;&gt;&gt; ed_flights.groupby([&quot;dayOfWeek&quot;, &quot;Cancelled&quot;]).quantile(q=[.2, .5]) # doctest: +SKIP</span>
+<span class="sd">                                 AvgTicketPrice  FlightDelayMin</span>
+<span class="sd">        dayOfWeek Cancelled</span>
+<span class="sd">        0         False     0.2      319.925979             0.0</span>
+<span class="sd">                            0.5      572.290384             0.0</span>
+<span class="sd">                  True      0.2      325.704562             0.0</span>
+<span class="sd">                            0.5      578.140564             0.0</span>
+<span class="sd">        1         False     0.2      327.311007             0.0</span>
+<span class="sd">                            0.5      567.980560             0.0</span>
+<span class="sd">                  True      0.2      336.839572             0.0</span>
+<span class="sd">                            0.5      582.618713             0.0</span>
+<span class="sd">        2         False     0.2      332.323011             0.0</span>
+<span class="sd">                            0.5      590.170986             0.0</span>
+<span class="sd">                  True      0.2      314.472537             0.0</span>
+<span class="sd">                            0.5      579.811890             0.0</span>
+<span class="sd">        3         False     0.2      327.652659             0.0</span>
+<span class="sd">                            0.5      574.131340             0.0</span>
+<span class="sd">                  True      0.2      298.483032             0.0</span>
+<span class="sd">                            0.5      572.852264             0.0</span>
+<span class="sd">        4         False     0.2      314.290205             0.0</span>
+<span class="sd">                            0.5      591.533699             0.0</span>
+<span class="sd">                  True      0.2      325.024850             0.0</span>
+<span class="sd">                            0.5      582.877014             0.0</span>
+<span class="sd">        5         False     0.2      567.362137             0.0</span>
+<span class="sd">                            0.5      791.622625             0.0</span>
+<span class="sd">                  True      0.2      568.323944             0.0</span>
+<span class="sd">                            0.5      793.362946             0.0</span>
+<span class="sd">        6         False     0.2      568.489746             0.0</span>
+<span class="sd">                            0.5      817.378523             0.0</span>
+<span class="sd">                  True      0.2      523.890680             0.0</span>
+<span class="sd">                            0.5      766.855530             0.0</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">aggs_groupby</span><span class="p">(</span>
+            <span class="n">by</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_by</span><span class="p">,</span> <span class="n">pd_aggs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;quantile&quot;</span><span class="p">],</span> <span class="n">quantiles</span><span class="o">=</span><span class="n">q</span><span class="p">,</span> <span class="n">numeric_only</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="DataFrameGroupBy.aggregate"><a class="viewcode-back" href="../../reference/api/groupby.DataFrameGroupBy.aggregate.html#opensearch_py_ml.groupby.DataFrameGroupBy.aggregate">[docs]</a>    <span class="k">def</span> <span class="nf">aggregate</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pd.DataFrame&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Used to groupby and aggregate</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        func:</span>
+<span class="sd">            Functions to use for aggregating the data.</span>
+
+<span class="sd">            Accepted combinations are:</span>
+<span class="sd">            - function</span>
+<span class="sd">            - list of functions</span>
+
+<span class="sd">        numeric_only: {True, False, None} Default is None</span>
+<span class="sd">            Which datatype to be returned</span>
+<span class="sd">            - True: returns all values with float64, NaN/NaT are ignored.</span>
+<span class="sd">            - False: returns all values with float64.</span>
+<span class="sd">            - None: returns all values with default datatype.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pandas.DataFrame</span>
+<span class="sd">            aggregation value for each numeric column of each group</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        :pandas_api_docs:`pandas.core.groupby.GroupBy.aggregate`</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; df = ed.DataFrame(</span>
+<span class="sd">        ...   OPENSEARCH_TEST_CLIENT, &quot;flights&quot;,</span>
+<span class="sd">        ...   columns=[&quot;AvgTicketPrice&quot;, &quot;Cancelled&quot;, &quot;dayOfWeek&quot;, &quot;DestCountry&quot;]</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; df.groupby(&quot;DestCountry&quot;).aggregate([&quot;min&quot;, &quot;max&quot;]) # doctest: +NORMALIZE_WHITESPACE</span>
+<span class="sd">                    AvgTicketPrice               ... dayOfWeek</span>
+<span class="sd">                               min          max  ...       min max</span>
+<span class="sd">        DestCountry                              ...</span>
+<span class="sd">        AE              110.799911  1126.148682  ...         0   6</span>
+<span class="sd">        AR              125.589394  1199.642822  ...         0   6</span>
+<span class="sd">        AT              100.020531  1181.835815  ...         0   6</span>
+<span class="sd">        AU              102.294312  1197.632690  ...         0   6</span>
+<span class="sd">        CA              100.557251  1198.852539  ...         0   6</span>
+<span class="sd">        ...                    ...          ...  ...       ...  ..</span>
+<span class="sd">        RU              101.004005  1196.742310  ...         0   6</span>
+<span class="sd">        SE              102.877190  1198.621582  ...         0   6</span>
+<span class="sd">        TR              142.876465   855.935547  ...         0   6</span>
+<span class="sd">        US              100.145966  1199.729004  ...         0   6</span>
+<span class="sd">        ZA              102.002663  1196.186157  ...         0   6</span>
+<span class="sd">        &lt;BLANKLINE&gt;</span>
+<span class="sd">        [32 rows x 6 columns]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Controls whether a MultiIndex is used for the</span>
+        <span class="c1"># columns of the result DataFrame.</span>
+        <span class="n">is_dataframe_agg</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">func</span> <span class="o">=</span> <span class="p">[</span><span class="n">func</span><span class="p">]</span>
+            <span class="n">is_dataframe_agg</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">aggs_groupby</span><span class="p">(</span>
+            <span class="n">by</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_by</span><span class="p">,</span>
+            <span class="n">pd_aggs</span><span class="o">=</span><span class="n">func</span><span class="p">,</span>
+            <span class="n">dropna</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dropna</span><span class="p">,</span>
+            <span class="n">numeric_only</span><span class="o">=</span><span class="n">numeric_only</span><span class="p">,</span>
+            <span class="n">is_dataframe_agg</span><span class="o">=</span><span class="n">is_dataframe_agg</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+    <span class="n">agg</span> <span class="o">=</span> <span class="n">aggregate</span>
+
+<div class="viewcode-block" id="DataFrameGroupBy.count"><a class="viewcode-back" href="../../reference/api/groupby.DataFrameGroupBy.count.html#opensearch_py_ml.groupby.DataFrameGroupBy.count">[docs]</a>    <span class="k">def</span> <span class="nf">count</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pd.DataFrame&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the count value for each group.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pandas.DataFrame</span>
+<span class="sd">            nunique value for each numeric column of each group</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        :pandas_api_docs:`pandas.core.groupby.GroupBy.count`</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; df = ed.DataFrame(</span>
+<span class="sd">        ...   OPENSEARCH_TEST_CLIENT, &quot;flights&quot;,</span>
+<span class="sd">        ...   columns=[&quot;AvgTicketPrice&quot;, &quot;Cancelled&quot;, &quot;dayOfWeek&quot;, &quot;DestCountry&quot;]</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; df.groupby(&quot;DestCountry&quot;).count() # doctest: +NORMALIZE_WHITESPACE</span>
+<span class="sd">                     AvgTicketPrice  Cancelled  dayOfWeek</span>
+<span class="sd">        DestCountry</span>
+<span class="sd">        AE                       46         46         46</span>
+<span class="sd">        AR                      305        305        305</span>
+<span class="sd">        AT                      377        377        377</span>
+<span class="sd">        AU                      416        416        416</span>
+<span class="sd">        CA                      944        944        944</span>
+<span class="sd">        ...                     ...        ...        ...</span>
+<span class="sd">        RU                      739        739        739</span>
+<span class="sd">        SE                      255        255        255</span>
+<span class="sd">        TR                       10         10         10</span>
+<span class="sd">        US                     1987       1987       1987</span>
+<span class="sd">        ZA                      283        283        283</span>
+<span class="sd">        &lt;BLANKLINE&gt;</span>
+<span class="sd">        [32 rows x 3 columns]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">aggs_groupby</span><span class="p">(</span>
+            <span class="n">by</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_by</span><span class="p">,</span>
+            <span class="n">pd_aggs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;count&quot;</span><span class="p">],</span>
+            <span class="n">dropna</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_dropna</span><span class="p">,</span>
+            <span class="n">numeric_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">is_dataframe_agg</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">mode</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Currently mode is not supported for groupby&quot;</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Opensearch.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

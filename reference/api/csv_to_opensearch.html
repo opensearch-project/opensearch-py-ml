@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>csv_to_opensearch &mdash; Opensearch-py-ml  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/plot_directive.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Examples" href="../../examples/index.html" />
+    <link rel="prev" title="Input/Output" href="../io.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Opensearch-py-ml
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../dataframe.html">DataFrame</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../series.html">Series</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../general_utility_functions.html">General Utility Functions</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../io.html">Input/Output</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../io.html#flat-file">Flat File</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">csv_to_opensearch</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Opensearch-py-ml</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../io.html">Input/Output</a></li>
+      <li class="breadcrumb-item active">csv_to_opensearch</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/reference/api/csv_to_opensearch.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="csv-to-opensearch">
+<h1>csv_to_opensearch<a class="headerlink" href="#csv-to-opensearch" title="Permalink to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="opensearch_py_ml.etl.csv_to_opensearch">
+<span class="sig-prename descclassname"><span class="pre">opensearch_py_ml.etl.</span></span><span class="sig-name descname"><span class="pre">csv_to_opensearch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filepath_or_buffer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">os_client</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">OpenSearch</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">os_dest_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">es_if_exists</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'fail'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">es_refresh</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">os_dropna</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">es_type_overrides</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Mapping</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">','</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delimiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'infer'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">usecols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">converters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">true_values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">false_values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skipinitialspace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skiprows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skipfooter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nrows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunksize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">na_values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_default_na</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">na_filter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_blank_lines</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parse_dates</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">infer_datetime_format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_date_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date_parser</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dayfirst</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_dates</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'infer'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thousands</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decimal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">b'.'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lineterminator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quotechar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'&quot;'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quoting</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">doublequote</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">escapechar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoding</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dialect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warn_bad_lines</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">error_bad_lines</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_bad_lines</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'error'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delim_whitespace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">low_memory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">memory_map</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">float_precision</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="DataFrame.html#opensearch_py_ml.DataFrame" title="opensearch_py_ml.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../../_modules/opensearch_py_ml/etl.html#csv_to_opensearch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#opensearch_py_ml.etl.csv_to_opensearch" title="Permalink to this definition"></a></dt>
+<dd><p>Read a comma-separated values (csv) file into opensearch_py_ml.DataFrame (i.e. an OpenSearch index).</p>
+<p><strong>Modifies an OpenSearch index</strong></p>
+<p><strong>Note pandas iteration options not supported</strong></p>
+<section id="parameters">
+<h2>Parameters<a class="headerlink" href="#parameters" title="Permalink to this heading"></a></h2>
+<p>os_client: OpenSearch client
+os_dest_index: str</p>
+<blockquote>
+<div><p>Name of OpenSearch index to be appended to</p>
+</div></blockquote>
+<dl class="simple">
+<dt>es_if_exists<span class="classifier">{‘fail’, ‘replace’, ‘append’}, default ‘fail’</span></dt><dd><p>How to behave if the index already exists.</p>
+<ul class="simple">
+<li><p>fail: Raise a ValueError.</p></li>
+<li><p>replace: Delete the index before inserting new values.</p></li>
+<li><p>append: Insert new values to the existing index. Create if does not exist.</p></li>
+</ul>
+</dd>
+<dt>os_dropna: bool, default ‘False’</dt><dd><ul class="simple">
+<li><p>True: Remove missing values (see pandas.Series.dropna)</p></li>
+<li><p>False: Include missing values - may cause bulk to fail</p></li>
+</ul>
+</dd>
+<dt>es_type_overrides: dict, default None</dt><dd><p>Dict of columns: es_type to override default es datatype mappings</p>
+</dd>
+<dt>chunksize</dt><dd><p>number of csv rows to read before bulk index into OpenSearch</p>
+</dd>
+</dl>
+</section>
+<section id="other-parameters">
+<h2>Other Parameters<a class="headerlink" href="#other-parameters" title="Permalink to this heading"></a></h2>
+<p>Parameters derived from <a href="#id1"><span class="problematic" id="id2">:pandas_api_docs:`pandas.read_csv`</span></a>.</p>
+</section>
+<section id="see-also">
+<h2>See Also<a class="headerlink" href="#see-also" title="Permalink to this heading"></a></h2>
+<p><a href="#id3"><span class="problematic" id="id4">:pandas_api_docs:`pandas.read_csv`</span></a></p>
+</section>
+<section id="notes">
+<h2>Notes<a class="headerlink" href="#notes" title="Permalink to this heading"></a></h2>
+<p>iterator not supported</p>
+</section>
+<section id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this heading"></a></h2>
+<p>See if ‘churn’ index exists in OpenSearch</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">opensearchpy</span> <span class="kn">import</span> <span class="n">OpenSearch</span> 
+<span class="gp">&gt;&gt;&gt; </span><span class="n">osclient</span> <span class="o">=</span> <span class="n">OpenSearch</span><span class="p">()</span> 
+<span class="gp">&gt;&gt;&gt; </span><span class="n">osclient</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s2">&quot;churn&quot;</span><span class="p">)</span> 
+<span class="go">False</span>
+</pre></div>
+</div>
+<p>Read ‘churn.csv’ and use first column as _id (and opensearch_py_ml.DataFrame index)</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># churn.csv</span>
+<span class="p">,</span><span class="n">state</span><span class="p">,</span><span class="n">account</span> <span class="n">length</span><span class="p">,</span><span class="n">area</span> <span class="n">code</span><span class="p">,</span><span class="n">phone</span> <span class="n">number</span><span class="p">,</span><span class="n">international</span> <span class="n">plan</span><span class="p">,</span><span class="n">voice</span> <span class="n">mail</span> <span class="n">plan</span><span class="p">,</span><span class="n">number</span> <span class="n">vmail</span> <span class="n">messages</span><span class="p">,</span><span class="n">total</span> <span class="n">day</span> <span class="n">minutes</span><span class="p">,</span><span class="n">total</span> <span class="n">day</span> <span class="n">calls</span><span class="p">,</span><span class="n">total</span> <span class="n">day</span> <span class="n">charge</span><span class="p">,</span><span class="n">total</span> <span class="n">eve</span> <span class="n">minutes</span><span class="p">,</span><span class="n">total</span> <span class="n">eve</span> <span class="n">calls</span><span class="p">,</span><span class="n">total</span> <span class="n">eve</span> <span class="n">charge</span><span class="p">,</span><span class="n">total</span> <span class="n">night</span> <span class="n">minutes</span><span class="p">,</span><span class="n">total</span> <span class="n">night</span> <span class="n">calls</span><span class="p">,</span><span class="n">total</span> <span class="n">night</span> <span class="n">charge</span><span class="p">,</span><span class="n">total</span> <span class="n">intl</span> <span class="n">minutes</span><span class="p">,</span><span class="n">total</span> <span class="n">intl</span> <span class="n">calls</span><span class="p">,</span><span class="n">total</span> <span class="n">intl</span> <span class="n">charge</span><span class="p">,</span><span class="n">customer</span> <span class="n">service</span> <span class="n">calls</span><span class="p">,</span><span class="n">churn</span>
+<span class="mi">0</span><span class="p">,</span><span class="n">KS</span><span class="p">,</span><span class="mi">128</span><span class="p">,</span><span class="mi">415</span><span class="p">,</span><span class="mi">382</span><span class="o">-</span><span class="mi">4657</span><span class="p">,</span><span class="n">no</span><span class="p">,</span><span class="n">yes</span><span class="p">,</span><span class="mi">25</span><span class="p">,</span><span class="mf">265.1</span><span class="p">,</span><span class="mi">110</span><span class="p">,</span><span class="mf">45.07</span><span class="p">,</span><span class="mf">197.4</span><span class="p">,</span><span class="mi">99</span><span class="p">,</span><span class="mf">16.78</span><span class="p">,</span><span class="mf">244.7</span><span class="p">,</span><span class="mi">91</span><span class="p">,</span><span class="mf">11.01</span><span class="p">,</span><span class="mf">10.0</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mf">2.7</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span>
+<span class="mi">1</span><span class="p">,</span><span class="n">OH</span><span class="p">,</span><span class="mi">107</span><span class="p">,</span><span class="mi">415</span><span class="p">,</span><span class="mi">371</span><span class="o">-</span><span class="mi">7191</span><span class="p">,</span><span class="n">no</span><span class="p">,</span><span class="n">yes</span><span class="p">,</span><span class="mi">26</span><span class="p">,</span><span class="mf">161.6</span><span class="p">,</span><span class="mi">123</span><span class="p">,</span><span class="mf">27.47</span><span class="p">,</span><span class="mf">195.5</span><span class="p">,</span><span class="mi">103</span><span class="p">,</span><span class="mf">16.62</span><span class="p">,</span><span class="mf">254.4</span><span class="p">,</span><span class="mi">103</span><span class="p">,</span><span class="mf">11.45</span><span class="p">,</span><span class="mf">13.7</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mf">3.7</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span>
+<span class="o">...</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span> <span class="n">ed</span><span class="o">.</span><span class="n">csv_to_opensearch</span><span class="p">(</span>
+<span class="gp">... </span>     <span class="s2">&quot;churn.csv&quot;</span><span class="p">,</span>
+<span class="gp">... </span>     <span class="n">os_client</span><span class="o">=</span><span class="n">OPENSEARCH_TEST_CLIENT</span><span class="p">,</span>
+<span class="gp">... </span>     <span class="n">os_dest_index</span><span class="o">=</span><span class="s1">&#39;churn&#39;</span><span class="p">,</span>
+<span class="gp">... </span>     <span class="n">es_refresh</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="gp">... </span>     <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span>
+<span class="gp">... </span><span class="p">)</span> 
+<span class="go">          account length  area code  churn  customer service calls  ... total night calls  total night charge total night minutes voice mail plan</span>
+<span class="go">0                128        415      0                       1  ...                91               11.01               244.7             yes</span>
+<span class="go">1                107        415      0                       1  ...               103               11.45               254.4             yes</span>
+<span class="go">2                137        415      0                       0  ...               104                7.32               162.6              no</span>
+<span class="go">3                 84        408      0                       2  ...                89                8.86               196.9              no</span>
+<span class="go">4                 75        415      0                       3  ...               121                8.41               186.9              no</span>
+<span class="gp">... </span>             <span class="o">...</span>        <span class="o">...</span>    <span class="o">...</span>                     <span class="o">...</span>  <span class="o">...</span>               <span class="o">...</span>                 <span class="o">...</span>                 <span class="o">...</span>             <span class="o">...</span>
+<span class="go">3328             192        415      0                       2  ...                83               12.56               279.1             yes</span>
+<span class="go">3329              68        415      0                       3  ...               123                8.61               191.3              no</span>
+<span class="go">3330              28        510      0                       2  ...                91                8.64               191.9              no</span>
+<span class="go">3331             184        510      0                       2  ...               137                6.26               139.2              no</span>
+<span class="go">3332              74        415      0                       0  ...                77               10.86               241.4             yes</span>
+
+<span class="go">[3333 rows x 21 columns]</span>
+</pre></div>
+</div>
+<p>Validate data now exists in ‘churn’ index:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">es</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s2">&quot;churn&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> 
+<span class="go">{&#39;took&#39;: 1, &#39;timed_out&#39;: False, &#39;_shards&#39;: {&#39;total&#39;: 1, &#39;successful&#39;: 1, &#39;skipped&#39;: 0, &#39;failed&#39;: 0}, &#39;hits&#39;: {&#39;total&#39;: {&#39;value&#39;: 3333, &#39;relation&#39;: &#39;eq&#39;}, &#39;max_score&#39;: 1.0, &#39;hits&#39;: [{&#39;_index&#39;: &#39;churn&#39;, &#39;_id&#39;: &#39;0&#39;, &#39;_score&#39;: 1.0, &#39;_source&#39;: {&#39;state&#39;: &#39;KS&#39;, &#39;account length&#39;: 128, &#39;area code&#39;: 415, &#39;phone number&#39;: &#39;382-4657&#39;, &#39;international plan&#39;: &#39;no&#39;, &#39;voice mail plan&#39;: &#39;yes&#39;, &#39;number vmail messages&#39;: 25, &#39;total day minutes&#39;: 265.1, &#39;total day calls&#39;: 110, &#39;total day charge&#39;: 45.07, &#39;total eve minutes&#39;: 197.4, &#39;total eve calls&#39;: 99, &#39;total eve charge&#39;: 16.78, &#39;total night minutes&#39;: 244.7, &#39;total night calls&#39;: 91, &#39;total night charge&#39;: 11.01, &#39;total intl minutes&#39;: 10.0, &#39;total intl calls&#39;: 3, &#39;total intl charge&#39;: 2.7, &#39;customer service calls&#39;: 1, &#39;churn&#39;: 0}}]}}</span>
+</pre></div>
+</div>
+<p>TODO - currently the opensearch_py_ml.DataFrame may not retain the order of the data in the csv.</p>
+</section>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../io.html" class="btn btn-neutral float-left" title="Input/Output" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../../examples/index.html" class="btn btn-neutral float-right" title="Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Opensearch.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

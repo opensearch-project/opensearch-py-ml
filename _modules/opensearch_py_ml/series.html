@@ -1,0 +1,1833 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>opensearch_py_ml.series &mdash; Opensearch-py-ml  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/plot_directive.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Opensearch-py-ml
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/index.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Opensearch-py-ml</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">opensearch_py_ml.series</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for opensearch_py_ml.series</h1><div class="highlight"><pre>
+<span></span><span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
+<span class="c1"># The OpenSearch Contributors require contributions made to</span>
+<span class="c1"># this file be licensed under the Apache-2.0 license or a</span>
+<span class="c1"># compatible open source license.</span>
+<span class="c1"># Any modifications Copyright OpenSearch Contributors. See</span>
+<span class="c1"># GitHub history for details.</span>
+
+
+<span class="c1">#  Licensed to Elasticsearch B.V. under one or more contributor</span>
+<span class="c1">#  license agreements. See the NOTICE file distributed with</span>
+<span class="c1">#  this work for additional information regarding copyright</span>
+<span class="c1">#  ownership. Elasticsearch B.V. licenses this file to you under</span>
+<span class="c1">#  the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1">#  not use this file except in compliance with the License.</span>
+<span class="c1">#  You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1"># 	http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1">#  Unless required by applicable law or agreed to in writing,</span>
+<span class="c1">#  software distributed under the License is distributed on an</span>
+<span class="c1">#  &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY</span>
+<span class="c1">#  KIND, either express or implied.  See the License for the</span>
+<span class="c1">#  specific language governing permissions and limitations</span>
+<span class="c1">#  under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Series</span>
+<span class="sd">---------</span>
+<span class="sd">One-dimensional ndarray with axis labels (including time series).</span>
+
+<span class="sd">The underlying data resides in OpenSearch and the API aligns as much as</span>
+<span class="sd">possible with pandas.DataFrame API.</span>
+
+<span class="sd">This allows the opensearch_py_ml.Series to access large datasets stored in OpenSearch,</span>
+<span class="sd">without storing the dataset in local memory.</span>
+
+<span class="sd">Implementation Details</span>
+<span class="sd">----------------------</span>
+<span class="sd">Based on NDFrame which underpins opensearch_py_ml.DataFrame</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Collection</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">StringIO</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>  <span class="c1"># type: ignore</span>
+<span class="kn">from</span> <span class="nn">pandas.io.common</span> <span class="kn">import</span> <span class="n">_expand_user</span><span class="p">,</span> <span class="n">stringify_path</span>  <span class="c1"># type: ignore</span>
+
+<span class="kn">import</span> <span class="nn">opensearch_py_ml.plotting</span>
+<span class="kn">from</span> <span class="nn">opensearch_py_ml.arithmetics</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ArithmeticNumber</span><span class="p">,</span>
+    <span class="n">ArithmeticSeries</span><span class="p">,</span>
+    <span class="n">ArithmeticString</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">opensearch_py_ml.common</span> <span class="kn">import</span> <span class="n">OPENSEARCH_TEST_CLIENT</span>  <span class="c1"># noqa: F401</span>
+<span class="kn">from</span> <span class="nn">opensearch_py_ml.common</span> <span class="kn">import</span> <span class="n">DEFAULT_NUM_ROWS_DISPLAYED</span><span class="p">,</span> <span class="n">docstring_parameter</span>
+<span class="kn">from</span> <span class="nn">opensearch_py_ml.filter</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">BooleanFilter</span><span class="p">,</span>
+    <span class="n">Equal</span><span class="p">,</span>
+    <span class="n">Greater</span><span class="p">,</span>
+    <span class="n">GreaterEqual</span><span class="p">,</span>
+    <span class="n">IsIn</span><span class="p">,</span>
+    <span class="n">IsNull</span><span class="p">,</span>
+    <span class="n">Less</span><span class="p">,</span>
+    <span class="n">LessEqual</span><span class="p">,</span>
+    <span class="n">NotFilter</span><span class="p">,</span>
+    <span class="n">NotNull</span><span class="p">,</span>
+    <span class="n">QueryFilter</span><span class="p">,</span>
+    <span class="n">ScriptFilter</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">opensearch_py_ml.ndframe</span> <span class="kn">import</span> <span class="n">NDFrame</span>
+<span class="kn">from</span> <span class="nn">opensearch_py_ml.utils</span> <span class="kn">import</span> <span class="n">to_list</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">opensearchpy</span> <span class="kn">import</span> <span class="n">OpenSearch</span>
+
+    <span class="kn">from</span> <span class="nn">opensearch_py_ml.query_compiler</span> <span class="kn">import</span> <span class="n">QueryCompiler</span>
+
+
+<span class="k">def</span> <span class="nf">_get_method_name</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">sys</span><span class="o">.</span><span class="n">_getframe</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">f_code</span><span class="o">.</span><span class="n">co_name</span>
+
+
+<div class="viewcode-block" id="Series"><a class="viewcode-back" href="../../reference/api/Series.html#opensearch_py_ml.Series">[docs]</a><span class="k">class</span> <span class="nc">Series</span><span class="p">(</span><span class="n">NDFrame</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    pandas.Series like API that proxies into OpenSearch index(es).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    os_client : opensearchpy.OpenSearch</span>
+<span class="sd">        A reference to a OpenSearch python client</span>
+
+<span class="sd">    os_index_pattern : str</span>
+<span class="sd">        An OpenSearch index pattern. This can contain wildcards.</span>
+
+<span class="sd">    os_index_field : str</span>
+<span class="sd">        The field to base the series on</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    If the OpenSearch index is deleted or index mappings are changed after this</span>
+<span class="sd">    object is created, the object is not rebuilt and so inconsistencies can occur.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    :pandas_api_docs:`pandas.Series`</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; ed.Series(os_client=OPENSEARCH_TEST_CLIENT, os_index_pattern=&#39;flights&#39;, name=&#39;Carrier&#39;)</span>
+<span class="sd">    0         Kibana Airlines</span>
+<span class="sd">    1        Logstash Airways</span>
+<span class="sd">    2        Logstash Airways</span>
+<span class="sd">    3         Kibana Airlines</span>
+<span class="sd">    4         Kibana Airlines</span>
+<span class="sd">                   ...</span>
+<span class="sd">    13054    Logstash Airways</span>
+<span class="sd">    13055    Logstash Airways</span>
+<span class="sd">    13056    Logstash Airways</span>
+<span class="sd">    13057            JetBeats</span>
+<span class="sd">    13058            JetBeats</span>
+<span class="sd">    Name: Carrier, Length: 13059, dtype: object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">os_client</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;OpenSearch&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">os_index_pattern</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">os_index_field</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">_query_compiler</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;QueryCompiler&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Series has 1 column</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">columns</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span><span class="p">]</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">os_client</span><span class="o">=</span><span class="n">os_client</span><span class="p">,</span>
+            <span class="n">os_index_pattern</span><span class="o">=</span><span class="n">os_index_pattern</span><span class="p">,</span>
+            <span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">,</span>
+            <span class="n">os_index_field</span><span class="o">=</span><span class="n">os_index_field</span><span class="p">,</span>
+            <span class="n">_query_compiler</span><span class="o">=</span><span class="n">_query_compiler</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="n">hist</span> <span class="o">=</span> <span class="n">opensearch_py_ml</span><span class="o">.</span><span class="n">plotting</span><span class="o">.</span><span class="n">ed_hist_series</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">empty</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Determines if the Series is empty.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            True if the Series is empty.</span>
+<span class="sd">            False otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">shape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a tuple representing the dimensionality of the Series.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        shape: tuple</span>
+
+<span class="sd">        0. number of rows</span>
+<span class="sd">        1. number of columns</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        - number of rows ``len(series)`` queries OpenSearch</span>
+<span class="sd">        - number of columns == 1</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; df = ed.Series(OPENSEARCH_TEST_CLIENT, &#39;ecommerce&#39;, name=&#39;total_quantity&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; df.shape</span>
+<span class="sd">        (4675, 1)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">num_rows</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">num_columns</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="k">return</span> <span class="n">num_rows</span><span class="p">,</span> <span class="n">num_columns</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">es_field_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        es_field_name: str</span>
+<span class="sd">            Return the OpenSearch field name for this series</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">get_field_names</span><span class="p">(</span><span class="n">include_scripted_fields</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="nd">@name</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">rename</span><span class="p">({</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">name</span><span class="p">},</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Series.rename"><a class="viewcode-back" href="../../reference/api/Series.rename.html#opensearch_py_ml.Series.rename">[docs]</a>    <span class="k">def</span> <span class="nf">rename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Rename name of series. Only column rename is supported. This does not change the underlying</span>
+<span class="sd">        index, but adds a symbolic link from the new name (column) to the OpenSearch field name.</span>
+
+<span class="sd">        For instance, if a field was called &#39;total_quantity&#39; it could be renamed &#39;Total Quantity&#39;.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        new_name: str</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        opensearch_py_ml.Series</span>
+<span class="sd">            opensearch_py_ml.Series with new name.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        :pandas_api_docs:`pandas.Series.rename`</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;flights&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; df.Carrier</span>
+<span class="sd">        0         Kibana Airlines</span>
+<span class="sd">        1        Logstash Airways</span>
+<span class="sd">        2        Logstash Airways</span>
+<span class="sd">        3         Kibana Airlines</span>
+<span class="sd">        4         Kibana Airlines</span>
+<span class="sd">                       ...</span>
+<span class="sd">        13054    Logstash Airways</span>
+<span class="sd">        13055    Logstash Airways</span>
+<span class="sd">        13056    Logstash Airways</span>
+<span class="sd">        13057            JetBeats</span>
+<span class="sd">        13058            JetBeats</span>
+<span class="sd">        Name: Carrier, Length: 13059, dtype: object</span>
+<span class="sd">        &gt;&gt;&gt; df.Carrier.rename(&#39;Airline&#39;)</span>
+<span class="sd">        0         Kibana Airlines</span>
+<span class="sd">        1        Logstash Airways</span>
+<span class="sd">        2        Logstash Airways</span>
+<span class="sd">        3         Kibana Airlines</span>
+<span class="sd">        4         Kibana Airlines</span>
+<span class="sd">                       ...</span>
+<span class="sd">        13054    Logstash Airways</span>
+<span class="sd">        13055    Logstash Airways</span>
+<span class="sd">        13056    Logstash Airways</span>
+<span class="sd">        13057            JetBeats</span>
+<span class="sd">        13058            JetBeats</span>
+<span class="sd">        Name: Airline, Length: 13059, dtype: object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">Series</span><span class="p">(</span>
+            <span class="n">_query_compiler</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">rename</span><span class="p">({</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">new_name</span><span class="p">})</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Series.head"><a class="viewcode-back" href="../../reference/api/Series.head.html#opensearch_py_ml.Series.head">[docs]</a>    <span class="k">def</span> <span class="nf">head</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Series</span><span class="p">(</span><span class="n">_query_compiler</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">n</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Series.tail"><a class="viewcode-back" href="../../reference/api/Series.tail.html#opensearch_py_ml.Series.tail">[docs]</a>    <span class="k">def</span> <span class="nf">tail</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Series</span><span class="p">(</span><span class="n">_query_compiler</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">tail</span><span class="p">(</span><span class="n">n</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Series.sample"><a class="viewcode-back" href="../../reference/api/Series.sample.html#opensearch_py_ml.Series.sample">[docs]</a>    <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">n</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">frac</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">random_state</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Series</span><span class="p">(</span>
+            <span class="n">_query_compiler</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">frac</span><span class="p">,</span> <span class="n">random_state</span><span class="p">)</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Series.value_counts"><a class="viewcode-back" href="../../reference/api/Series.value_counts.html#opensearch_py_ml.Series.value_counts">[docs]</a>    <span class="k">def</span> <span class="nf">value_counts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">es_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the value counts for the specified field.</span>
+
+<span class="sd">        **Note we can only do this for aggregatable OpenSearch fields - (in general) numeric and keyword</span>
+<span class="sd">        rather than text fields**</span>
+
+<span class="sd">        TODO - implement remainder of pandas arguments</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        es_size: int, default 10</span>
+<span class="sd">            Number of buckets to return counts for, automatically sorts by count descending.</span>
+<span class="sd">            This parameter is specific to `opensearch_py_ml`, and determines how many term buckets</span>
+<span class="sd">            OpenSearch should return out of the overall terms list.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pandas.Series</span>
+<span class="sd">            number of occurrences of each value in the column</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        :pandas_api_docs:`pandas.Series.value_counts`</span>
+<span class="sd">        :es_api_docs:`search-aggregations-bucket-terms-aggregation`</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;flights&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; df[&#39;Carrier&#39;].value_counts()</span>
+<span class="sd">        Logstash Airways    3331</span>
+<span class="sd">        JetBeats            3274</span>
+<span class="sd">        Kibana Airlines     3234</span>
+<span class="sd">        ES-Air              3220</span>
+<span class="sd">        Name: Carrier, dtype: int64</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">es_size</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;es_size must be a positive integer.&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">es_size</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;es_size must be a positive integer.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">value_counts</span><span class="p">(</span><span class="n">es_size</span><span class="p">)</span></div>
+
+    <span class="c1"># dtype not implemented for Series as causes query to fail</span>
+    <span class="c1"># in pandas.core.computation.ops.Term.type</span>
+
+    <span class="c1"># ----------------------------------------------------------------------</span>
+    <span class="c1"># Rendering Methods</span>
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a string representation for a particular Series.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">buf</span> <span class="o">=</span> <span class="n">StringIO</span><span class="p">()</span>
+
+        <span class="c1"># max_rows and max_cols determine the maximum size of the pretty printed tabular</span>
+        <span class="c1"># representation of the series. pandas defaults are 60 and 20 respectively.</span>
+        <span class="c1"># series where len(series) &gt; max_rows shows a truncated view with 10 rows shown.</span>
+        <span class="n">max_rows</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">get_option</span><span class="p">(</span><span class="s2">&quot;display.max_rows&quot;</span><span class="p">)</span>
+        <span class="n">min_rows</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">get_option</span><span class="p">(</span><span class="s2">&quot;display.min_rows&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">max_rows</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_rows</span><span class="p">:</span>
+            <span class="n">max_rows</span> <span class="o">=</span> <span class="n">min_rows</span>
+
+        <span class="n">show_dimensions</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">get_option</span><span class="p">(</span><span class="s2">&quot;display.show_dimensions&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">to_string</span><span class="p">(</span>
+            <span class="n">buf</span><span class="o">=</span><span class="n">buf</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">min_rows</span><span class="o">=</span><span class="n">min_rows</span><span class="p">,</span>
+            <span class="n">max_rows</span><span class="o">=</span><span class="n">max_rows</span><span class="p">,</span>
+            <span class="n">length</span><span class="o">=</span><span class="n">show_dimensions</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">result</span>
+
+<div class="viewcode-block" id="Series.to_string"><a class="viewcode-back" href="../../reference/api/Series.to_string.html#opensearch_py_ml.Series.to_string">[docs]</a>    <span class="nd">@docstring_parameter</span><span class="p">(</span><span class="n">DEFAULT_NUM_ROWS_DISPLAYED</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">to_string</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">buf</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">na_rep</span><span class="o">=</span><span class="s2">&quot;NaN&quot;</span><span class="p">,</span>
+        <span class="n">float_format</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">header</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">length</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">max_rows</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">min_rows</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Render a string representation of the Series.</span>
+
+<span class="sd">        Follows pandas implementation except when ``max_rows=None``. In this scenario, we set ``max_rows={0}`` to avoid</span>
+<span class="sd">        accidentally dumping an entire index. This can be overridden by explicitly setting ``max_rows``.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        :pandas_api_docs:`pandas.Series.to_string`</span>
+<span class="sd">            for argument details.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># In pandas calling &#39;to_string&#39; without max_rows set, will dump ALL rows - we avoid this</span>
+        <span class="c1"># by limiting rows by default.</span>
+        <span class="n">num_rows</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>  <span class="c1"># avoid multiple calls</span>
+        <span class="k">if</span> <span class="n">num_rows</span> <span class="o">&lt;=</span> <span class="n">DEFAULT_NUM_ROWS_DISPLAYED</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">max_rows</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">max_rows</span> <span class="o">=</span> <span class="n">num_rows</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">max_rows</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">num_rows</span><span class="p">,</span> <span class="n">max_rows</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">max_rows</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Series.to_string called without max_rows set &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;- this will return entire index results. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Setting max_rows=</span><span class="si">{</span><span class="n">DEFAULT_NUM_ROWS_DISPLAYED</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot; overwrite if different behaviour is required.&quot;</span><span class="p">,</span>
+                <span class="ne">UserWarning</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">max_rows</span> <span class="o">=</span> <span class="n">DEFAULT_NUM_ROWS_DISPLAYED</span>
+
+        <span class="c1"># because of the way pandas handles max_rows=0, not having this throws an error</span>
+        <span class="c1"># see opensearch_py_ml issue #56</span>
+        <span class="k">if</span> <span class="n">max_rows</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">max_rows</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="c1"># Create a slightly bigger dataframe than display</span>
+        <span class="n">temp_series</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_repr</span><span class="p">(</span><span class="n">max_rows</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">buf</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">_buf</span> <span class="o">=</span> <span class="n">_expand_user</span><span class="p">(</span><span class="n">stringify_path</span><span class="p">(</span><span class="n">buf</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">_buf</span> <span class="o">=</span> <span class="n">StringIO</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">num_rows</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># Empty series are rendered differently than</span>
+            <span class="c1"># series with items. We can luckily use our</span>
+            <span class="c1"># example series in this case.</span>
+            <span class="n">temp_series</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">to_string</span><span class="p">(</span>
+                <span class="n">buf</span><span class="o">=</span><span class="n">_buf</span><span class="p">,</span>
+                <span class="n">na_rep</span><span class="o">=</span><span class="n">na_rep</span><span class="p">,</span>
+                <span class="n">float_format</span><span class="o">=</span><span class="n">float_format</span><span class="p">,</span>
+                <span class="n">header</span><span class="o">=</span><span class="n">header</span><span class="p">,</span>
+                <span class="n">index</span><span class="o">=</span><span class="n">index</span><span class="p">,</span>
+                <span class="n">length</span><span class="o">=</span><span class="n">length</span><span class="p">,</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                <span class="n">max_rows</span><span class="o">=</span><span class="n">max_rows</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Create repr of fake series without name, length, dtype summary</span>
+            <span class="n">temp_series</span><span class="o">.</span><span class="n">to_string</span><span class="p">(</span>
+                <span class="n">buf</span><span class="o">=</span><span class="n">_buf</span><span class="p">,</span>
+                <span class="n">na_rep</span><span class="o">=</span><span class="n">na_rep</span><span class="p">,</span>
+                <span class="n">float_format</span><span class="o">=</span><span class="n">float_format</span><span class="p">,</span>
+                <span class="n">header</span><span class="o">=</span><span class="n">header</span><span class="p">,</span>
+                <span class="n">index</span><span class="o">=</span><span class="n">index</span><span class="p">,</span>
+                <span class="n">length</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">max_rows</span><span class="o">=</span><span class="n">max_rows</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Create the summary</span>
+            <span class="n">footer</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">footer</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Name: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">length</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_rows</span><span class="p">:</span>
+                <span class="n">footer</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Length: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">dtype</span><span class="p">:</span>
+                <span class="n">footer</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;dtype: </span><span class="si">{</span><span class="n">temp_series</span><span class="o">.</span><span class="n">dtype</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">footer</span><span class="p">:</span>
+                <span class="n">_buf</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">footer</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">buf</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">_buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="Series.to_pandas"><a class="viewcode-back" href="../../reference/api/Series.to_pandas.html#opensearch_py_ml.Series.to_pandas">[docs]</a>    <span class="k">def</span> <span class="nf">to_pandas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">to_pandas</span><span class="p">(</span><span class="n">show_progress</span><span class="o">=</span><span class="n">show_progress</span><span class="p">)[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">]</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">dtype</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the dtype object of the underlying data.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        :pandas_api_docs:`pandas.Series.dtype`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">dtypes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">os_dtype</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the OpenSearch type of the underlying data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">os_dtypes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__gt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;Series&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">BooleanFilter</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">):</span>
+            <span class="c1"># convert numpy datetime64 object it has no `strftime` method</span>
+            <span class="n">other</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Series</span><span class="p">):</span>
+            <span class="c1"># Need to use scripted query to compare to values</span>
+            <span class="n">painless</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;doc[&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;].value &gt; doc[&#39;</span><span class="si">{</span><span class="n">other</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;].value&quot;</span>
+            <span class="k">return</span> <span class="n">ScriptFilter</span><span class="p">(</span><span class="n">painless</span><span class="p">,</span> <span class="n">lang</span><span class="o">=</span><span class="s2">&quot;painless&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">datetime</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="n">Greater</span><span class="p">(</span><span class="n">field</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">other</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="fm">__lt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;Series&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">BooleanFilter</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">):</span>
+            <span class="n">other</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Series</span><span class="p">):</span>
+            <span class="c1"># Need to use scripted query to compare to values</span>
+            <span class="n">painless</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;doc[&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;].value &lt; doc[&#39;</span><span class="si">{</span><span class="n">other</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;].value&quot;</span>
+            <span class="k">return</span> <span class="n">ScriptFilter</span><span class="p">(</span><span class="n">painless</span><span class="p">,</span> <span class="n">lang</span><span class="o">=</span><span class="s2">&quot;painless&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">datetime</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="n">Less</span><span class="p">(</span><span class="n">field</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">other</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="fm">__ge__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;Series&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">BooleanFilter</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">):</span>
+            <span class="n">other</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Series</span><span class="p">):</span>
+            <span class="c1"># Need to use scripted query to compare to values</span>
+            <span class="n">painless</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;doc[&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;].value &gt;= doc[&#39;</span><span class="si">{</span><span class="n">other</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;].value&quot;</span>
+            <span class="k">return</span> <span class="n">ScriptFilter</span><span class="p">(</span><span class="n">painless</span><span class="p">,</span> <span class="n">lang</span><span class="o">=</span><span class="s2">&quot;painless&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">datetime</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="n">GreaterEqual</span><span class="p">(</span><span class="n">field</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">other</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="fm">__le__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;Series&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">BooleanFilter</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">):</span>
+            <span class="n">other</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Series</span><span class="p">):</span>
+            <span class="c1"># Need to use scripted query to compare to values</span>
+            <span class="n">painless</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;doc[&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;].value &lt;= doc[&#39;</span><span class="si">{</span><span class="n">other</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;].value&quot;</span>
+            <span class="k">return</span> <span class="n">ScriptFilter</span><span class="p">(</span><span class="n">painless</span><span class="p">,</span> <span class="n">lang</span><span class="o">=</span><span class="s2">&quot;painless&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">datetime</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="n">LessEqual</span><span class="p">(</span><span class="n">field</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">other</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;Series&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">BooleanFilter</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">):</span>
+            <span class="n">other</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Series</span><span class="p">):</span>
+            <span class="c1"># Need to use scripted query to compare to values</span>
+            <span class="n">painless</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;doc[&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;].value == doc[&#39;</span><span class="si">{</span><span class="n">other</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;].value&quot;</span>
+            <span class="k">return</span> <span class="n">ScriptFilter</span><span class="p">(</span><span class="n">painless</span><span class="p">,</span> <span class="n">lang</span><span class="o">=</span><span class="s2">&quot;painless&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">datetime</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="n">Equal</span><span class="p">(</span><span class="n">field</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">other</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">Equal</span><span class="p">(</span><span class="n">field</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">other</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="fm">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;Series&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">BooleanFilter</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">):</span>
+            <span class="n">other</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Series</span><span class="p">):</span>
+            <span class="c1"># Need to use scripted query to compare to values</span>
+            <span class="n">painless</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;doc[&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;].value != doc[&#39;</span><span class="si">{</span><span class="n">other</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;].value&quot;</span>
+            <span class="k">return</span> <span class="n">ScriptFilter</span><span class="p">(</span><span class="n">painless</span><span class="p">,</span> <span class="n">lang</span><span class="o">=</span><span class="s2">&quot;painless&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">datetime</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="n">NotFilter</span><span class="p">(</span><span class="n">Equal</span><span class="p">(</span><span class="n">field</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">other</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">NotFilter</span><span class="p">(</span><span class="n">Equal</span><span class="p">(</span><span class="n">field</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">other</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">))</span>
+
+<div class="viewcode-block" id="Series.isin"><a class="viewcode-back" href="../../reference/api/Series.isin.html#opensearch_py_ml.Series.isin">[docs]</a>    <span class="k">def</span> <span class="nf">isin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Collection</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">BooleanFilter</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="n">Collection</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="n">IsIn</span><span class="p">(</span><span class="n">field</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">to_list</span><span class="p">(</span><span class="n">other</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Series.isna"><a class="viewcode-back" href="../../reference/api/Series.isna.html#opensearch_py_ml.Series.isna">[docs]</a>    <span class="k">def</span> <span class="nf">isna</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BooleanFilter</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Detect missing values.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        opensearch_py_ml.Series</span>
+<span class="sd">            Mask of bool values for each element in Series that indicates whether an element is not an NA value.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        :pandas_api_docs:`pandas.Series.isna`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">IsNull</span><span class="p">(</span><span class="n">field</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div>
+
+    <span class="n">isnull</span> <span class="o">=</span> <span class="n">isna</span>
+
+<div class="viewcode-block" id="Series.notna"><a class="viewcode-back" href="../../reference/api/Series.notna.html#opensearch_py_ml.Series.notna">[docs]</a>    <span class="k">def</span> <span class="nf">notna</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BooleanFilter</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Detect existing (non-missing) values.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        opensearch_py_ml.Series</span>
+<span class="sd">            Mask of bool values for each element in Series that indicates whether an element is not an NA value</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        :pandas_api_docs:`pandas.Series.notna`</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">NotNull</span><span class="p">(</span><span class="n">field</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span></div>
+
+    <span class="n">notnull</span> <span class="o">=</span> <span class="n">notna</span>
+
+<div class="viewcode-block" id="Series.quantile"><a class="viewcode-back" href="../../reference/api/Series.quantile.html#opensearch_py_ml.Series.quantile">[docs]</a>    <span class="k">def</span> <span class="nf">quantile</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="mf">0.5</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Used to calculate quantile for a given Series.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        q:</span>
+<span class="sd">            float or array like, default 0.5</span>
+<span class="sd">            Value between 0 &lt;= q &lt;= 1, the quantile(s) to compute.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pandas.Series or any single dtype</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        :pandas_api_docs:`pandas.Series.quantile`</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; ed_flights = ed.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;flights&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; ed_flights[&quot;timestamp&quot;].quantile([.2,.5,.75]) # doctest: +SKIP</span>
+<span class="sd">        0.20   2018-01-09 04:30:57.289159912</span>
+<span class="sd">        0.50   2018-01-21 23:39:27.031627441</span>
+<span class="sd">        0.75   2018-02-01 04:54:59.256136963</span>
+<span class="sd">        Name: timestamp, dtype: datetime64[ns]</span>
+
+<span class="sd">        &gt;&gt;&gt; ed_flights[&quot;dayOfWeek&quot;].quantile() # doctest: +SKIP</span>
+<span class="sd">        3.0</span>
+
+<span class="sd">        &gt;&gt;&gt; ed_flights[&quot;timestamp&quot;].quantile() # doctest: +SKIP</span>
+<span class="sd">        Timestamp(&#39;2018-01-22 00:12:48.844534180&#39;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span>
+            <span class="n">quantiles</span><span class="o">=</span><span class="n">q</span><span class="p">,</span> <span class="n">numeric_only</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">is_dataframe</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">ndim</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns 1 by definition of a Series</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        int</span>
+<span class="sd">            By definition 1</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        :pandas_api_docs:`pandas.Series.ndim`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="mi">1</span>
+
+<div class="viewcode-block" id="Series.filter"><a class="viewcode-back" href="../../reference/api/Series.filter.html#opensearch_py_ml.Series.filter">[docs]</a>    <span class="k">def</span> <span class="nf">filter</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">items</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">like</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">regex</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">axis</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Subset the dataframe rows or columns according to the specified index labels.</span>
+<span class="sd">        Note that this routine does not filter a dataframe on its</span>
+<span class="sd">        contents. The filter is applied to the labels of the index.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        items : list-like</span>
+<span class="sd">            Keep labels from axis which are in items.</span>
+<span class="sd">        like : str</span>
+<span class="sd">            Keep labels from axis for which &quot;like in label == True&quot;.</span>
+<span class="sd">        regex : str (regular expression)</span>
+<span class="sd">            Keep labels from axis for which re.search(regex, label) == True.</span>
+<span class="sd">        axis : {0 or ‘index’, 1 or ‘columns’, None}, default None</span>
+<span class="sd">            The axis to filter on, expressed either as an index (int) or axis name (str).</span>
+<span class="sd">            By default this is the info axis, ‘index’ for Series, ‘columns’ for DataFrame.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        opensearch_py_ml.Series</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        :pandas_api_docs:`pandas.Series.filter`</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        The ``items``, ``like``, and ``regex`` parameters are</span>
+<span class="sd">        enforced to be mutually exclusive.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">filter_options_passed</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">items</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">bool</span><span class="p">(</span><span class="n">like</span><span class="p">),</span> <span class="nb">bool</span><span class="p">(</span><span class="n">regex</span><span class="p">)])</span>
+        <span class="k">if</span> <span class="n">filter_options_passed</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="s2">&quot;Keyword arguments `items`, `like`, or `regex` &quot;</span>
+                <span class="s2">&quot;are mutually exclusive&quot;</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">filter_options_passed</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Must pass either &#39;items&#39;, &#39;like&#39;, or &#39;regex&#39;&quot;</span><span class="p">)</span>
+
+        <span class="c1"># axis defaults to &#39;columns&#39; for DataFrame, &#39;index&#39; for Series</span>
+        <span class="k">if</span> <span class="n">axis</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">axis</span> <span class="o">=</span> <span class="s2">&quot;index&quot;</span>
+        <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="o">.</span><span class="n">_get_axis_name</span><span class="p">(</span><span class="n">axis</span><span class="p">)</span>
+
+        <span class="n">new_query_compiler</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+            <span class="n">items</span><span class="o">=</span><span class="n">items</span><span class="p">,</span> <span class="n">like</span><span class="o">=</span><span class="n">like</span><span class="p">,</span> <span class="n">regex</span><span class="o">=</span><span class="n">regex</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">Series</span><span class="p">(</span><span class="n">_query_compiler</span><span class="o">=</span><span class="n">new_query_compiler</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Series.mode"><a class="viewcode-back" href="../../reference/api/Series.mode.html#opensearch_py_ml.Series.mode">[docs]</a>    <span class="k">def</span> <span class="nf">mode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">es_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Calculate mode of a series</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        es_size: default 10</span>
+<span class="sd">            number of rows to be returned if mode has multiple values</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        :pandas_api_docs:`pandas.Series.mode`</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; ed_ecommerce = ed.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;ecommerce&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; ed_ecommerce[&quot;day_of_week&quot;].mode()</span>
+<span class="sd">        0    Thursday</span>
+<span class="sd">        Name: day_of_week, dtype: object</span>
+
+<span class="sd">        &gt;&gt;&gt; ed_ecommerce[&quot;order_date&quot;].mode()</span>
+<span class="sd">        0   2016-12-02 20:36:58</span>
+<span class="sd">        1   2016-12-04 23:44:10</span>
+<span class="sd">        2   2016-12-08 06:21:36</span>
+<span class="sd">        3   2016-12-08 09:38:53</span>
+<span class="sd">        4   2016-12-12 11:38:24</span>
+<span class="sd">        5   2016-12-12 19:46:34</span>
+<span class="sd">        6   2016-12-14 18:00:00</span>
+<span class="sd">        7   2016-12-15 11:38:24</span>
+<span class="sd">        8   2016-12-22 19:39:22</span>
+<span class="sd">        9   2016-12-24 06:21:36</span>
+<span class="sd">        Name: order_date, dtype: datetime64[ns]</span>
+
+<span class="sd">        &gt;&gt;&gt; ed_ecommerce[&quot;order_date&quot;].mode(es_size=3)</span>
+<span class="sd">        0   2016-12-02 20:36:58</span>
+<span class="sd">        1   2016-12-04 23:44:10</span>
+<span class="sd">        2   2016-12-08 06:21:36</span>
+<span class="sd">        Name: order_date, dtype: datetime64[ns]</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">mode</span><span class="p">(</span><span class="n">is_dataframe</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">es_size</span><span class="o">=</span><span class="n">es_size</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Series.es_match"><a class="viewcode-back" href="../../reference/api/Series.es_match.html#opensearch_py_ml.Series.es_match">[docs]</a>    <span class="k">def</span> <span class="nf">es_match</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">match_phrase</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">match_only_text_fields</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">analyzer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">fuzziness</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QueryFilter</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Filters data with an OpenSearch ``match`` or ``match_phrase``</span>
+<span class="sd">        query depending on the given parameters.</span>
+
+<span class="sd">        Read more about `Full-Text Queries in OpenSearch &lt;https://opensearch.org/docs/latest/opensearch/query-dsl/full-text/&gt;`_</span>
+
+<span class="sd">        All additional keyword arguments are passed in the body of the match query.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        text: str</span>
+<span class="sd">            String of text to search for</span>
+<span class="sd">        match_phrase: bool, default False</span>
+<span class="sd">            If True will use ``match_phrase`` instead of ``match`` query which takes into account</span>
+<span class="sd">            the order of the ``text`` parameter.</span>
+<span class="sd">        match_only_text_fields: bool, default True</span>
+<span class="sd">            When True this function will raise an error if any non-text fields</span>
+<span class="sd">            are queried to prevent fields that aren&#39;t analyzed from not working properly.</span>
+<span class="sd">            Set to False to ignore this preventative check.</span>
+<span class="sd">        analyzer: str, optional</span>
+<span class="sd">            Specify which analyzer to use for the match query</span>
+<span class="sd">        fuzziness: int, str, optional</span>
+<span class="sd">            Specify the fuzziness option for the match query</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        QueryFilter</span>
+<span class="sd">            Boolean filter to be combined with other filters and</span>
+<span class="sd">            then passed to DataFrame[...].</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; df = ed.DataFrame(</span>
+<span class="sd">        ...   OPENSEARCH_TEST_CLIENT, &quot;ecommerce&quot;,</span>
+<span class="sd">        ...   columns=[&quot;category&quot;, &quot;taxful_total_price&quot;]</span>
+<span class="sd">        ... )</span>
+<span class="sd">        &gt;&gt;&gt; df[</span>
+<span class="sd">        ...     df.category.es_match(&quot;Men&#39;s&quot;)</span>
+<span class="sd">        ...     &amp; (df.taxful_total_price &gt; 200.0)</span>
+<span class="sd">        ... ].head(5)</span>
+<span class="sd">                                       category  taxful_total_price</span>
+<span class="sd">        13                     [Men&#39;s Clothing]              266.96</span>
+<span class="sd">        33                     [Men&#39;s Clothing]              221.98</span>
+<span class="sd">        54                     [Men&#39;s Clothing]              234.98</span>
+<span class="sd">        93   [Men&#39;s Shoes, Women&#39;s Accessories]              239.98</span>
+<span class="sd">        273                       [Men&#39;s Shoes]              214.98</span>
+<span class="sd">        &lt;BLANKLINE&gt;</span>
+<span class="sd">        [5 rows x 2 columns]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">es_match</span><span class="p">(</span>
+            <span class="n">text</span><span class="p">,</span>
+            <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">],</span>
+            <span class="n">match_phrase</span><span class="o">=</span><span class="n">match_phrase</span><span class="p">,</span>
+            <span class="n">match_only_text_fields</span><span class="o">=</span><span class="n">match_only_text_fields</span><span class="p">,</span>
+            <span class="n">analyzer</span><span class="o">=</span><span class="n">analyzer</span><span class="p">,</span>
+            <span class="n">fuzziness</span><span class="o">=</span><span class="n">fuzziness</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Series.os_info"><a class="viewcode-back" href="../../reference/api/Series.os_info.html#opensearch_py_ml.Series.os_info">[docs]</a>    <span class="k">def</span> <span class="nf">os_info</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">buf</span> <span class="o">=</span> <span class="n">StringIO</span><span class="p">()</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_os_info</span><span class="p">(</span><span class="n">buf</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="fm">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">right</span><span class="p">:</span> <span class="s2">&quot;Series&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return addition of series and right, element-wise (binary operator add).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        right: opensearch_py_ml.Series</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        opensearch_py_ml.Series</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;ecommerce&#39;).head(5)</span>
+<span class="sd">        &gt;&gt;&gt; df.taxful_total_price</span>
+<span class="sd">        0     36.98</span>
+<span class="sd">        1     53.98</span>
+<span class="sd">        2    199.98</span>
+<span class="sd">        3    174.98</span>
+<span class="sd">        4     80.98</span>
+<span class="sd">        Name: taxful_total_price, dtype: float64</span>
+<span class="sd">        &gt;&gt;&gt; df.taxful_total_price + 1</span>
+<span class="sd">        0     37.980000</span>
+<span class="sd">        1     54.980000</span>
+<span class="sd">        2    200.979996</span>
+<span class="sd">        3    175.979996</span>
+<span class="sd">        4     81.980003</span>
+<span class="sd">        Name: taxful_total_price, dtype: float64</span>
+<span class="sd">        &gt;&gt;&gt; df.total_quantity</span>
+<span class="sd">        0    2</span>
+<span class="sd">        1    2</span>
+<span class="sd">        2    2</span>
+<span class="sd">        3    2</span>
+<span class="sd">        4    2</span>
+<span class="sd">        Name: total_quantity, dtype: int64</span>
+<span class="sd">        &gt;&gt;&gt; df.taxful_total_price + df.total_quantity</span>
+<span class="sd">        0     38.980000</span>
+<span class="sd">        1     55.980000</span>
+<span class="sd">        2    201.979996</span>
+<span class="sd">        3    176.979996</span>
+<span class="sd">        4     82.980003</span>
+<span class="sd">        dtype: float64</span>
+<span class="sd">        &gt;&gt;&gt; df.customer_first_name + df.customer_last_name</span>
+<span class="sd">        0    EddieUnderwood</span>
+<span class="sd">        1        MaryBailey</span>
+<span class="sd">        2        GwenButler</span>
+<span class="sd">        3     DianeChandler</span>
+<span class="sd">        4        EddieWeber</span>
+<span class="sd">        dtype: object</span>
+<span class="sd">        &gt;&gt;&gt; &quot;First name: &quot; + df.customer_first_name</span>
+<span class="sd">        0    First name: Eddie</span>
+<span class="sd">        1     First name: Mary</span>
+<span class="sd">        2     First name: Gwen</span>
+<span class="sd">        3    First name: Diane</span>
+<span class="sd">        4    First name: Eddie</span>
+<span class="sd">        Name: customer_first_name, dtype: object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numeric_op</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">_get_method_name</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="fm">__truediv__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">right</span><span class="p">:</span> <span class="s2">&quot;Series&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return floating division of series and right, element-wise (binary operator truediv).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        right: opensearch_py_ml.Series</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        opensearch_py_ml.Series</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;ecommerce&#39;).head(5)</span>
+<span class="sd">        &gt;&gt;&gt; df.taxful_total_price</span>
+<span class="sd">        0     36.98</span>
+<span class="sd">        1     53.98</span>
+<span class="sd">        2    199.98</span>
+<span class="sd">        3    174.98</span>
+<span class="sd">        4     80.98</span>
+<span class="sd">        Name: taxful_total_price, dtype: float64</span>
+<span class="sd">        &gt;&gt;&gt; df.total_quantity</span>
+<span class="sd">        0    2</span>
+<span class="sd">        1    2</span>
+<span class="sd">        2    2</span>
+<span class="sd">        3    2</span>
+<span class="sd">        4    2</span>
+<span class="sd">        Name: total_quantity, dtype: int64</span>
+<span class="sd">        &gt;&gt;&gt; df.taxful_total_price / df.total_quantity</span>
+<span class="sd">        0    18.490000</span>
+<span class="sd">        1    26.990000</span>
+<span class="sd">        2    99.989998</span>
+<span class="sd">        3    87.489998</span>
+<span class="sd">        4    40.490002</span>
+<span class="sd">        dtype: float64</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numeric_op</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">_get_method_name</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="fm">__floordiv__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">right</span><span class="p">:</span> <span class="s2">&quot;Series&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return integer division of series and right, element-wise (binary operator floordiv //).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        right: opensearch_py_ml.Series</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        opensearch_py_ml.Series</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;ecommerce&#39;).head(5)</span>
+<span class="sd">        &gt;&gt;&gt; df.taxful_total_price</span>
+<span class="sd">        0     36.98</span>
+<span class="sd">        1     53.98</span>
+<span class="sd">        2    199.98</span>
+<span class="sd">        3    174.98</span>
+<span class="sd">        4     80.98</span>
+<span class="sd">        Name: taxful_total_price, dtype: float64</span>
+<span class="sd">        &gt;&gt;&gt; df.total_quantity</span>
+<span class="sd">        0    2</span>
+<span class="sd">        1    2</span>
+<span class="sd">        2    2</span>
+<span class="sd">        3    2</span>
+<span class="sd">        4    2</span>
+<span class="sd">        Name: total_quantity, dtype: int64</span>
+<span class="sd">        &gt;&gt;&gt; df.taxful_total_price // df.total_quantity</span>
+<span class="sd">        0    18.0</span>
+<span class="sd">        1    26.0</span>
+<span class="sd">        2    99.0</span>
+<span class="sd">        3    87.0</span>
+<span class="sd">        4    40.0</span>
+<span class="sd">        dtype: float64</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numeric_op</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">_get_method_name</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="fm">__mod__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">right</span><span class="p">:</span> <span class="s2">&quot;Series&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return modulo of series and right, element-wise (binary operator mod %).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        right: opensearch_py_ml.Series</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        opensearch_py_ml.Series</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;ecommerce&#39;).head(5)</span>
+<span class="sd">        &gt;&gt;&gt; df.taxful_total_price</span>
+<span class="sd">        0     36.98</span>
+<span class="sd">        1     53.98</span>
+<span class="sd">        2    199.98</span>
+<span class="sd">        3    174.98</span>
+<span class="sd">        4     80.98</span>
+<span class="sd">        Name: taxful_total_price, dtype: float64</span>
+<span class="sd">        &gt;&gt;&gt; df.total_quantity</span>
+<span class="sd">        0    2</span>
+<span class="sd">        1    2</span>
+<span class="sd">        2    2</span>
+<span class="sd">        3    2</span>
+<span class="sd">        4    2</span>
+<span class="sd">        Name: total_quantity, dtype: int64</span>
+<span class="sd">        &gt;&gt;&gt; df.taxful_total_price % df.total_quantity</span>
+<span class="sd">        0    0.980000</span>
+<span class="sd">        1    1.980000</span>
+<span class="sd">        2    1.979996</span>
+<span class="sd">        3    0.979996</span>
+<span class="sd">        4    0.980003</span>
+<span class="sd">        dtype: float64</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numeric_op</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">_get_method_name</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="fm">__mul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">right</span><span class="p">:</span> <span class="s2">&quot;Series&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return multiplication of series and right, element-wise (binary operator mul).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        right: opensearch_py_ml.Series</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        opensearch_py_ml.Series</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;ecommerce&#39;).head(5)</span>
+<span class="sd">        &gt;&gt;&gt; df.taxful_total_price</span>
+<span class="sd">        0     36.98</span>
+<span class="sd">        1     53.98</span>
+<span class="sd">        2    199.98</span>
+<span class="sd">        3    174.98</span>
+<span class="sd">        4     80.98</span>
+<span class="sd">        Name: taxful_total_price, dtype: float64</span>
+<span class="sd">        &gt;&gt;&gt; df.total_quantity</span>
+<span class="sd">        0    2</span>
+<span class="sd">        1    2</span>
+<span class="sd">        2    2</span>
+<span class="sd">        3    2</span>
+<span class="sd">        4    2</span>
+<span class="sd">        Name: total_quantity, dtype: int64</span>
+<span class="sd">        &gt;&gt;&gt; df.taxful_total_price * df.total_quantity</span>
+<span class="sd">        0     73.959999</span>
+<span class="sd">        1    107.959999</span>
+<span class="sd">        2    399.959991</span>
+<span class="sd">        3    349.959991</span>
+<span class="sd">        4    161.960007</span>
+<span class="sd">        dtype: float64</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numeric_op</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">_get_method_name</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="fm">__sub__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">right</span><span class="p">:</span> <span class="s2">&quot;Series&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return subtraction of series and right, element-wise (binary operator sub).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        right: opensearch_py_ml.Series</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        opensearch_py_ml.Series</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;ecommerce&#39;).head(5)</span>
+<span class="sd">        &gt;&gt;&gt; df.taxful_total_price</span>
+<span class="sd">        0     36.98</span>
+<span class="sd">        1     53.98</span>
+<span class="sd">        2    199.98</span>
+<span class="sd">        3    174.98</span>
+<span class="sd">        4     80.98</span>
+<span class="sd">        Name: taxful_total_price, dtype: float64</span>
+<span class="sd">        &gt;&gt;&gt; df.total_quantity</span>
+<span class="sd">        0    2</span>
+<span class="sd">        1    2</span>
+<span class="sd">        2    2</span>
+<span class="sd">        3    2</span>
+<span class="sd">        4    2</span>
+<span class="sd">        Name: total_quantity, dtype: int64</span>
+<span class="sd">        &gt;&gt;&gt; df.taxful_total_price - df.total_quantity</span>
+<span class="sd">        0     34.980000</span>
+<span class="sd">        1     51.980000</span>
+<span class="sd">        2    197.979996</span>
+<span class="sd">        3    172.979996</span>
+<span class="sd">        4     78.980003</span>
+<span class="sd">        dtype: float64</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numeric_op</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">_get_method_name</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="fm">__pow__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">right</span><span class="p">:</span> <span class="s2">&quot;Series&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return exponential power of series and right, element-wise (binary operator pow).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        right: opensearch_py_ml.Series</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        opensearch_py_ml.Series</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;ecommerce&#39;).head(5)</span>
+<span class="sd">        &gt;&gt;&gt; df.taxful_total_price</span>
+<span class="sd">        0     36.98</span>
+<span class="sd">        1     53.98</span>
+<span class="sd">        2    199.98</span>
+<span class="sd">        3    174.98</span>
+<span class="sd">        4     80.98</span>
+<span class="sd">        Name: taxful_total_price, dtype: float64</span>
+<span class="sd">        &gt;&gt;&gt; df.total_quantity</span>
+<span class="sd">        0    2</span>
+<span class="sd">        1    2</span>
+<span class="sd">        2    2</span>
+<span class="sd">        3    2</span>
+<span class="sd">        4    2</span>
+<span class="sd">        Name: total_quantity, dtype: int64</span>
+<span class="sd">        &gt;&gt;&gt; df.taxful_total_price ** df.total_quantity</span>
+<span class="sd">        0     1367.520366</span>
+<span class="sd">        1     2913.840351</span>
+<span class="sd">        2    39991.998691</span>
+<span class="sd">        3    30617.998905</span>
+<span class="sd">        4     6557.760944</span>
+<span class="sd">        dtype: float64</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numeric_op</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">_get_method_name</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="fm">__radd__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">left</span><span class="p">:</span> <span class="s2">&quot;Series&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return addition of series and left, element-wise (binary operator add).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        left: opensearch_py_ml.Series</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        opensearch_py_ml.Series</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;ecommerce&#39;).head(5)</span>
+<span class="sd">        &gt;&gt;&gt; df.taxful_total_price</span>
+<span class="sd">        0     36.98</span>
+<span class="sd">        1     53.98</span>
+<span class="sd">        2    199.98</span>
+<span class="sd">        3    174.98</span>
+<span class="sd">        4     80.98</span>
+<span class="sd">        Name: taxful_total_price, dtype: float64</span>
+<span class="sd">        &gt;&gt;&gt; 1 + df.taxful_total_price</span>
+<span class="sd">        0     37.980000</span>
+<span class="sd">        1     54.980000</span>
+<span class="sd">        2    200.979996</span>
+<span class="sd">        3    175.979996</span>
+<span class="sd">        4     81.980003</span>
+<span class="sd">        Name: taxful_total_price, dtype: float64</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numeric_op</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">_get_method_name</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="fm">__rtruediv__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">left</span><span class="p">:</span> <span class="s2">&quot;Series&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return division of series and left, element-wise (binary operator div).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        left: opensearch_py_ml.Series</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        opensearch_py_ml.Series</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;ecommerce&#39;).head(5)</span>
+<span class="sd">        &gt;&gt;&gt; df.taxful_total_price</span>
+<span class="sd">        0     36.98</span>
+<span class="sd">        1     53.98</span>
+<span class="sd">        2    199.98</span>
+<span class="sd">        3    174.98</span>
+<span class="sd">        4     80.98</span>
+<span class="sd">        Name: taxful_total_price, dtype: float64</span>
+<span class="sd">        &gt;&gt;&gt; 1.0 / df.taxful_total_price</span>
+<span class="sd">        0    0.027042</span>
+<span class="sd">        1    0.018525</span>
+<span class="sd">        2    0.005001</span>
+<span class="sd">        3    0.005715</span>
+<span class="sd">        4    0.012349</span>
+<span class="sd">        Name: taxful_total_price, dtype: float64</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numeric_op</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">_get_method_name</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="fm">__rfloordiv__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">left</span><span class="p">:</span> <span class="s2">&quot;Series&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return integer division of series and left, element-wise (binary operator floordiv //).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        left: opensearch_py_ml.Series</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        opensearch_py_ml.Series</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;ecommerce&#39;).head(5)</span>
+<span class="sd">        &gt;&gt;&gt; df.taxful_total_price</span>
+<span class="sd">        0     36.98</span>
+<span class="sd">        1     53.98</span>
+<span class="sd">        2    199.98</span>
+<span class="sd">        3    174.98</span>
+<span class="sd">        4     80.98</span>
+<span class="sd">        Name: taxful_total_price, dtype: float64</span>
+<span class="sd">        &gt;&gt;&gt; 500.0 // df.taxful_total_price</span>
+<span class="sd">        0    13.0</span>
+<span class="sd">        1     9.0</span>
+<span class="sd">        2     2.0</span>
+<span class="sd">        3     2.0</span>
+<span class="sd">        4     6.0</span>
+<span class="sd">        Name: taxful_total_price, dtype: float64</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numeric_op</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">_get_method_name</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="fm">__rmod__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">left</span><span class="p">:</span> <span class="s2">&quot;Series&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return modulo of series and left, element-wise (binary operator mod %).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        left: opensearch_py_ml.Series</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        opensearch_py_ml.Series</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;ecommerce&#39;).head(5)</span>
+<span class="sd">        &gt;&gt;&gt; df.taxful_total_price</span>
+<span class="sd">        0     36.98</span>
+<span class="sd">        1     53.98</span>
+<span class="sd">        2    199.98</span>
+<span class="sd">        3    174.98</span>
+<span class="sd">        4     80.98</span>
+<span class="sd">        Name: taxful_total_price, dtype: float64</span>
+<span class="sd">        &gt;&gt;&gt; 500.0 % df.taxful_total_price</span>
+<span class="sd">        0     19.260006</span>
+<span class="sd">        1     14.180004</span>
+<span class="sd">        2    100.040009</span>
+<span class="sd">        3    150.040009</span>
+<span class="sd">        4     14.119980</span>
+<span class="sd">        Name: taxful_total_price, dtype: float64</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numeric_op</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">_get_method_name</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="fm">__rmul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">left</span><span class="p">:</span> <span class="s2">&quot;Series&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return multiplication of series and left, element-wise (binary operator mul).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        left: opensearch_py_ml.Series</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        opensearch_py_ml.Series</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;ecommerce&#39;).head(5)</span>
+<span class="sd">        &gt;&gt;&gt; df.taxful_total_price</span>
+<span class="sd">        0     36.98</span>
+<span class="sd">        1     53.98</span>
+<span class="sd">        2    199.98</span>
+<span class="sd">        3    174.98</span>
+<span class="sd">        4     80.98</span>
+<span class="sd">        Name: taxful_total_price, dtype: float64</span>
+<span class="sd">        &gt;&gt;&gt; 10.0 * df.taxful_total_price</span>
+<span class="sd">        0     369.799995</span>
+<span class="sd">        1     539.799995</span>
+<span class="sd">        2    1999.799957</span>
+<span class="sd">        3    1749.799957</span>
+<span class="sd">        4     809.800034</span>
+<span class="sd">        Name: taxful_total_price, dtype: float64</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numeric_op</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">_get_method_name</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="fm">__rpow__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">left</span><span class="p">:</span> <span class="s2">&quot;Series&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return exponential power of series and left, element-wise (binary operator pow).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        left: opensearch_py_ml.Series</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        opensearch_py_ml.Series</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;ecommerce&#39;).head(5)</span>
+<span class="sd">        &gt;&gt;&gt; df.total_quantity</span>
+<span class="sd">        0    2</span>
+<span class="sd">        1    2</span>
+<span class="sd">        2    2</span>
+<span class="sd">        3    2</span>
+<span class="sd">        4    2</span>
+<span class="sd">        Name: total_quantity, dtype: int64</span>
+<span class="sd">        &gt;&gt;&gt; np.int_(2) ** df.total_quantity</span>
+<span class="sd">        0    4.0</span>
+<span class="sd">        1    4.0</span>
+<span class="sd">        2    4.0</span>
+<span class="sd">        3    4.0</span>
+<span class="sd">        4    4.0</span>
+<span class="sd">        Name: total_quantity, dtype: float64</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numeric_op</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">_get_method_name</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="fm">__rsub__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">left</span><span class="p">:</span> <span class="s2">&quot;Series&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return subtraction of series and left, element-wise (binary operator sub).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        left: opensearch_py_ml.Series</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        opensearch_py_ml.Series</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;ecommerce&#39;).head(5)</span>
+<span class="sd">        &gt;&gt;&gt; df.taxful_total_price</span>
+<span class="sd">        0     36.98</span>
+<span class="sd">        1     53.98</span>
+<span class="sd">        2    199.98</span>
+<span class="sd">        3    174.98</span>
+<span class="sd">        4     80.98</span>
+<span class="sd">        Name: taxful_total_price, dtype: float64</span>
+<span class="sd">        &gt;&gt;&gt; 1.0 - df.taxful_total_price</span>
+<span class="sd">        0    -35.980000</span>
+<span class="sd">        1    -52.980000</span>
+<span class="sd">        2   -198.979996</span>
+<span class="sd">        3   -173.979996</span>
+<span class="sd">        4    -79.980003</span>
+<span class="sd">        Name: taxful_total_price, dtype: float64</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numeric_op</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">_get_method_name</span><span class="p">())</span>
+
+    <span class="n">add</span> <span class="o">=</span> <span class="fm">__add__</span>
+    <span class="n">div</span> <span class="o">=</span> <span class="fm">__truediv__</span>
+    <span class="n">divide</span> <span class="o">=</span> <span class="fm">__truediv__</span>
+    <span class="n">floordiv</span> <span class="o">=</span> <span class="fm">__floordiv__</span>
+    <span class="n">mod</span> <span class="o">=</span> <span class="fm">__mod__</span>
+    <span class="n">mul</span> <span class="o">=</span> <span class="fm">__mul__</span>
+    <span class="n">multiply</span> <span class="o">=</span> <span class="fm">__mul__</span>
+    <span class="nb">pow</span> <span class="o">=</span> <span class="fm">__pow__</span>
+    <span class="n">sub</span> <span class="o">=</span> <span class="fm">__sub__</span>
+    <span class="n">subtract</span> <span class="o">=</span> <span class="fm">__sub__</span>
+    <span class="n">truediv</span> <span class="o">=</span> <span class="fm">__truediv__</span>
+
+    <span class="n">radd</span> <span class="o">=</span> <span class="fm">__radd__</span>
+    <span class="n">rdiv</span> <span class="o">=</span> <span class="fm">__rtruediv__</span>
+    <span class="n">rdivide</span> <span class="o">=</span> <span class="fm">__rtruediv__</span>
+    <span class="n">rfloordiv</span> <span class="o">=</span> <span class="fm">__rfloordiv__</span>
+    <span class="n">rmod</span> <span class="o">=</span> <span class="fm">__rmod__</span>
+    <span class="n">rmul</span> <span class="o">=</span> <span class="fm">__rmul__</span>
+    <span class="n">rmultiply</span> <span class="o">=</span> <span class="fm">__rmul__</span>
+    <span class="n">rpow</span> <span class="o">=</span> <span class="fm">__rpow__</span>
+    <span class="n">rsub</span> <span class="o">=</span> <span class="fm">__rsub__</span>
+    <span class="n">rsubtract</span> <span class="o">=</span> <span class="fm">__rsub__</span>
+    <span class="n">rtruediv</span> <span class="o">=</span> <span class="fm">__rtruediv__</span>
+
+    <span class="c1"># __div__ is technically Python 2.x only</span>
+    <span class="c1"># but pandas has it so we do too.</span>
+    <span class="n">__div__</span> <span class="o">=</span> <span class="fm">__truediv__</span>
+    <span class="n">__rdiv__</span> <span class="o">=</span> <span class="fm">__rtruediv__</span>
+
+    <span class="k">def</span> <span class="nf">_numeric_op</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">right</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">method_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        return a op b</span>
+
+<span class="sd">        a &amp; b == Series</span>
+<span class="sd">            a &amp; b must share same OpenSearch client, index_pattern and index_field</span>
+<span class="sd">        a == Series, b == numeric or string</span>
+
+<span class="sd">        Naming of the resulting Series</span>
+<span class="sd">        ------------------------------</span>
+
+<span class="sd">        result = SeriesA op SeriesB</span>
+<span class="sd">        result.name == None</span>
+
+<span class="sd">        result = SeriesA op np.number</span>
+<span class="sd">        result.name == SeriesA.name</span>
+
+<span class="sd">        result = SeriesA op str</span>
+<span class="sd">        result.name == SeriesA.name</span>
+
+<span class="sd">        Naming is consistent for rops</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># print(&quot;_numeric_op&quot;, self, right, method_name)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">Series</span><span class="p">):</span>
+            <span class="c1"># Check we can the 2 Series are compatible (raises on error):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">check_arithmetics</span><span class="p">(</span><span class="n">right</span><span class="o">.</span><span class="n">_query_compiler</span><span class="p">)</span>
+
+            <span class="n">right_object</span> <span class="o">=</span> <span class="n">ArithmeticSeries</span><span class="p">(</span>
+                <span class="n">right</span><span class="o">.</span><span class="n">_query_compiler</span><span class="p">,</span> <span class="n">right</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">right</span><span class="o">.</span><span class="n">dtype</span>
+            <span class="p">)</span>
+            <span class="n">display_name</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">elif</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">right</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">number</span><span class="p">):</span>
+            <span class="n">right_object</span> <span class="o">=</span> <span class="n">ArithmeticNumber</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">right</span><span class="p">)))</span>
+            <span class="n">display_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">right_object</span> <span class="o">=</span> <span class="n">ArithmeticString</span><span class="p">(</span><span class="n">right</span><span class="p">)</span>
+            <span class="n">display_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;unsupported operation type(s) [</span><span class="si">{</span><span class="n">method_name</span><span class="si">!r}</span><span class="s2">] &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;for operands [&#39;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="si">}</span><span class="s2">&#39; with dtype &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="si">}</span><span class="s2">&#39;, &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">right</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&#39;]&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">left_object</span> <span class="o">=</span> <span class="n">ArithmeticSeries</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">left_object</span><span class="o">.</span><span class="n">arithmetic_operation</span><span class="p">(</span><span class="n">method_name</span><span class="p">,</span> <span class="n">right_object</span><span class="p">)</span>
+
+        <span class="n">series</span> <span class="o">=</span> <span class="n">Series</span><span class="p">(</span>
+            <span class="n">_query_compiler</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">arithmetic_op_fields</span><span class="p">(</span>
+                <span class="n">display_name</span><span class="p">,</span> <span class="n">left_object</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="c1"># force set name to &#39;display_name&#39;</span>
+        <span class="n">series</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">_mappings</span><span class="o">.</span><span class="n">display_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">display_name</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">series</span>
+
+<div class="viewcode-block" id="Series.max"><a class="viewcode-back" href="../../reference/api/Series.max.html#opensearch_py_ml.Series.max">[docs]</a>    <span class="k">def</span> <span class="nf">max</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the maximum of the Series values</span>
+
+<span class="sd">        TODO - implement remainder of pandas arguments, currently non-numerics are not supported</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            max value</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        :pandas_api_docs:`pandas.Series.max`</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; s = ed.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;flights&#39;)[&#39;AvgTicketPrice&#39;]</span>
+<span class="sd">        &gt;&gt;&gt; int(s.max())</span>
+<span class="sd">        1199</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">numeric_only</span><span class="o">=</span><span class="n">numeric_only</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">results</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Series.mean"><a class="viewcode-back" href="../../reference/api/Series.mean.html#opensearch_py_ml.Series.mean">[docs]</a>    <span class="k">def</span> <span class="nf">mean</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the mean of the Series values</span>
+
+<span class="sd">        TODO - implement remainder of pandas arguments, currently non-numerics are not supported</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            mean value</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        :pandas_api_docs:`pandas.Series.mean`</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; s = ed.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;flights&#39;)[&#39;AvgTicketPrice&#39;]</span>
+<span class="sd">        &gt;&gt;&gt; int(s.mean())</span>
+<span class="sd">        628</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">numeric_only</span><span class="o">=</span><span class="n">numeric_only</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">results</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Series.median"><a class="viewcode-back" href="../../reference/api/Series.median.html#opensearch_py_ml.Series.median">[docs]</a>    <span class="k">def</span> <span class="nf">median</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the median of the Series values</span>
+
+<span class="sd">        TODO - implement remainder of pandas arguments, currently non-numerics are not supported</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            median value</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        :pandas_api_docs:`pandas.Series.median`</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; s = ed.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;flights&#39;)[&#39;AvgTicketPrice&#39;]</span>
+<span class="sd">        &gt;&gt;&gt; int(s.median())</span>
+<span class="sd">        640</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">numeric_only</span><span class="o">=</span><span class="n">numeric_only</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">results</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Series.min"><a class="viewcode-back" href="../../reference/api/Series.min.html#opensearch_py_ml.Series.min">[docs]</a>    <span class="k">def</span> <span class="nf">min</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the minimum of the Series values</span>
+
+<span class="sd">        TODO - implement remainder of pandas arguments, currently non-numerics are not supported</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            min value</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        :pandas_api_docs:`pandas.Series.min`</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; s = ed.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;flights&#39;)[&#39;AvgTicketPrice&#39;]</span>
+<span class="sd">        &gt;&gt;&gt; int(s.min())</span>
+<span class="sd">        100</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">numeric_only</span><span class="o">=</span><span class="n">numeric_only</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">results</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Series.sum"><a class="viewcode-back" href="../../reference/api/Series.sum.html#opensearch_py_ml.Series.sum">[docs]</a>    <span class="k">def</span> <span class="nf">sum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the sum of the Series values</span>
+
+<span class="sd">        TODO - implement remainder of pandas arguments, currently non-numerics are not supported</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            sum of all values</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        :pandas_api_docs:`pandas.Series.sum`</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; s = ed.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;flights&#39;)[&#39;AvgTicketPrice&#39;]</span>
+<span class="sd">        &gt;&gt;&gt; int(s.sum())</span>
+<span class="sd">        8204364</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">numeric_only</span><span class="o">=</span><span class="n">numeric_only</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">results</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Series.nunique"><a class="viewcode-back" href="../../reference/api/Series.nunique.html#opensearch_py_ml.Series.nunique">[docs]</a>    <span class="k">def</span> <span class="nf">nunique</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the number of unique values in a Series</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        int</span>
+<span class="sd">            Number of unique values</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        :pandas_api_docs:`pandas.Series.nunique`</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; s = ed.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;flights&#39;)[&#39;Carrier&#39;]</span>
+<span class="sd">        &gt;&gt;&gt; s.nunique()</span>
+<span class="sd">        4</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">nunique</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">results</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Series.unique"><a class="viewcode-back" href="../../reference/api/Series.unique.html#opensearch_py_ml.Series.unique">[docs]</a>    <span class="k">def</span> <span class="nf">unique</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Returns all unique values within a Series.</span>
+<span class="sd">            Note that behavior is slightly different between pandas and Eland: pandas will return values in the order</span>
+<span class="sd">            they&#39;re first seen and opensearch-py-ml returns values in sorted order.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pd.Series</span>
+<span class="sd">            A series containing unique values of given series is returned.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        :pandas_api_docs:`pandas.Series.unique`</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Series.var"><a class="viewcode-back" href="../../reference/api/Series.var.html#opensearch_py_ml.Series.var">[docs]</a>    <span class="k">def</span> <span class="nf">var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return variance for a Series</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            var value</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        :pandas_api_docs:`pandas.Series.var`</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; s = ed.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;flights&#39;)[&#39;AvgTicketPrice&#39;]</span>
+<span class="sd">        &gt;&gt;&gt; int(s.var())</span>
+<span class="sd">        70964</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">numeric_only</span><span class="o">=</span><span class="n">numeric_only</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">results</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Series.std"><a class="viewcode-back" href="../../reference/api/Series.std.html#opensearch_py_ml.Series.std">[docs]</a>    <span class="k">def</span> <span class="nf">std</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return standard deviation for a Series</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            std value</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        :pandas_api_docs:`pandas.Series.var`</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; s = ed.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;flights&#39;)[&#39;AvgTicketPrice&#39;]</span>
+<span class="sd">        &gt;&gt;&gt; int(s.std())</span>
+<span class="sd">        266</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">numeric_only</span><span class="o">=</span><span class="n">numeric_only</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">results</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Series.mad"><a class="viewcode-back" href="../../reference/api/Series.mad.html#opensearch_py_ml.Series.mad">[docs]</a>    <span class="k">def</span> <span class="nf">mad</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return median absolute deviation for a Series</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            mad value</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        :pandas_api_docs:`pandas.Series.mad`</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; s = ed.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;flights&#39;)[&#39;AvgTicketPrice&#39;]</span>
+<span class="sd">        &gt;&gt;&gt; int(s.mad())</span>
+<span class="sd">        213</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">mad</span><span class="p">(</span><span class="n">numeric_only</span><span class="o">=</span><span class="n">numeric_only</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">results</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Series.describe"><a class="viewcode-back" href="../../reference/api/Series.describe.html#opensearch_py_ml.Series.describe">[docs]</a>    <span class="k">def</span> <span class="nf">describe</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate descriptive statistics that summarize the central tendency, dispersion and shape of a</span>
+<span class="sd">        dataset’s distribution, excluding NaN values.</span>
+
+<span class="sd">        Analyzes both numeric and object series, as well as DataFrame column sets of mixed data types.</span>
+<span class="sd">        The output will vary depending on what is provided. Refer to the notes below for more detail.</span>
+
+<span class="sd">        TODO - add additional arguments (current only numeric values supported)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pandas.Series:</span>
+<span class="sd">            Summary information</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        :pandas_api_docs:`pandas.Series.describe`</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;flights&#39;) # ignoring percentiles as they don&#39;t generate consistent results</span>
+<span class="sd">        &gt;&gt;&gt; df.AvgTicketPrice.describe()  # doctest: +SKIP</span>
+<span class="sd">        count    13059.000000</span>
+<span class="sd">        mean       628.253689</span>
+<span class="sd">        std        266.386661</span>
+<span class="sd">        min        100.020531</span>
+<span class="sd">        ...</span>
+<span class="sd">        ...</span>
+<span class="sd">        ...</span>
+<span class="sd">        max       1199.729004</span>
+<span class="sd">        Name: AvgTicketPrice, dtype: float64</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span></div>
+
+    <span class="c1"># def values TODO - not implemented as causes current implementation of query to fail</span>
+
+<div class="viewcode-block" id="Series.to_numpy"><a class="viewcode-back" href="../../reference/api/Series.to_numpy.html#opensearch_py_ml.Series.to_numpy">[docs]</a>    <span class="k">def</span> <span class="nf">to_numpy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Not implemented.</span>
+
+<span class="sd">        In pandas this returns a Numpy representation of the Series. This would involve scan/scrolling the</span>
+<span class="sd">        entire index.</span>
+
+<span class="sd">        If this is required, call ``ed.eland_to_pandas(ed_series).values``, *but beware this will scan/scroll the entire</span>
+<span class="sd">        OpenSearch index(s) into memory.*</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        :pandas_api_docs:`pandas.DataFrame.to_numpy`</span>
+<span class="sd">        eland_to_pandas</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; ed_s = ed.Series(OPENSEARCH_TEST_CLIENT, &#39;flights&#39;, name=&#39;Carrier&#39;).head(5)</span>
+<span class="sd">        &gt;&gt;&gt; pd_s = ed.opensearch_to_pandas(ed_s)</span>
+<span class="sd">        &gt;&gt;&gt; print(f&quot;type(ed_s)={type(ed_s)}\\ntype(pd_s)={type(pd_s)}&quot;)</span>
+<span class="sd">        type(ed_s)=&lt;class &#39;opensearch_py_ml.series.Series&#39;&gt;</span>
+<span class="sd">        type(pd_s)=&lt;class &#39;pandas.core.series.Series&#39;&gt;</span>
+<span class="sd">        &gt;&gt;&gt; ed_s</span>
+<span class="sd">        0     Kibana Airlines</span>
+<span class="sd">        1    Logstash Airways</span>
+<span class="sd">        2    Logstash Airways</span>
+<span class="sd">        3     Kibana Airlines</span>
+<span class="sd">        4     Kibana Airlines</span>
+<span class="sd">        Name: Carrier, dtype: object</span>
+<span class="sd">        &gt;&gt;&gt; pd_s.to_numpy()</span>
+<span class="sd">        array([&#39;Kibana Airlines&#39;, &#39;Logstash Airways&#39;, &#39;Logstash Airways&#39;,</span>
+<span class="sd">               &#39;Kibana Airlines&#39;, &#39;Kibana Airlines&#39;], dtype=object)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="s2">&quot;This method would scan/scroll the entire OpenSearch index(s) into memory.&quot;</span>
+            <span class="s2">&quot;If this is explicitly required and there is sufficient memory, call `ed.opensearch_to_pandas(ed_df).values`&quot;</span>
+        <span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Opensearch.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

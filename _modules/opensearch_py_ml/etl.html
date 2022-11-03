@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>opensearch_py_ml.etl &mdash; Opensearch-py-ml  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/plot_directive.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Opensearch-py-ml
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/index.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Opensearch-py-ml</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">opensearch_py_ml.etl</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for opensearch_py_ml.etl</h1><div class="highlight"><pre>
+<span></span><span class="c1"># SPDX-License-Identifier: Apache-2.0</span>
+<span class="c1"># The OpenSearch Contributors require contributions made to</span>
+<span class="c1"># this file be licensed under the Apache-2.0 license or a</span>
+<span class="c1"># compatible open source license.</span>
+<span class="c1"># Any modifications Copyright OpenSearch Contributors. See</span>
+<span class="c1"># GitHub history for details.</span>
+
+
+<span class="c1">#  Licensed to Elasticsearch B.V. under one or more contributor</span>
+<span class="c1">#  license agreements. See the NOTICE file distributed with</span>
+<span class="c1">#  this work for additional information regarding copyright</span>
+<span class="c1">#  ownership. Elasticsearch B.V. licenses this file to you under</span>
+<span class="c1">#  the Apache License, Version 2.0 (the &quot;License&quot;); you may</span>
+<span class="c1">#  not use this file except in compliance with the License.</span>
+<span class="c1">#  You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1"># 	http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1">#  Unless required by applicable law or agreed to in writing,</span>
+<span class="c1">#  software distributed under the License is distributed on an</span>
+<span class="c1">#  &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY</span>
+<span class="c1">#  KIND, either express or implied.  See the License for the</span>
+<span class="c1">#  specific language governing permissions and limitations</span>
+<span class="c1">#  under the License.</span>
+
+<span class="kn">import</span> <span class="nn">csv</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">deque</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Generator</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>  <span class="c1"># type: ignore</span>
+<span class="kn">from</span> <span class="nn">opensearchpy</span> <span class="kn">import</span> <span class="n">OpenSearch</span>
+<span class="kn">from</span> <span class="nn">opensearchpy.helpers</span> <span class="kn">import</span> <span class="n">parallel_bulk</span>
+
+<span class="kn">from</span> <span class="nn">opensearch_py_ml</span> <span class="kn">import</span> <span class="n">DataFrame</span>
+<span class="kn">from</span> <span class="nn">opensearch_py_ml.common</span> <span class="kn">import</span> <span class="n">OPENSEARCH_TEST_CLIENT</span>  <span class="c1"># noqa: F401</span>
+<span class="kn">from</span> <span class="nn">opensearch_py_ml.common</span> <span class="kn">import</span> <span class="n">DEFAULT_CHUNK_SIZE</span><span class="p">,</span> <span class="n">PANDAS_VERSION</span>
+<span class="kn">from</span> <span class="nn">opensearch_py_ml.field_mappings</span> <span class="kn">import</span> <span class="n">FieldMappings</span><span class="p">,</span> <span class="n">verify_mapping_compatibility</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">pandas.io.parsers</span> <span class="kn">import</span> <span class="n">_c_parser_defaults</span>  <span class="c1"># type: ignore</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">pandas.io.parsers.readers</span> <span class="kn">import</span> <span class="n">_c_parser_defaults</span>  <span class="c1"># type: ignore</span>
+
+<span class="n">_DEFAULT_LOW_MEMORY</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">_c_parser_defaults</span><span class="p">[</span><span class="s2">&quot;low_memory&quot;</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">pandas_to_opensearch</span><span class="p">(</span>
+    <span class="n">pd_df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+    <span class="n">os_client</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">OpenSearch</span><span class="p">],</span>
+    <span class="n">os_dest_index</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">es_if_exists</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;fail&quot;</span><span class="p">,</span>
+    <span class="n">es_refresh</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">os_dropna</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">es_type_overrides</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">es_verify_mapping_compatibility</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">thread_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+    <span class="n">chunksize</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">use_pandas_index_for_os_ids</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Append a pandas DataFrame to an OpenSearch index.</span>
+<span class="sd">    Mainly used in testing.</span>
+<span class="sd">    Modifies the OpenSearch destination index</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    os_client: OpenSearch client</span>
+<span class="sd">    os_dest_index: str</span>
+<span class="sd">        Name of OpenSearch index to be appended to</span>
+<span class="sd">    es_if_exists : {&#39;fail&#39;, &#39;replace&#39;, &#39;append&#39;}, default &#39;fail&#39;</span>
+<span class="sd">        How to behave if the index already exists.</span>
+
+<span class="sd">        - fail: Raise a ValueError.</span>
+<span class="sd">        - replace: Delete the index before inserting new values.</span>
+<span class="sd">        - append: Insert new values to the existing index. Create if does not exist.</span>
+<span class="sd">    es_refresh: bool, default &#39;False&#39;</span>
+<span class="sd">        Refresh os_dest_index after bulk index</span>
+<span class="sd">    os_dropna: bool, default &#39;False&#39;</span>
+<span class="sd">        * True: Remove missing values (see pandas.Series.dropna)</span>
+<span class="sd">        * False: Include missing values - may cause bulk to fail</span>
+<span class="sd">    es_type_overrides: dict, default None</span>
+<span class="sd">        Dict of field_name: es_data_type that overrides default es data types</span>
+<span class="sd">    es_verify_mapping_compatibility: bool, default &#39;True&#39;</span>
+<span class="sd">        * True: Verify that the dataframe schema matches the OpenSearch index schema</span>
+<span class="sd">        * False: Do not verify schema</span>
+<span class="sd">    thread_count: int</span>
+<span class="sd">        number of the threads to use for the bulk requests</span>
+<span class="sd">    chunksize: int, default None</span>
+<span class="sd">        Number of pandas.DataFrame rows to read before bulk index into OpenSearch</span>
+<span class="sd">    use_pandas_index_for_os_ids: bool, default &#39;True&#39;</span>
+<span class="sd">        * True: pandas.DataFrame.index fields will be used to populate OpenSearch &#39;_id&#39; fields.</span>
+<span class="sd">        * False: Ignore pandas.DataFrame.index when indexing into OpenSearch</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    opensearch_py_ml.Dataframe</span>
+<span class="sd">        opensearch_py_ml.DataFrame referencing data in destination_index</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+
+<span class="sd">    &gt;&gt;&gt; pd_df = pd.DataFrame(data={&#39;A&#39;: 3.141,</span>
+<span class="sd">    ...                            &#39;B&#39;: 1,</span>
+<span class="sd">    ...                            &#39;C&#39;: &#39;foo&#39;,</span>
+<span class="sd">    ...                            &#39;D&#39;: pd.Timestamp(&#39;20190102&#39;),</span>
+<span class="sd">    ...                            &#39;E&#39;: [1.0, 2.0, 3.0],</span>
+<span class="sd">    ...                            &#39;F&#39;: False,</span>
+<span class="sd">    ...                            &#39;G&#39;: [1, 2, 3],</span>
+<span class="sd">    ...                            &#39;H&#39;: &#39;Long text - to be indexed as es type text&#39;},</span>
+<span class="sd">    ...                      index=[&#39;0&#39;, &#39;1&#39;, &#39;2&#39;])</span>
+<span class="sd">    &gt;&gt;&gt; type(pd_df)</span>
+<span class="sd">    &lt;class &#39;pandas.core.frame.DataFrame&#39;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; pd_df</span>
+<span class="sd">           A  B  ...  G                                          H</span>
+<span class="sd">    0  3.141  1  ...  1  Long text - to be indexed as es type text</span>
+<span class="sd">    1  3.141  1  ...  2  Long text - to be indexed as es type text</span>
+<span class="sd">    2  3.141  1  ...  3  Long text - to be indexed as es type text</span>
+<span class="sd">    &lt;BLANKLINE&gt;</span>
+<span class="sd">    [3 rows x 8 columns]</span>
+<span class="sd">    &gt;&gt;&gt; pd_df.dtypes</span>
+<span class="sd">    A           float64</span>
+<span class="sd">    B             int64</span>
+<span class="sd">    C            object</span>
+<span class="sd">    D    datetime64[ns]</span>
+<span class="sd">    E           float64</span>
+<span class="sd">    F              bool</span>
+<span class="sd">    G             int64</span>
+<span class="sd">    H            object</span>
+<span class="sd">    dtype: object</span>
+
+<span class="sd">    Convert `pandas.DataFrame` to `opensearch_py_ml.DataFrame` - this creates an OpenSearch index called `pandas_to_eland`.</span>
+<span class="sd">    Overwrite existing OpenSearch index if it exists `if_exists=&quot;replace&quot;`, and sync index so it is</span>
+<span class="sd">    readable on return `refresh=True`</span>
+
+
+<span class="sd">    &gt;&gt;&gt; ed_df = ed.pandas_to_opensearch(pd_df,</span>
+<span class="sd">    ...                            OPENSEARCH_TEST_CLIENT,</span>
+<span class="sd">    ...                            &#39;pandas_to_opensearch&#39;,</span>
+<span class="sd">    ...                            es_if_exists=&quot;replace&quot;,</span>
+<span class="sd">    ...                            es_refresh=True,</span>
+<span class="sd">    ...                            es_type_overrides={&#39;H&#39;:&#39;text&#39;}) # index field &#39;H&#39; as text not keyword</span>
+<span class="sd">    &gt;&gt;&gt; type(ed_df)</span>
+<span class="sd">    &lt;class &#39;opensearch_py_ml.dataframe.DataFrame&#39;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; ed_df</span>
+<span class="sd">           A  B  ...  G                                          H</span>
+<span class="sd">    0  3.141  1  ...  1  Long text - to be indexed as es type text</span>
+<span class="sd">    1  3.141  1  ...  2  Long text - to be indexed as es type text</span>
+<span class="sd">    2  3.141  1  ...  3  Long text - to be indexed as es type text</span>
+<span class="sd">    &lt;BLANKLINE&gt;</span>
+<span class="sd">    [3 rows x 8 columns]</span>
+<span class="sd">    &gt;&gt;&gt; ed_df.dtypes</span>
+<span class="sd">    A           float64</span>
+<span class="sd">    B             int64</span>
+<span class="sd">    C            object</span>
+<span class="sd">    D    datetime64[ns]</span>
+<span class="sd">    E           float64</span>
+<span class="sd">    F              bool</span>
+<span class="sd">    G             int64</span>
+<span class="sd">    H            object</span>
+<span class="sd">    dtype: object</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    opensearch_py_ml.opensearch_to_pandas: Create a pandas.Dataframe from opensearch_py_ml.DataFrame</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">chunksize</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">chunksize</span> <span class="o">=</span> <span class="n">DEFAULT_CHUNK_SIZE</span>
+
+    <span class="n">mapping</span> <span class="o">=</span> <span class="n">FieldMappings</span><span class="o">.</span><span class="n">_generate_os_mappings</span><span class="p">(</span><span class="n">pd_df</span><span class="p">,</span> <span class="n">es_type_overrides</span><span class="p">)</span>
+
+    <span class="c1"># If table exists, check if_exists parameter</span>
+    <span class="k">if</span> <span class="n">os_client</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">os_dest_index</span><span class="p">):</span>  <span class="c1"># type: ignore</span>
+        <span class="k">if</span> <span class="n">es_if_exists</span> <span class="o">==</span> <span class="s2">&quot;fail&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Could not create the index [</span><span class="si">{</span><span class="n">os_dest_index</span><span class="si">}</span><span class="s2">] because it &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;already exists. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Change the &#39;es_if_exists&#39; parameter to &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;&#39;append&#39; or &#39;replace&#39; data.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">es_if_exists</span> <span class="o">==</span> <span class="s2">&quot;replace&quot;</span><span class="p">:</span>
+            <span class="n">os_client</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">os_dest_index</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+            <span class="n">os_client</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>  <span class="c1"># type: ignore</span>
+                <span class="n">index</span><span class="o">=</span><span class="n">os_dest_index</span><span class="p">,</span> <span class="n">body</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;mappings&quot;</span><span class="p">:</span> <span class="n">mapping</span><span class="p">[</span><span class="s2">&quot;mappings&quot;</span><span class="p">]}</span>
+            <span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">es_if_exists</span> <span class="o">==</span> <span class="s2">&quot;append&quot;</span> <span class="ow">and</span> <span class="n">es_verify_mapping_compatibility</span><span class="p">:</span>
+            <span class="n">dest_mapping</span> <span class="o">=</span> <span class="n">os_client</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">get_mapping</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">os_dest_index</span><span class="p">)[</span>  <span class="c1"># type: ignore</span>
+                <span class="n">os_dest_index</span>
+            <span class="p">]</span>
+            <span class="n">verify_mapping_compatibility</span><span class="p">(</span>
+                <span class="n">ed_mapping</span><span class="o">=</span><span class="n">mapping</span><span class="p">,</span>
+                <span class="n">os_mapping</span><span class="o">=</span><span class="n">dest_mapping</span><span class="p">,</span>
+                <span class="n">os_type_overrides</span><span class="o">=</span><span class="n">es_type_overrides</span><span class="p">,</span>
+            <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">os_client</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>  <span class="c1"># type: ignore</span>
+            <span class="n">index</span><span class="o">=</span><span class="n">os_dest_index</span><span class="p">,</span> <span class="n">body</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;mappings&quot;</span><span class="p">:</span> <span class="n">mapping</span><span class="p">[</span><span class="s2">&quot;mappings&quot;</span><span class="p">]}</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">action_generator</span><span class="p">(</span>
+        <span class="n">pd_df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+        <span class="n">os_dropna</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+        <span class="n">use_pandas_index_for_os_ids</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+        <span class="n">os_dest_index</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">pd_df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">os_dropna</span><span class="p">:</span>
+                <span class="n">values</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">values</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="n">use_pandas_index_for_os_ids</span><span class="p">:</span>
+                <span class="c1"># Use index as _id</span>
+                <span class="nb">id</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+                <span class="n">action</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;_index&quot;</span><span class="p">:</span> <span class="n">os_dest_index</span><span class="p">,</span> <span class="s2">&quot;_source&quot;</span><span class="p">:</span> <span class="n">values</span><span class="p">,</span> <span class="s2">&quot;_id&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="nb">id</span><span class="p">)}</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">action</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;_index&quot;</span><span class="p">:</span> <span class="n">os_dest_index</span><span class="p">,</span> <span class="s2">&quot;_source&quot;</span><span class="p">:</span> <span class="n">values</span><span class="p">}</span>
+
+            <span class="k">yield</span> <span class="n">action</span>
+
+    <span class="c1"># parallel_bulk is lazy generator so use deque to consume them immediately</span>
+    <span class="c1"># maxlen = 0 because don&#39;t need results of parallel_bulk</span>
+    <span class="n">deque</span><span class="p">(</span>
+        <span class="n">parallel_bulk</span><span class="p">(</span>
+            <span class="n">client</span><span class="o">=</span><span class="n">os_client</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
+            <span class="n">actions</span><span class="o">=</span><span class="n">action_generator</span><span class="p">(</span>
+                <span class="n">pd_df</span><span class="p">,</span> <span class="n">os_dropna</span><span class="p">,</span> <span class="n">use_pandas_index_for_os_ids</span><span class="p">,</span> <span class="n">os_dest_index</span>
+            <span class="p">),</span>
+            <span class="n">thread_count</span><span class="o">=</span><span class="n">thread_count</span><span class="p">,</span>
+            <span class="n">chunk_size</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">chunksize</span> <span class="o">/</span> <span class="n">thread_count</span><span class="p">),</span>
+        <span class="p">),</span>
+        <span class="n">maxlen</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">es_refresh</span><span class="p">:</span>
+        <span class="n">os_client</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">refresh</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">os_dest_index</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+
+    <span class="k">return</span> <span class="n">DataFrame</span><span class="p">(</span><span class="n">os_client</span><span class="p">,</span> <span class="n">os_dest_index</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">opensearch_to_pandas</span><span class="p">(</span><span class="n">ed_df</span><span class="p">:</span> <span class="n">DataFrame</span><span class="p">,</span> <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert an opensearch_py_ml.Dataframe to a pandas.DataFrame</span>
+
+<span class="sd">    **Note: this loads the entire OpenSearch index into in core pandas.DataFrame structures. For large</span>
+<span class="sd">    indices this can create significant load on the OpenSearch cluster and require signficant memory**</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ed_df: opensearch_py_ml.DataFrame</span>
+<span class="sd">        The source opensearch_py_ml.Dataframe referencing the OpenSearch index</span>
+<span class="sd">    show_progress: bool</span>
+<span class="sd">        Output progress of option to stdout? By default False.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pandas.Dataframe</span>
+<span class="sd">        pandas.DataFrame contains all rows and columns in opensearch_py_ml.DataFrame</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; ed_df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;flights&#39;).head()</span>
+<span class="sd">    &gt;&gt;&gt; type(ed_df)</span>
+<span class="sd">    &lt;class &#39;opensearch_py_ml.dataframe.DataFrame&#39;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; ed_df</span>
+<span class="sd">       AvgTicketPrice  Cancelled  ... dayOfWeek           timestamp</span>
+<span class="sd">    0      841.265642      False  ...         0 2018-01-01 00:00:00</span>
+<span class="sd">    1      882.982662      False  ...         0 2018-01-01 18:27:00</span>
+<span class="sd">    2      190.636904      False  ...         0 2018-01-01 17:11:14</span>
+<span class="sd">    3      181.694216       True  ...         0 2018-01-01 10:33:28</span>
+<span class="sd">    4      730.041778      False  ...         0 2018-01-01 05:13:00</span>
+<span class="sd">    &lt;BLANKLINE&gt;</span>
+<span class="sd">    [5 rows x 27 columns]</span>
+
+<span class="sd">    Convert `opensearch_py_ml.DataFrame` to `pandas.DataFrame` (Note: this loads entire OpenSearch index into core memory)</span>
+
+<span class="sd">    &gt;&gt;&gt; pd_df = ed.opensearch_to_pandas(ed_df)</span>
+<span class="sd">    &gt;&gt;&gt; type(pd_df)</span>
+<span class="sd">    &lt;class &#39;pandas.core.frame.DataFrame&#39;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; pd_df</span>
+<span class="sd">       AvgTicketPrice  Cancelled  ... dayOfWeek           timestamp</span>
+<span class="sd">    0      841.265642      False  ...         0 2018-01-01 00:00:00</span>
+<span class="sd">    1      882.982662      False  ...         0 2018-01-01 18:27:00</span>
+<span class="sd">    2      190.636904      False  ...         0 2018-01-01 17:11:14</span>
+<span class="sd">    3      181.694216       True  ...         0 2018-01-01 10:33:28</span>
+<span class="sd">    4      730.041778      False  ...         0 2018-01-01 05:13:00</span>
+<span class="sd">    &lt;BLANKLINE&gt;</span>
+<span class="sd">    [5 rows x 27 columns]</span>
+
+<span class="sd">    Convert `opensearch_py_ml.DataFrame` to `pandas.DataFrame` and show progress every 10000 rows</span>
+
+<span class="sd">    &gt;&gt;&gt; pd_df = ed.opensearch_to_pandas(ed.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;flights&#39;), show_progress=True) # doctest: +SKIP</span>
+<span class="sd">    2020-01-29 12:43:36.572395: read 10000 rows</span>
+<span class="sd">    2020-01-29 12:43:37.309031: read 13059 rows</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    opensearch_py_ml.pandas_to_opensearch: Create an opensearch_py_ml.Dataframe from pandas.DataFrame</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">ed_df</span><span class="o">.</span><span class="n">to_pandas</span><span class="p">(</span><span class="n">show_progress</span><span class="o">=</span><span class="n">show_progress</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="csv_to_opensearch"><a class="viewcode-back" href="../../reference/api/csv_to_opensearch.html#opensearch_py_ml.etl.csv_to_opensearch">[docs]</a><span class="k">def</span> <span class="nf">csv_to_opensearch</span><span class="p">(</span>  <span class="c1"># type: ignore</span>
+    <span class="n">filepath_or_buffer</span><span class="p">,</span>
+    <span class="n">os_client</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">OpenSearch</span><span class="p">],</span>
+    <span class="n">os_dest_index</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">es_if_exists</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;fail&quot;</span><span class="p">,</span>
+    <span class="n">es_refresh</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">os_dropna</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">es_type_overrides</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">,</span>
+    <span class="n">delimiter</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="c1"># Column and Index Locations and Names</span>
+    <span class="n">header</span><span class="o">=</span><span class="s2">&quot;infer&quot;</span><span class="p">,</span>
+    <span class="n">names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">index_col</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">usecols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">prefix</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="c1"># General Parsing Configuration</span>
+    <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">engine</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">converters</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">true_values</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">false_values</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">skipinitialspace</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">skiprows</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">skipfooter</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">nrows</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="c1"># Iteration</span>
+    <span class="c1"># iterator=False,</span>
+    <span class="n">chunksize</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="c1"># NA and Missing Data Handling</span>
+    <span class="n">na_values</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">keep_default_na</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">na_filter</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">skip_blank_lines</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="c1"># Datetime Handling</span>
+    <span class="n">parse_dates</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">infer_datetime_format</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">keep_date_col</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">date_parser</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">dayfirst</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">cache_dates</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="c1"># Quoting, Compression, and File Format</span>
+    <span class="n">compression</span><span class="o">=</span><span class="s2">&quot;infer&quot;</span><span class="p">,</span>
+    <span class="n">thousands</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">decimal</span><span class="o">=</span><span class="sa">b</span><span class="s2">&quot;.&quot;</span><span class="p">,</span>
+    <span class="n">lineterminator</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">quotechar</span><span class="o">=</span><span class="s1">&#39;&quot;&#39;</span><span class="p">,</span>
+    <span class="n">quoting</span><span class="o">=</span><span class="n">csv</span><span class="o">.</span><span class="n">QUOTE_MINIMAL</span><span class="p">,</span>
+    <span class="n">doublequote</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">escapechar</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">comment</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">encoding</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">dialect</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="c1"># Error Handling</span>
+    <span class="n">warn_bad_lines</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">error_bad_lines</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">on_bad_lines</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;error&quot;</span><span class="p">,</span>
+    <span class="c1"># Internal</span>
+    <span class="n">delim_whitespace</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">low_memory</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">_DEFAULT_LOW_MEMORY</span><span class="p">,</span>
+    <span class="n">memory_map</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">float_precision</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;DataFrame&quot;</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Read a comma-separated values (csv) file into opensearch_py_ml.DataFrame (i.e. an OpenSearch index).</span>
+
+<span class="sd">    **Modifies an OpenSearch index**</span>
+
+<span class="sd">    **Note pandas iteration options not supported**</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    os_client: OpenSearch client</span>
+<span class="sd">    os_dest_index: str</span>
+<span class="sd">        Name of OpenSearch index to be appended to</span>
+<span class="sd">    es_if_exists : {&#39;fail&#39;, &#39;replace&#39;, &#39;append&#39;}, default &#39;fail&#39;</span>
+<span class="sd">        How to behave if the index already exists.</span>
+
+<span class="sd">        - fail: Raise a ValueError.</span>
+<span class="sd">        - replace: Delete the index before inserting new values.</span>
+<span class="sd">        - append: Insert new values to the existing index. Create if does not exist.</span>
+<span class="sd">    os_dropna: bool, default &#39;False&#39;</span>
+<span class="sd">        * True: Remove missing values (see pandas.Series.dropna)</span>
+<span class="sd">        * False: Include missing values - may cause bulk to fail</span>
+<span class="sd">    es_type_overrides: dict, default None</span>
+<span class="sd">        Dict of columns: es_type to override default es datatype mappings</span>
+<span class="sd">    chunksize</span>
+<span class="sd">        number of csv rows to read before bulk index into OpenSearch</span>
+
+<span class="sd">    Other Parameters</span>
+<span class="sd">    ----------------</span>
+<span class="sd">    Parameters derived from :pandas_api_docs:`pandas.read_csv`.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    :pandas_api_docs:`pandas.read_csv`</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    iterator not supported</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+
+<span class="sd">    See if &#39;churn&#39; index exists in OpenSearch</span>
+
+<span class="sd">    &gt;&gt;&gt; from opensearchpy import OpenSearch # doctest: +SKIP</span>
+<span class="sd">    &gt;&gt;&gt; osclient = OpenSearch() # doctest: +SKIP</span>
+<span class="sd">    &gt;&gt;&gt; osclient.indices.exists(index=&quot;churn&quot;) # doctest: +SKIP</span>
+<span class="sd">    False</span>
+
+<span class="sd">    Read &#39;churn.csv&#39; and use first column as _id (and opensearch_py_ml.DataFrame index)</span>
+<span class="sd">    ::</span>
+
+<span class="sd">        # churn.csv</span>
+<span class="sd">        ,state,account length,area code,phone number,international plan,voice mail plan,number vmail messages,total day minutes,total day calls,total day charge,total eve minutes,total eve calls,total eve charge,total night minutes,total night calls,total night charge,total intl minutes,total intl calls,total intl charge,customer service calls,churn</span>
+<span class="sd">        0,KS,128,415,382-4657,no,yes,25,265.1,110,45.07,197.4,99,16.78,244.7,91,11.01,10.0,3,2.7,1,0</span>
+<span class="sd">        1,OH,107,415,371-7191,no,yes,26,161.6,123,27.47,195.5,103,16.62,254.4,103,11.45,13.7,3,3.7,1,0</span>
+<span class="sd">        ...</span>
+
+<span class="sd">    &gt;&gt;&gt;  ed.csv_to_opensearch(</span>
+<span class="sd">    ...      &quot;churn.csv&quot;,</span>
+<span class="sd">    ...      os_client=OPENSEARCH_TEST_CLIENT,</span>
+<span class="sd">    ...      os_dest_index=&#39;churn&#39;,</span>
+<span class="sd">    ...      es_refresh=True,</span>
+<span class="sd">    ...      index_col=0</span>
+<span class="sd">    ... ) # doctest: +SKIP</span>
+<span class="sd">              account length  area code  churn  customer service calls  ... total night calls  total night charge total night minutes voice mail plan</span>
+<span class="sd">    0                128        415      0                       1  ...                91               11.01               244.7             yes</span>
+<span class="sd">    1                107        415      0                       1  ...               103               11.45               254.4             yes</span>
+<span class="sd">    2                137        415      0                       0  ...               104                7.32               162.6              no</span>
+<span class="sd">    3                 84        408      0                       2  ...                89                8.86               196.9              no</span>
+<span class="sd">    4                 75        415      0                       3  ...               121                8.41               186.9              no</span>
+<span class="sd">    ...              ...        ...    ...                     ...  ...               ...                 ...                 ...             ...</span>
+<span class="sd">    3328             192        415      0                       2  ...                83               12.56               279.1             yes</span>
+<span class="sd">    3329              68        415      0                       3  ...               123                8.61               191.3              no</span>
+<span class="sd">    3330              28        510      0                       2  ...                91                8.64               191.9              no</span>
+<span class="sd">    3331             184        510      0                       2  ...               137                6.26               139.2              no</span>
+<span class="sd">    3332              74        415      0                       0  ...                77               10.86               241.4             yes</span>
+<span class="sd">    &lt;BLANKLINE&gt;</span>
+<span class="sd">    [3333 rows x 21 columns]</span>
+
+<span class="sd">    Validate data now exists in &#39;churn&#39; index:</span>
+
+<span class="sd">    &gt;&gt;&gt; es.search(index=&quot;churn&quot;, size=1) # doctest: +SKIP</span>
+<span class="sd">    {&#39;took&#39;: 1, &#39;timed_out&#39;: False, &#39;_shards&#39;: {&#39;total&#39;: 1, &#39;successful&#39;: 1, &#39;skipped&#39;: 0, &#39;failed&#39;: 0}, &#39;hits&#39;: {&#39;total&#39;: {&#39;value&#39;: 3333, &#39;relation&#39;: &#39;eq&#39;}, &#39;max_score&#39;: 1.0, &#39;hits&#39;: [{&#39;_index&#39;: &#39;churn&#39;, &#39;_id&#39;: &#39;0&#39;, &#39;_score&#39;: 1.0, &#39;_source&#39;: {&#39;state&#39;: &#39;KS&#39;, &#39;account length&#39;: 128, &#39;area code&#39;: 415, &#39;phone number&#39;: &#39;382-4657&#39;, &#39;international plan&#39;: &#39;no&#39;, &#39;voice mail plan&#39;: &#39;yes&#39;, &#39;number vmail messages&#39;: 25, &#39;total day minutes&#39;: 265.1, &#39;total day calls&#39;: 110, &#39;total day charge&#39;: 45.07, &#39;total eve minutes&#39;: 197.4, &#39;total eve calls&#39;: 99, &#39;total eve charge&#39;: 16.78, &#39;total night minutes&#39;: 244.7, &#39;total night calls&#39;: 91, &#39;total night charge&#39;: 11.01, &#39;total intl minutes&#39;: 10.0, &#39;total intl calls&#39;: 3, &#39;total intl charge&#39;: 2.7, &#39;customer service calls&#39;: 1, &#39;churn&#39;: 0}}]}}</span>
+
+<span class="sd">    TODO - currently the opensearch_py_ml.DataFrame may not retain the order of the data in the csv.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;sep&quot;</span><span class="p">:</span> <span class="n">sep</span><span class="p">,</span>
+        <span class="s2">&quot;delimiter&quot;</span><span class="p">:</span> <span class="n">delimiter</span><span class="p">,</span>
+        <span class="s2">&quot;engine&quot;</span><span class="p">:</span> <span class="n">engine</span><span class="p">,</span>
+        <span class="s2">&quot;dialect&quot;</span><span class="p">:</span> <span class="n">dialect</span><span class="p">,</span>
+        <span class="s2">&quot;compression&quot;</span><span class="p">:</span> <span class="n">compression</span><span class="p">,</span>
+        <span class="c1"># &quot;engine_specified&quot;: engine_specified,</span>
+        <span class="s2">&quot;doublequote&quot;</span><span class="p">:</span> <span class="n">doublequote</span><span class="p">,</span>
+        <span class="s2">&quot;escapechar&quot;</span><span class="p">:</span> <span class="n">escapechar</span><span class="p">,</span>
+        <span class="s2">&quot;quotechar&quot;</span><span class="p">:</span> <span class="n">quotechar</span><span class="p">,</span>
+        <span class="s2">&quot;quoting&quot;</span><span class="p">:</span> <span class="n">quoting</span><span class="p">,</span>
+        <span class="s2">&quot;skipinitialspace&quot;</span><span class="p">:</span> <span class="n">skipinitialspace</span><span class="p">,</span>
+        <span class="s2">&quot;lineterminator&quot;</span><span class="p">:</span> <span class="n">lineterminator</span><span class="p">,</span>
+        <span class="s2">&quot;header&quot;</span><span class="p">:</span> <span class="n">header</span><span class="p">,</span>
+        <span class="s2">&quot;index_col&quot;</span><span class="p">:</span> <span class="n">index_col</span><span class="p">,</span>
+        <span class="s2">&quot;names&quot;</span><span class="p">:</span> <span class="n">names</span><span class="p">,</span>
+        <span class="s2">&quot;prefix&quot;</span><span class="p">:</span> <span class="n">prefix</span><span class="p">,</span>
+        <span class="s2">&quot;skiprows&quot;</span><span class="p">:</span> <span class="n">skiprows</span><span class="p">,</span>
+        <span class="s2">&quot;skipfooter&quot;</span><span class="p">:</span> <span class="n">skipfooter</span><span class="p">,</span>
+        <span class="s2">&quot;na_values&quot;</span><span class="p">:</span> <span class="n">na_values</span><span class="p">,</span>
+        <span class="s2">&quot;true_values&quot;</span><span class="p">:</span> <span class="n">true_values</span><span class="p">,</span>
+        <span class="s2">&quot;false_values&quot;</span><span class="p">:</span> <span class="n">false_values</span><span class="p">,</span>
+        <span class="s2">&quot;keep_default_na&quot;</span><span class="p">:</span> <span class="n">keep_default_na</span><span class="p">,</span>
+        <span class="s2">&quot;thousands&quot;</span><span class="p">:</span> <span class="n">thousands</span><span class="p">,</span>
+        <span class="s2">&quot;comment&quot;</span><span class="p">:</span> <span class="n">comment</span><span class="p">,</span>
+        <span class="s2">&quot;decimal&quot;</span><span class="p">:</span> <span class="n">decimal</span><span class="p">,</span>
+        <span class="s2">&quot;parse_dates&quot;</span><span class="p">:</span> <span class="n">parse_dates</span><span class="p">,</span>
+        <span class="s2">&quot;keep_date_col&quot;</span><span class="p">:</span> <span class="n">keep_date_col</span><span class="p">,</span>
+        <span class="s2">&quot;dayfirst&quot;</span><span class="p">:</span> <span class="n">dayfirst</span><span class="p">,</span>
+        <span class="s2">&quot;date_parser&quot;</span><span class="p">:</span> <span class="n">date_parser</span><span class="p">,</span>
+        <span class="s2">&quot;cache_dates&quot;</span><span class="p">:</span> <span class="n">cache_dates</span><span class="p">,</span>
+        <span class="s2">&quot;nrows&quot;</span><span class="p">:</span> <span class="n">nrows</span><span class="p">,</span>
+        <span class="c1"># &quot;iterator&quot;: iterator,</span>
+        <span class="s2">&quot;chunksize&quot;</span><span class="p">:</span> <span class="n">chunksize</span><span class="p">,</span>
+        <span class="s2">&quot;converters&quot;</span><span class="p">:</span> <span class="n">converters</span><span class="p">,</span>
+        <span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">dtype</span><span class="p">,</span>
+        <span class="s2">&quot;usecols&quot;</span><span class="p">:</span> <span class="n">usecols</span><span class="p">,</span>
+        <span class="s2">&quot;verbose&quot;</span><span class="p">:</span> <span class="n">verbose</span><span class="p">,</span>
+        <span class="s2">&quot;encoding&quot;</span><span class="p">:</span> <span class="n">encoding</span><span class="p">,</span>
+        <span class="s2">&quot;memory_map&quot;</span><span class="p">:</span> <span class="n">memory_map</span><span class="p">,</span>
+        <span class="s2">&quot;float_precision&quot;</span><span class="p">:</span> <span class="n">float_precision</span><span class="p">,</span>
+        <span class="s2">&quot;na_filter&quot;</span><span class="p">:</span> <span class="n">na_filter</span><span class="p">,</span>
+        <span class="s2">&quot;delim_whitespace&quot;</span><span class="p">:</span> <span class="n">delim_whitespace</span><span class="p">,</span>
+        <span class="s2">&quot;warn_bad_lines&quot;</span><span class="p">:</span> <span class="n">warn_bad_lines</span><span class="p">,</span>
+        <span class="s2">&quot;error_bad_lines&quot;</span><span class="p">:</span> <span class="n">error_bad_lines</span><span class="p">,</span>
+        <span class="s2">&quot;on_bad_lines&quot;</span><span class="p">:</span> <span class="n">on_bad_lines</span><span class="p">,</span>
+        <span class="s2">&quot;low_memory&quot;</span><span class="p">:</span> <span class="n">low_memory</span><span class="p">,</span>
+        <span class="s2">&quot;infer_datetime_format&quot;</span><span class="p">:</span> <span class="n">infer_datetime_format</span><span class="p">,</span>
+        <span class="s2">&quot;skip_blank_lines&quot;</span><span class="p">:</span> <span class="n">skip_blank_lines</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="n">chunksize</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;chunksize&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">DEFAULT_CHUNK_SIZE</span>
+
+    <span class="k">if</span> <span class="n">PANDAS_VERSION</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">):</span>
+        <span class="c1"># Bug in Pandas v1.3.0</span>
+        <span class="c1"># If names and prefix both passed as None, it&#39;s considering them as specified values and throwing ValueError</span>
+        <span class="c1"># Ref: https://github.com/pandas-dev/pandas/issues/42387</span>
+        <span class="k">if</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;names&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;prefix&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;prefix&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;warn_bad_lines&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;on_bad_lines&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;warn&quot;</span>
+        <span class="k">if</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;error_bad_lines&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;on_bad_lines&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;error&quot;</span>
+
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;warn_bad_lines&quot;</span><span class="p">)</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;error_bad_lines&quot;</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">on_bad_lines</span> <span class="o">==</span> <span class="s2">&quot;warn&quot;</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;warn_bad_lines&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="n">on_bad_lines</span> <span class="o">==</span> <span class="s2">&quot;error&quot;</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;error_bad_lines&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;on_bad_lines&quot;</span><span class="p">)</span>
+
+    <span class="c1"># read csv in chunks to pandas DataFrame and dump to opensearch_py_ml DataFrame (and OpenSearch)</span>
+    <span class="n">reader</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">filepath_or_buffer</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="n">first_write</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">for</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="n">reader</span><span class="p">:</span>
+        <span class="n">pandas_to_opensearch</span><span class="p">(</span>
+            <span class="n">chunk</span><span class="p">,</span>
+            <span class="n">os_client</span><span class="p">,</span>
+            <span class="n">os_dest_index</span><span class="p">,</span>
+            <span class="n">chunksize</span><span class="o">=</span><span class="n">chunksize</span><span class="p">,</span>
+            <span class="n">es_refresh</span><span class="o">=</span><span class="n">es_refresh</span><span class="p">,</span>
+            <span class="n">os_dropna</span><span class="o">=</span><span class="n">os_dropna</span><span class="p">,</span>
+            <span class="n">es_type_overrides</span><span class="o">=</span><span class="n">es_type_overrides</span><span class="p">,</span>
+            <span class="c1"># es_if_exists should be &#39;append&#39; except on the first call to pandas_to_opensearch()</span>
+            <span class="n">es_if_exists</span><span class="o">=</span><span class="p">(</span><span class="n">es_if_exists</span> <span class="k">if</span> <span class="n">first_write</span> <span class="k">else</span> <span class="s2">&quot;append&quot;</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">first_write</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="c1"># Now create an opensearch_py_ml.DataFrame that references the new index</span>
+    <span class="k">return</span> <span class="n">DataFrame</span><span class="p">(</span><span class="n">os_client</span><span class="p">,</span> <span class="n">os_index_pattern</span><span class="o">=</span><span class="n">os_dest_index</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Opensearch.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

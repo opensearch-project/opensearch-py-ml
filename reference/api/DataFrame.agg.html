@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DataFrame.agg &mdash; Opensearch-py-ml  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/plot_directive.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="DataFrame.aggregate" href="DataFrame.aggregate.html" />
+    <link rel="prev" title="DataFrame.itertuples" href="DataFrame.itertuples.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Opensearch-py-ml
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../dataframe.html">DataFrame</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../dataframe.html#constructor">Constructor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../dataframe.html#attributes-and-underlying-data">Attributes and Underlying Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../dataframe.html#indexing-iteration">Indexing, Iteration</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="../dataframe.html#function-application-groupby-window">Function Application, GroupBy &amp; Window</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">DataFrame.agg</a></li>
+<li class="toctree-l4"><a class="reference internal" href="DataFrame.aggregate.html">DataFrame.aggregate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="DataFrame.groupby.html">DataFrame.groupby</a></li>
+<li class="toctree-l4"><a class="reference internal" href="groupby.DataFrameGroupBy.html">groupby.DataFrameGroupBy</a></li>
+<li class="toctree-l4"><a class="reference internal" href="groupby.DataFrameGroupBy.agg.html">groupby.DataFrameGroupBy.agg</a></li>
+<li class="toctree-l4"><a class="reference internal" href="groupby.DataFrameGroupBy.aggregate.html">groupby.DataFrameGroupBy.aggregate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="groupby.DataFrameGroupBy.count.html">groupby.DataFrameGroupBy.count</a></li>
+<li class="toctree-l4"><a class="reference internal" href="groupby.DataFrameGroupBy.mad.html">groupby.DataFrameGroupBy.mad</a></li>
+<li class="toctree-l4"><a class="reference internal" href="groupby.DataFrameGroupBy.max.html">groupby.DataFrameGroupBy.max</a></li>
+<li class="toctree-l4"><a class="reference internal" href="groupby.DataFrameGroupBy.mean.html">groupby.DataFrameGroupBy.mean</a></li>
+<li class="toctree-l4"><a class="reference internal" href="groupby.DataFrameGroupBy.median.html">groupby.DataFrameGroupBy.median</a></li>
+<li class="toctree-l4"><a class="reference internal" href="groupby.DataFrameGroupBy.min.html">groupby.DataFrameGroupBy.min</a></li>
+<li class="toctree-l4"><a class="reference internal" href="groupby.DataFrameGroupBy.nunique.html">groupby.DataFrameGroupBy.nunique</a></li>
+<li class="toctree-l4"><a class="reference internal" href="groupby.DataFrameGroupBy.std.html">groupby.DataFrameGroupBy.std</a></li>
+<li class="toctree-l4"><a class="reference internal" href="groupby.DataFrameGroupBy.sum.html">groupby.DataFrameGroupBy.sum</a></li>
+<li class="toctree-l4"><a class="reference internal" href="groupby.DataFrameGroupBy.var.html">groupby.DataFrameGroupBy.var</a></li>
+<li class="toctree-l4"><a class="reference internal" href="groupby.DataFrameGroupBy.quantile.html">groupby.DataFrameGroupBy.quantile</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../dataframe.html#computations-descriptive-stats">Computations / Descriptive Stats</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../dataframe.html#reindexing-selection-label-manipulation">Reindexing / Selection / Label Manipulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../dataframe.html#plotting">Plotting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../dataframe.html#opensearch-functions">Opensearch Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../dataframe.html#serialization-io-conversion">Serialization / IO / Conversion</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../series.html">Series</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../general_utility_functions.html">General Utility Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../io.html">Input/Output</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Opensearch-py-ml</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../dataframe.html">DataFrame</a></li>
+      <li class="breadcrumb-item active">DataFrame.agg</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/reference/api/DataFrame.agg.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="dataframe-agg">
+<h1>DataFrame.agg<a class="headerlink" href="#dataframe-agg" title="Permalink to this heading"></a></h1>
+<dl class="py method">
+<dt class="sig sig-object py" id="opensearch_py_ml.DataFrame.agg">
+<span class="sig-prename descclassname"><span class="pre">DataFrame.</span></span><span class="sig-name descname"><span class="pre">agg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">numeric_only</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">Series</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">DataFrame</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#opensearch_py_ml.DataFrame.agg" title="Permalink to this definition"></a></dt>
+<dd><p>Aggregate using one or more operations over the specified axis.</p>
+<section id="parameters">
+<h2>Parameters<a class="headerlink" href="#parameters" title="Permalink to this heading"></a></h2>
+<dl>
+<dt>func: function, str, list or dict</dt><dd><p>Function to use for aggregating the data. If a function, must either
+work when passed a %(klass)s or when passed to %(klass)s.apply.</p>
+<p>Accepted combinations are:</p>
+<ul class="simple">
+<li><p>function</p></li>
+<li><p>string function name</p></li>
+<li><p>list of functions and/or function names, e.g. <code class="docutils literal notranslate"><span class="pre">[np.sum,</span> <span class="pre">'mean']</span></code></p></li>
+<li><p>dict of axis labels -&gt; functions, function names or list of such.</p></li>
+</ul>
+<p>Currently, we only support <code class="docutils literal notranslate"><span class="pre">['count',</span> <span class="pre">'mad',</span> <span class="pre">'max',</span> <span class="pre">'mean',</span> <span class="pre">'median',</span> <span class="pre">'min',</span> <span class="pre">'mode',</span> <span class="pre">'quantile',</span>
+<span class="pre">'rank',</span> <span class="pre">'sem',</span> <span class="pre">'skew',</span> <span class="pre">'sum',</span> <span class="pre">'std',</span> <span class="pre">'var']</span></code></p>
+</dd>
+<dt>axis: int</dt><dd><p>Currently, we only support axis=0 (index)</p>
+</dd>
+<dt>numeric_only: {True, False, None} Default is None</dt><dd><p>Which datatype to be returned
+- True: returns all values with float64, NaN/NaT are ignored.
+- False: returns all values with float64.
+- None: returns all values with default datatype.</p>
+</dd>
+<dt><a href="#id1"><span class="problematic" id="id2">*</span></a>args</dt><dd><p>Positional arguments to pass to <cite>func</cite></p>
+</dd>
+<dt><a href="#id3"><span class="problematic" id="id4">**</span></a>kwargs</dt><dd><p>Keyword arguments to pass to <cite>func</cite></p>
+</dd>
+</dl>
+</section>
+<section id="returns">
+<h2>Returns<a class="headerlink" href="#returns" title="Permalink to this heading"></a></h2>
+<dl class="simple">
+<dt>DataFrame, Series or scalar</dt><dd><p>if DataFrame.agg is called with a single function, returns a Series
+if DataFrame.agg is called with several functions, returns a DataFrame
+if Series.agg is called with single function, returns a scalar
+if Series.agg is called with several functions, returns a Series</p>
+</dd>
+</dl>
+</section>
+<section id="see-also">
+<h2>See Also<a class="headerlink" href="#see-also" title="Permalink to this heading"></a></h2>
+<p><a href="#id5"><span class="problematic" id="id6">:pandas_api_docs:`pandas.DataFrame.aggregate`</span></a></p>
+</section>
+<section id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this heading"></a></h2>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ed</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">OPENSEARCH_TEST_CLIENT</span><span class="p">,</span> <span class="s1">&#39;flights&#39;</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;AvgTicketPrice&#39;</span><span class="p">,</span> <span class="s1">&#39;DistanceKilometers&#39;</span><span class="p">,</span> <span class="s1">&#39;timestamp&#39;</span><span class="p">,</span> <span class="s1">&#39;DestCountry&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">aggregate</span><span class="p">([</span><span class="s1">&#39;sum&#39;</span><span class="p">,</span> <span class="s1">&#39;min&#39;</span><span class="p">,</span> <span class="s1">&#39;std&#39;</span><span class="p">],</span> <span class="n">numeric_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+<span class="go">     AvgTicketPrice  DistanceKilometers</span>
+<span class="go">sum         8204364            92616288</span>
+<span class="go">min             100                   0</span>
+<span class="go">std             266                4578</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">aggregate</span><span class="p">([</span><span class="s1">&#39;sum&#39;</span><span class="p">,</span> <span class="s1">&#39;min&#39;</span><span class="p">,</span> <span class="s1">&#39;std&#39;</span><span class="p">],</span> <span class="n">numeric_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="go">     AvgTicketPrice  DistanceKilometers</span>
+<span class="go">sum    8.204365e+06        9.261629e+07</span>
+<span class="go">min    1.000205e+02        0.000000e+00</span>
+<span class="go">std    2.664071e+02        4.578614e+03</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">aggregate</span><span class="p">([</span><span class="s1">&#39;sum&#39;</span><span class="p">,</span> <span class="s1">&#39;min&#39;</span><span class="p">,</span> <span class="s1">&#39;std&#39;</span><span class="p">],</span> <span class="n">numeric_only</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="go">     AvgTicketPrice  DistanceKilometers  timestamp  DestCountry</span>
+<span class="go">sum    8.204365e+06        9.261629e+07        NaT          NaN</span>
+<span class="go">min    1.000205e+02        0.000000e+00 2018-01-01          NaN</span>
+<span class="go">std    2.664071e+02        4.578614e+03        NaT          NaN</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">aggregate</span><span class="p">([</span><span class="s1">&#39;sum&#39;</span><span class="p">,</span> <span class="s1">&#39;min&#39;</span><span class="p">,</span> <span class="s1">&#39;std&#39;</span><span class="p">],</span> <span class="n">numeric_only</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="go">     AvgTicketPrice  DistanceKilometers  timestamp  DestCountry</span>
+<span class="go">sum    8.204365e+06        9.261629e+07        NaT          NaN</span>
+<span class="go">min    1.000205e+02        0.000000e+00 2018-01-01          NaN</span>
+<span class="go">std    2.664071e+02        4.578614e+03        NaT          NaN</span>
+</pre></div>
+</div>
+</section>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="DataFrame.itertuples.html" class="btn btn-neutral float-left" title="DataFrame.itertuples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="DataFrame.aggregate.html" class="btn btn-neutral float-right" title="DataFrame.aggregate" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Opensearch.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

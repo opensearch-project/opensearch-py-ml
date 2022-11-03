@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Series.rename &mdash; Opensearch-py-ml  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/plot_directive.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Series.isna" href="Series.isna.html" />
+    <link rel="prev" title="Series.quantile" href="Series.quantile.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> Opensearch-py-ml
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../dataframe.html">DataFrame</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../series.html">Series</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../series.html#constructor">Constructor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../series.html#attributes-and-underlying-data">Attributes and Underlying Data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../series.html#indexing-iteration">Indexing, Iteration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../series.html#binary-operator-functions">Binary Operator Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../series.html#computations-descriptive-stats">Computations / Descriptive Stats</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="../series.html#reindexing-selection-label-manipulation">Reindexing / Selection / Label Manipulation</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Series.rename</a></li>
+<li class="toctree-l4"><a class="reference internal" href="Series.isna.html">Series.isna</a></li>
+<li class="toctree-l4"><a class="reference internal" href="Series.notna.html">Series.notna</a></li>
+<li class="toctree-l4"><a class="reference internal" href="Series.isnull.html">Series.isnull</a></li>
+<li class="toctree-l4"><a class="reference internal" href="Series.notnull.html">Series.notnull</a></li>
+<li class="toctree-l4"><a class="reference internal" href="Series.isin.html">Series.isin</a></li>
+<li class="toctree-l4"><a class="reference internal" href="Series.filter.html">Series.filter</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../series.html#plotting">Plotting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../series.html#serialization-io-conversion">Serialization / IO / Conversion</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../series.html#opensearch-functions">Opensearch Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../general_utility_functions.html">General Utility Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../io.html">Input/Output</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">Examples</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Opensearch-py-ml</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../series.html">Series</a></li>
+      <li class="breadcrumb-item active">Series.rename</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/reference/api/Series.rename.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="series-rename">
+<h1>Series.rename<a class="headerlink" href="#series-rename" title="Permalink to this heading"></a></h1>
+<dl class="py method">
+<dt class="sig sig-object py" id="opensearch_py_ml.Series.rename">
+<span class="sig-prename descclassname"><span class="pre">Series.</span></span><span class="sig-name descname"><span class="pre">rename</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="Series.html#opensearch_py_ml.Series" title="opensearch_py_ml.series.Series"><span class="pre">Series</span></a></span></span><a class="reference internal" href="../../_modules/opensearch_py_ml/series.html#Series.rename"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#opensearch_py_ml.Series.rename" title="Permalink to this definition"></a></dt>
+<dd><p>Rename name of series. Only column rename is supported. This does not change the underlying
+index, but adds a symbolic link from the new name (column) to the OpenSearch field name.</p>
+<p>For instance, if a field was called ‘total_quantity’ it could be renamed ‘Total Quantity’.</p>
+<section id="parameters">
+<h2>Parameters<a class="headerlink" href="#parameters" title="Permalink to this heading"></a></h2>
+<p>new_name: str</p>
+</section>
+<section id="returns">
+<h2>Returns<a class="headerlink" href="#returns" title="Permalink to this heading"></a></h2>
+<dl class="simple">
+<dt>opensearch_py_ml.Series</dt><dd><p>opensearch_py_ml.Series with new name.</p>
+</dd>
+</dl>
+</section>
+<section id="see-also">
+<h2>See Also<a class="headerlink" href="#see-also" title="Permalink to this heading"></a></h2>
+<p><a href="#id1"><span class="problematic" id="id2">:pandas_api_docs:`pandas.Series.rename`</span></a></p>
+</section>
+<section id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this heading"></a></h2>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ed</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">OPENSEARCH_TEST_CLIENT</span><span class="p">,</span> <span class="s1">&#39;flights&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">Carrier</span>
+<span class="go">0         Kibana Airlines</span>
+<span class="go">1        Logstash Airways</span>
+<span class="go">2        Logstash Airways</span>
+<span class="go">3         Kibana Airlines</span>
+<span class="go">4         Kibana Airlines</span>
+<span class="go">               ...</span>
+<span class="go">13054    Logstash Airways</span>
+<span class="go">13055    Logstash Airways</span>
+<span class="go">13056    Logstash Airways</span>
+<span class="go">13057            JetBeats</span>
+<span class="go">13058            JetBeats</span>
+<span class="go">Name: Carrier, Length: 13059, dtype: object</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">Carrier</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="s1">&#39;Airline&#39;</span><span class="p">)</span>
+<span class="go">0         Kibana Airlines</span>
+<span class="go">1        Logstash Airways</span>
+<span class="go">2        Logstash Airways</span>
+<span class="go">3         Kibana Airlines</span>
+<span class="go">4         Kibana Airlines</span>
+<span class="go">               ...</span>
+<span class="go">13054    Logstash Airways</span>
+<span class="go">13055    Logstash Airways</span>
+<span class="go">13056    Logstash Airways</span>
+<span class="go">13057            JetBeats</span>
+<span class="go">13058            JetBeats</span>
+<span class="go">Name: Airline, Length: 13059, dtype: object</span>
+</pre></div>
+</div>
+</section>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Series.quantile.html" class="btn btn-neutral float-left" title="Series.quantile" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Series.isna.html" class="btn btn-neutral float-right" title="Series.isna" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Opensearch.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

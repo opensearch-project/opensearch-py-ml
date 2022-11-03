@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DataFrame &mdash; Opensearch-py-ml  documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/plot_directive.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="DataFrame" href="api/DataFrame.html" />
+    <link rel="prev" title="API Reference" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Opensearch-py-ml
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">DataFrame</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#constructor">Constructor</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.html">DataFrame</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#attributes-and-underlying-data">Attributes and Underlying Data</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.index.html">DataFrame.index</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.columns.html">DataFrame.columns</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.dtypes.html">DataFrame.dtypes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.select_dtypes.html">DataFrame.select_dtypes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.values.html">DataFrame.values</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.empty.html">DataFrame.empty</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.shape.html">DataFrame.shape</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.ndim.html">DataFrame.ndim</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.size.html">DataFrame.size</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#indexing-iteration">Indexing, Iteration</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.head.html">DataFrame.head</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.keys.html">DataFrame.keys</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.tail.html">DataFrame.tail</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.get.html">DataFrame.get</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.query.html">DataFrame.query</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.sample.html">DataFrame.sample</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.iterrows.html">DataFrame.iterrows</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.itertuples.html">DataFrame.itertuples</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#function-application-groupby-window">Function Application, GroupBy &amp; Window</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.agg.html">DataFrame.agg</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.aggregate.html">DataFrame.aggregate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.groupby.html">DataFrame.groupby</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/groupby.DataFrameGroupBy.html">groupby.DataFrameGroupBy</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/groupby.DataFrameGroupBy.agg.html">groupby.DataFrameGroupBy.agg</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/groupby.DataFrameGroupBy.aggregate.html">groupby.DataFrameGroupBy.aggregate</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/groupby.DataFrameGroupBy.count.html">groupby.DataFrameGroupBy.count</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/groupby.DataFrameGroupBy.mad.html">groupby.DataFrameGroupBy.mad</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/groupby.DataFrameGroupBy.max.html">groupby.DataFrameGroupBy.max</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/groupby.DataFrameGroupBy.mean.html">groupby.DataFrameGroupBy.mean</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/groupby.DataFrameGroupBy.median.html">groupby.DataFrameGroupBy.median</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/groupby.DataFrameGroupBy.min.html">groupby.DataFrameGroupBy.min</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/groupby.DataFrameGroupBy.nunique.html">groupby.DataFrameGroupBy.nunique</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/groupby.DataFrameGroupBy.std.html">groupby.DataFrameGroupBy.std</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/groupby.DataFrameGroupBy.sum.html">groupby.DataFrameGroupBy.sum</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/groupby.DataFrameGroupBy.var.html">groupby.DataFrameGroupBy.var</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/groupby.DataFrameGroupBy.quantile.html">groupby.DataFrameGroupBy.quantile</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#computations-descriptive-stats">Computations / Descriptive Stats</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.count.html">DataFrame.count</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.describe.html">DataFrame.describe</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.info.html">DataFrame.info</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.max.html">DataFrame.max</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.mean.html">DataFrame.mean</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.min.html">DataFrame.min</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.median.html">DataFrame.median</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.mad.html">DataFrame.mad</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.std.html">DataFrame.std</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.var.html">DataFrame.var</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.sum.html">DataFrame.sum</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.nunique.html">DataFrame.nunique</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.mode.html">DataFrame.mode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.quantile.html">DataFrame.quantile</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.idxmax.html">DataFrame.idxmax</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.idxmin.html">DataFrame.idxmin</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#reindexing-selection-label-manipulation">Reindexing / Selection / Label Manipulation</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.drop.html">DataFrame.drop</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.filter.html">DataFrame.filter</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#plotting">Plotting</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.hist.html">DataFrame.hist</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#opensearch-functions">Opensearch Functions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.os_info.html">DataFrame.os_info</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.es_match.html">DataFrame.es_match</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.es_query.html">DataFrame.es_query</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.os_dtypes.html">DataFrame.os_dtypes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#serialization-io-conversion">Serialization / IO / Conversion</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.info.html">DataFrame.info</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.to_numpy.html">DataFrame.to_numpy</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.to_csv.html">DataFrame.to_csv</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.to_html.html">DataFrame.to_html</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.to_string.html">DataFrame.to_string</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/DataFrame.to_pandas.html">DataFrame.to_pandas</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="series.html">Series</a></li>
+<li class="toctree-l2"><a class="reference internal" href="general_utility_functions.html">General Utility Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="io.html">Input/Output</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Examples</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Opensearch-py-ml</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">API Reference</a></li>
+      <li class="breadcrumb-item active">DataFrame</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/reference/dataframe.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="dataframe">
+<span id="api-dataframe"></span><h1>DataFrame<a class="headerlink" href="#dataframe" title="Permalink to this heading"></a></h1>
+<section id="constructor">
+<h2>Constructor<a class="headerlink" href="#constructor" title="Permalink to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.html">DataFrame</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.html#opensearch_py_ml.DataFrame"><code class="docutils literal notranslate"><span class="pre">DataFrame</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="attributes-and-underlying-data">
+<h2>Attributes and Underlying Data<a class="headerlink" href="#attributes-and-underlying-data" title="Permalink to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.index.html">DataFrame.index</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.index.html#opensearch_py_ml.DataFrame.index"><code class="docutils literal notranslate"><span class="pre">DataFrame.index</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.columns.html">DataFrame.columns</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.columns.html#opensearch_py_ml.DataFrame.columns"><code class="docutils literal notranslate"><span class="pre">DataFrame.columns</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.dtypes.html">DataFrame.dtypes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.dtypes.html#opensearch_py_ml.DataFrame.dtypes"><code class="docutils literal notranslate"><span class="pre">DataFrame.dtypes</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.select_dtypes.html">DataFrame.select_dtypes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.select_dtypes.html#opensearch_py_ml.DataFrame.select_dtypes"><code class="docutils literal notranslate"><span class="pre">DataFrame.select_dtypes()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.values.html">DataFrame.values</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.values.html#opensearch_py_ml.DataFrame.values"><code class="docutils literal notranslate"><span class="pre">DataFrame.values</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.empty.html">DataFrame.empty</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.empty.html#opensearch_py_ml.DataFrame.empty"><code class="docutils literal notranslate"><span class="pre">DataFrame.empty</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.shape.html">DataFrame.shape</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.shape.html#opensearch_py_ml.DataFrame.shape"><code class="docutils literal notranslate"><span class="pre">DataFrame.shape</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.ndim.html">DataFrame.ndim</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.ndim.html#opensearch_py_ml.DataFrame.ndim"><code class="docutils literal notranslate"><span class="pre">DataFrame.ndim</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.size.html">DataFrame.size</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.size.html#opensearch_py_ml.DataFrame.size"><code class="docutils literal notranslate"><span class="pre">DataFrame.size</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="indexing-iteration">
+<h2>Indexing, Iteration<a class="headerlink" href="#indexing-iteration" title="Permalink to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.head.html">DataFrame.head</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.head.html#opensearch_py_ml.DataFrame.head"><code class="docutils literal notranslate"><span class="pre">DataFrame.head()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.keys.html">DataFrame.keys</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.keys.html#opensearch_py_ml.DataFrame.keys"><code class="docutils literal notranslate"><span class="pre">DataFrame.keys()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.tail.html">DataFrame.tail</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.tail.html#opensearch_py_ml.DataFrame.tail"><code class="docutils literal notranslate"><span class="pre">DataFrame.tail()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.get.html">DataFrame.get</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.get.html#opensearch_py_ml.DataFrame.get"><code class="docutils literal notranslate"><span class="pre">DataFrame.get()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.query.html">DataFrame.query</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.query.html#opensearch_py_ml.DataFrame.query"><code class="docutils literal notranslate"><span class="pre">DataFrame.query()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.sample.html">DataFrame.sample</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.sample.html#opensearch_py_ml.DataFrame.sample"><code class="docutils literal notranslate"><span class="pre">DataFrame.sample()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.iterrows.html">DataFrame.iterrows</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.iterrows.html#opensearch_py_ml.DataFrame.iterrows"><code class="docutils literal notranslate"><span class="pre">DataFrame.iterrows()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.itertuples.html">DataFrame.itertuples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.itertuples.html#opensearch_py_ml.DataFrame.itertuples"><code class="docutils literal notranslate"><span class="pre">DataFrame.itertuples()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="function-application-groupby-window">
+<h2>Function Application, GroupBy &amp; Window<a class="headerlink" href="#function-application-groupby-window" title="Permalink to this heading"></a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Opensearch aggregations using cardinality (<code class="docutils literal notranslate"><span class="pre">count</span></code>) are accurate
+approximations using the <a class="reference external" href="https://static.googleusercontent.com/media/research.google.com/fr//pubs/archive/40671.pdf">HyperLogLog++ algorithm</a> so may not
+be exact.</p>
+</div>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.agg.html">DataFrame.agg</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.agg.html#opensearch_py_ml.DataFrame.agg"><code class="docutils literal notranslate"><span class="pre">DataFrame.agg()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.aggregate.html">DataFrame.aggregate</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.aggregate.html#opensearch_py_ml.DataFrame.aggregate"><code class="docutils literal notranslate"><span class="pre">DataFrame.aggregate()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.groupby.html">DataFrame.groupby</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.groupby.html#opensearch_py_ml.DataFrame.groupby"><code class="docutils literal notranslate"><span class="pre">DataFrame.groupby()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api/groupby.DataFrameGroupBy.html">groupby.DataFrameGroupBy</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/groupby.DataFrameGroupBy.html#opensearch_py_ml.groupby.DataFrameGroupBy"><code class="docutils literal notranslate"><span class="pre">DataFrameGroupBy</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/groupby.DataFrameGroupBy.agg.html">groupby.DataFrameGroupBy.agg</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/groupby.DataFrameGroupBy.agg.html#opensearch_py_ml.groupby.DataFrameGroupBy.agg"><code class="docutils literal notranslate"><span class="pre">DataFrameGroupBy.agg()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/groupby.DataFrameGroupBy.aggregate.html">groupby.DataFrameGroupBy.aggregate</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/groupby.DataFrameGroupBy.aggregate.html#opensearch_py_ml.groupby.DataFrameGroupBy.aggregate"><code class="docutils literal notranslate"><span class="pre">DataFrameGroupBy.aggregate()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/groupby.DataFrameGroupBy.count.html">groupby.DataFrameGroupBy.count</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/groupby.DataFrameGroupBy.count.html#opensearch_py_ml.groupby.DataFrameGroupBy.count"><code class="docutils literal notranslate"><span class="pre">DataFrameGroupBy.count()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/groupby.DataFrameGroupBy.mad.html">groupby.DataFrameGroupBy.mad</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/groupby.DataFrameGroupBy.mad.html#opensearch_py_ml.groupby.DataFrameGroupBy.mad"><code class="docutils literal notranslate"><span class="pre">DataFrameGroupBy.mad()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/groupby.DataFrameGroupBy.max.html">groupby.DataFrameGroupBy.max</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/groupby.DataFrameGroupBy.max.html#opensearch_py_ml.groupby.DataFrameGroupBy.max"><code class="docutils literal notranslate"><span class="pre">DataFrameGroupBy.max()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/groupby.DataFrameGroupBy.mean.html">groupby.DataFrameGroupBy.mean</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/groupby.DataFrameGroupBy.mean.html#opensearch_py_ml.groupby.DataFrameGroupBy.mean"><code class="docutils literal notranslate"><span class="pre">DataFrameGroupBy.mean()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/groupby.DataFrameGroupBy.median.html">groupby.DataFrameGroupBy.median</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/groupby.DataFrameGroupBy.median.html#opensearch_py_ml.groupby.DataFrameGroupBy.median"><code class="docutils literal notranslate"><span class="pre">DataFrameGroupBy.median()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/groupby.DataFrameGroupBy.min.html">groupby.DataFrameGroupBy.min</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/groupby.DataFrameGroupBy.min.html#opensearch_py_ml.groupby.DataFrameGroupBy.min"><code class="docutils literal notranslate"><span class="pre">DataFrameGroupBy.min()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/groupby.DataFrameGroupBy.nunique.html">groupby.DataFrameGroupBy.nunique</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/groupby.DataFrameGroupBy.nunique.html#opensearch_py_ml.groupby.DataFrameGroupBy.nunique"><code class="docutils literal notranslate"><span class="pre">DataFrameGroupBy.nunique()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/groupby.DataFrameGroupBy.std.html">groupby.DataFrameGroupBy.std</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/groupby.DataFrameGroupBy.std.html#opensearch_py_ml.groupby.DataFrameGroupBy.std"><code class="docutils literal notranslate"><span class="pre">DataFrameGroupBy.std()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/groupby.DataFrameGroupBy.sum.html">groupby.DataFrameGroupBy.sum</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/groupby.DataFrameGroupBy.sum.html#opensearch_py_ml.groupby.DataFrameGroupBy.sum"><code class="docutils literal notranslate"><span class="pre">DataFrameGroupBy.sum()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/groupby.DataFrameGroupBy.var.html">groupby.DataFrameGroupBy.var</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/groupby.DataFrameGroupBy.var.html#opensearch_py_ml.groupby.DataFrameGroupBy.var"><code class="docutils literal notranslate"><span class="pre">DataFrameGroupBy.var()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/groupby.DataFrameGroupBy.quantile.html">groupby.DataFrameGroupBy.quantile</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/groupby.DataFrameGroupBy.quantile.html#opensearch_py_ml.groupby.DataFrameGroupBy.quantile"><code class="docutils literal notranslate"><span class="pre">DataFrameGroupBy.quantile()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="computations-descriptive-stats">
+<span id="api-dataframe-stats"></span><h2>Computations / Descriptive Stats<a class="headerlink" href="#computations-descriptive-stats" title="Permalink to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.count.html">DataFrame.count</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.count.html#opensearch_py_ml.DataFrame.count"><code class="docutils literal notranslate"><span class="pre">DataFrame.count()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.describe.html">DataFrame.describe</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.describe.html#opensearch_py_ml.DataFrame.describe"><code class="docutils literal notranslate"><span class="pre">DataFrame.describe()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.info.html">DataFrame.info</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.info.html#opensearch_py_ml.DataFrame.info"><code class="docutils literal notranslate"><span class="pre">DataFrame.info()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.max.html">DataFrame.max</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.max.html#opensearch_py_ml.DataFrame.max"><code class="docutils literal notranslate"><span class="pre">DataFrame.max()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.mean.html">DataFrame.mean</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.mean.html#opensearch_py_ml.DataFrame.mean"><code class="docutils literal notranslate"><span class="pre">DataFrame.mean()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.min.html">DataFrame.min</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.min.html#opensearch_py_ml.DataFrame.min"><code class="docutils literal notranslate"><span class="pre">DataFrame.min()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.median.html">DataFrame.median</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.median.html#opensearch_py_ml.DataFrame.median"><code class="docutils literal notranslate"><span class="pre">DataFrame.median()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.mad.html">DataFrame.mad</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.mad.html#opensearch_py_ml.DataFrame.mad"><code class="docutils literal notranslate"><span class="pre">DataFrame.mad()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.std.html">DataFrame.std</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.std.html#opensearch_py_ml.DataFrame.std"><code class="docutils literal notranslate"><span class="pre">DataFrame.std()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.var.html">DataFrame.var</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.var.html#opensearch_py_ml.DataFrame.var"><code class="docutils literal notranslate"><span class="pre">DataFrame.var()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.sum.html">DataFrame.sum</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.sum.html#opensearch_py_ml.DataFrame.sum"><code class="docutils literal notranslate"><span class="pre">DataFrame.sum()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.nunique.html">DataFrame.nunique</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.nunique.html#opensearch_py_ml.DataFrame.nunique"><code class="docutils literal notranslate"><span class="pre">DataFrame.nunique()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.mode.html">DataFrame.mode</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.mode.html#opensearch_py_ml.DataFrame.mode"><code class="docutils literal notranslate"><span class="pre">DataFrame.mode()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.quantile.html">DataFrame.quantile</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.quantile.html#opensearch_py_ml.DataFrame.quantile"><code class="docutils literal notranslate"><span class="pre">DataFrame.quantile()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.idxmax.html">DataFrame.idxmax</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.idxmax.html#opensearch_py_ml.DataFrame.idxmax"><code class="docutils literal notranslate"><span class="pre">DataFrame.idxmax()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.idxmin.html">DataFrame.idxmin</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.idxmin.html#opensearch_py_ml.DataFrame.idxmin"><code class="docutils literal notranslate"><span class="pre">DataFrame.idxmin()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="reindexing-selection-label-manipulation">
+<h2>Reindexing / Selection / Label Manipulation<a class="headerlink" href="#reindexing-selection-label-manipulation" title="Permalink to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.drop.html">DataFrame.drop</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.drop.html#opensearch_py_ml.DataFrame.drop"><code class="docutils literal notranslate"><span class="pre">DataFrame.drop()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.filter.html">DataFrame.filter</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.filter.html#opensearch_py_ml.DataFrame.filter"><code class="docutils literal notranslate"><span class="pre">DataFrame.filter()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="plotting">
+<h2>Plotting<a class="headerlink" href="#plotting" title="Permalink to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.hist.html">DataFrame.hist</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.hist.html#opensearch_py_ml.DataFrame.hist"><code class="docutils literal notranslate"><span class="pre">DataFrame.hist()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="opensearch-functions">
+<h2>Opensearch Functions<a class="headerlink" href="#opensearch-functions" title="Permalink to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.os_info.html">DataFrame.os_info</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.os_info.html#opensearch_py_ml.DataFrame.os_info"><code class="docutils literal notranslate"><span class="pre">DataFrame.os_info()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.es_match.html">DataFrame.es_match</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.es_match.html#opensearch_py_ml.DataFrame.es_match"><code class="docutils literal notranslate"><span class="pre">DataFrame.es_match()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.es_query.html">DataFrame.es_query</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.es_query.html#opensearch_py_ml.DataFrame.es_query"><code class="docutils literal notranslate"><span class="pre">DataFrame.es_query()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.os_dtypes.html">DataFrame.os_dtypes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.os_dtypes.html#opensearch_py_ml.DataFrame.os_dtypes"><code class="docutils literal notranslate"><span class="pre">DataFrame.os_dtypes</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="serialization-io-conversion">
+<h2>Serialization / IO / Conversion<a class="headerlink" href="#serialization-io-conversion" title="Permalink to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.info.html">DataFrame.info</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.info.html#opensearch_py_ml.DataFrame.info"><code class="docutils literal notranslate"><span class="pre">DataFrame.info()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.to_numpy.html">DataFrame.to_numpy</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.to_numpy.html#opensearch_py_ml.DataFrame.to_numpy"><code class="docutils literal notranslate"><span class="pre">DataFrame.to_numpy()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.to_csv.html">DataFrame.to_csv</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.to_csv.html#opensearch_py_ml.DataFrame.to_csv"><code class="docutils literal notranslate"><span class="pre">DataFrame.to_csv()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.to_html.html">DataFrame.to_html</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.to_html.html#opensearch_py_ml.DataFrame.to_html"><code class="docutils literal notranslate"><span class="pre">DataFrame.to_html()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.to_string.html">DataFrame.to_string</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.to_string.html#opensearch_py_ml.DataFrame.to_string"><code class="docutils literal notranslate"><span class="pre">DataFrame.to_string()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api/DataFrame.to_pandas.html">DataFrame.to_pandas</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/DataFrame.to_pandas.html#opensearch_py_ml.DataFrame.to_pandas"><code class="docutils literal notranslate"><span class="pre">DataFrame.to_pandas()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="API Reference" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="api/DataFrame.html" class="btn btn-neutral float-right" title="DataFrame" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Opensearch.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
