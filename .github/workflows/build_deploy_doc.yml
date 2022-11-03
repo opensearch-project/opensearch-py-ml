@@ -9,17 +9,18 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        cluster: [ "opensearch" ]
+        secured: [ "true" ]
+        entry:
+          - { opensearch_version: 2.3.0 }
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
-      - name: Set up Python 3
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.x'
-      - name: Install dependencies
-        run: python3 -m pip install nox
-      - name: Lint the code
-        run: nox -s docs
+      - name: Integ ${{ matrix.cluster }} secured=${{ matrix.secured }} version=${{matrix.entry.opensearch_version}}
+        run: "./.ci/run-tests ${{ matrix.cluster }} ${{ matrix.secured }} ${{ matrix.entry.opensearch_version }} true"
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
