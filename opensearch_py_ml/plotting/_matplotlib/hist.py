@@ -115,7 +115,7 @@ def hist_frame(
     **kwds,
 ):
     # Start with empty pandas data frame derived from
-    ed_df_bins, ed_df_weights = data._hist(num_bins=bins)
+    oml_df_bins, oml_df_weights = data._hist(num_bins=bins)
 
     converter._WARN = False  # no warning for pandas plots
     if by is not None:
@@ -124,9 +124,9 @@ def hist_frame(
     if column is not None:
         if not isinstance(column, (list, np.ndarray, ABCIndex)):
             column = [column]
-        ed_df_bins = ed_df_bins[column]
-        ed_df_weights = ed_df_weights[column]
-    naxes = len(ed_df_bins.columns)
+        oml_df_bins = oml_df_bins[column]
+        oml_df_weights = oml_df_weights[column]
+    naxes = len(oml_df_bins.columns)
 
     if naxes == 0:
         raise ValueError("hist method requires numerical columns, " "nothing to plot.")
@@ -145,9 +145,9 @@ def hist_frame(
     for i, col in enumerate(try_sort(data.columns)):
         ax = _axes[i]
         ax.hist(
-            ed_df_bins[col][:-1],
-            bins=ed_df_bins[col],
-            weights=ed_df_weights[col],
+            oml_df_bins[col][:-1],
+            bins=oml_df_bins[col],
+            weights=oml_df_weights[col],
             **kwds,
         )
         ax.set_title(col)

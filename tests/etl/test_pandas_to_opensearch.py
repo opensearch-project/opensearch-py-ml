@@ -32,7 +32,7 @@ from opensearch_py_ml import DataFrame, pandas_to_opensearch
 from tests.common import (
     OPENSEARCH_TEST_CLIENT,
     assert_frame_equal,
-    assert_pandas_eland_frame_equal,
+    assert_pandas_opensearch_py_ml_frame_equal,
 )
 
 dt = datetime.utcnow()
@@ -57,7 +57,7 @@ def delete_test_index():
 
 
 class TestPandasToEland:
-    def test_returns_eland_dataframe(self):
+    def test_returns_oml_dataframe(self):
         df = pandas_to_opensearch(
             pd_df, os_client=OPENSEARCH_TEST_CLIENT, os_dest_index="test-index"
         )
@@ -65,7 +65,7 @@ class TestPandasToEland:
         assert isinstance(df, DataFrame)
         assert "os_index_pattern: test-index" in df.os_info()
 
-    def test_es_if_exists_fail(self):
+    def test_os_if_exists_fail(self):
         pandas_to_opensearch(
             pd_df, os_client=OPENSEARCH_TEST_CLIENT, os_dest_index="test-index"
         )
@@ -77,7 +77,7 @@ class TestPandasToEland:
 
         assert str(e.value) == (
             "Could not create the index [test-index] because it "
-            "already exists. Change the 'es_if_exists' parameter "
+            "already exists. Change the 'os_if_exists' parameter "
             "to 'append' or 'replace' data."
         )
 
@@ -87,8 +87,8 @@ class TestPandasToEland:
             pd_df2,
             os_client=OPENSEARCH_TEST_CLIENT,
             os_dest_index="test-index",
-            es_if_exists="replace",
-            es_refresh=True,
+            os_if_exists="replace",
+            os_refresh=True,
         ).to_pandas()
         assert_frame_equal(pd_df2, df1)
 
@@ -97,17 +97,17 @@ class TestPandasToEland:
             pd_df,
             os_client=OPENSEARCH_TEST_CLIENT,
             os_dest_index="test-index",
-            es_if_exists="replace",
-            es_refresh=True,
+            os_if_exists="replace",
+            os_refresh=True,
         )
-        assert_pandas_eland_frame_equal(pd_df, df2)
+        assert_pandas_opensearch_py_ml_frame_equal(pd_df, df2)
 
         df3 = pandas_to_opensearch(
             pd_df2,
             os_client=OPENSEARCH_TEST_CLIENT,
             os_dest_index="test-index",
-            es_if_exists="replace",
-            es_refresh=True,
+            os_if_exists="replace",
+            os_refresh=True,
         ).to_pandas()
         assert_frame_equal(df1, df3)
 
@@ -116,14 +116,14 @@ class TestPandasToEland:
             pd_df,
             os_client=OPENSEARCH_TEST_CLIENT,
             os_dest_index="test-index",
-            es_if_exists="append",
-            es_refresh=True,
+            os_if_exists="append",
+            os_refresh=True,
             # We use 'short' here specifically so that the
             # assumed type of 'long' is coerced into a 'short'
             # by append mode.
-            es_type_overrides={"a": "short"},
+            os_type_overrides={"a": "short"},
         )
-        assert_pandas_eland_frame_equal(pd_df, df1)
+        assert_pandas_opensearch_py_ml_frame_equal(pd_df, df1)
         assert df1.shape == (3, 4)
 
         pd_df2 = pd.DataFrame(
@@ -139,22 +139,22 @@ class TestPandasToEland:
             pd_df2,
             os_client=OPENSEARCH_TEST_CLIENT,
             os_dest_index="test-index",
-            es_if_exists="append",
-            es_refresh=True,
+            os_if_exists="append",
+            os_refresh=True,
         )
 
         # Assert that the second pandas dataframe is actually appended
         assert df2.shape == (6, 4)
         pd_df3 = pd.concat([pd_df, pd_df2])
-        assert_pandas_eland_frame_equal(pd_df3, df2)
+        assert_pandas_opensearch_py_ml_frame_equal(pd_df3, df2)
 
-    def test_es_if_exists_append_mapping_mismatch_schema_enforcement(self):
+    def test_os_if_exists_append_mapping_mismatch_schema_enforcement(self):
         df1 = pandas_to_opensearch(
             pd_df,
             os_client=OPENSEARCH_TEST_CLIENT,
             os_dest_index="test-index",
-            es_if_exists="append",
-            es_refresh=True,
+            os_if_exists="append",
+            os_refresh=True,
         )
 
         with pytest.raises(ValueError) as e:
@@ -162,7 +162,7 @@ class TestPandasToEland:
                 pd_df2,
                 os_client=OPENSEARCH_TEST_CLIENT,
                 os_dest_index="test-index",
-                es_if_exists="append",
+                os_if_exists="append",
             )
 
         assert str(e.value) == (
@@ -175,15 +175,15 @@ class TestPandasToEland:
         )
 
         # Assert that the index isn't modified
-        assert_pandas_eland_frame_equal(pd_df, df1)
+        assert_pandas_opensearch_py_ml_frame_equal(pd_df, df1)
 
-    def test_es_if_exists_append_mapping_mismatch_no_schema_enforcement(self):
+    def test_os_if_exists_append_mapping_mismatch_no_schema_enforcement(self):
         pandas_to_opensearch(
             pd_df,
             os_client=OPENSEARCH_TEST_CLIENT,
             os_dest_index="test-index",
-            es_if_exists="append",
-            es_refresh=True,
+            os_if_exists="append",
+            os_refresh=True,
         )
 
         pd_df2 = pd.DataFrame(
@@ -200,9 +200,9 @@ class TestPandasToEland:
             pd_df2,
             os_client=OPENSEARCH_TEST_CLIENT,
             os_dest_index="test-index",
-            es_if_exists="append",
-            es_refresh=True,
-            es_verify_mapping_compatibility=False,
+            os_if_exists="append",
+            os_refresh=True,
+            os_verify_mapping_compatibility=False,
         )
 
         final_df = pd.DataFrame(
@@ -223,20 +223,20 @@ class TestPandasToEland:
             index=["0", "1", "2", "3", "4", "5"],
         )
 
-        eland_df = DataFrame(OPENSEARCH_TEST_CLIENT, "test-index")
+        oml_df = DataFrame(OPENSEARCH_TEST_CLIENT, "test-index")
         # Assert that the index isn't modified
-        assert_pandas_eland_frame_equal(final_df, eland_df)
+        assert_pandas_opensearch_py_ml_frame_equal(final_df, oml_df)
 
-    def test_es_if_exists_append_es_type_coerce_error(self):
+    def test_os_if_exists_append_os_type_coerce_error(self):
         df1 = pandas_to_opensearch(
             pd_df,
             os_client=OPENSEARCH_TEST_CLIENT,
             os_dest_index="test-index",
-            es_if_exists="append",
-            es_refresh=True,
-            es_type_overrides={"a": "byte"},
+            os_if_exists="append",
+            os_refresh=True,
+            os_type_overrides={"a": "byte"},
         )
-        assert_pandas_eland_frame_equal(pd_df, df1)
+        assert_pandas_opensearch_py_ml_frame_equal(pd_df, df1)
 
         pd_df_short = pd.DataFrame(
             {
@@ -253,27 +253,27 @@ class TestPandasToEland:
                 pd_df_short,
                 os_client=OPENSEARCH_TEST_CLIENT,
                 os_dest_index="test-index",
-                es_if_exists="append",
+                os_if_exists="append",
             )
 
         # Assert that the value 128 caused the index error
         assert "Value [128] is out of range for a byte" in str(e.value.errors)
 
-    def test_pandas_to_eland_text_inserts_keyword(self):
-        es = OPENSEARCH_TEST_CLIENT
+    def test_pandas_to_oml_text_inserts_keyword(self):
+        os = OPENSEARCH_TEST_CLIENT
         df1 = pandas_to_opensearch(
             pd_df,
-            os_client=es,
+            os_client=os,
             os_dest_index="test-index",
-            es_if_exists="append",
-            es_refresh=True,
-            es_type_overrides={
+            os_if_exists="append",
+            os_refresh=True,
+            os_type_overrides={
                 "c": "text",
                 "b": {"type": "float"},
                 "d": {"type": "text"},
             },
         )
-        assert es.indices.get_mapping(index="test-index") == {
+        assert os.indices.get_mapping(index="test-index") == {
             "test-index": {
                 "mappings": {
                     "properties": {
@@ -300,5 +300,5 @@ class TestPandasToEland:
             df1.groupby("d").mean()
         assert str(e.value) == (
             "Cannot use 'd' with groupby() because it has "
-            "no aggregatable fields in Elasticsearch"
+            "no aggregatable fields in Opensearch"
         )

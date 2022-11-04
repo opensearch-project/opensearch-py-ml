@@ -28,7 +28,7 @@ from datetime import timedelta
 import pandas as pd
 from pandas.testing import assert_frame_equal, assert_series_equal
 
-import opensearch_py_ml as ed
+import opensearch_py_ml as oml
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -45,10 +45,10 @@ from tests import (
 _pd_flights = pd.read_json(FLIGHTS_DF_FILE_NAME).sort_index()
 _pd_flights["timestamp"] = pd.to_datetime(_pd_flights["timestamp"])
 _pd_flights.index = _pd_flights.index.map(str)  # make index 'object' not int
-_ed_flights = ed.DataFrame(OPENSEARCH_TEST_CLIENT, FLIGHTS_INDEX_NAME)
+_oml_flights = oml.DataFrame(OPENSEARCH_TEST_CLIENT, FLIGHTS_INDEX_NAME)
 
 _pd_flights_small = _pd_flights.head(48)
-_ed_flights_small = ed.DataFrame(OPENSEARCH_TEST_CLIENT, FLIGHTS_SMALL_INDEX_NAME)
+_oml_flights_small = oml.DataFrame(OPENSEARCH_TEST_CLIENT, FLIGHTS_SMALL_INDEX_NAME)
 
 _pd_ecommerce = pd.read_json(ECOMMERCE_DF_FILE_NAME).sort_index()
 _pd_ecommerce["order_date"] = pd.to_datetime(_pd_ecommerce["order_date"])
@@ -58,7 +58,7 @@ _pd_ecommerce["products.created_on"] = _pd_ecommerce["products.created_on"].appl
 _pd_ecommerce.insert(2, "customer_birth_date", None)
 _pd_ecommerce.index = _pd_ecommerce.index.map(str)  # make index 'object' not int
 _pd_ecommerce["customer_birth_date"].astype("datetime64")
-_ed_ecommerce = ed.DataFrame(OPENSEARCH_TEST_CLIENT, ECOMMERCE_INDEX_NAME)
+_oml_ecommerce = oml.DataFrame(OPENSEARCH_TEST_CLIENT, ECOMMERCE_INDEX_NAME)
 
 
 class TestData:
@@ -67,27 +67,27 @@ class TestData:
     def pd_flights(self):
         return _pd_flights
 
-    def ed_flights(self):
-        return _ed_flights
+    def oml_flights(self):
+        return _oml_flights
 
     def pd_flights_small(self):
         return _pd_flights_small
 
-    def ed_flights_small(self):
-        return _ed_flights_small
+    def oml_flights_small(self):
+        return _oml_flights_small
 
     def pd_ecommerce(self):
         return _pd_ecommerce
 
-    def ed_ecommerce(self):
-        return _ed_ecommerce
+    def oml_ecommerce(self):
+        return _oml_ecommerce
 
 
-def assert_pandas_eland_frame_equal(left, right, **kwargs):
+def assert_pandas_opensearch_py_ml_frame_equal(left, right, **kwargs):
     if not isinstance(left, pd.DataFrame):
         raise AssertionError(f"Expected type pd.DataFrame, found {type(left)} instead")
 
-    if not isinstance(right, ed.DataFrame):
+    if not isinstance(right, oml.DataFrame):
         raise AssertionError(f"Expected type ed.DataFrame, found {type(right)} instead")
 
     # Use pandas tests to check similarity
@@ -96,12 +96,14 @@ def assert_pandas_eland_frame_equal(left, right, **kwargs):
     )
 
 
-def assert_eland_frame_equal(left, right, **kwargs):
-    if not isinstance(left, ed.DataFrame):
-        raise AssertionError(f"Expected type ed.DataFrame, found {type(left)} instead")
+def assert_opensearch_py_ml_frame_equal(left, right, **kwargs):
+    if not isinstance(left, oml.DataFrame):
+        raise AssertionError(f"Expected type oml.DataFrame, found {type(left)} instead")
 
-    if not isinstance(right, ed.DataFrame):
-        raise AssertionError(f"Expected type ed.DataFrame, found {type(right)} instead")
+    if not isinstance(right, oml.DataFrame):
+        raise AssertionError(
+            f"Expected type oml.DataFrame, found {type(right)} instead"
+        )
 
     # Use pandas tests to check similarity
     assert_frame_equal(
@@ -111,12 +113,12 @@ def assert_eland_frame_equal(left, right, **kwargs):
     )
 
 
-def assert_pandas_eland_series_equal(left, right, **kwargs):
+def assert_pandas_opensearch_py_ml_series_equal(left, right, **kwargs):
     if not isinstance(left, pd.Series):
         raise AssertionError(f"Expected type pd.Series, found {type(left)} instead")
 
-    if not isinstance(right, ed.Series):
-        raise AssertionError(f"Expected type ed.Series, found {type(right)} instead")
+    if not isinstance(right, oml.Series):
+        raise AssertionError(f"Expected type oml.Series, found {type(right)} instead")
 
     # Use pandas tests to check similarity
     assert_series_equal(
@@ -128,9 +130,9 @@ def assert_almost_equal(left, right, **kwargs):
     """Asserts left and right are almost equal. Left and right
     can be scalars, series, dataframes, etc
     """
-    if isinstance(left, (ed.DataFrame, ed.Series)):
+    if isinstance(left, (oml.DataFrame, oml.Series)):
         left = left.to_pandas().reset_index(drop=True)
-    if isinstance(right, (ed.DataFrame, ed.Series)):
+    if isinstance(right, (oml.DataFrame, oml.Series)):
         right = right.to_pandas().reset_index(drop=True)
 
     if isinstance(right, pd.DataFrame):

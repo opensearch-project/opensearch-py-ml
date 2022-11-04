@@ -33,50 +33,60 @@ from tests.common import TestData
 
 class TestMetricSourceFields(TestData):
     def test_flights_all_metric_source_fields(self):
-        ed_field_mappings = FieldMappings(
+        oml_field_mappings = FieldMappings(
             client=OPENSEARCH_TEST_CLIENT, index_pattern=FLIGHTS_INDEX_NAME
         )
         pd_flights = self.pd_flights()
 
-        ed_dtypes, ed_fields, es_date_formats = ed_field_mappings.metric_source_fields()
+        (
+            oml_dtypes,
+            oml_fields,
+            os_date_formats,
+        ) = oml_field_mappings.metric_source_fields()
         pd_metric = pd_flights.select_dtypes(include=np.number)
 
-        assert pd_metric.dtypes.to_list() == ed_dtypes
-        assert pd_metric.columns.to_list() == ed_fields
-        assert len(es_date_formats) == len(ed_dtypes)
-        assert set(es_date_formats) == {None}
+        assert pd_metric.dtypes.to_list() == oml_dtypes
+        assert pd_metric.columns.to_list() == oml_fields
+        assert len(os_date_formats) == len(oml_dtypes)
+        assert set(os_date_formats) == {None}
 
     def test_flights_all_metric_source_fields_and_bool(self):
-        ed_field_mappings = FieldMappings(
+        oml_field_mappings = FieldMappings(
             client=OPENSEARCH_TEST_CLIENT, index_pattern=FLIGHTS_INDEX_NAME
         )
         pd_flights = self.pd_flights()
 
-        ed_dtypes, ed_fields, es_date_formats = ed_field_mappings.metric_source_fields(
-            include_bool=True
-        )
+        (
+            oml_dtypes,
+            oml_fields,
+            os_date_formats,
+        ) = oml_field_mappings.metric_source_fields(include_bool=True)
         pd_metric = pd_flights.select_dtypes(include=[np.number, "bool"])
 
-        assert pd_metric.dtypes.to_list() == ed_dtypes
-        assert pd_metric.columns.to_list() == ed_fields
-        assert len(es_date_formats) == len(ed_dtypes)
-        assert set(es_date_formats) == {None}
+        assert pd_metric.dtypes.to_list() == oml_dtypes
+        assert pd_metric.columns.to_list() == oml_fields
+        assert len(os_date_formats) == len(oml_dtypes)
+        assert set(os_date_formats) == {None}
 
     def test_flights_all_metric_source_fields_bool_and_timestamp(self):
-        ed_field_mappings = FieldMappings(
+        oml_field_mappings = FieldMappings(
             client=OPENSEARCH_TEST_CLIENT, index_pattern=FLIGHTS_INDEX_NAME
         )
         pd_flights = self.pd_flights()
 
-        ed_dtypes, ed_fields, es_date_formats = ed_field_mappings.metric_source_fields(
+        (
+            oml_dtypes,
+            oml_fields,
+            os_date_formats,
+        ) = oml_field_mappings.metric_source_fields(
             include_bool=True, include_timestamp=True
         )
         pd_metric = pd_flights.select_dtypes(include=[np.number, "bool", "datetime"])
 
-        assert pd_metric.dtypes.to_list() == ed_dtypes
-        assert pd_metric.columns.to_list() == ed_fields
-        assert len(es_date_formats) == len(ed_dtypes)
-        assert set(es_date_formats) == set(
+        assert pd_metric.dtypes.to_list() == oml_dtypes
+        assert pd_metric.columns.to_list() == oml_fields
+        assert len(os_date_formats) == len(oml_dtypes)
+        assert set(os_date_formats) == set(
             {"strict_date_hour_minute_second", None}
         )  # TODO - test position of date_format
 
@@ -94,20 +104,24 @@ class TestMetricSourceFields(TestData):
         customer_first_name            object
         user                           object
         """
-        ed_field_mappings = FieldMappings(
+        oml_field_mappings = FieldMappings(
             client=OPENSEARCH_TEST_CLIENT,
             index_pattern=ECOMMERCE_INDEX_NAME,
             display_names=field_names,
         )
         pd_ecommerce = self.pd_ecommerce()[field_names]
 
-        ed_dtypes, ed_fields, es_date_formats = ed_field_mappings.metric_source_fields()
+        (
+            oml_dtypes,
+            oml_fields,
+            os_date_formats,
+        ) = oml_field_mappings.metric_source_fields()
         pd_metric = pd_ecommerce.select_dtypes(include=np.number)
 
-        assert pd_metric.dtypes.to_list() == ed_dtypes
-        assert pd_metric.columns.to_list() == ed_fields
-        assert len(es_date_formats) == len(ed_dtypes)
-        assert set(es_date_formats) == set()
+        assert pd_metric.dtypes.to_list() == oml_dtypes
+        assert pd_metric.columns.to_list() == oml_fields
+        assert len(os_date_formats) == len(oml_dtypes)
+        assert set(os_date_formats) == set()
 
     def test_ecommerce_selected_mixed_metric_source_fields(self):
         field_names = [
@@ -125,20 +139,24 @@ class TestMetricSourceFields(TestData):
         total_quantity                 int64
         user                           object
         """
-        ed_field_mappings = FieldMappings(
+        oml_field_mappings = FieldMappings(
             client=OPENSEARCH_TEST_CLIENT,
             index_pattern=ECOMMERCE_INDEX_NAME,
             display_names=field_names,
         )
         pd_ecommerce = self.pd_ecommerce()[field_names]
 
-        ed_dtypes, ed_fields, es_date_formats = ed_field_mappings.metric_source_fields()
+        (
+            oml_dtypes,
+            oml_fields,
+            os_date_formats,
+        ) = oml_field_mappings.metric_source_fields()
         pd_metric = pd_ecommerce.select_dtypes(include=np.number)
-        assert len(es_date_formats) == len(ed_dtypes)
-        assert set(es_date_formats) == {None}
+        assert len(os_date_formats) == len(oml_dtypes)
+        assert set(os_date_formats) == {None}
 
-        assert pd_metric.dtypes.to_list() == ed_dtypes
-        assert pd_metric.columns.to_list() == ed_fields
+        assert pd_metric.dtypes.to_list() == oml_dtypes
+        assert pd_metric.columns.to_list() == oml_fields
 
     def test_ecommerce_selected_all_metric_source_fields(self):
         field_names = ["total_quantity", "taxful_total_price", "taxless_total_price"]
@@ -148,17 +166,21 @@ class TestMetricSourceFields(TestData):
         taxful_total_price     float64
         taxless_total_price    float64
         """
-        ed_field_mappings = FieldMappings(
+        oml_field_mappings = FieldMappings(
             client=OPENSEARCH_TEST_CLIENT,
             index_pattern=ECOMMERCE_INDEX_NAME,
             display_names=field_names,
         )
         pd_ecommerce = self.pd_ecommerce()[field_names]
 
-        ed_dtypes, ed_fields, es_date_formats = ed_field_mappings.metric_source_fields()
+        (
+            oml_dtypes,
+            oml_fields,
+            os_date_formats,
+        ) = oml_field_mappings.metric_source_fields()
         pd_metric = pd_ecommerce.select_dtypes(include=np.number)
 
-        assert pd_metric.dtypes.to_list() == ed_dtypes
-        assert pd_metric.columns.to_list() == ed_fields
-        assert len(es_date_formats) == len(ed_dtypes)
-        assert set(es_date_formats) == {None}
+        assert pd_metric.dtypes.to_list() == oml_dtypes
+        assert pd_metric.columns.to_list() == oml_fields
+        assert len(os_date_formats) == len(oml_dtypes)
+        assert set(os_date_formats) == {None}

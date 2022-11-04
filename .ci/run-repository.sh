@@ -49,7 +49,6 @@ if [[ "$IS_DOC" == "false" ]]; then
 else
   docker run \
   --network=${network_name} \
-  --cidfile cid.cid \
   --env "STACK_VERSION=${STACK_VERSION}" \
   --env "OPENSEARCH_URL=${opensearch_url}" \
   --env "OPENSEARCH_VERSION=${OPENSEARCH_VERSION}" \

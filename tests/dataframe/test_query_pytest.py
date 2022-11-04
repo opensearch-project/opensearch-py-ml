@@ -26,11 +26,11 @@
 
 import pandas as pd
 
-import opensearch_py_ml as ed
+import opensearch_py_ml as oml
 from tests.common import (
     OPENSEARCH_TEST_CLIENT,
     TestData,
-    assert_pandas_eland_frame_equal,
+    assert_pandas_opensearch_py_ml_frame_equal,
 )
 
 
@@ -52,57 +52,57 @@ class TestDataFrameQuery(TestData):
         4  5   2   6
         """
         # Now create index
-        index_name = "eland_test_query"
+        index_name = "oml_test_query"
 
-        ed_df = ed.pandas_to_opensearch(
+        oml_df = oml.pandas_to_opensearch(
             pd_df,
             OPENSEARCH_TEST_CLIENT,
             index_name,
-            es_if_exists="replace",
-            es_refresh=True,
+            os_if_exists="replace",
+            os_refresh=True,
         )
 
-        assert_pandas_eland_frame_equal(pd_df, ed_df)
+        assert_pandas_opensearch_py_ml_frame_equal(pd_df, oml_df)
 
         pd_df.info()
-        ed_df.info()
+        oml_df.info()
 
         pd_q1 = pd_df[pd_df.A > 2]
         pd_q2 = pd_df[pd_df.A > pd_df.B]
         pd_q3 = pd_df[pd_df.B == pd_df.C]
 
-        ed_q1 = ed_df[ed_df.A > 2]
-        ed_q2 = ed_df[ed_df.A > ed_df.B]
-        ed_q3 = ed_df[ed_df.B == ed_df.C]
+        oml_q1 = oml_df[oml_df.A > 2]
+        oml_q2 = oml_df[oml_df.A > oml_df.B]
+        oml_q3 = oml_df[oml_df.B == oml_df.C]
 
-        assert_pandas_eland_frame_equal(pd_q1, ed_q1)
-        assert_pandas_eland_frame_equal(pd_q2, ed_q2)
-        assert_pandas_eland_frame_equal(pd_q3, ed_q3)
+        assert_pandas_opensearch_py_ml_frame_equal(pd_q1, oml_q1)
+        assert_pandas_opensearch_py_ml_frame_equal(pd_q2, oml_q2)
+        assert_pandas_opensearch_py_ml_frame_equal(pd_q3, oml_q3)
 
         pd_q4 = pd_df[(pd_df.A > 2) & (pd_df.B > 3)]
-        ed_q4 = ed_df[(ed_df.A > 2) & (ed_df.B > 3)]
+        oml_q4 = oml_df[(oml_df.A > 2) & (oml_df.B > 3)]
 
-        assert_pandas_eland_frame_equal(pd_q4, ed_q4)
+        assert_pandas_opensearch_py_ml_frame_equal(pd_q4, oml_q4)
 
         OPENSEARCH_TEST_CLIENT.indices.delete(index=index_name)
 
     def test_simple_query(self):
-        ed_flights = self.ed_flights()
+        oml_flights = self.oml_flights()
         pd_flights = self.pd_flights()
 
         assert (
             pd_flights.query("FlightDelayMin > 60").shape
-            == ed_flights.query("FlightDelayMin > 60").shape
+            == oml_flights.query("FlightDelayMin > 60").shape
         )
 
     def test_isin_query(self):
-        ed_flights = self.ed_flights()
+        oml_flights = self.oml_flights()
         pd_flights = self.pd_flights()
 
         for obj in (["LHR", "SYD"], ("LHR", "SYD"), pd.Series(data=["LHR", "SYD"])):
             assert (
                 pd_flights[pd_flights.OriginAirportID.isin(obj)].shape
-                == ed_flights[ed_flights.OriginAirportID.isin(obj)].shape
+                == oml_flights[oml_flights.OriginAirportID.isin(obj)].shape
             )
 
     def test_multiitem_query(self):
@@ -122,42 +122,42 @@ class TestDataFrameQuery(TestData):
         4  5   2   6
         """
         # Now create index
-        index_name = "eland_test_query"
+        index_name = "oml_test_query"
 
-        ed_df = ed.pandas_to_opensearch(
+        oml_df = oml.pandas_to_opensearch(
             pd_df,
             OPENSEARCH_TEST_CLIENT,
             index_name,
-            es_if_exists="replace",
-            es_refresh=True,
+            os_if_exists="replace",
+            os_refresh=True,
         )
 
-        assert_pandas_eland_frame_equal(pd_df, ed_df)
+        assert_pandas_opensearch_py_ml_frame_equal(pd_df, oml_df)
 
         pd_df.info()
-        ed_df.info()
+        oml_df.info()
 
         pd_q1 = pd_df[pd_df.A > 2]
         pd_q2 = pd_df[pd_df.A > pd_df.B]
         pd_q3 = pd_df[pd_df.B == pd_df.C]
 
-        ed_q1 = ed_df[ed_df.A > 2]
-        ed_q2 = ed_df[ed_df.A > ed_df.B]
-        ed_q3 = ed_df[ed_df.B == ed_df.C]
+        oml_q1 = oml_df[oml_df.A > 2]
+        oml_q2 = oml_df[oml_df.A > oml_df.B]
+        oml_q3 = oml_df[oml_df.B == oml_df.C]
 
-        assert_pandas_eland_frame_equal(pd_q1, ed_q1)
-        assert_pandas_eland_frame_equal(pd_q2, ed_q2)
-        assert_pandas_eland_frame_equal(pd_q3, ed_q3)
+        assert_pandas_opensearch_py_ml_frame_equal(pd_q1, oml_q1)
+        assert_pandas_opensearch_py_ml_frame_equal(pd_q2, oml_q2)
+        assert_pandas_opensearch_py_ml_frame_equal(pd_q3, oml_q3)
 
-        ed_q4 = ed_q1.query("B > 2")
+        oml_q4 = oml_q1.query("B > 2")
         pd_q4 = pd_q1.query("B > 2")
 
-        assert_pandas_eland_frame_equal(pd_q4, ed_q4)
+        assert_pandas_opensearch_py_ml_frame_equal(pd_q4, oml_q4)
 
         # Drop rows by index
-        ed_q4 = ed_q4.drop(["2"])
+        oml_q4 = oml_q4.drop(["2"])
         pd_q4 = pd_q4.drop(["2"])
 
-        assert_pandas_eland_frame_equal(pd_q4, ed_q4)
+        assert_pandas_opensearch_py_ml_frame_equal(pd_q4, oml_q4)
 
         OPENSEARCH_TEST_CLIENT.indices.delete(index=index_name)

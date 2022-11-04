@@ -28,7 +28,7 @@ import pandas as pd
 import pytest
 
 from opensearch_py_ml.dataframe import DEFAULT_NUM_ROWS_DISPLAYED
-from tests.common import TestData, assert_pandas_eland_series_equal
+from tests.common import TestData, assert_pandas_opensearch_py_ml_series_equal
 
 
 class TestDataFrameRepr(TestData):
@@ -77,10 +77,10 @@ class TestDataFrameRepr(TestData):
         Hence we store the pandas df source json as 'lon', 'lat'
         """
         pd_dest_location = self.pd_flights()["DestLocation"].head(1)
-        ed_dest_location = self.ed_flights()["DestLocation"].head(1)
+        oml_dest_location = self.oml_flights()["DestLocation"].head(1)
 
-        assert_pandas_eland_series_equal(
-            pd_dest_location, ed_dest_location, check_exact=False, rtol=2
+        assert_pandas_opensearch_py_ml_series_equal(
+            pd_dest_location, oml_dest_location, check_exact=False, rtol=2
         )
 
     def test_num_rows_to_string(self):
@@ -104,28 +104,28 @@ class TestDataFrameRepr(TestData):
         self.num_rows_to_string(100, 200, 200)
 
     def num_rows_to_string(self, rows, max_rows_eland=None, max_rows_pandas=None):
-        ed_flights = self.ed_flights()[["DestLocation", "OriginLocation"]]
+        oml_flights = self.oml_flights()[["DestLocation", "OriginLocation"]]
         pd_flights = self.pd_flights()[["DestLocation", "OriginLocation"]]
 
-        ed_head = ed_flights.head(rows)
+        oml_head = oml_flights.head(rows)
         pd_head = pd_flights.head(rows)
 
-        ed_head_str = ed_head.to_string(max_rows=max_rows_eland)
+        oml_head_str = oml_head.to_string(max_rows=max_rows_eland)
         pd_head_str = pd_head.to_string(max_rows=max_rows_pandas)
 
-        # print("\n", ed_head_str)
+        # print("\n", oml_head_str)
         # print("\n", pd_head_str)
 
-        assert pd_head_str == ed_head_str
+        assert pd_head_str == oml_head_str
 
     def test_empty_dataframe_string(self):
-        ed_ecom = self.ed_ecommerce()
+        oml_ecom = self.oml_ecommerce()
         pd_ecom = self.pd_ecommerce()
 
-        ed_ecom_s = ed_ecom[ed_ecom["currency"] == "USD"].to_string()
+        oml_ecom_s = oml_ecom[oml_ecom["currency"] == "USD"].to_string()
         pd_ecom_s = pd_ecom[pd_ecom["currency"] == "USD"].to_string()
 
-        assert ed_ecom_s == pd_ecom_s
+        assert oml_ecom_s == pd_ecom_s
 
     """
     repr
@@ -143,13 +143,13 @@ class TestDataFrameRepr(TestData):
         )
 
     def num_rows_repr(self, rows, num_rows_printed):
-        ed_flights = self.ed_flights()
+        oml_flights = self.oml_flights()
         pd_flights = self.pd_flights()
 
-        ed_head = ed_flights.head(rows)
+        oml_head = oml_flights.head(rows)
         pd_head = pd_flights.head(rows)
 
-        ed_head_str = repr(ed_head)
+        oml_head_str = repr(oml_head)
         pd_head_str = repr(pd_head)
 
         if num_rows_printed < rows:
@@ -157,12 +157,12 @@ class TestDataFrameRepr(TestData):
             num_rows_printed = num_rows_printed + 1
 
         # number of rows is num_rows_printed + 3 (header, summary)
-        assert (num_rows_printed + 3) == len(ed_head_str.splitlines())
+        assert (num_rows_printed + 3) == len(oml_head_str.splitlines())
 
-        assert pd_head_str == ed_head_str
+        assert pd_head_str == oml_head_str
 
     def test_empty_dataframe_repr(self):
-        ed_ecom = self.ed_ecommerce()
+        oml_ecom = self.oml_ecommerce()
         pd_ecom = self.pd_ecommerce()
 
         # currently opensearch_py_ml will show dimensions no matter what if pd's display.show_dimensions option
@@ -171,13 +171,13 @@ class TestDataFrameRepr(TestData):
         old_option = pd.get_option("display.show_dimensions")
         pd.set_option("display.show_dimensions", True)
 
-        ed_ecom_r = repr(ed_ecom[ed_ecom["currency"] == "USD"])
+        oml_ecom_r = repr(oml_ecom[oml_ecom["currency"] == "USD"])
         pd_ecom_r = repr(pd_ecom[pd_ecom["currency"] == "USD"])
 
-        print(ed_ecom_r)
+        print(oml_ecom_r)
         print(pd_ecom_r)
 
-        assert ed_ecom_r == pd_ecom_r
+        assert oml_ecom_r == pd_ecom_r
 
         pd.set_option("display.show_dimensions", old_option)
 
@@ -206,28 +206,28 @@ class TestDataFrameRepr(TestData):
         self.num_rows_to_html(100, 200, 200)
 
     def num_rows_to_html(self, rows, max_rows_eland=None, max_rows_pandas=None):
-        ed_flights = self.ed_flights()
+        oml_flights = self.oml_flights()
         pd_flights = self.pd_flights()
 
-        ed_head = ed_flights.head(rows)
+        oml_head = oml_flights.head(rows)
         pd_head = pd_flights.head(rows)
 
-        ed_head_str = ed_head.to_html(max_rows=max_rows_eland)
+        oml_head_str = oml_head.to_html(max_rows=max_rows_eland)
         pd_head_str = pd_head.to_html(max_rows=max_rows_pandas)
 
-        # print(ed_head_str)
+        # print(oml_head_str)
         # print(pd_head_str)
 
-        assert pd_head_str == ed_head_str
+        assert pd_head_str == oml_head_str
 
     def test_empty_dataframe_to_html(self):
-        ed_ecom = self.ed_ecommerce()
+        oml_ecom = self.oml_ecommerce()
         pd_ecom = self.pd_ecommerce()
 
-        ed_ecom_h = ed_ecom[ed_ecom["currency"] == "USD"].to_html()
+        oml_ecom_h = oml_ecom[oml_ecom["currency"] == "USD"].to_html()
         pd_ecom_h = pd_ecom[pd_ecom["currency"] == "USD"].to_html()
 
-        assert ed_ecom_h == pd_ecom_h
+        assert oml_ecom_h == pd_ecom_h
 
     """
     _repr_html_
@@ -266,16 +266,16 @@ class TestDataFrameRepr(TestData):
             pd.set_option("display.notebook_repr_html", display)
 
     def num_rows_repr_html(self, rows, max_rows=None):
-        ed_flights = self.ed_flights()
+        oml_flights = self.oml_flights()
         pd_flights = self.pd_flights()
 
-        ed_head = ed_flights.head(rows)
+        oml_head = oml_flights.head(rows)
         pd_head = pd_flights.head(rows)
 
-        ed_head_str = ed_head._repr_html_()
+        oml_head_str = oml_head._repr_html_()
         pd_head_str = pd_head._repr_html_()
 
-        assert pd_head_str == ed_head_str
+        assert pd_head_str == oml_head_str
 
     def test_empty_dataframe_repr_html(self):
         # TODO - there is a bug in 'show_dimensions' as it gets added after the last </div>
@@ -284,13 +284,13 @@ class TestDataFrameRepr(TestData):
         try:
             pd.set_option("display.show_dimensions", False)
 
-            ed_ecom = self.ed_ecommerce()
+            oml_ecom = self.oml_ecommerce()
             pd_ecom = self.pd_ecommerce()
 
-            ed_ecom_rh = ed_ecom[ed_ecom["currency"] == "USD"]._repr_html_()
+            oml_ecom_rh = oml_ecom[oml_ecom["currency"] == "USD"]._repr_html_()
             pd_ecom_rh = pd_ecom[pd_ecom["currency"] == "USD"]._repr_html_()
 
-            assert ed_ecom_rh == pd_ecom_rh
+            assert oml_ecom_rh == pd_ecom_rh
         finally:
             # Restore default
             pd.set_option("display.show_dimensions", show_dimensions)
@@ -312,10 +312,10 @@ class TestDataFrameRepr(TestData):
                 "DestCountry",
             ]
 
-            ed_flights = self.ed_flights().filter(columns).head(40).__repr__()
+            oml_flights = self.oml_flights().filter(columns).head(40).__repr__()
             pd_flights = self.pd_flights().filter(columns).head(40).__repr__()
 
-            assert ed_flights == pd_flights
+            assert oml_flights == pd_flights
         finally:
             # Restore default
             pd.set_option("display.max_rows", show_rows)

@@ -32,18 +32,18 @@ from tests.common import TestData
 class TestDataFrameKeys(TestData):
     def test_ecommerce_keys(self):
         pd_ecommerce = self.pd_ecommerce()
-        ed_ecommerce = self.ed_ecommerce()
+        oml_ecommerce = self.oml_ecommerce()
 
         pd_keys = pd_ecommerce.keys()
-        ed_keys = ed_ecommerce.keys()
+        oml_keys = oml_ecommerce.keys()
 
-        assert_index_equal(pd_keys, ed_keys)
+        assert_index_equal(pd_keys, oml_keys)
 
     def test_flights_keys(self):
         pd_flights = self.pd_flights()
-        ed_flights = self.ed_flights()
+        oml_flights = self.oml_flights()
 
         pd_keys = pd_flights.keys()
-        ed_keys = ed_flights.keys()
+        oml_keys = oml_flights.keys()
 
-        assert_index_equal(pd_keys, ed_keys)
+        assert_index_equal(pd_keys, oml_keys)

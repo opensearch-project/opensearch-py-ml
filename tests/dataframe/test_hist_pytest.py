@@ -34,7 +34,7 @@ from tests.common import TestData
 class TestDataFrameHist(TestData):
     def test_flights_hist(self):
         pd_flights = self.pd_flights()
-        ed_flights = self.ed_flights()
+        oml_flights = self.oml_flights()
 
         num_bins = 10
 
@@ -55,22 +55,22 @@ class TestDataFrameHist(TestData):
             }
         )
 
-        _ = ed_flights[["DistanceKilometers", "FlightDelayMin"]]
+        _ = oml_flights[["DistanceKilometers", "FlightDelayMin"]]
 
-        ed_bins, ed_weights = ed_flights[
+        oml_bins, oml_weights = oml_flights[
             ["DistanceKilometers", "FlightDelayMin"]
         ]._hist(num_bins=num_bins)
 
         # Numbers are slightly different
-        assert_frame_equal(pd_bins, ed_bins, check_exact=False)
-        assert_frame_equal(pd_weights, ed_weights, check_exact=False)
+        assert_frame_equal(pd_bins, oml_bins, check_exact=False)
+        assert_frame_equal(pd_weights, oml_weights, check_exact=False)
 
     def test_flights_filtered_hist(self):
         pd_flights = self.pd_flights()
-        ed_flights = self.ed_flights()
+        oml_flights = self.oml_flights()
 
         pd_flights = pd_flights[pd_flights.FlightDelayMin > 0]
-        ed_flights = ed_flights[ed_flights.FlightDelayMin > 0]
+        oml_flights = oml_flights[oml_flights.FlightDelayMin > 0]
 
         num_bins = 10
 
@@ -91,12 +91,12 @@ class TestDataFrameHist(TestData):
             }
         )
 
-        _ = ed_flights[["DistanceKilometers", "FlightDelayMin"]]
+        _ = oml_flights[["DistanceKilometers", "FlightDelayMin"]]
 
-        ed_bins, ed_weights = ed_flights[
+        oml_bins, oml_weights = oml_flights[
             ["DistanceKilometers", "FlightDelayMin"]
         ]._hist(num_bins=num_bins)
 
         # Numbers are slightly different
-        assert_frame_equal(pd_bins, ed_bins, check_exact=False)
-        assert_frame_equal(pd_weights, ed_weights, check_exact=False)
+        assert_frame_equal(pd_bins, oml_bins, check_exact=False)
+        assert_frame_equal(pd_weights, oml_weights, check_exact=False)

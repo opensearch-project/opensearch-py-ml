@@ -23,7 +23,7 @@
 #  under the License.
 
 from opensearch_py_ml import opensearch_to_pandas
-from tests.common import TestData, assert_pandas_eland_frame_equal
+from tests.common import TestData, assert_pandas_opensearch_py_ml_frame_equal
 
 
 class TestSeriesNA(TestData):
@@ -35,29 +35,33 @@ class TestSeriesNA(TestData):
     ]
 
     def test_not_isna(self):
-        ed_ecommerce = self.ed_ecommerce()
-        pd_ecommerce = opensearch_to_pandas(ed_ecommerce)
+        oml_ecommerce = self.oml_ecommerce()
+        pd_ecommerce = opensearch_to_pandas(oml_ecommerce)
 
         for column in self.columns:
-            not_isna_ed_ecommerce = ed_ecommerce[~ed_ecommerce[column].isna()]
+            not_isna_oml_ecommerce = oml_ecommerce[~oml_ecommerce[column].isna()]
             not_isna_pd_ecommerce = pd_ecommerce[~pd_ecommerce[column].isna()]
-            assert_pandas_eland_frame_equal(
-                not_isna_pd_ecommerce, not_isna_ed_ecommerce
+            assert_pandas_opensearch_py_ml_frame_equal(
+                not_isna_pd_ecommerce, not_isna_oml_ecommerce
             )
 
     def test_isna(self):
-        ed_ecommerce = self.ed_ecommerce()
-        pd_ecommerce = opensearch_to_pandas(ed_ecommerce)
+        oml_ecommerce = self.oml_ecommerce()
+        pd_ecommerce = opensearch_to_pandas(oml_ecommerce)
 
-        isna_ed_ecommerce = ed_ecommerce[ed_ecommerce["geoip.region_name"].isna()]
+        isna_oml_ecommerce = oml_ecommerce[oml_ecommerce["geoip.region_name"].isna()]
         isna_pd_ecommerce = pd_ecommerce[pd_ecommerce["geoip.region_name"].isna()]
-        assert_pandas_eland_frame_equal(isna_pd_ecommerce, isna_ed_ecommerce)
+        assert_pandas_opensearch_py_ml_frame_equal(
+            isna_pd_ecommerce, isna_oml_ecommerce
+        )
 
     def test_notna(self):
-        ed_ecommerce = self.ed_ecommerce()
-        pd_ecommerce = opensearch_to_pandas(ed_ecommerce)
+        oml_ecommerce = self.oml_ecommerce()
+        pd_ecommerce = opensearch_to_pandas(oml_ecommerce)
 
         for column in self.columns:
-            notna_ed_ecommerce = ed_ecommerce[ed_ecommerce[column].notna()]
+            notna_oml_ecommerce = oml_ecommerce[oml_ecommerce[column].notna()]
             notna_pd_ecommerce = pd_ecommerce[pd_ecommerce[column].notna()]
-            assert_pandas_eland_frame_equal(notna_pd_ecommerce, notna_ed_ecommerce)
+            assert_pandas_opensearch_py_ml_frame_equal(
+                notna_pd_ecommerce, notna_oml_ecommerce
+            )

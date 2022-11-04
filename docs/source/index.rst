@@ -4,7 +4,7 @@
 Opensearch-py-ml: DataFrames and Machine Learning backed by Opensearch
 **************************************************************
 
-**Date**: |today| **Version**: |version|
+**Date**: |today|
 
 **Useful links**:
 `Source Repository <https://github.com/opensearch-project/opensearch-py-ml>`__ |
@@ -26,16 +26,11 @@ Opensearch-py-ml can be installed from `PyPI <https://pypi.org/project/opensearc
 
     $ python -m pip install opensearch-py-ml
 
-Opensearch-py-ml can also be installed from `Conda Forge <https://anaconda.org/conda-forge/opensearch-py-ml>`_ with Conda:
-
- .. code-block:: bash
-
-    $ conda install -c conda-forge opensearch-py-ml
 
 Getting Started
 ~~~~~~~~~~~~~~~
 
-If it's your first time using Eland we recommend looking through the
+If it's your first time using Opensearch we recommend looking through the
 :doc:`examples/index` documentation for ideas on what Opensearch-py-ml is capable of.
 
 If you're new to Opensearch we recommend `reading the documentation <https://opensearch.org/docs/latest/>`_.
@@ -50,7 +45,6 @@ If you're new to Opensearch we recommend `reading the documentation <https://ope
 
 * :doc:`reference/index`
 
-  * :doc:`reference/supported_apis`
   * :doc:`reference/dataframe`
   * :doc:`reference/series`
   * :doc:`reference/general_utility_functions`

@@ -31,11 +31,11 @@ from tests.common import TestData
 
 
 class TestEsMatch(TestData):
-    def test_es_match(self):
-        df = self.ed_ecommerce()
+    def test_os_match(self):
+        df = self.oml_ecommerce()
         query_compiler: QueryCompiler = df._query_compiler
 
-        filter = query_compiler.es_match(
+        filter = query_compiler.os_match(
             "joe", ["customer_full_name"], analyzer="my-analyzer", fuzziness="1..2"
         )
         assert filter.build() == {
@@ -48,7 +48,7 @@ class TestEsMatch(TestData):
             }
         }
 
-        filter = query_compiler.es_match(
+        filter = query_compiler.os_match(
             "joe", ["customer_last_name", "customer_first_name"]
         )
         assert filter.build() == {
@@ -59,10 +59,10 @@ class TestEsMatch(TestData):
         }
 
     def test_es_match_must_not_match(self):
-        df = self.ed_ecommerce()
+        df = self.oml_ecommerce()
 
         # single match
-        df2 = df.es_match("joe", columns=["customer_full_name"], must_not_match=True)
+        df2 = df.os_match("joe", columns=["customer_full_name"], must_not_match=True)
         query_params, _ = df2._query_compiler._operations._resolve_tasks(
             df2._query_compiler
         )
@@ -75,7 +75,7 @@ class TestEsMatch(TestData):
         }
 
         # multi_match
-        df2 = df.es_match(
+        df2 = df.os_match(
             "joe",
             columns=["customer_first_name", "customer_last_name"],
             must_not_match=True,
@@ -99,11 +99,11 @@ class TestEsMatch(TestData):
             }
         }
 
-    def test_es_match_phrase(self):
-        df = self.ed_ecommerce()
+    def test_os_match_phrase(self):
+        df = self.oml_ecommerce()
         query_compiler: QueryCompiler = df._query_compiler
 
-        filter = query_compiler.es_match(
+        filter = query_compiler.os_match(
             "joe", ["customer_full_name"], match_phrase=True
         )
         assert filter.build() == {
@@ -114,7 +114,7 @@ class TestEsMatch(TestData):
             }
         }
 
-        filter = query_compiler.es_match(
+        filter = query_compiler.os_match(
             "joe", ["customer_last_name", "customer_first_name"], match_phrase=True
         )
         assert filter.build() == {
@@ -125,12 +125,12 @@ class TestEsMatch(TestData):
             }
         }
 
-    def test_es_match_phrase_not_allowed_with_multi_match_type(self):
-        df = self.ed_ecommerce()
+    def test_os_match_phrase_not_allowed_with_multi_match_type(self):
+        df = self.oml_ecommerce()
         query_compiler: QueryCompiler = df._query_compiler
 
         with pytest.raises(ValueError) as e:
-            query_compiler.es_match(
+            query_compiler.os_match(
                 "joe",
                 ["customer_first_name", "customer_last_name"],
                 match_phrase=True,
@@ -141,7 +141,7 @@ class TestEsMatch(TestData):
             "are not compatible. Must be multi_match_type='phrase'"
         )
 
-        filter = query_compiler.es_match(
+        filter = query_compiler.os_match(
             "joe",
             ["customer_last_name", "customer_first_name"],
             match_phrase=True,
@@ -155,12 +155,12 @@ class TestEsMatch(TestData):
             }
         }
 
-    def test_es_match_non_text_fields(self):
-        df = self.ed_ecommerce()
+    def test_os_match_non_text_fields(self):
+        df = self.oml_ecommerce()
         query_compiler: QueryCompiler = df._query_compiler
 
         with pytest.raises(ValueError) as e:
-            query_compiler.es_match(
+            query_compiler.os_match(
                 "joe",
                 [
                     "customer_first_name",
@@ -171,13 +171,13 @@ class TestEsMatch(TestData):
                 ],
             )
         assert str(e.value) == (
-            "Attempting to run es_match() on non-text fields (order_date=date, "
+            "Attempting to run os_match() on non-text fields (order_date=date, "
             "currency=keyword) means that these fields may not be analyzed properly. "
             "Consider reindexing these fields as text or use 'match_only_text_os_dtypes=False' "
             "to use match anyways"
         )
 
-        filter = query_compiler.es_match(
+        filter = query_compiler.os_match(
             "joe",
             [
                 "customer_first_name",

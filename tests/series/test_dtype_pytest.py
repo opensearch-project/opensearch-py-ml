@@ -47,6 +47,6 @@ def test_empty_series_dtypes():
 
 
 def test_series_os_dtypes(testdata):
-    series = testdata.ed_flights_small().AvgTicketPrice
+    series = testdata.oml_flights_small().AvgTicketPrice
     assert_series_equal(series.os_dtypes, pd.Series(data={"AvgTicketPrice": "float"}))
     assert series.os_dtype == "float"

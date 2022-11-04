@@ -120,7 +120,7 @@ class Query:
         name: str,
         func: str,
         field: str,
-        es_size: Optional[int] = None,
+        os_size: Optional[int] = None,
         missing: Optional[Any] = None,
     ) -> None:
         """
@@ -137,8 +137,8 @@ class Query:
         }
         """
         agg = {func: {"field": field}}
-        if es_size:
-            agg[func]["size"] = str(es_size)
+        if os_size:
+            agg[func]["size"] = str(os_size)
 
         if missing:
             agg[func]["missing"] = missing

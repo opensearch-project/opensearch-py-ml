@@ -29,7 +29,7 @@ from tests.common import TestData
 
 class TestSeriesInfoEs(TestData):
     def test_flights_info_es(self):
-        ed_flights = self.ed_flights()["AvgTicketPrice"]
+        oml_flights = self.oml_flights()["AvgTicketPrice"]
 
         # No assertion, just test it can be called
-        ed_flights.os_info()
+        oml_flights.os_info()

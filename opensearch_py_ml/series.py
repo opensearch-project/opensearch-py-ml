@@ -87,7 +87,7 @@ def _get_method_name() -> str:
 
 class Series(NDFrame):
     """
-    pandas.Series like API that proxies into OpenSearch index(es).
+    pandas.Series like API that proxies into OpenSearch index(os).
 
     Parameters
     ----------
@@ -111,7 +111,7 @@ class Series(NDFrame):
 
     Examples
     --------
-    >>> ed.Series(os_client=OPENSEARCH_TEST_CLIENT, os_index_pattern='flights', name='Carrier')
+    >>> oml.Series(os_client=OPENSEARCH_TEST_CLIENT, os_index_pattern='flights', name='Carrier')
     0         Kibana Airlines
     1        Logstash Airways
     2        Logstash Airways
@@ -148,7 +148,7 @@ class Series(NDFrame):
             _query_compiler=_query_compiler,
         )
 
-    hist = opensearch_py_ml.plotting.ed_hist_series
+    hist = opensearch_py_ml.plotting.oml_hist_series
 
     @property
     def empty(self) -> bool:
@@ -179,7 +179,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> df = ed.Series(OPENSEARCH_TEST_CLIENT, 'ecommerce', name='total_quantity')
+        >>> df = oml.Series(OPENSEARCH_TEST_CLIENT, 'ecommerce', name='total_quantity')
         >>> df.shape
         (4675, 1)
         """
@@ -189,11 +189,11 @@ class Series(NDFrame):
         return num_rows, num_columns
 
     @property
-    def es_field_name(self) -> pd.Index:
+    def os_field_name(self) -> pd.Index:
         """
         Returns
         -------
-        es_field_name: str
+        os_field_name: str
             Return the OpenSearch field name for this series
         """
         return self._query_compiler.get_field_names(include_scripted_fields=True)[0]
@@ -228,7 +228,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')
+        >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')
         >>> df.Carrier
         0         Kibana Airlines
         1        Logstash Airways
@@ -276,7 +276,7 @@ class Series(NDFrame):
             _query_compiler=self._query_compiler.sample(n, frac, random_state)
         )
 
-    def value_counts(self, es_size: int = 10) -> pd.Series:
+    def value_counts(self, os_size: int = 10) -> pd.Series:
         """
         Return the value counts for the specified field.
 
@@ -287,7 +287,7 @@ class Series(NDFrame):
 
         Parameters
         ----------
-        es_size: int, default 10
+        os_size: int, default 10
             Number of buckets to return counts for, automatically sorts by count descending.
             This parameter is specific to `opensearch_py_ml`, and determines how many term buckets
             OpenSearch should return out of the overall terms list.
@@ -300,11 +300,11 @@ class Series(NDFrame):
         See Also
         --------
         :pandas_api_docs:`pandas.Series.value_counts`
-        :es_api_docs:`search-aggregations-bucket-terms-aggregation`
+        :os_api_docs:`search-aggregations-bucket-terms-aggregation`
 
         Examples
         --------
-        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')
+        >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')
         >>> df['Carrier'].value_counts()
         Logstash Airways    3331
         JetBeats            3274
@@ -312,11 +312,11 @@ class Series(NDFrame):
         ES-Air              3220
         Name: Carrier, dtype: int64
         """
-        if not isinstance(es_size, int):
-            raise TypeError("es_size must be a positive integer.")
-        elif es_size <= 0:
-            raise ValueError("es_size must be a positive integer.")
-        return self._query_compiler.value_counts(es_size)
+        if not isinstance(os_size, int):
+            raise TypeError("os_size must be a positive integer.")
+        elif os_size <= 0:
+            raise ValueError("os_size must be a positive integer.")
+        return self._query_compiler.value_counts(os_size)
 
     # dtype not implemented for Series as causes query to fail
     # in pandas.core.computation.ops.Term.type
@@ -620,17 +620,17 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> ed_flights = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')
-        >>> ed_flights["timestamp"].quantile([.2,.5,.75]) # doctest: +SKIP
+        >>> oml_flights = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')
+        >>> oml_flights["timestamp"].quantile([.2,.5,.75]) # doctest: +SKIP
         0.20   2018-01-09 04:30:57.289159912
         0.50   2018-01-21 23:39:27.031627441
         0.75   2018-02-01 04:54:59.256136963
         Name: timestamp, dtype: datetime64[ns]
 
-        >>> ed_flights["dayOfWeek"].quantile() # doctest: +SKIP
+        >>> oml_flights["dayOfWeek"].quantile() # doctest: +SKIP
         3.0
 
-        >>> ed_flights["timestamp"].quantile() # doctest: +SKIP
+        >>> oml_flights["timestamp"].quantile() # doctest: +SKIP
         Timestamp('2018-01-22 00:12:48.844534180')
         """
         return self._query_compiler.quantile(
@@ -709,13 +709,13 @@ class Series(NDFrame):
         )
         return Series(_query_compiler=new_query_compiler)
 
-    def mode(self, es_size: int = 10) -> pd.Series:
+    def mode(self, os_size: int = 10) -> pd.Series:
         """
             Calculate mode of a series
 
         Parameters
         ----------
-        es_size: default 10
+        os_size: default 10
             number of rows to be returned if mode has multiple values
 
         See Also
@@ -724,12 +724,12 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> ed_ecommerce = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce')
-        >>> ed_ecommerce["day_of_week"].mode()
+        >>> oml_ecommerce = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce')
+        >>> oml_ecommerce["day_of_week"].mode()
         0    Thursday
         Name: day_of_week, dtype: object
 
-        >>> ed_ecommerce["order_date"].mode()
+        >>> oml_ecommerce["order_date"].mode()
         0   2016-12-02 20:36:58
         1   2016-12-04 23:44:10
         2   2016-12-08 06:21:36
@@ -742,16 +742,16 @@ class Series(NDFrame):
         9   2016-12-24 06:21:36
         Name: order_date, dtype: datetime64[ns]
 
-        >>> ed_ecommerce["order_date"].mode(es_size=3)
+        >>> oml_ecommerce["order_date"].mode(os_size=3)
         0   2016-12-02 20:36:58
         1   2016-12-04 23:44:10
         2   2016-12-08 06:21:36
         Name: order_date, dtype: datetime64[ns]
 
         """
-        return self._query_compiler.mode(is_dataframe=False, es_size=es_size)
+        return self._query_compiler.mode(is_dataframe=False, os_size=os_size)
 
-    def es_match(
+    def os_match(
         self,
         text: str,
         *,
@@ -792,12 +792,12 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame(
+        >>> df = oml.DataFrame(
         ...   OPENSEARCH_TEST_CLIENT, "ecommerce",
         ...   columns=["category", "taxful_total_price"]
         ... )
         >>> df[
-        ...     df.category.es_match("Men's")
+        ...     df.category.os_match("Men's")
         ...     & (df.taxful_total_price > 200.0)
         ... ].head(5)
                                        category  taxful_total_price
@@ -809,7 +809,7 @@ class Series(NDFrame):
         <BLANKLINE>
         [5 rows x 2 columns]
         """
-        return self._query_compiler.es_match(
+        return self._query_compiler.os_match(
             text,
             columns=[self.name],
             match_phrase=match_phrase,
@@ -840,7 +840,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
+        >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
         >>> df.taxful_total_price
         0     36.98
         1     53.98
@@ -900,7 +900,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
+        >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
         >>> df.taxful_total_price
         0     36.98
         1     53.98
@@ -939,7 +939,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
+        >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
         >>> df.taxful_total_price
         0     36.98
         1     53.98
@@ -978,7 +978,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
+        >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
         >>> df.taxful_total_price
         0     36.98
         1     53.98
@@ -1017,7 +1017,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
+        >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
         >>> df.taxful_total_price
         0     36.98
         1     53.98
@@ -1056,7 +1056,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
+        >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
         >>> df.taxful_total_price
         0     36.98
         1     53.98
@@ -1095,7 +1095,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
+        >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
         >>> df.taxful_total_price
         0     36.98
         1     53.98
@@ -1134,7 +1134,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
+        >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
         >>> df.taxful_total_price
         0     36.98
         1     53.98
@@ -1166,7 +1166,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
+        >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
         >>> df.taxful_total_price
         0     36.98
         1     53.98
@@ -1198,7 +1198,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
+        >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
         >>> df.taxful_total_price
         0     36.98
         1     53.98
@@ -1230,7 +1230,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
+        >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
         >>> df.taxful_total_price
         0     36.98
         1     53.98
@@ -1262,7 +1262,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
+        >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
         >>> df.taxful_total_price
         0     36.98
         1     53.98
@@ -1294,7 +1294,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
+        >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
         >>> df.total_quantity
         0    2
         1    2
@@ -1326,7 +1326,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
+        >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
         >>> df.taxful_total_price
         0     36.98
         1     53.98
@@ -1448,7 +1448,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> s = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')['AvgTicketPrice']
+        >>> s = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')['AvgTicketPrice']
         >>> int(s.max())
         1199
         """
@@ -1472,7 +1472,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> s = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')['AvgTicketPrice']
+        >>> s = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')['AvgTicketPrice']
         >>> int(s.mean())
         628
         """
@@ -1496,7 +1496,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> s = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')['AvgTicketPrice']
+        >>> s = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')['AvgTicketPrice']
         >>> int(s.median())
         640
         """
@@ -1520,7 +1520,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> s = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')['AvgTicketPrice']
+        >>> s = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')['AvgTicketPrice']
         >>> int(s.min())
         100
         """
@@ -1544,7 +1544,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> s = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')['AvgTicketPrice']
+        >>> s = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')['AvgTicketPrice']
         >>> int(s.sum())
         8204364
         """
@@ -1566,7 +1566,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> s = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')['Carrier']
+        >>> s = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')['Carrier']
         >>> s.nunique()
         4
         """
@@ -1575,9 +1575,9 @@ class Series(NDFrame):
 
     def unique(self) -> pd.Series:
         """
-            Returns all unique values within a Series.
-            Note that behavior is slightly different between pandas and Eland: pandas will return values in the order
-            they're first seen and opensearch-py-ml returns values in sorted order.
+        Returns all unique values within a Series. Note that behavior is slightly different between pandas and
+        opensearch_py_ml: pandas will return values in the order they're first seen and opensearch-py-ml returns
+        values in sorted order.
 
         Returns
         -------
@@ -1606,7 +1606,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> s = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')['AvgTicketPrice']
+        >>> s = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')['AvgTicketPrice']
         >>> int(s.var())
         70964
         """
@@ -1628,7 +1628,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> s = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')['AvgTicketPrice']
+        >>> s = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')['AvgTicketPrice']
         >>> int(s.std())
         266
         """
@@ -1650,7 +1650,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> s = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')['AvgTicketPrice']
+        >>> s = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')['AvgTicketPrice']
         >>> int(s.mad())
         213
         """
@@ -1678,7 +1678,7 @@ class Series(NDFrame):
 
         Examples
         --------
-        >>> df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights') # ignoring percentiles as they don't generate consistent results
+        >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights') # ignoring percentiles as they don't generate consistent results
         >>> df.AvgTicketPrice.describe()  # doctest: +SKIP
         count    13059.000000
         mean       628.253689
@@ -1701,22 +1701,22 @@ class Series(NDFrame):
         In pandas this returns a Numpy representation of the Series. This would involve scan/scrolling the
         entire index.
 
-        If this is required, call ``ed.eland_to_pandas(ed_series).values``, *but beware this will scan/scroll the entire
-        OpenSearch index(s) into memory.*
+        If this is required, call ``oml.opensearch_to_pandas(oml_series).values``, *but beware this will scan/scroll
+        the entire OpenSearch index(s) into memory.*
 
         See Also
         --------
         :pandas_api_docs:`pandas.DataFrame.to_numpy`
-        eland_to_pandas
+        opensearch_to_pandas
 
         Examples
         --------
-        >>> ed_s = ed.Series(OPENSEARCH_TEST_CLIENT, 'flights', name='Carrier').head(5)
-        >>> pd_s = ed.opensearch_to_pandas(ed_s)
-        >>> print(f"type(ed_s)={type(ed_s)}\\ntype(pd_s)={type(pd_s)}")
-        type(ed_s)=<class 'opensearch_py_ml.series.Series'>
+        >>> oml_s = oml.Series(OPENSEARCH_TEST_CLIENT, 'flights', name='Carrier').head(5)
+        >>> pd_s = oml.opensearch_to_pandas(oml_s)
+        >>> print(f"type(oml_s)={type(oml_s)}\\ntype(pd_s)={type(pd_s)}")
+        type(oml_s)=<class 'opensearch_py_ml.series.Series'>
         type(pd_s)=<class 'pandas.core.series.Series'>
-        >>> ed_s
+        >>> oml_s
         0     Kibana Airlines
         1    Logstash Airways
         2    Logstash Airways
@@ -1729,5 +1729,5 @@ class Series(NDFrame):
         """
         raise NotImplementedError(
             "This method would scan/scroll the entire OpenSearch index(s) into memory."
-            "If this is explicitly required and there is sufficient memory, call `ed.opensearch_to_pandas(ed_df).values`"
+            "If this is explicitly required and there is sufficient memory, call `oml.opensearch_to_pandas(oml_df).values`"
         )
