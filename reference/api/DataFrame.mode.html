@@ -135,7 +135,7 @@
 <h1>DataFrame.mode<a class="headerlink" href="#dataframe-mode" title="Permalink to this heading"></a></h1>
 <dl class="py method">
 <dt class="sig sig-object py" id="opensearch_py_ml.DataFrame.mode">
-<span class="sig-prename descclassname"><span class="pre">DataFrame.</span></span><span class="sig-name descname"><span class="pre">mode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">numeric_only</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropna</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">es_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../../_modules/opensearch_py_ml/dataframe.html#DataFrame.mode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#opensearch_py_ml.DataFrame.mode" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">DataFrame.</span></span><span class="sig-name descname"><span class="pre">mode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">numeric_only</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dropna</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">os_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="../../_modules/opensearch_py_ml/dataframe.html#DataFrame.mode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#opensearch_py_ml.DataFrame.mode" title="Permalink to this definition"></a></dt>
 <dd><p>Calculate mode of a DataFrame</p>
 <section id="parameters">
 <h2>Parameters<a class="headerlink" href="#parameters" title="Permalink to this heading"></a></h2>
@@ -149,7 +149,7 @@
 <li><p>False: Consider counts of NaN/NaT.</p></li>
 </ul>
 </dd>
-<dt>es_size: default 10</dt><dd><p>number of rows to be returned if mode has multiple values</p>
+<dt>os_size: default 10</dt><dd><p>number of rows to be returned if mode has multiple values</p>
 </dd>
 </dl>
 </section>
@@ -159,20 +159,20 @@
 </section>
 <section id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this heading"></a></h2>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ed_ecommerce</span> <span class="o">=</span> <span class="n">ed</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">OPENSEARCH_TEST_CLIENT</span><span class="p">,</span> <span class="s1">&#39;ecommerce&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ed_df</span> <span class="o">=</span> <span class="n">ed_ecommerce</span><span class="o">.</span><span class="n">filter</span><span class="p">([</span><span class="s2">&quot;total_quantity&quot;</span><span class="p">,</span> <span class="s2">&quot;geoip.city_name&quot;</span><span class="p">,</span> <span class="s2">&quot;customer_birth_date&quot;</span><span class="p">,</span> <span class="s2">&quot;day_of_week&quot;</span><span class="p">,</span> <span class="s2">&quot;taxful_total_price&quot;</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ed_df</span><span class="o">.</span><span class="n">mode</span><span class="p">(</span><span class="n">numeric_only</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">oml_ecommerce</span> <span class="o">=</span> <span class="n">oml</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">OPENSEARCH_TEST_CLIENT</span><span class="p">,</span> <span class="s1">&#39;ecommerce&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">oml_df</span> <span class="o">=</span> <span class="n">oml_ecommerce</span><span class="o">.</span><span class="n">filter</span><span class="p">([</span><span class="s2">&quot;total_quantity&quot;</span><span class="p">,</span> <span class="s2">&quot;geoip.city_name&quot;</span><span class="p">,</span> <span class="s2">&quot;customer_birth_date&quot;</span><span class="p">,</span> <span class="s2">&quot;day_of_week&quot;</span><span class="p">,</span> <span class="s2">&quot;taxful_total_price&quot;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">oml_df</span><span class="o">.</span><span class="n">mode</span><span class="p">(</span><span class="n">numeric_only</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="go">   total_quantity geoip.city_name customer_birth_date day_of_week  taxful_total_price</span>
 <span class="go">0               2        New York                 NaT    Thursday               53.98</span>
 </pre></div>
 </div>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ed_df</span><span class="o">.</span><span class="n">mode</span><span class="p">(</span><span class="n">numeric_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">oml_df</span><span class="o">.</span><span class="n">mode</span><span class="p">(</span><span class="n">numeric_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="go">   total_quantity  taxful_total_price</span>
 <span class="go">0               2               53.98</span>
 </pre></div>
 </div>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ed_df</span> <span class="o">=</span> <span class="n">ed_ecommerce</span><span class="o">.</span><span class="n">filter</span><span class="p">([</span><span class="s2">&quot;products.tax_amount&quot;</span><span class="p">,</span><span class="s2">&quot;order_date&quot;</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ed_df</span><span class="o">.</span><span class="n">mode</span><span class="p">()</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">oml_df</span> <span class="o">=</span> <span class="n">oml_ecommerce</span><span class="o">.</span><span class="n">filter</span><span class="p">([</span><span class="s2">&quot;products.tax_amount&quot;</span><span class="p">,</span><span class="s2">&quot;order_date&quot;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">oml_df</span><span class="o">.</span><span class="n">mode</span><span class="p">()</span>
 <span class="go">   products.tax_amount          order_date</span>
 <span class="go">0                  0.0 2016-12-02 20:36:58</span>
 <span class="go">1                  NaN 2016-12-04 23:44:10</span>
@@ -186,7 +186,7 @@
 <span class="go">9                  NaN 2016-12-24 06:21:36</span>
 </pre></div>
 </div>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ed_df</span><span class="o">.</span><span class="n">mode</span><span class="p">(</span><span class="n">es_size</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">oml_df</span><span class="o">.</span><span class="n">mode</span><span class="p">(</span><span class="n">os_size</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span>
 <span class="go">   products.tax_amount          order_date</span>
 <span class="go">0                  0.0 2016-12-02 20:36:58</span>
 <span class="go">1                  NaN 2016-12-04 23:44:10</span>

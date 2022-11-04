@@ -126,21 +126,21 @@
 <dd><p>Not implemented.</p>
 <p>In pandas this returns a Numpy representation of the Series. This would involve scan/scrolling the
 entire index.</p>
-<p>If this is required, call <code class="docutils literal notranslate"><span class="pre">ed.eland_to_pandas(ed_series).values</span></code>, <em>but beware this will scan/scroll the entire
-OpenSearch index(s) into memory.</em></p>
+<p>If this is required, call <code class="docutils literal notranslate"><span class="pre">oml.opensearch_to_pandas(oml_series).values</span></code>, <em>but beware this will scan/scroll
+the entire OpenSearch index(s) into memory.</em></p>
 <section id="see-also">
 <h2>See Also<a class="headerlink" href="#see-also" title="Permalink to this heading"></a></h2>
 <p><a href="#id1"><span class="problematic" id="id2">:pandas_api_docs:`pandas.DataFrame.to_numpy`</span></a>
-eland_to_pandas</p>
+opensearch_to_pandas</p>
 </section>
 <section id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this heading"></a></h2>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ed_s</span> <span class="o">=</span> <span class="n">ed</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">OPENSEARCH_TEST_CLIENT</span><span class="p">,</span> <span class="s1">&#39;flights&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Carrier&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">pd_s</span> <span class="o">=</span> <span class="n">ed</span><span class="o">.</span><span class="n">opensearch_to_pandas</span><span class="p">(</span><span class="n">ed_s</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;type(ed_s)=</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">ed_s</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">type(pd_s)=</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">pd_s</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="go">type(ed_s)=&lt;class &#39;opensearch_py_ml.series.Series&#39;&gt;</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">oml_s</span> <span class="o">=</span> <span class="n">oml</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">OPENSEARCH_TEST_CLIENT</span><span class="p">,</span> <span class="s1">&#39;flights&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Carrier&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pd_s</span> <span class="o">=</span> <span class="n">oml</span><span class="o">.</span><span class="n">opensearch_to_pandas</span><span class="p">(</span><span class="n">oml_s</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;type(oml_s)=</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">oml_s</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">type(pd_s)=</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">pd_s</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="go">type(oml_s)=&lt;class &#39;opensearch_py_ml.series.Series&#39;&gt;</span>
 <span class="go">type(pd_s)=&lt;class &#39;pandas.core.series.Series&#39;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ed_s</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">oml_s</span>
 <span class="go">0     Kibana Airlines</span>
 <span class="go">1    Logstash Airways</span>
 <span class="go">2    Logstash Airways</span>

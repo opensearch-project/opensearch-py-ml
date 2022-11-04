@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DataFrame.es_query &mdash; Opensearch-py-ml  documentation</title>
+  <title>DataFrame.os_query &mdash; Opensearch-py-ml  documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/plot_directive.css" type="text/css" />
@@ -23,7 +23,7 @@
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="DataFrame.os_dtypes" href="DataFrame.os_dtypes.html" />
-    <link rel="prev" title="DataFrame.es_match" href="DataFrame.es_match.html" /> 
+    <link rel="prev" title="DataFrame.os_match" href="DataFrame.os_match.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -53,8 +53,8 @@
 <li class="toctree-l3"><a class="reference internal" href="../dataframe.html#plotting">Plotting</a></li>
 <li class="toctree-l3 current"><a class="reference internal" href="../dataframe.html#opensearch-functions">Opensearch Functions</a><ul class="current">
 <li class="toctree-l4"><a class="reference internal" href="DataFrame.os_info.html">DataFrame.os_info</a></li>
-<li class="toctree-l4"><a class="reference internal" href="DataFrame.es_match.html">DataFrame.es_match</a></li>
-<li class="toctree-l4 current"><a class="current reference internal" href="#">DataFrame.es_query</a></li>
+<li class="toctree-l4"><a class="reference internal" href="DataFrame.os_match.html">DataFrame.os_match</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">DataFrame.os_query</a></li>
 <li class="toctree-l4"><a class="reference internal" href="DataFrame.os_dtypes.html">DataFrame.os_dtypes</a></li>
 </ul>
 </li>
@@ -85,9 +85,9 @@
       <li><a href="../../index.html" class="icon icon-home"></a></li>
           <li class="breadcrumb-item"><a href="../index.html">API Reference</a></li>
           <li class="breadcrumb-item"><a href="../dataframe.html">DataFrame</a></li>
-      <li class="breadcrumb-item active">DataFrame.es_query</li>
+      <li class="breadcrumb-item active">DataFrame.os_query</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../../_sources/reference/api/DataFrame.es_query.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../../_sources/reference/api/DataFrame.os_query.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -119,11 +119,11 @@
     text-align: unset;
 }
 </style>
-<section id="dataframe-es-query">
-<h1>DataFrame.es_query<a class="headerlink" href="#dataframe-es-query" title="Permalink to this heading"></a></h1>
+<section id="dataframe-os-query">
+<h1>DataFrame.os_query<a class="headerlink" href="#dataframe-os-query" title="Permalink to this heading"></a></h1>
 <dl class="py method">
-<dt class="sig sig-object py" id="opensearch_py_ml.DataFrame.es_query">
-<span class="sig-prename descclassname"><span class="pre">DataFrame.</span></span><span class="sig-name descname"><span class="pre">es_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="DataFrame.html#opensearch_py_ml.DataFrame" title="opensearch_py_ml.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../../_modules/opensearch_py_ml/dataframe.html#DataFrame.es_query"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#opensearch_py_ml.DataFrame.es_query" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="opensearch_py_ml.DataFrame.os_query">
+<span class="sig-prename descclassname"><span class="pre">DataFrame.</span></span><span class="sig-name descname"><span class="pre">os_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="DataFrame.html#opensearch_py_ml.DataFrame" title="opensearch_py_ml.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../../_modules/opensearch_py_ml/dataframe.html#DataFrame.os_query"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#opensearch_py_ml.DataFrame.os_query" title="Permalink to this definition"></a></dt>
 <dd><p>Applies an OpenSearch DSL query to the current DataFrame.</p>
 <section id="parameters">
 <h2>Parameters<a class="headerlink" href="#parameters" title="Permalink to this heading"></a></h2>
@@ -144,8 +144,8 @@
 <p>Apply a <a href="#id1"><span class="problematic" id="id2">`geo-distance query`_</span></a> to a dataset with a geo-point column <code class="docutils literal notranslate"><span class="pre">geoip.location</span></code>.</p>
 <blockquote>
 <div></div></blockquote>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ed</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">OPENSEARCH_TEST_CLIENT</span><span class="p">,</span> <span class="s1">&#39;ecommerce&#39;</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;customer_first_name&#39;</span><span class="p">,</span> <span class="s1">&#39;geoip.city_name&#39;</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">es_query</span><span class="p">({</span><span class="s2">&quot;bool&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;filter&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;geo_distance&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;distance&quot;</span><span class="p">:</span> <span class="s2">&quot;1km&quot;</span><span class="p">,</span> <span class="s2">&quot;geoip.location&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">55.3</span><span class="p">,</span> <span class="mf">25.3</span><span class="p">]}}}})</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">oml</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">OPENSEARCH_TEST_CLIENT</span><span class="p">,</span> <span class="s1">&#39;ecommerce&#39;</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;customer_first_name&#39;</span><span class="p">,</span> <span class="s1">&#39;geoip.city_name&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">os_query</span><span class="p">({</span><span class="s2">&quot;bool&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;filter&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;geo_distance&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;distance&quot;</span><span class="p">:</span> <span class="s2">&quot;1km&quot;</span><span class="p">,</span> <span class="s2">&quot;geoip.location&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">55.3</span><span class="p">,</span> <span class="mf">25.3</span><span class="p">]}}}})</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
 <span class="go">   customer_first_name geoip.city_name</span>
 <span class="go">1                 Mary           Dubai</span>
 <span class="go">9            Rabbia Al           Dubai</span>
@@ -160,14 +160,14 @@
 nest it within <code class="docutils literal notranslate"><span class="pre">bool</span></code>:</p>
 <blockquote>
 <div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Correct:</span>
-<span class="n">df</span><span class="o">.</span><span class="n">es_query</span><span class="p">({</span>
+<span class="n">df</span><span class="o">.</span><span class="n">os_query</span><span class="p">({</span>
     <span class="s2">&quot;bool&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;filter&quot;</span><span class="p">:</span> <span class="p">{</span><span class="o">...</span><span class="p">}</span>
     <span class="p">}</span>
 <span class="p">})</span>
 
 <span class="c1"># Incorrect, needs to be nested under &#39;bool&#39;:</span>
-<span class="n">df</span><span class="o">.</span><span class="n">es_query</span><span class="p">({</span>
+<span class="n">df</span><span class="o">.</span><span class="n">os_query</span><span class="p">({</span>
     <span class="s2">&quot;filter&quot;</span><span class="p">:</span> <span class="p">{</span><span class="o">...</span><span class="p">}</span>
 <span class="p">})</span>
 </pre></div>
@@ -182,7 +182,7 @@ nest it within <code class="docutils literal notranslate"><span class="pre">bool
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="DataFrame.es_match.html" class="btn btn-neutral float-left" title="DataFrame.es_match" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="DataFrame.os_match.html" class="btn btn-neutral float-left" title="DataFrame.os_match" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="DataFrame.os_dtypes.html" class="btn btn-neutral float-right" title="DataFrame.os_dtypes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

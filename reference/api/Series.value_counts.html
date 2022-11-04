@@ -133,7 +133,7 @@
 <h1>Series.value_counts<a class="headerlink" href="#series-value-counts" title="Permalink to this heading"></a></h1>
 <dl class="py method">
 <dt class="sig sig-object py" id="opensearch_py_ml.Series.value_counts">
-<span class="sig-prename descclassname"><span class="pre">Series.</span></span><span class="sig-name descname"><span class="pre">value_counts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">es_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Series</span></span></span><a class="reference internal" href="../../_modules/opensearch_py_ml/series.html#Series.value_counts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#opensearch_py_ml.Series.value_counts" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">Series.</span></span><span class="sig-name descname"><span class="pre">value_counts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">os_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Series</span></span></span><a class="reference internal" href="../../_modules/opensearch_py_ml/series.html#Series.value_counts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#opensearch_py_ml.Series.value_counts" title="Permalink to this definition"></a></dt>
 <dd><p>Return the value counts for the specified field.</p>
 <p><strong>Note we can only do this for aggregatable OpenSearch fields - (in general) numeric and keyword
 rather than text fields</strong></p>
@@ -141,7 +141,7 @@ rather than text fields</strong></p>
 <section id="parameters">
 <h2>Parameters<a class="headerlink" href="#parameters" title="Permalink to this heading"></a></h2>
 <dl class="simple">
-<dt>es_size: int, default 10</dt><dd><p>Number of buckets to return counts for, automatically sorts by count descending.
+<dt>os_size: int, default 10</dt><dd><p>Number of buckets to return counts for, automatically sorts by count descending.
 This parameter is specific to <cite>opensearch_py_ml</cite>, and determines how many term buckets
 OpenSearch should return out of the overall terms list.</p>
 </dd>
@@ -157,11 +157,11 @@ OpenSearch should return out of the overall terms list.</p>
 <section id="see-also">
 <h2>See Also<a class="headerlink" href="#see-also" title="Permalink to this heading"></a></h2>
 <p><a href="#id1"><span class="problematic" id="id2">:pandas_api_docs:`pandas.Series.value_counts`</span></a>
-<a href="#id3"><span class="problematic" id="id4">:es_api_docs:`search-aggregations-bucket-terms-aggregation`</span></a></p>
+<a href="#id3"><span class="problematic" id="id4">:os_api_docs:`search-aggregations-bucket-terms-aggregation`</span></a></p>
 </section>
 <section id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this heading"></a></h2>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ed</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">OPENSEARCH_TEST_CLIENT</span><span class="p">,</span> <span class="s1">&#39;flights&#39;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">oml</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">OPENSEARCH_TEST_CLIENT</span><span class="p">,</span> <span class="s1">&#39;flights&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Carrier&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">()</span>
 <span class="go">Logstash Airways    3331</span>
 <span class="go">JetBeats            3274</span>

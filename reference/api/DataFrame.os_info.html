@@ -22,7 +22,7 @@
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="DataFrame.es_match" href="DataFrame.es_match.html" />
+    <link rel="next" title="DataFrame.os_match" href="DataFrame.os_match.html" />
     <link rel="prev" title="DataFrame.hist" href="DataFrame.hist.html" /> 
 </head>
 
@@ -53,8 +53,8 @@
 <li class="toctree-l3"><a class="reference internal" href="../dataframe.html#plotting">Plotting</a></li>
 <li class="toctree-l3 current"><a class="reference internal" href="../dataframe.html#opensearch-functions">Opensearch Functions</a><ul class="current">
 <li class="toctree-l4 current"><a class="current reference internal" href="#">DataFrame.os_info</a></li>
-<li class="toctree-l4"><a class="reference internal" href="DataFrame.es_match.html">DataFrame.es_match</a></li>
-<li class="toctree-l4"><a class="reference internal" href="DataFrame.es_query.html">DataFrame.es_query</a></li>
+<li class="toctree-l4"><a class="reference internal" href="DataFrame.os_match.html">DataFrame.os_match</a></li>
+<li class="toctree-l4"><a class="reference internal" href="DataFrame.os_query.html">DataFrame.os_query</a></li>
 <li class="toctree-l4"><a class="reference internal" href="DataFrame.os_dtypes.html">DataFrame.os_dtypes</a></li>
 </ul>
 </li>
@@ -135,7 +135,7 @@
 </section>
 <section id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this heading"></a></h2>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ed</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">OPENSEARCH_TEST_CLIENT</span><span class="p">,</span> <span class="s1">&#39;flights&#39;</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">oml</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">OPENSEARCH_TEST_CLIENT</span><span class="p">,</span> <span class="s1">&#39;flights&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[(</span><span class="n">df</span><span class="o">.</span><span class="n">OriginAirportID</span> <span class="o">==</span> <span class="s1">&#39;AMS&#39;</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">FlightDelayMin</span> <span class="o">&gt;</span> <span class="mi">60</span><span class="p">)]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="s1">&#39;timestamp&#39;</span><span class="p">,</span> <span class="s1">&#39;OriginAirportID&#39;</span><span class="p">,</span> <span class="s1">&#39;DestAirportID&#39;</span><span class="p">,</span> <span class="s1">&#39;FlightDelayMin&#39;</span><span class="p">]]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">tail</span><span class="p">()</span>
@@ -179,7 +179,7 @@
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="DataFrame.hist.html" class="btn btn-neutral float-left" title="DataFrame.hist" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="DataFrame.es_match.html" class="btn btn-neutral float-right" title="DataFrame.es_match" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="DataFrame.os_match.html" class="btn btn-neutral float-right" title="DataFrame.os_match" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

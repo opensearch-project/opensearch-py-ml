@@ -120,62 +120,6 @@
 </style>
 <section id="series-es-match">
 <h1>Series.es_match<a class="headerlink" href="#series-es-match" title="Permalink to this heading"></a></h1>
-<dl class="py method">
-<dt class="sig sig-object py" id="opensearch_py_ml.Series.es_match">
-<span class="sig-prename descclassname"><span class="pre">Series.</span></span><span class="sig-name descname"><span class="pre">es_match</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">match_phrase</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">match_only_text_fields</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">analyzer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fuzziness</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">QueryFilter</span></span></span><a class="reference internal" href="../../_modules/opensearch_py_ml/series.html#Series.es_match"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#opensearch_py_ml.Series.es_match" title="Permalink to this definition"></a></dt>
-<dd><p>Filters data with an OpenSearch <code class="docutils literal notranslate"><span class="pre">match</span></code> or <code class="docutils literal notranslate"><span class="pre">match_phrase</span></code>
-query depending on the given parameters.</p>
-<p>Read more about <a class="reference external" href="https://opensearch.org/docs/latest/opensearch/query-dsl/full-text/">Full-Text Queries in OpenSearch</a></p>
-<p>All additional keyword arguments are passed in the body of the match query.</p>
-<section id="parameters">
-<h2>Parameters<a class="headerlink" href="#parameters" title="Permalink to this heading"></a></h2>
-<dl class="simple">
-<dt>text: str</dt><dd><p>String of text to search for</p>
-</dd>
-<dt>match_phrase: bool, default False</dt><dd><p>If True will use <code class="docutils literal notranslate"><span class="pre">match_phrase</span></code> instead of <code class="docutils literal notranslate"><span class="pre">match</span></code> query which takes into account
-the order of the <code class="docutils literal notranslate"><span class="pre">text</span></code> parameter.</p>
-</dd>
-<dt>match_only_text_fields: bool, default True</dt><dd><p>When True this function will raise an error if any non-text fields
-are queried to prevent fields that aren’t analyzed from not working properly.
-Set to False to ignore this preventative check.</p>
-</dd>
-<dt>analyzer: str, optional</dt><dd><p>Specify which analyzer to use for the match query</p>
-</dd>
-<dt>fuzziness: int, str, optional</dt><dd><p>Specify the fuzziness option for the match query</p>
-</dd>
-</dl>
-</section>
-<section id="returns">
-<h2>Returns<a class="headerlink" href="#returns" title="Permalink to this heading"></a></h2>
-<dl class="simple">
-<dt>QueryFilter</dt><dd><p>Boolean filter to be combined with other filters and
-then passed to DataFrame[…].</p>
-</dd>
-</dl>
-</section>
-<section id="examples">
-<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this heading"></a></h2>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ed</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
-<span class="gp">... </span>  <span class="n">OPENSEARCH_TEST_CLIENT</span><span class="p">,</span> <span class="s2">&quot;ecommerce&quot;</span><span class="p">,</span>
-<span class="gp">... </span>  <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;category&quot;</span><span class="p">,</span> <span class="s2">&quot;taxful_total_price&quot;</span><span class="p">]</span>
-<span class="gp">... </span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="p">[</span>
-<span class="gp">... </span>    <span class="n">df</span><span class="o">.</span><span class="n">category</span><span class="o">.</span><span class="n">es_match</span><span class="p">(</span><span class="s2">&quot;Men&#39;s&quot;</span><span class="p">)</span>
-<span class="gp">... </span>    <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">taxful_total_price</span> <span class="o">&gt;</span> <span class="mf">200.0</span><span class="p">)</span>
-<span class="gp">... </span><span class="p">]</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
-<span class="go">                               category  taxful_total_price</span>
-<span class="go">13                     [Men&#39;s Clothing]              266.96</span>
-<span class="go">33                     [Men&#39;s Clothing]              221.98</span>
-<span class="go">54                     [Men&#39;s Clothing]              234.98</span>
-<span class="go">93   [Men&#39;s Shoes, Women&#39;s Accessories]              239.98</span>
-<span class="go">273                       [Men&#39;s Shoes]              214.98</span>
-
-<span class="go">[5 rows x 2 columns]</span>
-</pre></div>
-</div>
-</section>
-</dd></dl>
-
 </section>
 
 

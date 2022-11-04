@@ -126,8 +126,8 @@ Opensearch Functions
    :maxdepth: 2
 
    api/DataFrame.os_info
-   api/DataFrame.es_match
-   api/DataFrame.es_query
+   api/DataFrame.os_match
+   api/DataFrame.os_query
    api/DataFrame.os_dtypes
 
 Serialization / IO / Conversion

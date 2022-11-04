@@ -163,23 +163,23 @@ Value between 0 &lt;= q &lt;= 1, the quantile(s) to compute.</p>
 </section>
 <section id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this heading"></a></h2>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ed_df</span> <span class="o">=</span> <span class="n">ed</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">OPENSEARCH_TEST_CLIENT</span><span class="p">,</span> <span class="s1">&#39;flights&#39;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ed_flights</span> <span class="o">=</span> <span class="n">ed_df</span><span class="o">.</span><span class="n">filter</span><span class="p">([</span><span class="s2">&quot;AvgTicketPrice&quot;</span><span class="p">,</span> <span class="s2">&quot;FlightDelayMin&quot;</span><span class="p">,</span> <span class="s2">&quot;dayOfWeek&quot;</span><span class="p">,</span> <span class="s2">&quot;timestamp&quot;</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ed_flights</span><span class="o">.</span><span class="n">quantile</span><span class="p">()</span> 
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">oml_df</span> <span class="o">=</span> <span class="n">oml</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">OPENSEARCH_TEST_CLIENT</span><span class="p">,</span> <span class="s1">&#39;flights&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">oml_flights</span> <span class="o">=</span> <span class="n">oml_df</span><span class="o">.</span><span class="n">filter</span><span class="p">([</span><span class="s2">&quot;AvgTicketPrice&quot;</span><span class="p">,</span> <span class="s2">&quot;FlightDelayMin&quot;</span><span class="p">,</span> <span class="s2">&quot;dayOfWeek&quot;</span><span class="p">,</span> <span class="s2">&quot;timestamp&quot;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">oml_flights</span><span class="o">.</span><span class="n">quantile</span><span class="p">()</span> 
 <span class="go">AvgTicketPrice    640.387285</span>
 <span class="go">FlightDelayMin      0.000000</span>
 <span class="go">dayOfWeek           3.000000</span>
 <span class="go">Name: 0.5, dtype: float64</span>
 </pre></div>
 </div>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ed_flights</span><span class="o">.</span><span class="n">quantile</span><span class="p">([</span><span class="mf">.2</span><span class="p">,</span> <span class="mf">.5</span><span class="p">,</span> <span class="mf">.75</span><span class="p">])</span> 
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">oml_flights</span><span class="o">.</span><span class="n">quantile</span><span class="p">([</span><span class="mf">.2</span><span class="p">,</span> <span class="mf">.5</span><span class="p">,</span> <span class="mf">.75</span><span class="p">])</span> 
 <span class="go">      AvgTicketPrice  FlightDelayMin  dayOfWeek</span>
 <span class="go">0.20      361.040768             0.0        1.0</span>
 <span class="go">0.50      640.387285             0.0        3.0</span>
 <span class="go">0.75      842.213490            15.0        4.0</span>
 </pre></div>
 </div>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ed_flights</span><span class="o">.</span><span class="n">quantile</span><span class="p">([</span><span class="mf">.2</span><span class="p">,</span> <span class="mf">.5</span><span class="p">,</span> <span class="mf">.75</span><span class="p">],</span> <span class="n">numeric_only</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> 
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">oml_flights</span><span class="o">.</span><span class="n">quantile</span><span class="p">([</span><span class="mf">.2</span><span class="p">,</span> <span class="mf">.5</span><span class="p">,</span> <span class="mf">.75</span><span class="p">],</span> <span class="n">numeric_only</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> 
 <span class="go">      AvgTicketPrice  FlightDelayMin  dayOfWeek                     timestamp</span>
 <span class="go">0.20      361.040768             0.0        1.0 2018-01-09 04:43:55.296587520</span>
 <span class="go">0.50      640.387285             0.0        3.0 2018-01-21 23:51:57.637076736</span>

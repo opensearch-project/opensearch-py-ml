@@ -146,7 +146,7 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
-<span class="sd">        &gt;&gt;&gt; df = ed.DataFrame(</span>
+<span class="sd">        &gt;&gt;&gt; df = oml.DataFrame(</span>
 <span class="sd">        ...   OPENSEARCH_TEST_CLIENT, &quot;flights&quot;,</span>
 <span class="sd">        ...   columns=[&quot;AvgTicketPrice&quot;, &quot;Cancelled&quot;, &quot;dayOfWeek&quot;, &quot;timestamp&quot;, &quot;DestCountry&quot;]</span>
 <span class="sd">        ... )</span>
@@ -197,7 +197,7 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
-<span class="sd">        &gt;&gt;&gt; df = ed.DataFrame(</span>
+<span class="sd">        &gt;&gt;&gt; df = oml.DataFrame(</span>
 <span class="sd">        ...   OPENSEARCH_TEST_CLIENT, &quot;flights&quot;,</span>
 <span class="sd">        ...   columns=[&quot;AvgTicketPrice&quot;, &quot;Cancelled&quot;, &quot;dayOfWeek&quot;, &quot;timestamp&quot;, &quot;DestCountry&quot;]</span>
 <span class="sd">        ... )</span>
@@ -248,7 +248,7 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
-<span class="sd">        &gt;&gt;&gt; df = ed.DataFrame(</span>
+<span class="sd">        &gt;&gt;&gt; df = oml.DataFrame(</span>
 <span class="sd">        ...   OPENSEARCH_TEST_CLIENT, &quot;flights&quot;,</span>
 <span class="sd">        ...   columns=[&quot;AvgTicketPrice&quot;, &quot;Cancelled&quot;, &quot;dayOfWeek&quot;, &quot;DestCountry&quot;]</span>
 <span class="sd">        ... )</span>
@@ -299,7 +299,7 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
-<span class="sd">        &gt;&gt;&gt; df = ed.DataFrame(</span>
+<span class="sd">        &gt;&gt;&gt; df = oml.DataFrame(</span>
 <span class="sd">        ...   OPENSEARCH_TEST_CLIENT, &quot;flights&quot;,</span>
 <span class="sd">        ...   columns=[&quot;AvgTicketPrice&quot;, &quot;Cancelled&quot;, &quot;dayOfWeek&quot;, &quot;timestamp&quot;, &quot;DestCountry&quot;]</span>
 <span class="sd">        ... )</span>
@@ -350,7 +350,7 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
-<span class="sd">        &gt;&gt;&gt; df = ed.DataFrame(</span>
+<span class="sd">        &gt;&gt;&gt; df = oml.DataFrame(</span>
 <span class="sd">        ...   OPENSEARCH_TEST_CLIENT, &quot;flights&quot;,</span>
 <span class="sd">        ...   columns=[&quot;AvgTicketPrice&quot;, &quot;Cancelled&quot;, &quot;dayOfWeek&quot;, &quot;timestamp&quot;, &quot;DestCountry&quot;]</span>
 <span class="sd">        ... )</span>
@@ -401,7 +401,7 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
-<span class="sd">        &gt;&gt;&gt; df = ed.DataFrame(</span>
+<span class="sd">        &gt;&gt;&gt; df = oml.DataFrame(</span>
 <span class="sd">        ...   OPENSEARCH_TEST_CLIENT, &quot;flights&quot;,</span>
 <span class="sd">        ...   columns=[&quot;AvgTicketPrice&quot;, &quot;Cancelled&quot;, &quot;dayOfWeek&quot;, &quot;DestCountry&quot;]</span>
 <span class="sd">        ... )</span>
@@ -452,7 +452,7 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
-<span class="sd">        &gt;&gt;&gt; df = ed.DataFrame(</span>
+<span class="sd">        &gt;&gt;&gt; df = oml.DataFrame(</span>
 <span class="sd">        ...   OPENSEARCH_TEST_CLIENT, &quot;flights&quot;,</span>
 <span class="sd">        ...   columns=[&quot;AvgTicketPrice&quot;, &quot;Cancelled&quot;, &quot;dayOfWeek&quot;, &quot;timestamp&quot;, &quot;DestCountry&quot;]</span>
 <span class="sd">        ... )</span>
@@ -503,7 +503,7 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
-<span class="sd">        &gt;&gt;&gt; df = ed.DataFrame(</span>
+<span class="sd">        &gt;&gt;&gt; df = oml.DataFrame(</span>
 <span class="sd">        ...   OPENSEARCH_TEST_CLIENT, &quot;flights&quot;,</span>
 <span class="sd">        ...   columns=[&quot;AvgTicketPrice&quot;, &quot;Cancelled&quot;, &quot;dayOfWeek&quot;, &quot;timestamp&quot;, &quot;DestCountry&quot;]</span>
 <span class="sd">        ... )</span>
@@ -554,7 +554,7 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
-<span class="sd">        &gt;&gt;&gt; df = ed.DataFrame(</span>
+<span class="sd">        &gt;&gt;&gt; df = oml.DataFrame(</span>
 <span class="sd">        ...   OPENSEARCH_TEST_CLIENT, &quot;flights&quot;,</span>
 <span class="sd">        ...   columns=[&quot;AvgTicketPrice&quot;, &quot;Cancelled&quot;, &quot;dayOfWeek&quot;, &quot;DestCountry&quot;]</span>
 <span class="sd">        ... )</span>
@@ -605,9 +605,9 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
-<span class="sd">        &gt;&gt;&gt; ed_df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;flights&#39;)</span>
-<span class="sd">        &gt;&gt;&gt; ed_flights = ed_df.filter([&quot;AvgTicketPrice&quot;, &quot;FlightDelayMin&quot;, &quot;dayOfWeek&quot;, &quot;timestamp&quot;])</span>
-<span class="sd">        &gt;&gt;&gt; ed_flights.groupby([&quot;dayOfWeek&quot;, &quot;Cancelled&quot;]).quantile() # doctest: +SKIP</span>
+<span class="sd">        &gt;&gt;&gt; oml_df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;flights&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; oml_flights = oml_df.filter([&quot;AvgTicketPrice&quot;, &quot;FlightDelayMin&quot;, &quot;dayOfWeek&quot;, &quot;timestamp&quot;])</span>
+<span class="sd">        &gt;&gt;&gt; oml_flights.groupby([&quot;dayOfWeek&quot;, &quot;Cancelled&quot;]).quantile() # doctest: +SKIP</span>
 <span class="sd">                             AvgTicketPrice  FlightDelayMin</span>
 <span class="sd">        dayOfWeek Cancelled</span>
 <span class="sd">        0         False          572.290384             0.0</span>
@@ -625,7 +625,7 @@
 <span class="sd">        6         False          817.378523             0.0</span>
 <span class="sd">                  True           766.855530             0.0</span>
 
-<span class="sd">        &gt;&gt;&gt; ed_flights.groupby([&quot;dayOfWeek&quot;, &quot;Cancelled&quot;]).quantile(q=[.2, .5]) # doctest: +SKIP</span>
+<span class="sd">        &gt;&gt;&gt; oml_flights.groupby([&quot;dayOfWeek&quot;, &quot;Cancelled&quot;]).quantile(q=[.2, .5]) # doctest: +SKIP</span>
 <span class="sd">                                 AvgTicketPrice  FlightDelayMin</span>
 <span class="sd">        dayOfWeek Cancelled</span>
 <span class="sd">        0         False     0.2      319.925979             0.0</span>
@@ -694,7 +694,7 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
-<span class="sd">        &gt;&gt;&gt; df = ed.DataFrame(</span>
+<span class="sd">        &gt;&gt;&gt; df = oml.DataFrame(</span>
 <span class="sd">        ...   OPENSEARCH_TEST_CLIENT, &quot;flights&quot;,</span>
 <span class="sd">        ...   columns=[&quot;AvgTicketPrice&quot;, &quot;Cancelled&quot;, &quot;dayOfWeek&quot;, &quot;DestCountry&quot;]</span>
 <span class="sd">        ... )</span>
@@ -748,7 +748,7 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
-<span class="sd">        &gt;&gt;&gt; df = ed.DataFrame(</span>
+<span class="sd">        &gt;&gt;&gt; df = oml.DataFrame(</span>
 <span class="sd">        ...   OPENSEARCH_TEST_CLIENT, &quot;flights&quot;,</span>
 <span class="sd">        ...   columns=[&quot;AvgTicketPrice&quot;, &quot;Cancelled&quot;, &quot;dayOfWeek&quot;, &quot;DestCountry&quot;]</span>
 <span class="sd">        ... )</span>

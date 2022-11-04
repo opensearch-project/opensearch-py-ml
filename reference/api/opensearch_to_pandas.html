@@ -120,9 +120,9 @@ indices this can create significant load on the OpenSearch cluster and require s
 <section id="parameters">
 <h2>Parameters<a class="headerlink" href="#parameters" title="Permalink to this heading"></a></h2>
 <dl class="simple">
-<dt>ed_df: opensearch_py_ml.DataFrame</dt><dd><p>The source opensearch_py_ml.Dataframe referencing the OpenSearch index</p>
+<dt>oml_df: opensearch_py_ml.DataFrame</dt><dd><p>The source opensearch_py_ml.Dataframe referencing the OpenSearch index</p>
 </dd>
-<dt>show_progress: bool</dt><dd><p>Output progress of option to stdout? By default False.</p>
+<dt>show_progress: bool</dt><dd><p>Output progress of option to stdout? By default, False.</p>
 </dd>
 </dl>
 </section>
@@ -135,10 +135,10 @@ indices this can create significant load on the OpenSearch cluster and require s
 </section>
 <section id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this heading"></a></h2>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ed_df</span> <span class="o">=</span> <span class="n">ed</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">OPENSEARCH_TEST_CLIENT</span><span class="p">,</span> <span class="s1">&#39;flights&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">type</span><span class="p">(</span><span class="n">ed_df</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">oml_df</span> <span class="o">=</span> <span class="n">oml</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">OPENSEARCH_TEST_CLIENT</span><span class="p">,</span> <span class="s1">&#39;flights&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">type</span><span class="p">(</span><span class="n">oml_df</span><span class="p">)</span>
 <span class="go">&lt;class &#39;opensearch_py_ml.dataframe.DataFrame&#39;&gt;</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">ed_df</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">oml_df</span>
 <span class="go">   AvgTicketPrice  Cancelled  ... dayOfWeek           timestamp</span>
 <span class="go">0      841.265642      False  ...         0 2018-01-01 00:00:00</span>
 <span class="go">1      882.982662      False  ...         0 2018-01-01 18:27:00</span>
@@ -150,7 +150,7 @@ indices this can create significant load on the OpenSearch cluster and require s
 </pre></div>
 </div>
 <p>Convert <cite>opensearch_py_ml.DataFrame</cite> to <cite>pandas.DataFrame</cite> (Note: this loads entire OpenSearch index into core memory)</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pd_df</span> <span class="o">=</span> <span class="n">ed</span><span class="o">.</span><span class="n">opensearch_to_pandas</span><span class="p">(</span><span class="n">ed_df</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pd_df</span> <span class="o">=</span> <span class="n">oml</span><span class="o">.</span><span class="n">opensearch_to_pandas</span><span class="p">(</span><span class="n">oml_df</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">type</span><span class="p">(</span><span class="n">pd_df</span><span class="p">)</span>
 <span class="go">&lt;class &#39;pandas.core.frame.DataFrame&#39;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">pd_df</span>
@@ -165,7 +165,7 @@ indices this can create significant load on the OpenSearch cluster and require s
 </pre></div>
 </div>
 <p>Convert <cite>opensearch_py_ml.DataFrame</cite> to <cite>pandas.DataFrame</cite> and show progress every 10000 rows</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pd_df</span> <span class="o">=</span> <span class="n">ed</span><span class="o">.</span><span class="n">opensearch_to_pandas</span><span class="p">(</span><span class="n">ed</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">OPENSEARCH_TEST_CLIENT</span><span class="p">,</span> <span class="s1">&#39;flights&#39;</span><span class="p">),</span> <span class="n">show_progress</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> 
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pd_df</span> <span class="o">=</span> <span class="n">oml</span><span class="o">.</span><span class="n">opensearch_to_pandas</span><span class="p">(</span><span class="n">oml</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">OPENSEARCH_TEST_CLIENT</span><span class="p">,</span> <span class="s1">&#39;flights&#39;</span><span class="p">),</span> <span class="n">show_progress</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> 
 <span class="go">2020-01-29 12:43:36.572395: read 10000 rows</span>
 <span class="go">2020-01-29 12:43:37.309031: read 13059 rows</span>
 </pre></div>
