@@ -9,3 +9,4 @@ Examples
 
    demo_notebook
    online_retail_analysis
+   upload_model
