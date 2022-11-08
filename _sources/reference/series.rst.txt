@@ -118,5 +118,5 @@ Opensearch Functions
    :maxdepth: 2
 
    api/Series.os_info
-   api/Series.es_match
+   api/Series.os_match
    api/Series.os_dtype

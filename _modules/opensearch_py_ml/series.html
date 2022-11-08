@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>opensearch_py_ml.series &mdash; Opensearch-py-ml  documentation</title>
+  <title>opensearch_py_ml.series &mdash; Opensearch-py-ml 2.2.0 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/plot_directive.css" type="text/css" />
@@ -30,6 +30,9 @@
         <div class="wy-side-nav-search" >
             <a href="../../index.html" class="icon icon-home"> Opensearch-py-ml
           </a>
+              <div class="version">
+                2.2.0
+              </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -821,7 +824,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">mode</span><span class="p">(</span><span class="n">is_dataframe</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">os_size</span><span class="o">=</span><span class="n">os_size</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">os_match</span><span class="p">(</span>
+<div class="viewcode-block" id="Series.os_match"><a class="viewcode-back" href="../../reference/api/Series.os_match.html#opensearch_py_ml.Series.os_match">[docs]</a>    <span class="k">def</span> <span class="nf">os_match</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
@@ -887,7 +890,7 @@
             <span class="n">analyzer</span><span class="o">=</span><span class="n">analyzer</span><span class="p">,</span>
             <span class="n">fuzziness</span><span class="o">=</span><span class="n">fuzziness</span><span class="p">,</span>
             <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-        <span class="p">)</span>
+        <span class="p">)</span></div>
 
 <div class="viewcode-block" id="Series.os_info"><a class="viewcode-back" href="../../reference/api/Series.os_info.html#opensearch_py_ml.Series.os_info">[docs]</a>    <span class="k">def</span> <span class="nf">os_info</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="n">buf</span> <span class="o">=</span> <span class="n">StringIO</span><span class="p">()</span>
