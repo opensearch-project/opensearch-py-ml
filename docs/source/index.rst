@@ -1,14 +1,16 @@
 .. module:: opensearch_py_ml
 
-**************************************************************
+**********************************************************************
 Opensearch-py-ml: DataFrames and Machine Learning backed by Opensearch
-**************************************************************
+**********************************************************************
 
-**Date**: |today|
+**Date**: |today| **Version**: |version|
+
 
 **Useful links**:
 `Source Repository <https://github.com/opensearch-project/opensearch-py-ml>`__ |
 `Issues & Ideas <https://github.com/opensearch-project/opensearch-py-ml/issues>`__
+
 
 Opensearch-py-ml is a Python Opensearch client for exploring and analyzing data
 in Opensearch with a familiar Pandas-compatible API.
@@ -18,7 +20,7 @@ pandas, scikit-learn to their Opensearch powered equivalents. In general, the da
 not in memory, which allows Opensearch-py-ml to access large datasets stored in Opensearch.
 
 Installing Opensearch-py-ml
-~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Opensearch-py-ml can be installed from `PyPI <https://pypi.org/project/opensearch-py-ml>`_ via pip:
 
@@ -40,7 +42,6 @@ If you're new to Opensearch we recommend `reading the documentation <https://ope
    :hidden:
 
    reference/index
-   development/index
    examples/index
 
 * :doc:`reference/index`
@@ -54,3 +55,9 @@ If you're new to Opensearch we recommend `reading the documentation <https://ope
 
   * :doc:`examples/demo_notebook`
   * :doc:`examples/online_retail_analysis`
+
+* `License <https://github.com/opensearch-project/opensearch-py-ml/blob/main/LICENSE>`_
+* `Contributing <https://github.com/opensearch-project/opensearch-py-ml/blob/main/CONTRIBUTING.md>`_
+* `Code of Conduct <https://github.com/opensearch-project/opensearch-py-ml/blob/main/CODE_OF_CONDUCT.md>`_
+
+
