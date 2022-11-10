@@ -147,7 +147,7 @@ class QueryCompiler:
 
     # END Index, columns, and dtypes objects
 
-    def _es_results_to_pandas(
+    def _os_results_to_pandas(
         self,
         results: List[Dict[str, Any]],
     ) -> "pd.Dataframe":
@@ -233,7 +233,6 @@ class QueryCompiler:
           }
         }
         ```
-        TODO - eland devs mentioned option here is to use Elasticsearch's multi-field matching instead of pandas
         treatment of lists (which isn't great)
         NOTE - using this lists is generally not a good way to use this API
         """
@@ -427,7 +426,7 @@ class QueryCompiler:
 
         return result
 
-    def es_match(
+    def os_match(
         self,
         text: str,
         columns: Sequence[str],
@@ -460,12 +459,12 @@ class QueryCompiler:
                 if "*" in column:
                     continue
 
-                es_dtype = os_dtypes[column]
-                if es_dtype != "text":
-                    non_text_columns[column] = es_dtype
+                os_dtype = os_dtypes[column]
+                if os_dtype != "text":
+                    non_text_columns[column] = os_dtype
             if non_text_columns:
                 raise ValueError(
-                    f"Attempting to run es_match() on non-text fields "
+                    f"Attempting to run os_match() on non-text fields "
                     f"({', '.join([k + '=' + v for k, v in non_text_columns.items()])}) "
                     f"means that these fields may not be analyzed properly. "
                     f"Consider reindexing these fields as text or use 'match_only_text_os_dtypes=False' "
@@ -498,12 +497,12 @@ class QueryCompiler:
             query = {"multi_match": options}
         return QueryFilter(query)
 
-    def es_query(self, query: Dict[str, Any]) -> "QueryCompiler":
+    def os_query(self, query: Dict[str, Any]) -> "QueryCompiler":
         return self._update_query(QueryFilter(query))
 
     # To/From Pandas
     def to_pandas(self, show_progress: bool = False):
-        """Converts Eland DataFrame to Pandas DataFrame.
+        """Converts Opensearch_py_ml DataFrame to Pandas DataFrame.
 
         Returns:
             Pandas DataFrame
@@ -512,7 +511,7 @@ class QueryCompiler:
 
     # To CSV
     def to_csv(self, **kwargs) -> Optional[str]:
-        """Serialises Eland Dataframe to CSV
+        """Serialises Opensearch_py_ml Dataframe to CSV
 
         Returns:
             If path_or_buf is None, returns the resulting csv format as a string. Otherwise returns None.
@@ -632,7 +631,7 @@ class QueryCompiler:
 
     def mode(
         self,
-        es_size: int,
+        os_size: int,
         numeric_only: bool = False,
         dropna: bool = True,
         is_dataframe: bool = True,
@@ -643,7 +642,7 @@ class QueryCompiler:
             numeric_only=numeric_only,
             dropna=dropna,
             is_dataframe=is_dataframe,
-            es_size=es_size,
+            os_size=os_size,
         )
 
     def quantile(
@@ -697,8 +696,8 @@ class QueryCompiler:
     def idx(self, axis: int, sort_order: str) -> pd.Series:
         return self._operations.idx(self, axis=axis, sort_order=sort_order)
 
-    def value_counts(self, es_size: int) -> pd.Series:
-        return self._operations.value_counts(self, es_size)
+    def value_counts(self, os_size: int) -> pd.Series:
+        return self._operations.value_counts(self, os_size)
 
     def os_info(self, buf: TextIO) -> None:
         buf.write(f"os_index_pattern: {self._index_pattern}\n")
@@ -801,24 +800,24 @@ class FieldMappingCache:
         self._field_name_pd_dtype: Dict[str, str] = dict()
         self._date_field_format: Dict[str, str] = dict()
 
-    def field_name_pd_dtype(self, es_field_name: str) -> str:
-        if es_field_name in self._field_name_pd_dtype:
-            return self._field_name_pd_dtype[es_field_name]
+    def field_name_pd_dtype(self, os_field_name: str) -> str:
+        if os_field_name in self._field_name_pd_dtype:
+            return self._field_name_pd_dtype[os_field_name]
 
-        pd_dtype = self._mappings.field_name_pd_dtype(es_field_name)
+        pd_dtype = self._mappings.field_name_pd_dtype(os_field_name)
 
         # cache this
-        self._field_name_pd_dtype[es_field_name] = pd_dtype
+        self._field_name_pd_dtype[os_field_name] = pd_dtype
 
         return pd_dtype
 
-    def date_field_format(self, es_field_name: str) -> str:
-        if es_field_name in self._date_field_format:
-            return self._date_field_format[es_field_name]
+    def date_field_format(self, os_field_name: str) -> str:
+        if os_field_name in self._date_field_format:
+            return self._date_field_format[os_field_name]
 
-        es_date_field_format = self._mappings.date_field_format(es_field_name)
+        os_date_field_format = self._mappings.date_field_format(os_field_name)
 
         # cache this
-        self._date_field_format[es_field_name] = es_date_field_format
+        self._date_field_format[os_field_name] = os_date_field_format
 
-        return es_date_field_format
+        return os_date_field_format

@@ -372,7 +372,6 @@ class ArithmeticOpFieldsTask(Task):
         post_processing: List["PostProcessingAction"],
         query_compiler: "QueryCompiler",
     ) -> RESOLVED_TASK_TYPE:
-        # https://www.elastic.co/guide/en/elasticsearch/painless/current/painless-api-reference-shared-java-lang.html#painless-api-reference-shared-Math
         """
         "script_fields": {
             "field_name": {

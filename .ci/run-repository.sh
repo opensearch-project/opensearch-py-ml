@@ -16,6 +16,7 @@ set -e
 echo -e "\033[34;1mINFO:\033[0m URL ${opensearch_url}\033[0m"
 echo -e "\033[34;1mINFO:\033[0m EXTERNAL OS URL ${external_opensearch_url}\033[0m"
 echo -e "\033[34;1mINFO:\033[0m VERSION ${OPENSEARCH_VERSION}\033[0m"
+echo -e "\033[34;1mINFO:\033[0m IS_DOC: ${IS_DOC}\033[0m"
 echo -e "\033[34;1mINFO:\033[0m TEST_SUITE ${TEST_SUITE}\033[0m"
 echo -e "\033[34;1mINFO:\033[0m PYTHON_VERSION ${PYTHON_VERSION}\033[0m"
 echo -e "\033[34;1mINFO:\033[0m PYTHON_CONNECTION_CLASS ${PYTHON_CONNECTION_CLASS}\033[0m"
@@ -31,7 +32,9 @@ docker build \
 
 echo -e "\033[1m>>>>> Run [opensearch-project/opensearch-py-ml container] >>>>>>>>>>>>>>>>>>>>>>>>>>>>>\033[0m"
 
-docker run \
+
+if [[ "$IS_DOC" == "false" ]]; then
+  docker run \
   --network=${network_name} \
   --env "STACK_VERSION=${STACK_VERSION}" \
   --env "OPENSEARCH_URL=${opensearch_url}" \
@@ -43,3 +46,19 @@ docker run \
   --rm \
   opensearch-project/opensearch-py-ml \
   nox -s "test-${PYTHON_VERSION}(pandas_version='${PANDAS_VERSION}')"
+else
+  docker run \
+  --network=${network_name} \
+  --env "STACK_VERSION=${STACK_VERSION}" \
+  --env "OPENSEARCH_URL=${opensearch_url}" \
+  --env "OPENSEARCH_VERSION=${OPENSEARCH_VERSION}" \
+  --env "TEST_SUITE=${TEST_SUITE}" \
+  --env "PYTHON_CONNECTION_CLASS=${PYTHON_CONNECTION_CLASS}" \
+  --env "TEST_TYPE=server" \
+  --name opensearch-py-ml-doc-runner \
+  opensearch-project/opensearch-py-ml \
+  nox -s docs
+  docker cp opensearch-py-ml-doc-runner:/code/opensearch-py-ml/docs/build/ ./docs/
+
+  docker rm opensearch-py-ml-doc-runner
+fi

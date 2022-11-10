@@ -30,25 +30,25 @@ from tests.common import TestData
 class TestDataFrameShape(TestData):
     def test_ecommerce_shape(self):
         pd_ecommerce = self.pd_ecommerce()
-        ed_ecommerce = self.ed_ecommerce()
+        oml_ecommerce = self.oml_ecommerce()
 
         pd_shape = pd_ecommerce.shape
-        ed_shape = ed_ecommerce.shape
+        oml_shape = oml_ecommerce.shape
 
-        assert pd_shape == ed_shape
+        assert pd_shape == oml_shape
 
     def test_flights_shape(self):
         pd_flights = self.pd_flights()
-        ed_flights = self.ed_flights()
+        oml_flights = self.oml_flights()
 
         pd_shape = pd_flights.shape
-        ed_shape = ed_flights.shape
+        oml_shape = oml_flights.shape
 
-        assert pd_shape == ed_shape
+        assert pd_shape == oml_shape
 
     def test_size(self):
         pd_flights = self.pd_flights()
-        ed_flights = self.ed_flights()
+        oml_flights = self.oml_flights()
 
-        assert pd_flights.size == ed_flights.size
-        assert pd_flights.FlightDelayMin.size == ed_flights.FlightDelayMin.size
+        assert pd_flights.size == oml_flights.size
+        assert pd_flights.FlightDelayMin.size == oml_flights.FlightDelayMin.size

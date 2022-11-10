@@ -65,36 +65,36 @@ class TestDataFrameFilter(TestData):
         # to properly test dropping of indices we must account for differently named indexes
         pd_filter_one = ["20"]
         pd_filter_many = [str(x) for x in range(30)]
-        ed_index = df.ed.to_pandas().index
-        ed_filter_one = [ed_index[20]]
-        ed_filter_many = list(ed_index[:30])
+        oml_index = df.oml.to_pandas().index
+        oml_filter_one = [oml_index[20]]
+        oml_filter_many = list(oml_index[:30])
 
         df.filter(items=[], axis=0)
         df.check_values(
-            df.ed.filter(items=ed_filter_one, axis=0),
+            df.oml.filter(items=oml_filter_one, axis=0),
             df.pd.filter(items=pd_filter_one, axis=0),
         )
         df.check_values(
-            df.ed.filter(items=ed_filter_many, axis=0),
+            df.oml.filter(items=oml_filter_many, axis=0),
             df.pd.filter(items=pd_filter_many, axis=0),
         )
 
     def test_filter_index_like_and_regex(self):
-        ed_flights_small = self.ed_flights_small()
+        oml_flights_small = self.oml_flights_small()
 
         with pytest.raises(NotImplementedError):
-            ed_flights_small.filter(like="2", axis=0)
+            oml_flights_small.filter(like="2", axis=0)
         with pytest.raises(NotImplementedError):
-            ed_flights_small.filter(regex="^2", axis=0)
+            oml_flights_small.filter(regex="^2", axis=0)
 
     def test_filter_index_order(self):
         # Filtering dataframe should retain order of items
-        ed_flights = self.ed_flights()
+        oml_flights = self.oml_flights()
 
-        ed_index = ed_flights.to_pandas().index
-        items = list(ed_index[:5])
+        oml_index = oml_flights.to_pandas().index
+        items = list(oml_index[:5])
         items.reverse()
 
         assert [
-            i for i in ed_flights.filter(axis="index", items=items).to_pandas().index
+            i for i in oml_flights.filter(axis="index", items=items).to_pandas().index
         ] == items

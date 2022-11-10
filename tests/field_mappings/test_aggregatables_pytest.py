@@ -33,11 +33,11 @@ from tests.common import TestData
 class TestAggregatables(TestData):
     @pytest.mark.filterwarnings("ignore:Aggregations not supported")
     def test_ecommerce_all_aggregatables(self):
-        ed_field_mappings = FieldMappings(
+        oml_field_mappings = FieldMappings(
             client=OPENSEARCH_TEST_CLIENT, index_pattern=ECOMMERCE_INDEX_NAME
         )
 
-        aggregatables = ed_field_mappings.aggregatable_field_names()
+        aggregatables = oml_field_mappings.aggregatable_field_names()
 
         expected = {
             "category.keyword": "category",
@@ -98,48 +98,48 @@ class TestAggregatables(TestData):
             "user": "user",
         }
 
-        ed_field_mappings = FieldMappings(
+        oml_field_mappings = FieldMappings(
             client=OPENSEARCH_TEST_CLIENT,
             index_pattern=ECOMMERCE_INDEX_NAME,
             display_names=expected.values(),
         )
 
-        aggregatables = ed_field_mappings.aggregatable_field_names()
+        aggregatables = oml_field_mappings.aggregatable_field_names()
 
         assert expected == aggregatables
 
     def test_ecommerce_single_aggregatable_field(self):
-        ed_field_mappings = FieldMappings(
+        oml_field_mappings = FieldMappings(
             client=OPENSEARCH_TEST_CLIENT, index_pattern=ECOMMERCE_INDEX_NAME
         )
 
-        assert "user" == ed_field_mappings.aggregatable_field_name("user")
+        assert "user" == oml_field_mappings.aggregatable_field_name("user")
 
     def test_ecommerce_single_keyword_aggregatable_field(self):
-        ed_field_mappings = FieldMappings(
+        oml_field_mappings = FieldMappings(
             client=OPENSEARCH_TEST_CLIENT, index_pattern=ECOMMERCE_INDEX_NAME
         )
 
         assert (
             "customer_first_name.keyword"
-            == ed_field_mappings.aggregatable_field_name("customer_first_name")
+            == oml_field_mappings.aggregatable_field_name("customer_first_name")
         )
 
     def test_ecommerce_single_non_existant_field(self):
-        ed_field_mappings = FieldMappings(
+        oml_field_mappings = FieldMappings(
             client=OPENSEARCH_TEST_CLIENT, index_pattern=ECOMMERCE_INDEX_NAME
         )
 
         with pytest.raises(KeyError):
-            ed_field_mappings.aggregatable_field_name("non_existant")
+            oml_field_mappings.aggregatable_field_name("non_existant")
 
     @pytest.mark.skip(
         reason="opensearch treats all fields in ecommerce df as aggregatable"
     )
     @pytest.mark.filterwarnings("ignore:Aggregations not supported")
     def test_ecommerce_single_non_aggregatable_field(self):
-        ed_field_mappings = FieldMappings(
+        oml_field_mappings = FieldMappings(
             client=OPENSEARCH_TEST_CLIENT, index_pattern=ECOMMERCE_INDEX_NAME
         )
 
-        assert None is ed_field_mappings.aggregatable_field_name("customer_gender")
+        assert None is oml_field_mappings.aggregatable_field_name("customer_gender")

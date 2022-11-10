@@ -29,13 +29,13 @@ import numpy as np
 import pandas as pd
 from pandas.testing import assert_series_equal
 
-import opensearch_py_ml as ed
+import opensearch_py_ml as oml
 from opensearch_py_ml.field_mappings import FieldMappings
 from tests.common import (
     OPENSEARCH_TEST_CLIENT,
     TestData,
-    assert_pandas_eland_frame_equal,
-    assert_pandas_eland_series_equal,
+    assert_pandas_opensearch_py_ml_frame_equal,
+    assert_pandas_opensearch_py_ml_series_equal,
 )
 
 
@@ -48,9 +48,9 @@ class TestDataFrameDateTime(TestData):
         """setup any state specific to the execution of the given class (which
         usually contains tests).
         """
-        es = OPENSEARCH_TEST_CLIENT
-        if es.indices.exists(index=cls.time_index_name):
-            es.indices.delete(index=cls.time_index_name)
+        os = OPENSEARCH_TEST_CLIENT
+        if os.indices.exists(index=cls.time_index_name):
+            os.indices.delete(index=cls.time_index_name)
         dts = [datetime.strptime(time, "%Y-%m-%dT%H:%M:%S.%f%z") for time in cls.times]
 
         time_formats_docs = [
@@ -65,12 +65,12 @@ class TestDataFrameDateTime(TestData):
 
         body = {"mappings": mappings}
         index = "test_time_formats"
-        es.indices.delete(index=index, ignore_unavailable=True)
-        es.indices.create(index=index, body=body)
+        os.indices.delete(index=index, ignore_unavailable=True)
+        os.indices.create(index=index, body=body)
 
         for i, time_formats in enumerate(time_formats_docs):
-            es.index(index=index, id=i, body=time_formats)
-        es.indices.refresh(index=index)
+            os.index(index=index, id=i, body=time_formats)
+        os.indices.refresh(index=index)
 
     @classmethod
     def teardown_class(cls):
@@ -78,8 +78,8 @@ class TestDataFrameDateTime(TestData):
         setup_class.
         """
 
-        es = OPENSEARCH_TEST_CLIENT
-        es.indices.delete(index=cls.time_index_name)
+        os = OPENSEARCH_TEST_CLIENT
+        os.indices.delete(index=cls.time_index_name)
 
     def test_datetime_to_ms(self):
         df = pd.DataFrame(
@@ -116,26 +116,21 @@ class TestDataFrameDateTime(TestData):
         # Now create index
         index_name = "eland_test_generate_es_mappings"
 
-        ed_df = ed.pandas_to_opensearch(
+        oml_df = oml.pandas_to_opensearch(
             df,
             OPENSEARCH_TEST_CLIENT,
             index_name,
-            es_if_exists="replace",
-            es_refresh=True,
+            os_if_exists="replace",
+            os_refresh=True,
         )
 
-        # print(df.to_string())
-        # print(ed_df.to_string())
-        # print(ed_df.dtypes)
-        # print(ed_df.to_pandas().dtypes)
+        assert_series_equal(df.dtypes, oml_df.dtypes)
 
-        assert_series_equal(df.dtypes, ed_df.dtypes)
-
-        assert_pandas_eland_frame_equal(df, ed_df)
+        assert_pandas_opensearch_py_ml_frame_equal(df, oml_df)
 
     def test_all_formats(self):
         index_name = self.time_index_name
-        ed_df = ed.DataFrame(OPENSEARCH_TEST_CLIENT, index_name)
+        oml_df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, index_name)
 
         for format_name in self.time_formats.keys():
             times = [
@@ -148,12 +143,12 @@ class TestDataFrameDateTime(TestData):
                 for dt in self.times
             ]
 
-            ed_series = ed_df[format_name]
+            oml_series = oml_df[format_name]
             pd_series = pd.Series(
                 times, index=[str(i) for i in range(len(self.times))], name=format_name
             )
 
-            assert_pandas_eland_series_equal(pd_series, ed_series)
+            assert_pandas_opensearch_py_ml_series_equal(pd_series, oml_series)
 
     @staticmethod
     def get_time_values_from_datetime(dt: datetime) -> dict:

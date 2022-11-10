@@ -774,7 +774,7 @@ class FieldMappings:
         os_field_names: list of str
             List of source fields where pd_dtype == (int64 or float64 or bool or timestamp)
         os_date_formats: list of str (can be None)
-            List of es date formats for os_field
+            List of os date formats for os_field
 
         TODO - not very efficient, but unless called per row, this should be ok
         """
@@ -891,7 +891,7 @@ class FieldMappings:
 
 
 def verify_mapping_compatibility(
-    ed_mapping: Mapping[str, Mapping[str, Mapping[str, Mapping[str, str]]]],
+    oml_mapping: Mapping[str, Mapping[str, Mapping[str, Mapping[str, str]]]],
     os_mapping: Mapping[str, Mapping[str, Mapping[str, Mapping[str, str]]]],
     os_type_overrides: Optional[Mapping[str, str]] = None,
 ) -> None:
@@ -902,14 +902,14 @@ def verify_mapping_compatibility(
     problems = []
     os_type_overrides = os_type_overrides or {}
 
-    ed_props = ed_mapping["mappings"]["properties"]
+    oml_props = oml_mapping["mappings"]["properties"]
     os_props = os_mapping["mappings"]["properties"]
 
     for key in sorted(os_props.keys()):
-        if key not in ed_props:
+        if key not in oml_props:
             problems.append(f"- {key!r} is missing from DataFrame columns")
 
-    for key, key_def in sorted(ed_props.items()):
+    for key, key_def in sorted(oml_props.items()):
         if key not in os_props:
             problems.append(f"- {key!r} is missing from opensearch index mapping")
             continue

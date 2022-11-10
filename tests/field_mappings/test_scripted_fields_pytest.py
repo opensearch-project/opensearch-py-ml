@@ -33,41 +33,41 @@ from tests.common import TestData
 
 
 class TestScriptedFields(TestData):
-    def test_add_new_scripted_field(self):
-        ed_field_mappings = FieldMappings(
+    def test_add_new_scriptoml_field(self):
+        oml_field_mappings = FieldMappings(
             client=OPENSEARCH_TEST_CLIENT, index_pattern=FLIGHTS_INDEX_NAME
         )
 
-        ed_field_mappings.add_scripted_field(
+        oml_field_mappings.add_scripted_field(
             "scripted_field_None", None, np.dtype("int64")
         )
 
         # note 'None' is printed as 'NaN' in index, but .index shows it is 'None'
         # buf = StringIO()
-        # ed_field_mappings.info_es(buf)
+        # oml_field_mappings.info_es(buf)
         # print(buf.getvalue())
 
         expected = self.pd_flights().columns.to_list()
         expected.append(None)
 
-        assert expected == ed_field_mappings.display_names
+        assert expected == oml_field_mappings.display_names
 
-    def test_add_duplicate_scripted_field(self):
-        ed_field_mappings = FieldMappings(
+    def test_add_duplicate_scriptoml_field(self):
+        oml_field_mappings = FieldMappings(
             client=OPENSEARCH_TEST_CLIENT, index_pattern=FLIGHTS_INDEX_NAME
         )
 
-        ed_field_mappings.add_scripted_field(
+        oml_field_mappings.add_scripted_field(
             "scripted_field_Carrier", "Carrier", np.dtype("int64")
         )
 
         # note 'None' is printed as 'NaN' in index, but .index shows it is 'None'
         buf = StringIO()
-        ed_field_mappings.os_info(buf)
+        oml_field_mappings.os_info(buf)
         print(buf.getvalue())
 
         expected = self.pd_flights().columns.to_list()
         expected.remove("Carrier")
         expected.append("Carrier")
 
-        assert expected == ed_field_mappings.display_names
+        assert expected == oml_field_mappings.display_names

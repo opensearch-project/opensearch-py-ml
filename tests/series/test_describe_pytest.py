@@ -29,20 +29,20 @@ from tests.common import TestData, assert_series_equal
 
 class TestSeriesDescribe(TestData):
     def test_series_describe(self):
-        ed_df = self.ed_flights_small()
+        oml_df = self.oml_flights_small()
         pd_df = self.pd_flights_small()
 
-        ed_desc = ed_df.AvgTicketPrice.describe()
+        oml_desc = oml_df.AvgTicketPrice.describe()
         pd_desc = pd_df.AvgTicketPrice.describe()
 
-        assert isinstance(ed_desc, pd.Series)
-        assert ed_desc.shape == pd_desc.shape
-        assert ed_desc.dtype == pd_desc.dtype
-        assert ed_desc.index.equals(pd_desc.index)
+        assert isinstance(oml_desc, pd.Series)
+        assert oml_desc.shape == pd_desc.shape
+        assert oml_desc.dtype == pd_desc.dtype
+        assert oml_desc.index.equals(pd_desc.index)
 
         # Percentiles calculations vary for Elasticsearch
         assert_series_equal(
-            ed_desc[["count", "mean", "std", "min", "max"]],
+            oml_desc[["count", "mean", "std", "min", "max"]],
             pd_desc[["count", "mean", "std", "min", "max"]],
             rtol=0.2,
         )

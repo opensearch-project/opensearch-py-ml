@@ -10,6 +10,7 @@ export PYTHON_CONNECTION_CLASS="${PYTHON_CONNECTION_CLASS:=Urllib3HttpConnection
 export CLUSTER="${1:-opensearch}"
 export SECURE_INTEGRATION="${2:-true}"
 export OPENSEARCH_VERSION="${3:-latest}"
+export IS_DOC="${4:-false}"
 if [[ "$SECURE_INTEGRATION" == "true" ]]; then
     export OPENSEARCH_URL_EXTENSION="https"
 else
@@ -28,15 +29,6 @@ set -euo pipefail
 
 echo -e "\033[1m>>>>> Start server container >>>>>>>>>>>>>>>>>>>>>>>>>>>>>\033[0m"
 DETACH=true bash $script_path/run-opensearch.sh
-
-if [[ -n "$RUNSCRIPTS" ]]; then
-  for RUNSCRIPT in ${RUNSCRIPTS//,/ } ; do
-    echo -e "\033[1m>>>>> Running run-$RUNSCRIPT.sh >>>>>>>>>>>>>>>>>>>>>>>>>>>>>\033[0m"
-    CONTAINER_NAME=${RUNSCRIPT} \
-      DETACH=true \
-      bash $script_path/run-${RUNSCRIPT}.sh
-  done
-fi
 
 echo -e "\033[1m>>>>> Repository specific tests >>>>>>>>>>>>>>>>>>>>>>>>>>>>>\033[0m"
 bash $script_path/run-repository.sh

@@ -23,21 +23,21 @@
 #  under the License.
 
 # File called _pytest for PyCharm compatibility
-import opensearch_py_ml as ed
+import opensearch_py_ml as oml
 from tests import FLIGHTS_INDEX_NAME, OPENSEARCH_TEST_CLIENT
-from tests.common import TestData, assert_pandas_eland_series_equal
+from tests.common import TestData, assert_pandas_opensearch_py_ml_series_equal
 
 
 class TestSeriesSample(TestData):
     SEED = 42
 
-    def build_from_index(self, ed_series):
-        ed2pd_series = ed_series.to_pandas()
+    def build_from_index(self, oml_series):
+        ed2pd_series = oml_series.to_pandas()
         return self.pd_flights()["Carrier"].iloc[ed2pd_series.index]
 
     def test_sample(self):
-        ed_s = ed.Series(OPENSEARCH_TEST_CLIENT, FLIGHTS_INDEX_NAME, "Carrier")
-        pd_s = self.build_from_index(ed_s.sample(n=10, random_state=self.SEED))
+        oml_s = oml.Series(OPENSEARCH_TEST_CLIENT, FLIGHTS_INDEX_NAME, "Carrier")
+        pd_s = self.build_from_index(oml_s.sample(n=10, random_state=self.SEED))
 
-        ed_s_sample = ed_s.sample(n=10, random_state=self.SEED)
-        assert_pandas_eland_series_equal(pd_s, ed_s_sample)
+        oml_s_sample = oml_s.sample(n=10, random_state=self.SEED)
+        assert_pandas_opensearch_py_ml_series_equal(pd_s, oml_s_sample)

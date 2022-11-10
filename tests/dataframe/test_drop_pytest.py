@@ -33,18 +33,20 @@ class TestDataFrameDrop(TestData):
         # to properly test dropping of indices we must account for differently named indexes
         pd_drop_many = ["1", "2"]
         pd_drop_one = "3"
-        ed_index = df.ed.head().to_pandas().index
-        ed_drop_many = [ed_index[1], ed_index[2]]
-        ed_drop_one = ed_index[3]
+        oml_index = df.oml.head().to_pandas().index
+        oml_drop_many = [oml_index[1], oml_index[2]]
+        oml_drop_one = oml_index[3]
 
-        df.check_values(df.ed.drop(ed_drop_many), df.pd.drop(pd_drop_many))
+        df.check_values(df.oml.drop(oml_drop_many), df.pd.drop(pd_drop_many))
         df.check_values(
-            df.ed.drop(labels=ed_drop_many, axis=0),
+            df.oml.drop(labels=oml_drop_many, axis=0),
             df.pd.drop(labels=pd_drop_many, axis=0),
         )
-        df.check_values(df.ed.drop(index=ed_drop_many), df.pd.drop(index=pd_drop_many))
         df.check_values(
-            df.ed.drop(labels=ed_drop_one, axis=0),
+            df.oml.drop(index=oml_drop_many), df.pd.drop(index=pd_drop_many)
+        )
+        df.check_values(
+            df.oml.drop(labels=oml_drop_one, axis=0),
             df.pd.drop(labels=pd_drop_one, axis=0),
         )
 
@@ -70,46 +72,46 @@ class TestDataFrameDrop(TestData):
 
     def test_drop_all_index(self, df):
         all_index_pd = list(df.pd.index)
-        all_index_ed = list(df.ed.to_pandas().index)
+        all_index_oml = list(df.oml.to_pandas().index)
         cols = df.shape[1]
 
-        for dropped_pd, dropped_ed in (
-            (df.pd.drop(all_index_pd), df.ed.drop(all_index_ed)),
-            (df.pd.drop(all_index_pd, axis=0), df.ed.drop(all_index_ed, axis=0)),
-            (df.pd.drop(index=all_index_pd), df.ed.drop(index=all_index_ed)),
+        for dropped_pd, dropped_oml in (
+            (df.pd.drop(all_index_pd), df.oml.drop(all_index_oml)),
+            (df.pd.drop(all_index_pd, axis=0), df.oml.drop(all_index_oml, axis=0)),
+            (df.pd.drop(index=all_index_pd), df.oml.drop(index=all_index_oml)),
         ):
             assert dropped_pd.shape == (0, cols)
-            assert dropped_ed.shape == (0, cols)
+            assert dropped_oml.shape == (0, cols)
             assert list(dropped_pd.index) == []
-            assert list(dropped_ed.to_pandas().index) == []
+            assert list(dropped_oml.to_pandas().index) == []
 
     def test_drop_raises(self):
-        ed_flights = self.ed_flights()
+        oml_flights = self.oml_flights()
 
         with pytest.raises(
             ValueError, match="Cannot specify both 'labels' and 'index'/'columns'"
         ):
-            ed_flights.drop(
+            oml_flights.drop(
                 labels=["Carrier", "DestCityName"], columns=["Carrier", "DestCityName"]
             )
 
         with pytest.raises(
             ValueError, match="Cannot specify both 'labels' and 'index'/'columns'"
         ):
-            ed_flights.drop(labels=["Carrier", "DestCityName"], index=[0, 1, 2])
+            oml_flights.drop(labels=["Carrier", "DestCityName"], index=[0, 1, 2])
 
         with pytest.raises(
             ValueError,
             match="Need to specify at least one of 'labels', 'index' or 'columns'",
         ):
-            ed_flights.drop()
+            oml_flights.drop()
 
         with pytest.raises(
             ValueError,
             match="number of labels 0!=2 not contained in axis",
         ):
-            ed_flights.drop(errors="raise", axis=0, labels=["-1", "-2"])
+            oml_flights.drop(errors="raise", axis=0, labels=["-1", "-2"])
 
         with pytest.raises(ValueError) as error:
-            ed_flights.drop(columns=["Carrier_1"], errors="raise")
+            oml_flights.drop(columns=["Carrier_1"], errors="raise")
             assert str(error.value) == "labels ['Carrier_1'] not contained in axis"

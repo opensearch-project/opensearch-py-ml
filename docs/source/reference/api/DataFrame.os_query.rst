@@ -1,0 +1,6 @@
+DataFrame.os_query
+========================
+
+.. currentmodule:: opensearch_py_ml
+
+.. automethod:: opensearch_py_ml.DataFrame.os_query

@@ -41,22 +41,22 @@ class TestDataFrameNUnique(TestData):
             "DestCityName",
         ]
         pd_flights = self.pd_flights()[columns]
-        ed_flights = self.ed_flights()[columns]
+        oml_flights = self.oml_flights()[columns]
 
         pd_flights.nunique()
-        ed_flights.nunique()
+        oml_flights.nunique()
 
-        # TODO - ES is approximate counts so these aren't equal...
+        # TODO - OS is approximate counts so these aren't equal...
         # E[left]: [13059, 2, 4, 156, 156, 143]
         # E[right]: [13132, 2, 4, 156, 156, 143]
-        # assert_series_equal(pd_nunique, ed_nunique)
+        # assert_series_equal(pd_nunique, oml_nunique)
 
     def test_ecommerce_nunique(self):
         columns = ["customer_first_name", "customer_last_name", "day_of_week_i"]
         pd_ecommerce = self.pd_ecommerce()[columns]
-        ed_ecommerce = self.ed_ecommerce()[columns]
+        oml_ecommerce = self.oml_ecommerce()[columns]
 
         pd_nunique = pd_ecommerce.nunique()
-        ed_nunique = ed_ecommerce.nunique()
+        oml_nunique = oml_ecommerce.nunique()
 
-        assert_series_equal(pd_nunique, ed_nunique)
+        assert_series_equal(pd_nunique, oml_nunique)

@@ -30,9 +30,31 @@ class MLCommonClient:
         self,
         model_path: str,
         model_config_path: str,
-        verbose: bool = False,
+        isVerbose: bool = False,
     ) -> None:
-        self._model_uploader.upload_model(model_path, model_config_path, verbose)
+        """
+        This method uploads model into opensearch cluster using ml-common plugin's api.
+
+        first this method creates a model id to store model metadata and then breaks the model zip file into
+        multiple chunks and then upload chunks into opensearch cluster.
+
+        Parameters
+        ----------
+        model_path: string
+                     path of the zip file of the model
+        model_config_path: string
+                     filepath of the model metadata. A json file of model metadata is expected
+        isVerbose: boolean, default False
+                     if isVerbose is true method will print more messages.
+
+        Returns
+        -------
+        None
+            Doesn't return anything.
+
+        """
+
+        self._model_uploader.upload_model(model_path, model_config_path, isVerbose)
 
     def load_model(self, model_name: str, version_number: int):  # type: ignore
         return self._load_client.load_model(model_name, version_number)
