@@ -5,6 +5,6 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
-from opensearch_py_ml.sentence_transformer_model import SentenceTransformerModel
+from .sentencetransformermodel import SentenceTransformerModel
 
 __all__ = ["SentenceTransformerModel"]
