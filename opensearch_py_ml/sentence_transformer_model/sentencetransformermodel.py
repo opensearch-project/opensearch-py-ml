@@ -30,33 +30,33 @@ from transformers import TrainingArguments, get_linear_schedule_with_warmup
 class SentenceTransformerModel:
     def __init__(self, model_url: str = None) -> None:
         """
-       Description:
-       Initiate a sentence transformer model object.
+        Description:
+        Initiate a sentence transformer model object.
 
-       Parameters:
-       model_url: str = None
-            the url to download sentence transformer model, if None, default as 'sentence-transformers/msmarco-distilbert-base-tas-b'
-       Return:
-            None
-       """
-       if model_url is None:
-           self.model_url = "sentence-transformers/msmarco-distilbert-base-tas-b"
-       else:
-           self.model_url = model_url
+        Parameters:
+        model_url: str = None
+             the url to download sentence transformer model, if None, default as 'sentence-transformers/msmarco-distilbert-base-tas-b'
+        Return:
+             None
+        """
+        if model_url is None:
+            self.model_url = "sentence-transformers/msmarco-distilbert-base-tas-b"
+        else:
+            self.model_url = model_url
 
-   def train(
-       self,
-       read_path: str = None,
-       output_model_name: str = None,
-       output_model_path: str = None,
-       zip_file_name: str = None,
-       use_accelerate: bool = False,
-       compute_environment: str = None,
-       num_machines: int = 1,
-       num_processes: int = None,
-       learning_rate: float = 2e-5,
-   ) -> None:
-       """
+    def train(
+        self,
+        read_path: str = None,
+        output_model_name: str = None,
+        output_model_path: str = None,
+        zip_file_name: str = None,
+        use_accelerate: bool = False,
+        compute_environment: str = None,
+        num_machines: int = 1,
+        num_processes: int = None,
+        learning_rate: float = 2e-5,
+    ) -> None:
+        """
         Description:
         Read the synthetic queries and use it to fine tune/train (and save) a sentence transformer model.
 
@@ -221,9 +221,9 @@ class SentenceTransformerModel:
         df = df.sample(frac=1)
         return df
 
-    def load_sentence_transformer_example(self,
-                                          df,
-                                          use_accelerate: bool = False) -> List[str]:
+    def load_sentence_transformer_example(
+        self, df, use_accelerate: bool = False
+    ) -> List[str]:
         """
         Description:
         Create input data for training
@@ -502,9 +502,7 @@ class SentenceTransformerModel:
         print("Model saved to path: " + output_model_path)
         return model
 
-    def zip_model(self,
-                  model_path: str = None,
-                  zip_file_name: str = None) -> None:
+    def zip_model(self, model_path: str = None, zip_file_name: str = None) -> None:
         """
         Description:
         zip the model file and its tokenizer.json file to prepare to upload to the Open Search cluster
@@ -538,11 +536,12 @@ class SentenceTransformerModel:
             zipObj.write("trained_pytorch_model/tokenizer.json")
         print("zip file is saved to" + os.getcwd() + "/" + zip_file_name)
 
-    def set_up_accelerate_config(self,
-                                compute_environment: str = None,
-                                num_machines: int = None,
-                                num_processes: int = None,
-                                 ) -> None:
+    def set_up_accelerate_config(
+        self,
+        compute_environment: str = None,
+        num_machines: int = None,
+        num_processes: int = None,
+    ) -> None:
         """
         Description:
         get default config setting based on the number of GPU on the machine
@@ -665,13 +664,14 @@ if __name__ == "__main__":
 
     print("initiated a sentence transformer training.. ")
     model = SentenceTransformerModel(model_url)
-    model.train(read_path,
-                model_name,
-                output_model_path,
-                zip_file_name,
-                use_accelerate,
-                compute_environment,
-                num_machines,
-                num_processes,
-                learning_rate,
-                )
+    model.train(
+        read_path,
+        model_name,
+        output_model_path,
+        zip_file_name,
+        use_accelerate,
+        compute_environment,
+        num_machines,
+        num_processes,
+        learning_rate,
+    )

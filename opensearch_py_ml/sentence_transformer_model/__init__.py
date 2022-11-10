@@ -5,6 +5,6 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
-from opensearch_py_ml.semantic_search import train
+from opensearch_py_ml.sentencetransformermodel import SentenceTransformerModel
 
-__all__ = ["train"]
+__all__ = ["SentenceTransformerModel"]
