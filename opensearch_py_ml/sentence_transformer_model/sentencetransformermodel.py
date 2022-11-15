@@ -76,7 +76,9 @@ class SentenceTransformerModel:
         use_accelerate: bool = False,
             Optional, use accelerate to fine tune model. Default as false to not use accelerator to fine tune model.
             If there are multiple gpus available in the machine, it's recommended to use accelerate with num_processor>1
-            to speeed up the training progress.
+            to speeed up the training progress. If use accelerator to train model, run auto setup accelerate confi and
+            launch train_model function with the number of processors provided by users if NOT use accelerator,
+            trigger train_model function with default setting
         compute_environment: str
             optional, compute environment type to run model, if None, default using 'LOCAL_MACHINE'
         num_machines: int
@@ -87,7 +89,7 @@ class SentenceTransformerModel:
             optional, learning rate to train model, default is 2e-5
         num_epochs: int
             optional, number of epochs to train model, default is 20
-        verbose: float
+        verbose: bool
             optional, use plotting to plot the training progress. Default as false.
         Return:
             None
@@ -98,10 +100,6 @@ class SentenceTransformerModel:
         train_examples = self.load_sentence_transformer_example(
             query_df, use_accelerate
         )
-
-        # if use accelerator to train model, run auto setup accelerate confi and launch train_model function
-        # with the number of processors provided by users
-        # if NOT use accelerator, trigger train_model function with default setting
 
         if use_accelerate is True:
             self.set_up_accelerate_config(
