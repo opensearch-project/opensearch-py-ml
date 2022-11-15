@@ -5,7 +5,6 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
-import argparse
 import os
 import pickle
 import random
@@ -28,25 +27,25 @@ from transformers import TrainingArguments, get_linear_schedule_with_warmup
 
 
 class SentenceTransformerModel:
-    def __init__(self, model_url: str = None) -> None:
+    def __init__(self, model_id: str = None) -> None:
         """
         Description:
         Initiate a sentence transformer model object.
 
         Parameters:
-        model_url: str = None
+        model_id: str = None
              the url to download sentence transformer model, if None, default as 'sentence-transformers/msmarco-distilbert-base-tas-b'
         Return:
              None
         """
-        if model_url is None:
-            self.model_url = "sentence-transformers/msmarco-distilbert-base-tas-b"
+        if model_id is None:
+            self.model_id = "sentence-transformers/msmarco-distilbert-base-tas-b"
         else:
-            self.model_url = model_url
+            self.model_id = model_id
 
     def train(
         self,
-        read_path: str = None,
+        read_path: str,
         output_model_name: str = None,
         output_model_path: str = None,
         zip_file_name: str = None,
@@ -55,6 +54,8 @@ class SentenceTransformerModel:
         num_machines: int = 1,
         num_processes: int = None,
         learning_rate: float = 2e-5,
+        num_epochs: int = 20,
+        verbose: bool = False,
     ) -> None:
         """
         Description:
@@ -73,7 +74,9 @@ class SentenceTransformerModel:
         zip_file_name: str =None
             Optional, file name for zip file. if None, default as custom_tasb_model.zip
         use_accelerate: bool = False,
-            Optional, use accelerate to fine tune model. Default as false to not use accelerator.
+            Optional, use accelerate to fine tune model. Default as false to not use accelerator to fine tune model.
+            If there are multiple gpus available in the machine, it's recommended to use accelerate with num_processor>1
+            to speeed up the training progress.
         compute_environment: str
             optional, compute environment type to run model, if None, default using 'LOCAL_MACHINE'
         num_machines: int
@@ -82,6 +85,10 @@ class SentenceTransformerModel:
             optional, number of processors to run model , if None, default using 1
         learning_rate: float
             optional, learning rate to train model, default is 2e-5
+        num_epochs: int
+            optional, number of epochs to train model, default is 20
+        verbose: float
+            optional, use plotting to plot the training progress. Default as false.
         Return:
             None
         """
@@ -92,7 +99,7 @@ class SentenceTransformerModel:
             query_df, use_accelerate
         )
 
-        # if use accelerator to train model, run auto setuo accelerate confi and launch train_model function
+        # if use accelerator to train model, run auto setup accelerate confi and launch train_model function
         # with the number of processors provided by users
         # if NOT use accelerator, trigger train_model function with default setting
 
@@ -103,40 +110,44 @@ class SentenceTransformerModel:
                 num_processes=num_processes,
             )
 
-            if self.is_notebook():
+            if self.__is_notebook():
                 notebook_launcher(
                     self.train_model,
                     args=(
                         train_examples,
-                        self.model_url,
+                        self.model_id,
                         output_model_path,
                         output_model_name,
                         use_accelerate,
                         learning_rate,
+                        num_epochs,
+                        verbose,
                     ),
                     num_processes=num_processes,
                 )
             else:
                 subprocess.run(
                     [
-                        "accelerate launch self.train_model(train_examples, self.model_url, output_model_path, output_model_name,use_accelerate,learning_rate)"
+                        "accelerate launch self.train_model(train_examples, self.model_id, output_model_path, output_model_name,use_accelerate,learning_rate,num_epochs,verbose)"
                     ]
                 )
         else:
             self.train_model(
                 train_examples,
-                self.model_url,
+                self.model_id,
                 output_model_path,
                 output_model_name,
                 use_accelerate,
                 learning_rate,
+                num_epochs,
+                verbose,
             )
 
         self.zip_model(output_model_path, zip_file_name)
         return None
 
-    #     helpful functions:
-    def read_queries(self, read_path: str = None) -> pd.DataFrame:
+    #    public step by step functions:
+    def read_queries(self, read_path: str) -> pd.DataFrame:
         """
         Description:
         Read the queries generated from the Synthetic Query Generator (SQG) model
@@ -167,15 +178,18 @@ class SentenceTransformerModel:
             if len(os.listdir(unzip_path)) > 0:
                 for files in os.listdir(unzip_path):
                     sub_path = os.path.join(unzip_path, files)
-                    try:
-                        shutil.rmtree(sub_path)
-                    except OSError as err:
-                        print(
-                            "Fail to delete files, please delete all files in "
-                            + str(unzip_path)
-                            + " "
-                            + str(err)
-                        )
+                    if os.path.isfile(sub_path):
+                        os.remove(sub_path)
+                    else:
+                        try:
+                            shutil.rmtree(sub_path)
+                        except OSError as err:
+                            print(
+                                "Fail to delete files, please delete all files in "
+                                + str(unzip_path)
+                                + " "
+                                + str(err)
+                            )
 
         with ZipFile(read_path, "r") as zip_ref:
             zip_ref.extractall(unzip_path)
@@ -216,7 +230,7 @@ class SentenceTransformerModel:
         )
 
         df = df.drop_duplicates(subset=["query"])
-        df["passages"] = df.apply(lambda x: self.qryrem(x), axis=1)
+        df["passages"] = df.apply(lambda x: self.__qryrem(x), axis=1)
 
         df = df.sample(frac=1)
         return df
@@ -262,11 +276,13 @@ class SentenceTransformerModel:
     def train_model(
         self,
         train_examples: List[str],
-        model_url: str = None,
+        model_id: str = None,
         output_path: str = None,
         output_model_name: str = None,
         use_accelerate: bool = False,
         learning_rate: float = 2e-5,
+        num_epochs: int = 20,
+        verbose: bool = False,
     ):
         """
         Description:
@@ -275,7 +291,7 @@ class SentenceTransformerModel:
         Parameters:
         train_examples:
             required, input for the sentence transformer model training
-        model_url: str = None
+        model_id: str = None
             optional,the url to download sentence transformer model, if None, default as 'sentence-transformers/msmarco-distilbert-base-tas-b'
         output_path: str=None
             optional,the path to store trained custom model. If None, default as current folder path
@@ -285,6 +301,10 @@ class SentenceTransformerModel:
             Optional, use accelerate to fine tune model. Default as false to not use accelerator.
         learning_rate: float
             optional, learning rate to train model, default is 2e-5
+        num_epochs: int
+            optional, number of epochs to train model, default is 20
+        verbose: float
+            optional, use plotting to plot the training progress. Default as false.
         Return:
             None
         """
@@ -293,21 +313,20 @@ class SentenceTransformerModel:
             output_path = os.getcwd()
         if output_model_name is None:
             output_model_name = "trained_model.pt"
-        if model_url is None:
-            model_url = "sentence-transformers/msmarco-distilbert-base-tas-b"
+        if model_id is None:
+            model_id = "sentence-transformers/msmarco-distilbert-base-tas-b"
 
         # prepare an output model path for later saving the pt model.
         output_model_path = output_path + "/" + output_model_name
 
         # declare variables before assignment for training
-        num_epochs = 20
         batch_size = 2
         corp_len = []
         batch = []
         batch_q = []
 
         # Load a model from HuggingFace
-        model = SentenceTransformer(model_url)
+        model = SentenceTransformer(model_id)
 
         # Calculate the length of queries
         if use_accelerate is True:
@@ -331,6 +350,8 @@ class SentenceTransformerModel:
 
         # use accelerator for training
         if use_accelerate is True:
+            # the default_args are required for initializing train_dataloader,
+            # but output_dir is not used in this function.
             default_args = {
                 "output_dir": "~/",
                 "evaluation_strategy": "steps",
@@ -381,11 +402,12 @@ class SentenceTransformerModel:
                     batch_q = batch[0]
                     batch_p = batch[1]
 
-                    out_q = model.tokenize(batch_q)
+                    model = accelerator.unwrap_model(model)
+                    out_q = accelerator.unwrap_model(model).tokenize(batch_q)
                     for key in out_q.keys():
                         out_q[key] = out_q[key].to(model.device)
 
-                    out_p = model.tokenize(batch_p)
+                    out_p = accelerator.unwrap_model(model).tokenize(batch_p)
                     for key in out_p.keys():
                         out_p[key] = out_p[key].to(model.device)
 
@@ -408,15 +430,14 @@ class SentenceTransformerModel:
                     optimizer.zero_grad()
                     total_loss.append(batch_loss.item())
 
-                    if not step % 500 and step != 0:
+                    if verbose is True and not step % 500 and step != 0:
                         plt.plot(total_loss[::100])
                         plt.show()
 
         # IF ACCELERATE IS FALSE
         else:
-
             # identify if running on gpu or cpu
-            device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
             model.to(device)
 
             total_steps = (len(train_examples) // batch_size) * num_epochs
@@ -536,10 +557,81 @@ class SentenceTransformerModel:
             zipObj.write("trained_pytorch_model/tokenizer.json")
         print("zip file is saved to" + os.getcwd() + "/" + zip_file_name)
 
+    def save_as_pt(
+        self,
+        sentences: [str],
+        model=None,
+        model_name: str = None,
+        save_json_folder_name: str = None,
+        zip_file_name: str = None,
+    ):
+        """
+        Description:
+        download sentence transformer model directly from huggingface, convert model to torch script format,
+        zip the model file and its tokenizer.json file to prepare to upload to the Open Search cluster
+
+        Parameters:
+        sentences:[str]
+            Required, for example  sentences = ['today is sunny']
+        model: str
+            Optional, if provide model in parameters, will convert model to torch script format,
+            else, not provided model then it will download sentence transformer model from huggingface
+        model_name: str
+            Optional, model name to name the model file, if None, default as pre_trained_model.pt
+        zip_file_name: str =None
+            Optional, file name for zip file. if None, default as zip_pre_trained_model
+        Return:
+            None
+
+        """
+
+        if model is None:
+            model = SentenceTransformer(self.model_id)
+
+        if model_name is None:
+            model_name = "pre_trained_model"
+
+        if save_json_folder_name is None:
+            save_json_folder_name = "save_pre_trained_model_json/"
+
+        if zip_file_name is None:
+            zip_file_name = "zip_pre_trained_model"
+
+        # save tokenizer.json in save_json_folder_name
+        model.save(save_json_folder_name)
+
+        # convert to pt format will need to be in cpu,
+        # set the device to cpu, convert its input_ids and attention_mask in cpu and save as .pt format
+        device = torch.device("cpu")
+        torch.tensor(1)
+        cpu_model = model.to(device)
+        features = cpu_model.tokenizer(sentences)
+        out_q = features
+        input_ids = torch.tensor(out_q["input_ids"]).to("cpu")
+        attention_mask = torch.tensor(out_q["attention_mask"]).to("cpu")
+        compiled_model = torch.jit.trace(
+            cpu_model.to("cpu"),
+            ({"input_ids": input_ids, "attention_mask": attention_mask}),
+            strict=False,
+        )
+        torch.jit.save(compiled_model, str(model_name + ".pt"))
+        print("model file is saved to" + os.getcwd() + "/" + str(model_name + ".pt"))
+
+        # zip model file along with tokenizer.json as output
+        with ZipFile(str(zip_file_name + ".zip"), "w") as zipObj:
+            zipObj.write(
+                os.path.join(os.getcwd(), str(model_name + ".pt")),
+                arcname=str(model_name + ".pt"),
+            )
+            zipObj.write(
+                str(save_json_folder_name + "tokenizer.json"), arcname="tokenizer.json"
+            )
+        print("zip file is saved to" + os.getcwd() + "/" + str(zip_file_name + ".zip"))
+
     def set_up_accelerate_config(
         self,
         compute_environment: str = None,
-        num_machines: int = None,
+        num_machines: int = 1,
         num_processes: int = None,
     ) -> None:
         """
@@ -562,9 +654,6 @@ class SentenceTransformerModel:
         else:
             subprocess.run("accelerate config")
             return
-
-        if num_machines is None:
-            num_machines = 1
 
         hf_cache_home = os.path.expanduser(
             os.getenv(
@@ -613,13 +702,13 @@ class SentenceTransformerModel:
         with open(file_path, "w") as file:
             yaml.dump(default_file, file)
 
-    @staticmethod
-    def qryrem(self, x):
+    # private methods
+    def __qryrem(self, x):
         # for removing the "QRY:" token
         y = x.passages.split(" QRY:")[0].split("<|startoftext|>")
         return y[1]
 
-    def is_notebook(self) -> bool:
+    def __is_notebook(self) -> bool:
         try:
             shell = get_ipython().__class__.__name__
             # Jupyter notebook or qtconsole
@@ -633,45 +722,3 @@ class SentenceTransformerModel:
         except NameError:
             # Probably standard Python interpreter
             return False
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Please enter argument to start semantic search training."
-    )
-    parser.add_argument("--read_path", type=str, default=None)
-    parser.add_argument("--model_url", type=str, default=None)
-    parser.add_argument("--model_name", type=list, default=None)
-    parser.add_argument("--output_model_path", default=None)
-    parser.add_argument("--zip_file_name", type=str, default=None)
-    parser.add_argument("--use_accelerate", type=bool, default=False)
-    parser.add_argument("--compute_environment", type=str, default=None)
-    parser.add_argument("--num_machines", type=int, default=1)
-    parser.add_argument("--num_processes", type=int, default=None)
-    parser.add_argument("--learning_rate", type=float, default=2e-5)
-
-    args = parser.parse_args()
-    read_path = args.read_path
-    model_url = args.model_url
-    model_name = args.model_name
-    output_model_path = args.output_model_path
-    zip_file_name = args.zip_file_name
-    use_accelerate = args.use_accelerate
-    compute_environment = args.compute_environment
-    num_machines = args.num_machines
-    num_processes = args.num_processes
-    learning_rate = args.learning_rate
-
-    print("initiated a sentence transformer training.. ")
-    model = SentenceTransformerModel(model_url)
-    model.train(
-        read_path,
-        model_name,
-        output_model_path,
-        zip_file_name,
-        use_accelerate,
-        compute_environment,
-        num_machines,
-        num_processes,
-        learning_rate,
-    )
