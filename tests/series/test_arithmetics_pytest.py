@@ -62,7 +62,7 @@ class TestSeriesArithmetics(TestData):
         # convert to timezone naive datetime object
         pd_df["order_date"] = pd_df["order_date"].dt.tz_localize(None)
 
-        class ModifiedElandSeries(Series):
+        class ModifiedOMLSeries(Series):
             def to_pandas(self):
                 """remove timezone awareness before returning the pandas dataframe"""
                 series = super().to_pandas()
@@ -78,7 +78,7 @@ class TestSeriesArithmetics(TestData):
             ]
 
             # "type cast" to modified class (inherits from ed.Series) that overrides the `to_pandas` function
-            oml_series.__class__ = ModifiedElandSeries
+            oml_series.__class__ = ModifiedOMLSeries
 
             assert_pandas_opensearch_py_ml_series_equal(
                 pd_series, oml_series, check_less_precise=True

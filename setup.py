@@ -42,7 +42,6 @@ CLASSIFIERS = [
     "Operating System :: OS Independent",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
-    "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
@@ -79,6 +78,10 @@ setup(
     classifiers=CLASSIFIERS,
     keywords="Opensearch opensearch_py_ml pandas python",
     packages=find_packages(include=["opensearch_py_ml", "opensearch_py_ml.*"]),
+    project_urls={
+        "Source Code": "https://github.com/opensearch-project/opensearch-py-ml",
+        "Issue Tracker": "https://github.com/opensearch-project/opensearch-py-ml/issues",
+    },
     install_requires=[
         "opensearch-py>=2",
         "pandas>=1.5,<2",
