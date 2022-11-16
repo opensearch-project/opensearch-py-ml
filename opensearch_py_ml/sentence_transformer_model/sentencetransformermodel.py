@@ -46,6 +46,7 @@ class SentenceTransformerModel:
     def train(
         self,
         read_path: str,
+        overwrite: bool = False,
         output_model_name: str = None,
         output_model_path: str = None,
         zip_file_name: str = None,
@@ -67,6 +68,10 @@ class SentenceTransformerModel:
             the zipped file should contain pickled file in list of dictionary format with key named as 'query',
             'probability' and 'passages'. For example: [{'query':q1,'probability': p1,'passages': pa1}, ...].
             'probability' is not required for training purpose.
+        overwrite: bool
+            optional, synthetic_queries/ folder in current directory is to store unzip queries files.
+            Default to set overwrite as false and if the folder is not empty, raise exception to recommend users
+            to either clean up folder or enable overwriting is True.
         output_model_path: str=None
             the path to store trained custom model. If None, default as current folder path
         output_model_name: str=None
@@ -95,7 +100,7 @@ class SentenceTransformerModel:
             None
         """
 
-        query_df = self.read_queries(read_path)
+        query_df = self.read_queries(read_path, overwrite)
 
         train_examples = self.load_sentence_transformer_example(
             query_df, use_accelerate
@@ -145,21 +150,22 @@ class SentenceTransformerModel:
         return None
 
     #    public step by step functions:
-    def read_queries(self, read_path: str) -> pd.DataFrame:
+    def read_queries(self, read_path: str, overwrite: bool = False) -> pd.DataFrame:
         """
         Description:
-        Read the queries generated from the Synthetic Query Generator (SQG) model
+        Read the queries generated from the Synthetic Query Generator (SQG) model, unzip files to current directory
+        within synthetic_queries/ folder, output as a dataframe
 
         Parameters:
         read_path: str
             required, path to the zipped file that contains generated queries, if None, raise exception
-
+        overwrite: bool
+            optional, synthetic_queries/ folder in current directory is to store unzip queries files.
+            Default to set overwrite as false and if the folder is not empty, raise exception to recommend users
+            to either clean up folder or enable overwriting is True.
         Return:
             The dataframe of queries.
         """
-
-        process = []
-        file_list = []
 
         if read_path is None:
             raise Exception(
@@ -174,21 +180,29 @@ class SentenceTransformerModel:
         # ML add warning here and confirm with user to proceed
         if os.path.exists(unzip_path):
             if len(os.listdir(unzip_path)) > 0:
-                for files in os.listdir(unzip_path):
-                    sub_path = os.path.join(unzip_path, files)
-                    if os.path.isfile(sub_path):
-                        os.remove(sub_path)
-                    else:
-                        try:
-                            shutil.rmtree(sub_path)
-                        except OSError as err:
-                            print(
-                                "Fail to delete files, please delete all files in "
-                                + str(unzip_path)
-                                + " "
-                                + str(err)
-                            )
+                if overwrite:
+                    for files in os.listdir(unzip_path):
+                        sub_path = os.path.join(unzip_path, files)
+                        if os.path.isfile(sub_path):
+                            os.remove(sub_path)
+                        else:
+                            try:
+                                shutil.rmtree(sub_path)
+                            except OSError as err:
+                                print(
+                                    "Fail to delete files, please delete all files in "
+                                    + str(unzip_path)
+                                    + " "
+                                    + str(err)
+                                )
+                else:
+                    raise Exception(
+                        unzip_path
+                        + " folder is not empty, please clean up folder, or enable overwrite = True. Try again."
+                    )
 
+        file_list = []
+        process = []
         with ZipFile(read_path, "r") as zip_ref:
             zip_ref.extractall(unzip_path)
 
