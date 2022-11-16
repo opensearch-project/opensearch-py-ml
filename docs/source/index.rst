@@ -19,15 +19,6 @@ Where possible the package uses existing Python APIs and data structures to make
 pandas, scikit-learn to their Opensearch powered equivalents. In general, the data resides in Opensearch and
 not in memory, which allows Opensearch-py-ml to access large datasets stored in Opensearch.
 
-Installing Opensearch-py-ml
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Opensearch-py-ml can be installed from `PyPI <https://pypi.org/project/opensearch-py-ml>`_ via pip:
-
- .. code-block:: bash
-
-    $ python -m pip install opensearch-py-ml
-
 
 Getting Started
 ~~~~~~~~~~~~~~~
