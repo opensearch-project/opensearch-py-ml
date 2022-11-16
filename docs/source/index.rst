@@ -20,6 +20,11 @@ pandas, scikit-learn to their Opensearch powered equivalents. In general, the da
 not in memory, which allows Opensearch-py-ml to access large datasets stored in Opensearch.
 
 
+WARNING
+~~~~~~~~~~~~~~~
+
+Current `opensearch-py-ml` in pypi is not related to this package. We are working to get it updated but please **don't** use it until further notice.
+
 Getting Started
 ~~~~~~~~~~~~~~~
 
