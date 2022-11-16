@@ -34,7 +34,7 @@ class SentenceTransformerModel:
 
         Parameters:
         model_id: str = None
-             the url to download sentence transformer model, if None, default as 'sentence-transformers/msmarco-distilbert-base-tas-b'
+             the huggingface mode id to download sentence transformer model, if None, default as 'sentence-transformers/msmarco-distilbert-base-tas-b'
         Return:
              None
         """
