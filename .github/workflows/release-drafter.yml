@@ -10,9 +10,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Set up Python 3
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v3
         with:
           python-version: '3.x'
       - name: Install build tools
@@ -22,7 +22,7 @@ jobs:
         run: |
           python -m build
           tar -zvcf artifacts.tar.gz dist
-      - name: Release
+      - name: Draft a release
         uses: softprops/action-gh-release@v1
         with:
           draft: true
