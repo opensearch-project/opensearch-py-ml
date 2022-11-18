@@ -332,7 +332,7 @@ class SentenceTransformerModel:
         output_model_path = output_path + "/" + output_model_name
 
         # declare variables before assignment for training
-        batch_size = 2
+        batch_size = 32
         corp_len = []
         batch = []
         batch_q = []
