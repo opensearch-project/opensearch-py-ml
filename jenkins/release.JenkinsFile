@@ -7,5 +7,5 @@ standardReleasePipelineWithGenericTrigger(
     tokenIdCredential: 'jenkins-opensearch-py-ml-generic-webhook-token',
     causeString: 'A tag was cut on opensearch-project/opensearch-py-ml repository causing this workflow to run',
     downloadReleaseAsset: true) {
-        publishToPyPi()
+        publishToPyPi(credentialId: 'jenkins-opensearch-py-ml-pypi-credentials')
     }

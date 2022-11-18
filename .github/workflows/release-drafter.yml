@@ -1,5 +1,6 @@
 name: Release drafter
 
+# Push events to every tag not containing "/"
 on:
   push:
     tags:
