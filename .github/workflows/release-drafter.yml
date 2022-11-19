@@ -1,0 +1,32 @@
+name: Release drafter
+
+# Push events to every tag not containing "/"
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+      - name: Set up Python 3
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.x'
+      - name: Install build tools
+        run: |
+          python -m pip install --upgrade build
+      - name: Build project for distribution
+        run: |
+          python -m build
+          tar -zvcf artifacts.tar.gz dist
+      - name: Draft a release
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: true
+          generate_release_notes: true
+          files: |
+            artifacts.tar.gz
