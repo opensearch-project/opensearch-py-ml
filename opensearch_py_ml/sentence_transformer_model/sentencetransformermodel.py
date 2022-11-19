@@ -323,10 +323,10 @@ class SentenceTransformerModel:
 
         if output_path is None:
             output_path = os.getcwd()
-        if output_model_name is None:
-            output_model_name = "trained_model.pt"
         if model_id is None:
             model_id = "sentence-transformers/msmarco-distilbert-base-tas-b"
+        if output_model_name is None:
+            output_model_name = str(self.model_id.split("/")[-1] + ".pt")
 
         # prepare an output model path for later saving the pt model.
         output_model_path = output_path + "/" + output_model_name
@@ -549,12 +549,13 @@ class SentenceTransformerModel:
         Return:
             None
         """
+        model_name = self.model_id.split("/")[-1]
 
         if model_path is None:
-            model_path = os.path.join(os.getcwd(), "trained_model.pt")
+            model_path = os.path.join(os.getcwd(), str(model_name + ".pt"))
 
         if zip_file_name is None:
-            zip_file_name = "zip_model.zip"
+            zip_file_name = str(model_name + ".zip")
 
         if not os.path.exists("trained_pytorch_model/tokenizer.json"):
             raise Exception(
@@ -564,10 +565,10 @@ class SentenceTransformerModel:
             raise Exception("Cannot find model in the model path")
 
         # Create a ZipFile Object
-        with ZipFile("zip_model.zip", "w") as zipObj:
+        with ZipFile(zip_file_name, "w") as zipObj:
             zipObj.write(model_path)
             zipObj.write("trained_pytorch_model/tokenizer.json")
-        print("zip file is saved to" + os.getcwd() + "/" + zip_file_name)
+        print("zip file is saved to " + os.getcwd() + "/" + zip_file_name)
 
     def save_as_pt(
         self,
@@ -601,13 +602,13 @@ class SentenceTransformerModel:
             model = SentenceTransformer(self.model_id)
 
         if model_name is None:
-            model_name = "pre_trained_model"
+            model_name = self.model_id.split("/")[-1]
 
         if save_json_folder_name is None:
             save_json_folder_name = "save_pre_trained_model_json/"
 
         if zip_file_name is None:
-            zip_file_name = "zip_pre_trained_model"
+            zip_file_name = self.model_id.split("/")[-1]
 
         # save tokenizer.json in save_json_folder_name
         model.save(save_json_folder_name)
@@ -638,7 +639,7 @@ class SentenceTransformerModel:
             zipObj.write(
                 str(save_json_folder_name + "tokenizer.json"), arcname="tokenizer.json"
             )
-        print("zip file is saved to" + os.getcwd() + "/" + str(zip_file_name + ".zip"))
+        print("zip file is saved to " + os.getcwd() + "/" + str(zip_file_name + ".zip"))
 
     def set_up_accelerate_config(
         self,
