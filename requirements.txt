@@ -5,4 +5,8 @@ pandas>=1.5,<2
 matplotlib>=3.6.0,<4
 numpy>=1.23.3,<2
 opensearch-py>=2
-protobuf==3.20.*
+torch
+accelerate
+sentence_transformers
+tqdm
+transformers
