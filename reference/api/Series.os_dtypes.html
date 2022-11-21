@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Series.es_dtypes &mdash; Opensearch-py-ml 1.0.0 documentation</title>
+  <title>Series.os_dtypes &mdash; Opensearch-py-ml 1.0.0-beta1 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/plot_directive.css" type="text/css" />
@@ -32,7 +32,7 @@
             <a href="../../index.html" class="icon icon-home"> Opensearch-py-ml
           </a>
               <div class="version">
-                1.0.0
+                1.0.0-beta1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -61,9 +61,9 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../../index.html" class="icon icon-home"></a></li>
-      <li class="breadcrumb-item active">Series.es_dtypes</li>
+      <li class="breadcrumb-item active">Series.os_dtypes</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../../_sources/reference/api/Series.es_dtypes.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../../_sources/reference/api/Series.os_dtypes.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -95,8 +95,33 @@
     text-align: unset;
 }
 </style>
-<section id="series-es-dtypes">
-<h1>Series.es_dtypes<a class="headerlink" href="#series-es-dtypes" title="Permalink to this heading"></a></h1>
+<section id="series-os-dtypes">
+<h1>Series.os_dtypes<a class="headerlink" href="#series-os-dtypes" title="Permalink to this heading"></a></h1>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="opensearch_py_ml.Series.os_dtypes">
+<span class="sig-prename descclassname"><span class="pre">Series.</span></span><span class="sig-name descname"><span class="pre">os_dtypes</span></span><a class="headerlink" href="#opensearch_py_ml.Series.os_dtypes" title="Permalink to this definition"></a></dt>
+<dd><p>Return the OpenSearch dtypes in the index</p>
+<section id="returns">
+<h2>Returns<a class="headerlink" href="#returns" title="Permalink to this heading"></a></h2>
+<dl class="simple">
+<dt>pandas.Series</dt><dd><p>The data type of each column.</p>
+</dd>
+</dl>
+</section>
+<section id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this heading"></a></h2>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">oml</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">OPENSEARCH_TEST_CLIENT</span><span class="p">,</span> <span class="s1">&#39;flights&#39;</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Origin&#39;</span><span class="p">,</span> <span class="s1">&#39;AvgTicketPrice&#39;</span><span class="p">,</span> <span class="s1">&#39;timestamp&#39;</span><span class="p">,</span> <span class="s1">&#39;dayOfWeek&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">os_dtypes</span>
+<span class="go">Origin            keyword</span>
+<span class="go">AvgTicketPrice      float</span>
+<span class="go">timestamp            date</span>
+<span class="go">dayOfWeek            byte</span>
+<span class="go">dtype: object</span>
+</pre></div>
+</div>
+</section>
+</dd></dl>
+
 </section>
 
 
