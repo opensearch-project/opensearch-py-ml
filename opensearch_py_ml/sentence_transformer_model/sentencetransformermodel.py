@@ -529,11 +529,11 @@ class SentenceTransformerModel:
             strict=False,
         )
 
-        print("Preparing model to save")
+        print("Preparing model to save...")
         torch.jit.save(traced_cpu, output_model_path)
 
         print("Model saved to path: " + output_model_path)
-        return model
+        return traced_cpu
 
     def zip_model(self, model_path: str = None, zip_file_name: str = None) -> None:
         """
@@ -588,13 +588,16 @@ class SentenceTransformerModel:
             Required, for example  sentences = ['today is sunny']
         model: str
             Optional, if provide model in parameters, will convert model to torch script format,
-            else, not provided model then it will download sentence transformer model from huggingface
+            else, not provided model then it will download sentence transformer model from huggingface.
+            If None, default takes model_id = "sentence-transformers/msmarco-distilbert-base-tas-b".
         model_name: str
-            Optional, model name to name the model file, if None, default as pre_trained_model.pt
+            Optional, model name to name the model file, e.g, "sample_model.pt". If None, default takes the
+            model_id and add the extension with ".pt".
         zip_file_name: str =None
-            Optional, file name for zip file. if None, default as zip_pre_trained_model
+            Optional, file name for zip file. e.g, "sample_model.zip". If None, default takes the model_id
+            and add the extension with ".zip".
         Return:
-            None
+            the torch script format model
 
         """
 
@@ -628,7 +631,7 @@ class SentenceTransformerModel:
             strict=False,
         )
         torch.jit.save(compiled_model, str(model_name + ".pt"))
-        print("model file is saved to" + os.getcwd() + "/" + str(model_name + ".pt"))
+        print("model file is saved to " + os.getcwd() + "/" + str(model_name + ".pt"))
 
         # zip model file along with tokenizer.json as output
         with ZipFile(str(zip_file_name + ".zip"), "w") as zipObj:
@@ -640,6 +643,7 @@ class SentenceTransformerModel:
                 str(save_json_folder_name + "tokenizer.json"), arcname="tokenizer.json"
             )
         print("zip file is saved to " + os.getcwd() + "/" + str(zip_file_name + ".zip"))
+        return compiled_model
 
     def set_up_accelerate_config(
         self,
@@ -678,7 +682,7 @@ class SentenceTransformerModel:
         cache_dir = os.path.join(hf_cache_home, "accelerate")
 
         file_path = os.path.join(cache_dir + "/default_config.yaml")
-        print("generated config file: at" + file_path)
+        print("generated config file: at " + file_path)
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         if num_processes is None:
             if torch.cuda.is_available():
