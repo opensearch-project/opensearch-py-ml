@@ -318,7 +318,7 @@ class SentenceTransformerModel:
         verbose: float
             optional, use plotting to plot the training progress. Default as false.
         Return:
-            None
+            the torch script format trained model.
         """
 
         if output_path is None:
