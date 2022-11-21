@@ -9,4 +9,4 @@ Examples
 
    demo_notebook
    online_retail_analysis
-   upload_model
+   demo_notebook_for_sentence_transformer_model_training_and_uploading_to_openSearch
