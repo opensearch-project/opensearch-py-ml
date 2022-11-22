@@ -5,7 +5,7 @@ Sentence Transformer
 ====================
 .. currentmodule:: opensearch_py_ml
 
-train
+Train
 ~~~~~~~~~
 .. toctree::
    :maxdepth: 2
