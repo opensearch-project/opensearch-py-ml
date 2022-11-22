@@ -48,6 +48,8 @@ If you're new to Opensearch we recommend `reading the documentation <https://ope
   * :doc:`reference/series`
   * :doc:`reference/general_utility_functions`
   * :doc:`reference/io`
+  * :doc:`reference/mlcommons`
+  * :doc:`reference/sentencetransformer`
 
 * :doc:`examples/index`
 
