@@ -15,3 +15,4 @@ methods. All classes and functions exposed in ``Opensearch-py-ml.*`` namespace a
    general_utility_functions
    io
    mlcommons
+   sentencetransformer

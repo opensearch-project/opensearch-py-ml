@@ -1,0 +1,1426 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Demo Notebook for Sentence Transformer Model Training, Saving and Uploading to OpenSearch &mdash; Opensearch-py-ml 1.0.0-beta1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/plot_directive.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Online Retail analysis" href="online_retail_analysis.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> Opensearch-py-ml
+          </a>
+              <div class="version">
+                1.0.0-beta1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">API Reference</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="demo_notebook.html">Demo Notebook for Dataframe</a></li>
+<li class="toctree-l2"><a class="reference internal" href="online_retail_analysis.html">Online Retail analysis</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Demo Notebook for Sentence Transformer Model Training, Saving and Uploading to OpenSearch</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Step-0:-Import-packages-and-set-up-client">Step 0: Import packages and set up client</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Step-1:-Read-synthetic-queries-and-train/fine-tune-model-using-a-hugging-face-sentence-transformer-model">Step 1: Read synthetic queries and train/fine-tune model using a hugging face sentence transformer model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Step-2:-(Optional)-Save-model">Step 2: (Optional) Save model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Step-3:-Upload-the-model-to-OpenSearch-cluster">Step 3: Upload the model to OpenSearch cluster</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Opensearch-py-ml</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Examples</a></li>
+      <li class="breadcrumb-item active">Demo Notebook for Sentence Transformer Model Training, Saving and Uploading to OpenSearch</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples/demo_notebook_for_sentence_transformer_model_training_and_uploading_to_openSearch.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt *,
+div.nbinput.container div.input_area pre,
+div.nboutput.container div.output_area pre,
+div.nbinput.container div.input_area .highlight,
+div.nboutput.container div.output_area .highlight {
+    border: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+div.nbinput.container > div[class*=highlight],
+div.nboutput.container > div[class*=highlight] {
+    margin: 0;
+}
+
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt * {
+    background: none;
+}
+
+div.nboutput.container div.output_area .highlight,
+div.nboutput.container div.output_area pre {
+    background: unset;
+}
+
+div.nboutput.container div.output_area div.highlight {
+    color: unset;  /* override Pygments text color */
+}
+
+/* avoid gaps between output lines */
+div.nboutput.container div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput.container,
+div.nboutput.container {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput.container,
+    div.nboutput.container {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput.container {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast.container {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput.container div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput.container div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput.container div.prompt,
+div.nboutput.container div.prompt {
+    width: 4.5ex;
+    padding-top: 5px;
+    position: relative;
+    user-select: none;
+}
+
+div.nbinput.container div.prompt > div,
+div.nboutput.container div.prompt > div {
+    position: absolute;
+    right: 0;
+    margin-right: 0.3ex;
+}
+
+@media (max-width: 540px) {
+    div.nbinput.container div.prompt,
+    div.nboutput.container div.prompt {
+        width: unset;
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput.container div.prompt.empty {
+        padding: 0;
+    }
+
+    div.nbinput.container div.prompt > div,
+    div.nboutput.container div.prompt > div {
+        position: unset;
+    }
+}
+
+/* disable scrollbars and line breaks on prompts */
+div.nbinput.container div.prompt pre,
+div.nboutput.container div.prompt pre {
+    overflow: hidden;
+    white-space: pre;
+}
+
+/* input/output area */
+div.nbinput.container div.input_area,
+div.nboutput.container div.output_area {
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput.container div.input_area,
+    div.nboutput.container div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput.container div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    /*background: #f5f5f5;*/
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput.container div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput.container div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput.container div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+
+div.nbinput.container div.input_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight].math,
+div.nboutput.container div.output_area.rendered_html,
+div.nboutput.container div.output_area > div.output_javascript,
+div.nboutput.container div.output_area:not(.rendered_html) > img{
+    padding: 5px;
+    margin: 0;
+}
+
+/* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
+div.nbinput.container div.input_area > div[class^='highlight'],
+div.nboutput.container div.output_area > div[class^='highlight']{
+    overflow-y: hidden;
+}
+
+/* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
+.prompt .copybtn {
+    display: none;
+}
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+.jp-RenderedHTMLCommon table,
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+.jp-RenderedHTMLCommon thead,
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+.jp-RenderedHTMLCommon tr,
+.jp-RenderedHTMLCommon th,
+.jp-RenderedHTMLCommon td,
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+.jp-RenderedHTMLCommon th,
+div.rendered_html th {
+  font-weight: bold;
+}
+.jp-RenderedHTMLCommon tbody tr:nth-child(odd),
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+.jp-RenderedHTMLCommon tbody tr:hover,
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="Demo-Notebook-for-Sentence-Transformer-Model-Training,-Saving-and-Uploading-to-OpenSearch">
+<h1>Demo Notebook for Sentence Transformer Model Training, Saving and Uploading to OpenSearch<a class="headerlink" href="#Demo-Notebook-for-Sentence-Transformer-Model-Training,-Saving-and-Uploading-to-OpenSearch" title="Permalink to this heading"></a></h1>
+<p>This notebook provides a walkthrough guidance for users use their synthetic queries to fine tune and train a sentence transformer model. In this notebook, you use opensearch_py_ml to accomplish the following:</p>
+<p>Step 0: Import packages and set up client</p>
+<p>Step 1: Read synthetic queries and train/fine-tune model using a hugging face sentence transformer model</p>
+<p>Step 2: (Optional) Save model</p>
+<p>Step 3: Upload the model to OpenSearch cluster</p>
+<section id="Step-0:-Import-packages-and-set-up-client">
+<h2>Step 0: Import packages and set up client<a class="headerlink" href="#Step-0:-Import-packages-and-set-up-client" title="Permalink to this heading"></a></h2>
+<p>Install opensearchpy and opensearch_py_ml through pypi</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">opensearch_py_ml</span> <span class="k">as</span> <span class="nn">oml</span>
+<span class="kn">from</span> <span class="nn">opensearchpy</span> <span class="kn">import</span> <span class="n">OpenSearch</span>
+<span class="kn">from</span> <span class="nn">opensearch_py_ml.sentence_transformer_model</span> <span class="kn">import</span> <span class="n">SentenceTransformerModel</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/home/ec2-user/anaconda3/envs/tensorflow2_p38/lib/python3.8/site-packages/opensearchpy/connection/http_urllib3.py:208: UserWarning: Connecting to https://instance:9200 using SSL with verify_certs=False is insecure.
+  warnings.warn(
+/home/ec2-user/anaconda3/envs/tensorflow2_p38/lib/python3.8/site-packages/opensearchpy/connection/http_urllib3.py:208: UserWarning: Connecting to https://localhost:9200 using SSL with verify_certs=False is insecure.
+  warnings.warn(
+/home/ec2-user/anaconda3/envs/tensorflow2_p38/lib/python3.8/site-packages/urllib3/connectionpool.py:1043: InsecureRequestWarning: Unverified HTTPS request is being made to host &#39;localhost&#39;. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/1.26.x/advanced-usage.html#ssl-warnings
+  warnings.warn(
+/home/ec2-user/SageMaker/opensearch-py-ml-mingshl/opensearch_py_ml/common.py:359: UserWarning: OpenSearch major version (1.0.0) doesn&#39;t match the major version of the OpenSearch server (2.4.0) which can lead to compatibility issues. Your major version should be the same as your cluster major version.
+  OS_VERSION = os_version(OPENSEARCH_TEST_CLIENT)
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># import mlcommon to later upload the model to OpenSearch Cluster</span>
+<span class="kn">from</span> <span class="nn">opensearch_py_ml.ml_commons_integration</span> <span class="kn">import</span> <span class="n">MLCommonClient</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">CLUSTER_URL</span> <span class="o">=</span> <span class="s1">&#39;https://localhost:9200&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">get_os_client</span><span class="p">(</span><span class="n">cluster_url</span> <span class="o">=</span> <span class="n">CLUSTER_URL</span><span class="p">,</span>
+                  <span class="n">username</span><span class="o">=</span><span class="s1">&#39;admin&#39;</span><span class="p">,</span>
+                  <span class="n">password</span><span class="o">=</span><span class="s1">&#39;admin&#39;</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Get OpenSearch client</span>
+<span class="sd">    :param cluster_url: cluster URL like https://ml-te-netwo-1s12ba42br23v-ff1736fa7db98ff2.elb.us-west-2.amazonaws.com:443</span>
+<span class="sd">    :return: OpenSearch client</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">OpenSearch</span><span class="p">(</span>
+        <span class="n">hosts</span><span class="o">=</span><span class="p">[</span><span class="n">cluster_url</span><span class="p">],</span>
+        <span class="n">http_auth</span><span class="o">=</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="p">),</span>
+        <span class="n">verify_certs</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">client</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">client</span> <span class="o">=</span> <span class="n">get_os_client</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Step-1:-Read-synthetic-queries-and-train/fine-tune-model-using-a-hugging-face-sentence-transformer-model">
+<h2>Step 1: Read synthetic queries and train/fine-tune model using a hugging face sentence transformer model<a class="headerlink" href="#Step-1:-Read-synthetic-queries-and-train/fine-tune-model-using-a-hugging-face-sentence-transformer-model" title="Permalink to this heading"></a></h2>
+<p>With a synthetic queries zip file, users can fine tune a sentence transformer model. The <code class="docutils literal notranslate"><span class="pre">train</span></code> function will import synthestic queries, load sentence transformer example and train the model using a hugging face sentence transformer model.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>&quot;&quot;&quot;
+Description:
+read the synthetic queries and use it to fine tune/train a sentence transformer model to save a zip file
+
+Parameters:
+read_path: str
+    required, path to read the generated queries zip file, if None, default as &#39;synthetic_query&#39; folder
+    in current directory
+model_id: str = None
+    optional, the url to download sentence transformer model, if None, default as
+    &#39;sentence-transformers/msmarco-distilbert-base-tas-b
+output_model_path: str=None
+    optional, the path to store trained custom model. If None, default as current folder path
+output_model_name: str=None
+    optional, the name of the trained custom model. If None, default as &#39;trained_model.pt&#39;
+zip_file_name: str =None
+    optional, file name for zip file. if None, default as custom_tasb_model.zip
+use_accelerate: bool = False,
+    Optional, use accelerate to fine tune model. Default as false to not use accelerator to fine tune model.
+    If there are multiple gpus available in the machine, it&#39;s recommended to use accelerate with
+    num_processor&gt;1 to speeed up the training progress. If use accelerator to train model, run auto setup
+    accelerate confi and launch train_model function with the number of processors provided by users
+    if NOT use accelerator,trigger train_model function with default setting
+compute_environment: str
+    optional, compute environment type to run model, if None, default using &#39;LOCAL_MACHINE&#39;
+num_machines: int
+    optional, number of machine to run model , if None, default using 1
+num_processes: int
+    optional, number of processors to run model , if None, default using 1
+learning_rate: float
+    optional, learning rate to train model, default is 2e-5
+num_epochs: int
+    optional, number of epochs to train model, default is 20
+verbose: bool
+    optional, use plotting to plot the training progress. Default as false.
+Return:
+    None
+&quot;&quot;&quot;
+</pre></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># clean up cache before training to free up spaces</span>
+<span class="kn">import</span> <span class="nn">gc</span><span class="o">,</span> <span class="nn">torch</span>
+
+<span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+
+<span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">empty_cache</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">SentenceTransformerModel</span><span class="p">()</span>
+<span class="n">training</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">read_path</span> <span class="o">=</span> <span class="s1">&#39;/home/ec2-user/SageMaker/opensearch-py-ml-mingshl/synthetic_queries.zip&#39;</span><span class="p">,</span>
+                        <span class="n">output_model_name</span> <span class="o">=</span> <span class="s1">&#39;test_model.pt&#39;</span><span class="p">,</span>
+                        <span class="n">zip_file_name</span><span class="o">=</span> <span class="s1">&#39;test_model.zip&#39;</span><span class="p">,</span>
+                        <span class="n">overwrite</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                        <span class="n">use_accelerate</span>  <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                        <span class="n">num_machines</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+                        <span class="n">num_processes</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+reading synthetic query file: /home/ec2-user/SageMaker/opensearch-py-ml-mingshl/synthetic_queries/output.p
+Loading training examples...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 773/773 [00:00&lt;00:00, 781628.98it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+generated config file: at/home/ec2-user/.cache/huggingface/accelerate/default_config.yaml
+[{&#39;compute_environment&#39;: &#39;LOCAL_MACHINE&#39;, &#39;deepspeed_config&#39;: {&#39;gradient_accumulation_steps&#39;: 1, &#39;offload_optimizer_device&#39;: &#39;none&#39;, &#39;offload_param_device&#39;: &#39;none&#39;, &#39;zero3_init_flag&#39;: False, &#39;zero_stage&#39;: 2}, &#39;distributed_type&#39;: &#39;DEEPSPEED&#39;, &#39;downcast_bf16&#39;: &#39;no&#39;, &#39;fsdp_config&#39;: {}, &#39;machine_rank&#39;: 0, &#39;main_process_ip&#39;: None, &#39;main_process_port&#39;: None, &#39;main_training_function&#39;: &#39;main&#39;, &#39;mixed_precision&#39;: &#39;no&#39;, &#39;num_machines&#39;: 1, &#39;num_processes&#39;: 2, &#39;use_cpu&#39;: False}]
+Launching training on 2 GPUs.
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Start training with accelerator...Start training with accelerator...
+
+The number of training epoch are 20The number of training epoch are 20
+
+The total number of steps training epoch are 25The total number of steps training epoch are 25
+
+Training epoch 0...Training epoch 0...
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 13/13 [00:01&lt;00:00, 11.84it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training epoch 1...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 13/13 [00:01&lt;00:00, 11.67it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training epoch 1...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 13/13 [00:01&lt;00:00, 12.38it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training epoch 2...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 13/13 [00:01&lt;00:00, 12.26it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training epoch 2...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 13/13 [00:01&lt;00:00, 12.07it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training epoch 3...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 13/13 [00:01&lt;00:00, 12.19it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training epoch 3...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 13/13 [00:01&lt;00:00, 11.84it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training epoch 4...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 13/13 [00:01&lt;00:00, 11.96it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training epoch 4...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 13/13 [00:01&lt;00:00, 12.38it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training epoch 5...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 13/13 [00:01&lt;00:00, 12.28it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training epoch 5...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 13/13 [00:01&lt;00:00, 12.22it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training epoch 6...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 13/13 [00:01&lt;00:00, 12.32it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training epoch 6...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 13/13 [00:01&lt;00:00, 12.74it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training epoch 7...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 13/13 [00:01&lt;00:00, 12.49it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training epoch 7...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 13/13 [00:01&lt;00:00, 12.68it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training epoch 8...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 13/13 [00:01&lt;00:00, 12.09it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training epoch 8...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 13/13 [00:01&lt;00:00, 12.66it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training epoch 9...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 13/13 [00:01&lt;00:00, 12.55it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training epoch 9...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 13/13 [00:01&lt;00:00, 12.89it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training epoch 10...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 13/13 [00:01&lt;00:00, 12.66it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training epoch 10...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 13/13 [00:01&lt;00:00, 12.77it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training epoch 11...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 13/13 [00:01&lt;00:00, 12.86it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training epoch 11...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 13/13 [00:01&lt;00:00, 12.64it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training epoch 12...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 13/13 [00:01&lt;00:00, 12.87it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training epoch 12...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 13/13 [00:01&lt;00:00, 12.96it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training epoch 13...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 13/13 [00:01&lt;00:00, 12.84it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training epoch 13...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 13/13 [00:01&lt;00:00, 12.68it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training epoch 14...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 13/13 [00:00&lt;00:00, 13.05it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training epoch 14...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 13/13 [00:01&lt;00:00, 12.32it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training epoch 15...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 13/13 [00:01&lt;00:00, 12.05it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training epoch 15...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 13/13 [00:01&lt;00:00, 12.70it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training epoch 16...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 13/13 [00:01&lt;00:00, 12.40it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training epoch 16...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 13/13 [00:01&lt;00:00, 12.64it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training epoch 17...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 13/13 [00:01&lt;00:00, 12.57it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training epoch 17...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 13/13 [00:01&lt;00:00, 12.96it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training epoch 18...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 13/13 [00:01&lt;00:00, 13.00it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training epoch 18...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 13/13 [00:01&lt;00:00, 12.85it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training epoch 19...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 13/13 [00:01&lt;00:00, 12.77it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training epoch 19...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 13/13 [00:01&lt;00:00, 12.55it/s]
+100%|██████████| 13/13 [00:01&lt;00:00, 12.20it/s]
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Total training time: 22.39643096923828
+Total training time: 22.410019636154175
+Preparing model to save
+Preparing model to save
+Model saved to path: /home/ec2-user/SageMaker/opensearch-py-ml-mingshl/test_model.pt
+Model saved to path: /home/ec2-user/SageMaker/opensearch-py-ml-mingshl/test_model.pt
+zip file is saved to /home/ec2-user/SageMaker/opensearch-py-ml-mingshl/test_model.zip
+</pre></div></div>
+</div>
+</section>
+<section id="Step-2:-(Optional)-Save-model">
+<h2>Step 2: (Optional) Save model<a class="headerlink" href="#Step-2:-(Optional)-Save-model" title="Permalink to this heading"></a></h2>
+<p>If following step 1, the model zip will be auto generated, and the print message will indicate the zip file path as shown above.</p>
+<p>But if using other pretrained sentence transformer model from Hugging face, users can use <code class="docutils literal notranslate"><span class="pre">save_as_pt</span></code> function to save a pre-trained sentence transformer model for inferencing or benchmark with other models.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">save_as_pt</span></code> function will prepare the model in proper format(Torch Script) along with tokenizers configuration file to upload to OpenSearch. The <code class="docutils literal notranslate"><span class="pre">save_as_pt</span></code> function takes the following arguments.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>&quot;&quot;&quot;
+Description:
+download sentence transformer model directly from huggingface, convert model to torch script format,
+zip the model file and its tokenizer.json file to prepare to upload to the Open Search cluster
+
+Parameters:
+sentences:[str]
+    Required, for example  sentences = [&#39;today is sunny&#39;]
+model: str
+    Optional, if provide model in parameters, will convert model to torch script format,
+    else, not provided model then it will download sentence transformer model from huggingface.
+    If None, default takes model_id = &quot;sentence-transformers/msmarco-distilbert-base-tas-b&quot;.
+model_name: str
+    Optional, model name to name the model file, e.g, &quot;sample_model.pt&quot;. If None, default takes the
+    model_id and add the extension with &quot;.pt&quot;.
+zip_file_name: str =None
+    Optional, file name for zip file. e.g, &quot;sample_model.zip&quot;. If None, default takes the model_id
+    and add the extension with &quot;.zip&quot;.
+    None
+
+&quot;&quot;&quot;
+</pre></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># default to download model id, &quot;sentence-transformers/msmarco-distilbert-base-tas-b&quot; from hugging face</span>
+<span class="c1"># and output a model in a zip file containing model.pt file and tokenizers.json file.</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">SentenceTransformerModel</span><span class="p">()</span>
+<span class="n">model</span><span class="o">.</span><span class="n">save_as_pt</span><span class="p">(</span><span class="n">sentences</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;today is sunny&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+model file is saved to/home/ec2-user/SageMaker/opensearch-py-ml-mingshl/msmarco-distilbert-base-tas-b.pt
+zip file is saved to /home/ec2-user/SageMaker/opensearch-py-ml-mingshl/msmarco-distilbert-base-tas-b.zip
+</pre></div></div>
+</div>
+</section>
+<section id="Step-3:-Upload-the-model-to-OpenSearch-cluster">
+<h2>Step 3: Upload the model to OpenSearch cluster<a class="headerlink" href="#Step-3:-Upload-the-model-to-OpenSearch-cluster" title="Permalink to this heading"></a></h2>
+<p>In general, the ml common client supports uploading sentence transformer models. With a zip file contains model in Torch Script format, and a configuration file for tokenizers in json format, the <code class="docutils literal notranslate"><span class="pre">upload_model</span></code> function connects to opensearch through ml client and upload the model. The <code class="docutils literal notranslate"><span class="pre">upload_model</span></code> function takes three agruments:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>&quot;&quot;&quot;
+Description:
+upload a zip file and model_config file to OpenSearch cluster.
+Parameters:
+model_path: str
+    file path of the model file (zip file expected). The zip file should contain two files. The first file
+    is a model file in Torch Script format, e.g, &quot;model.pt&quot;. The second file is a configuration file for
+    tokenizers in json format, e.g, &quot;tokenizers.json&quot;.
+model_config_file: str
+    file path of the model config file (json file expected), which includes necessary config info for the
+    model, including model name, version number and etc. The details for model configuration are here:
+    https://opensearch.org/docs/latest/ml-commons-plugin/model-serving-framework/. An example file will
+    show in the below cells.
+Return:
+    None
+&quot;&quot;&quot;
+</pre></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#connect to ml_common client with OpenSearch client</span>
+<span class="n">ml_client</span> <span class="o">=</span> <span class="n">MLCommonClient</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#user will need to prepare a model_config.json file to config the model, including model name ..</span>
+<span class="c1">#this is a sample of model_config.json file</span>
+
+<span class="p">{</span>
+
+   <span class="s2">&quot;name&quot;</span><span class="p">:</span><span class="s2">&quot;all-MiniLM-L6-v2&quot;</span><span class="p">,</span>
+
+   <span class="s2">&quot;version&quot;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span>
+
+   <span class="s2">&quot;model_format&quot;</span><span class="p">:</span><span class="s2">&quot;TORCH_SCRIPT&quot;</span><span class="p">,</span>
+
+   <span class="s2">&quot;model_task_type&quot;</span><span class="p">:</span><span class="s2">&quot;TEXT_EMBEDDING&quot;</span><span class="p">,</span>
+
+   <span class="s2">&quot;model_config&quot;</span><span class="p">:{</span>
+
+      <span class="s2">&quot;model_type&quot;</span><span class="p">:</span><span class="s2">&quot;bert&quot;</span><span class="p">,</span>
+
+      <span class="s2">&quot;embedding_dimension&quot;</span><span class="p">:</span><span class="mi">384</span><span class="p">,</span>
+
+      <span class="s2">&quot;framework_type&quot;</span><span class="p">:</span><span class="s2">&quot;sentence_transformers&quot;</span><span class="p">,</span>
+
+      <span class="s2">&quot;all_config&quot;</span><span class="p">:</span><span class="s2">&quot;{</span><span class="se">\&quot;</span><span class="s2">_name_or_path</span><span class="se">\&quot;</span><span class="s2">:</span><span class="se">\&quot;</span><span class="s2">nreimers/MiniLM-L6-H384-uncased</span><span class="se">\&quot;</span><span class="s2">,</span><span class="se">\&quot;</span><span class="s2">architectures</span><span class="se">\&quot;</span><span class="s2">:[</span><span class="se">\&quot;</span><span class="s2">BertModel</span><span class="se">\&quot;</span><span class="s2">],</span><span class="se">\&quot;</span><span class="s2">attention_probs_dropout_prob</span><span class="se">\&quot;</span><span class="s2">:0.1,</span><span class="se">\&quot;</span><span class="s2">gradient_checkpointing</span><span class="se">\&quot;</span><span class="s2">:false,</span><span class="se">\&quot;</span><span class="s2">hidden_act</span><span class="se">\&quot;</span><span class="s2">:</span><span class="se">\&quot;</span><span class="s2">gelu</span><span class="se">\&quot;</span><span class="s2">,</span><span class="se">\&quot;</span><span class="s2">hidden_dropout_prob</span><span class="se">\&quot;</span><span class="s2">:0.1,</span><span class="se">\&quot;</span><span class="s2">hidden_size</span><span class="se">\&quot;</span><span class="s2">:384,</span><span class="se">\&quot;</span><span class="s2">initializer_range</span><span class="se">\&quot;</span><span class="s2">:0.02,</span><span class="se">\&quot;</span><span class="s2">intermediate_size</span><span class="se">\&quot;</span><span class="s2">:1536,</span><span class="se">\&quot;</span><span class="s2">layer_norm_eps</span><span class="se">\&quot;</span><span class="s2">:1e-12,</span><span class="se">\&quot;</span><span class="s2">max_position_embeddings</span><span class="se">\&quot;</span><span class="s2">:512,</span><span class="se">\&quot;</span><span class="s2">model_type</span><span class="se">\&quot;</span><span class="s2">:</span><span class="se">\&quot;</span><span class="s2">bert</span><span class="se">\&quot;</span><span class="s2">,</span><span class="se">\&quot;</span><span class="s2">num_attention_heads</span><span class="se">\&quot;</span><span class="s2">:12,</span><span class="se">\&quot;</span><span class="s2">num_hidden_layers</span><span class="se">\&quot;</span><span class="s2">:6,</span><span class="se">\&quot;</span><span class="s2">pad_token_id</span><span class="se">\&quot;</span><span class="s2">:0,</span><span class="se">\&quot;</span><span class="s2">position_embedding_type</span><span class="se">\&quot;</span><span class="s2">:</span><span class="se">\&quot;</span><span class="s2">absolute</span><span class="se">\&quot;</span><span class="s2">,</span><span class="se">\&quot;</span><span class="s2">transformers_version</span><span class="se">\&quot;</span><span class="s2">:</span><span class="se">\&quot;</span><span class="s2">4.8.2</span><span class="se">\&quot;</span><span class="s2">,</span><span class="se">\&quot;</span><span class="s2">type_vocab_size</span><span class="se">\&quot;</span><span class="s2">:2,</span><span class="se">\&quot;</span><span class="s2">use_cache</span><span class="se">\&quot;</span><span class="s2">:true,</span><span class="se">\&quot;</span><span class="s2">vocab_size</span><span class="se">\&quot;</span><span class="s2">:30522}&quot;</span>
+
+   <span class="p">}</span>
+
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># upload model to OpenSearch cluster, using model zip file path</span>
+
+<span class="n">model_path</span> <span class="o">=</span> <span class="s1">&#39;/home/ec2-user/SageMaker/opensearch-py-ml-mingshl/test_model.zip&#39;</span>
+<span class="n">ml_client</span><span class="o">.</span><span class="n">upload_model</span><span class="p">(</span> <span class="n">model_path</span><span class="p">,</span> <span class="s1">&#39;/home/ec2-user/SageMaker/opensearch-py-ml-mingshl/save_pre_trained_model_json/model_config.json&#39;</span><span class="p">,</span> <span class="n">isVerbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Total number of chunks 27
+Sha1 value of the model file:  d1fc88bc317ed3dc52c4c7dc4d51122c6989876e62167566289a8067ab5d51e7
+Model meta data was created successfully. Model Id:  oglVm4QBDmk7AZE7yW-d
+uploading chunk 1 of 27
+{&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 2 of 27
+{&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 3 of 27
+{&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 4 of 27
+{&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 5 of 27
+{&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 6 of 27
+{&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 7 of 27
+{&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 8 of 27
+{&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 9 of 27
+{&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 10 of 27
+{&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 11 of 27
+{&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 12 of 27
+{&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 13 of 27
+{&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 14 of 27
+{&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 15 of 27
+{&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 16 of 27
+{&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 17 of 27
+{&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 18 of 27
+{&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 19 of 27
+{&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 20 of 27
+{&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 21 of 27
+{&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 22 of 27
+{&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 23 of 27
+{&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 24 of 27
+{&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 25 of 27
+{&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 26 of 27
+{&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 27 of 27
+{&#39;status&#39;: &#39;Uploaded&#39;}
+Model uploaded successfully
+</pre></div></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="online_retail_analysis.html" class="btn btn-neutral float-left" title="Online Retail analysis" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Opensearch.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
