@@ -1,5 +1,5 @@
 train
-==================
+=====
 
 .. currentmodule:: opensearch_py_ml
 

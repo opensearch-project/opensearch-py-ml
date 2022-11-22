@@ -98,9 +98,10 @@ class SentenceTransformerModel:
             optional, number of epochs to train model, default is 20
         verbose: bool
             optional, use plotting to plot the training progress. Default as false.
+
         Return
         -------
-            None
+        None
         """
 
         query_df = self.read_queries(read_path, overwrite)

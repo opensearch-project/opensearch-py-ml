@@ -1,11 +1,11 @@
 .. _api.sentence_transformer:
 
-=================
-MLCommons Support
-=================
+====================
+Sentence Transformer
+====================
 .. currentmodule:: opensearch_py_ml
 
-Upload Model
+train
 ~~~~~~~~~
 .. toctree::
    :maxdepth: 2
