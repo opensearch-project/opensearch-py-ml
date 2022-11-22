@@ -55,6 +55,7 @@ If you're new to Opensearch we recommend `reading the documentation <https://ope
 
   * :doc:`examples/demo_notebook`
   * :doc:`examples/online_retail_analysis`
+  * :doc:`examples/demo_transformer_model_train_save_upload_to_openSearch`
 
 * `License <https://github.com/opensearch-project/opensearch-py-ml/blob/main/LICENSE>`_
 * `Contributing <https://github.com/opensearch-project/opensearch-py-ml/blob/main/CONTRIBUTING.md>`_

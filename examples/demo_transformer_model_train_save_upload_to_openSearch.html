@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Demo Notebook for Sentence Transformer Model Training, Saving and Uploading to OpenSearch &mdash; Opensearch-py-ml 1.0.0-beta1 documentation</title>
+  <title>Demo Notebook for Sentence Transformer Model Training, Saving and Uploading to OpenSearch &mdash; Opensearch-py-ml 1.0.0-b1 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/plot_directive.css" type="text/css" />
@@ -35,7 +35,7 @@
             <a href="../index.html" class="icon icon-home"> Opensearch-py-ml
           </a>
               <div class="version">
-                1.0.0-beta1
+                1.0.0-b1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -78,7 +78,7 @@
           <li class="breadcrumb-item"><a href="index.html">Examples</a></li>
       <li class="breadcrumb-item active">Demo Notebook for Sentence Transformer Model Training, Saving and Uploading to OpenSearch</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../_sources/examples/demo_notebook_for_sentence_transformer_model_training_and_uploading_to_openSearch.ipynb.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/examples/demo_transformer_model_train_save_upload_to_openSearch.ipynb.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -374,33 +374,17 @@ div.rendered_html tbody tr:hover {
 <p>Step 3: Upload the model to OpenSearch cluster</p>
 <section id="Step-0:-Import-packages-and-set-up-client">
 <h2>Step 0: Import packages and set up client<a class="headerlink" href="#Step-0:-Import-packages-and-set-up-client" title="Permalink to this heading"></a></h2>
-<p>Install opensearchpy and opensearch_py_ml through pypi</p>
-<div class="nbinput docutils container">
+<p>Install <code class="docutils literal notranslate"><span class="pre">opensearchpy</span></code> and <code class="docutils literal notranslate"><span class="pre">opensearch_py_ml</span></code> through pypi</p>
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">opensearch_py_ml</span> <span class="k">as</span> <span class="nn">oml</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">warnings</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">opensearchpy</span> <span class="kn">import</span> <span class="n">OpenSearch</span>
 <span class="kn">from</span> <span class="nn">opensearch_py_ml.sentence_transformer_model</span> <span class="kn">import</span> <span class="n">SentenceTransformerModel</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
-<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
-</pre></div>
+<br/></pre></div>
 </div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area stderr docutils container">
-<div class="highlight"><pre>
-/home/ec2-user/anaconda3/envs/tensorflow2_p38/lib/python3.8/site-packages/opensearchpy/connection/http_urllib3.py:208: UserWarning: Connecting to https://instance:9200 using SSL with verify_certs=False is insecure.
-  warnings.warn(
-/home/ec2-user/anaconda3/envs/tensorflow2_p38/lib/python3.8/site-packages/opensearchpy/connection/http_urllib3.py:208: UserWarning: Connecting to https://localhost:9200 using SSL with verify_certs=False is insecure.
-  warnings.warn(
-/home/ec2-user/anaconda3/envs/tensorflow2_p38/lib/python3.8/site-packages/urllib3/connectionpool.py:1043: InsecureRequestWarning: Unverified HTTPS request is being made to host &#39;localhost&#39;. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/1.26.x/advanced-usage.html#ssl-warnings
-  warnings.warn(
-/home/ec2-user/SageMaker/opensearch-py-ml-mingshl/opensearch_py_ml/common.py:359: UserWarning: OpenSearch major version (1.0.0) doesn&#39;t match the major version of the OpenSearch server (2.4.0) which can lead to compatibility issues. Your major version should be the same as your cluster major version.
-  OS_VERSION = os_version(OPENSEARCH_TEST_CLIENT)
-</pre></div></div>
 </div>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:

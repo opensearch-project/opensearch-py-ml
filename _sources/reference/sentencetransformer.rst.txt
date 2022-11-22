@@ -5,8 +5,8 @@ Sentence Transformer
 ====================
 .. currentmodule:: opensearch_py_ml
 
-Train
-~~~~~~~~~
+Train Model
+~~~~~~~~~~~~
 .. toctree::
    :maxdepth: 2
 
