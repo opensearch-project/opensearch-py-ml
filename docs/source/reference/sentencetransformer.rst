@@ -1,4 +1,4 @@
-.. _api.ml_commons_upload_api:
+.. _api.sentence_transformer:
 
 =================
 MLCommons Support
@@ -10,4 +10,4 @@ Upload Model
 .. toctree::
    :maxdepth: 2
 
-   api/ml_commons_upload_api
+   api/sentence_transformer

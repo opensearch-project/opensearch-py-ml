@@ -32,10 +32,12 @@ class SentenceTransformerModel:
         Description:
         Initiate a sentence transformer model object.
 
-        Parameters:
+        Parameters
+        ----------
         model_id: str = None
              the huggingface mode id to download sentence transformer model, if None, default as 'sentence-transformers/msmarco-distilbert-base-tas-b'
-        Return:
+        Return
+        ----------
              None
         """
         if model_id is None:
@@ -59,10 +61,10 @@ class SentenceTransformerModel:
         verbose: bool = False,
     ) -> None:
         """
-        Description:
         Read the synthetic queries and use it to fine tune/train (and save) a sentence transformer model.
 
-        Parameters:
+        Parameters
+        ----------
         read_path: str
             required, path to the zipped file that contains generated queries, if None, raise exception.
             the zipped file should contain pickled file in list of dictionary format with key named as 'query',
@@ -96,7 +98,8 @@ class SentenceTransformerModel:
             optional, number of epochs to train model, default is 20
         verbose: bool
             optional, use plotting to plot the training progress. Default as false.
-        Return:
+        Return
+        -------
             None
         """
 
@@ -156,14 +159,16 @@ class SentenceTransformerModel:
         Read the queries generated from the Synthetic Query Generator (SQG) model, unzip files to current directory
         within synthetic_queries/ folder, output as a dataframe
 
-        Parameters:
+        Parameters
+        ----------
         read_path: str
             required, path to the zipped file that contains generated queries, if None, raise exception
         overwrite: bool
             optional, synthetic_queries/ folder in current directory is to store unzip queries files.
             Default to set overwrite as false and if the folder is not empty, raise exception to recommend users
             to either clean up folder or enable overwriting is True.
-        Return:
+        Return
+        ----------
             The dataframe of queries.
         """
 
@@ -254,12 +259,14 @@ class SentenceTransformerModel:
         Description:
         Create input data for training
 
-        Parameters:
+        Parameters
+        ----------
         df: pd.DataFrame
             required for loading sentence transformer examples.
         use_accelerate: bool = False,
             Optional, use accelerate to fine tune model. Default as false to not use accelerator.
-        Return:
+        Return
+        ----------
             the list of train examples.
         """
 
@@ -300,7 +307,8 @@ class SentenceTransformerModel:
         Description:
         Takes in training data and a sentence transformer url to train a custom semantic search model
 
-        Parameters:
+        Parameters
+        ----------
         train_examples:
             required, input for the sentence transformer model training
         model_id: str = None
@@ -317,7 +325,8 @@ class SentenceTransformerModel:
             optional, number of epochs to train model, default is 20
         verbose: float
             optional, use plotting to plot the training progress. Default as false.
-        Return:
+        Return
+        ----------
             the torch script format trained model.
         """
 
@@ -540,13 +549,15 @@ class SentenceTransformerModel:
         Description:
         zip the model file and its tokenizer.json file to prepare to upload to the Open Search cluster
 
-        Parameters:
+        Parameters
+        ----------
         model_path: str
             Optional, path to find the model file, if None, default as trained_model.pt file in current path
         zip_file_name: str =None
             Optional, file name for zip file. if None, default as zip_model.zip
 
-        Return:
+        Return
+        ----------
             None
         """
         model_name = self.model_id.split("/")[-1]
@@ -583,7 +594,8 @@ class SentenceTransformerModel:
         download sentence transformer model directly from huggingface, convert model to torch script format,
         zip the model file and its tokenizer.json file to prepare to upload to the Open Search cluster
 
-        Parameters:
+        Parameters
+        ----------
         sentences:[str]
             Required, for example  sentences = ['today is sunny']
         model: str
@@ -596,7 +608,8 @@ class SentenceTransformerModel:
         zip_file_name: str =None
             Optional, file name for zip file. e.g, "sample_model.zip". If None, default takes the model_id
             and add the extension with ".zip".
-        Return:
+        Return
+        ----------
             the torch script format model
 
         """
@@ -656,13 +669,15 @@ class SentenceTransformerModel:
         get default config setting based on the number of GPU on the machine
         if users require other configs, users can run !acclerate config for more options.
 
-        Parameters:
+        Parameters
+        ----------
         compute_environment: str
             optional, compute environment type to run model, if None, default using 'LOCAL_MACHINE'
         num_machines: int
             optional, number of machine to run model , if None, default using 1
 
-        Return:
+        Return
+        ----------
             None
         """
 
