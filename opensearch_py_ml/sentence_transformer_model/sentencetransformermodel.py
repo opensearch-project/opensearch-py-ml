@@ -150,7 +150,7 @@ class SentenceTransformerModel:
                 verbose,
             )
 
-        self.zip_model(output_model_path, zip_file_name)
+        self.zip_model(output_model_path, output_model_name, zip_file_name)
         return None
 
     #    public step by step functions:
@@ -226,7 +226,7 @@ class SentenceTransformerModel:
 
         for file_path in file_list:
             f = open(file_path, "rb")
-            print("reading synthetic query file: " + file_path)
+            print("reading synthetic query file: " + file_path + "\n")
             process.append(pickle.load(f))
             f.close()
 
@@ -272,7 +272,7 @@ class SentenceTransformerModel:
         """
 
         train_examples = []
-        print("Loading training examples... ")
+        print("Loading training examples... \n")
 
         if use_accelerate is False:
             for i in tqdm(range(len(df)), total=len(df)):
@@ -394,10 +394,10 @@ class SentenceTransformerModel:
                 batch_size=training_args.per_device_train_batch_size,  # Trains with this batch size.
             )
 
-            print("Start training with accelerator...")
-            print(f"The number of training epoch are {num_epochs}")
+            print("Start training with accelerator...\n")
+            print(f"The number of training epoch are {num_epochs}\n")
             print(
-                f"The total number of steps training epoch are {len(train_dataloader)}"
+                f"The total number of steps training epoch are {len(train_dataloader)}\n"
             )
 
             optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
@@ -416,7 +416,7 @@ class SentenceTransformerModel:
 
             # TO DO: to add more comments to explain the training epoch
             for epoch in range(num_epochs):
-                print("Training epoch " + str(epoch) + "...")
+                print("Training epoch " + str(epoch) + "...\n")
                 for step, batch in tqdm(
                     enumerate(train_dataloader), total=len(train_dataloader)
                 ):
@@ -455,6 +455,7 @@ class SentenceTransformerModel:
                     if verbose is True and not step % 500 and step != 0:
                         plt.plot(total_loss[::100])
                         plt.show()
+            accelerator.wait_for_everyone()
 
         # IF ACCELERATE IS FALSE
         else:
@@ -474,13 +475,13 @@ class SentenceTransformerModel:
             loss = []
             init_time = time.time()
 
-            print("Start training without accelerator...")
-            print(f"The number of training epoch are {num_epochs}")
-            print(f"The total number of steps training epoch are {steps_size}")
+            print("Start training without accelerator...\n")
+            print(f"The number of training epoch are {num_epochs}\n")
+            print(f"The total number of steps training epoch are {steps_size}\n")
 
             for epoch in range(num_epochs):
                 random.shuffle(train_examples)
-                print("Training epoch " + str(epoch) + "...")
+                print("Training epoch " + str(epoch) + "...\n")
                 for j in tqdm(range(steps_size), total=steps_size):
                     batch = []
                     batch_q = []
@@ -523,7 +524,7 @@ class SentenceTransformerModel:
         model.save("trained_pytorch_model/")
         device = "cpu"
         cpu_model = model.to(device)
-        print(f"Total training time: {time.time() - init_time}")
+        print(f"Total training time: {time.time() - init_time}\n")
 
         for key in out_q.keys():
             out_q[key] = out_q[key].to(device)
@@ -539,13 +540,15 @@ class SentenceTransformerModel:
             strict=False,
         )
 
-        print("Preparing model to save...")
+        print("Preparing model to save...\n")
         torch.jit.save(traced_cpu, output_model_path)
 
-        print("Model saved to path: " + output_model_path)
+        print("Model saved to path: " + output_model_path + "\n")
         return traced_cpu
 
-    def zip_model(self, model_path: str = None, zip_file_name: str = None) -> None:
+    def zip_model(
+        self, model_path: str = None, model_name: str = None, zip_file_name: str = None
+    ) -> None:
         """
         Description:
         zip the model file and its tokenizer.json file to prepare to upload to the Open Search cluster
@@ -553,18 +556,23 @@ class SentenceTransformerModel:
         Parameters
         ----------
         model_path: str
-            Optional, path to find the model file, if None, default as trained_model.pt file in current path
+            Optional, path to find the model file, if None, default as concatenate model_id and '.pt' file in current path
+        model_name: str=None
+            the name of the trained custom model. If None, default as concatenate model_id and '.pt'
         zip_file_name: str =None
-            Optional, file name for zip file. if None, default as zip_model.zip
+            Optional, file name for zip file. if None, default as concatenate model_id and '.zip'
 
         Return
         ----------
             None
         """
-        model_name = self.model_id.split("/")[-1]
+        if model_name is None:
+            model_name = str(self.model_id.split("/")[-1] + ".pt")
 
         if model_path is None:
-            model_path = os.path.join(os.getcwd(), str(model_name + ".pt"))
+            model_path = os.path.join(os.getcwd(), str(model_name))
+        else:
+            model_path = os.path.join(model_path, str(model_name))
 
         if zip_file_name is None:
             zip_file_name = str(model_name + ".zip")
@@ -580,7 +588,7 @@ class SentenceTransformerModel:
         with ZipFile(zip_file_name, "w") as zipObj:
             zipObj.write(model_path)
             zipObj.write("trained_pytorch_model/tokenizer.json")
-        print("zip file is saved to " + os.getcwd() + "/" + zip_file_name)
+        print("zip file is saved to " + os.getcwd() + "/" + zip_file_name + "\n")
 
     def save_as_pt(
         self,
@@ -619,13 +627,13 @@ class SentenceTransformerModel:
             model = SentenceTransformer(self.model_id)
 
         if model_name is None:
-            model_name = self.model_id.split("/")[-1]
+            model_name = str(self.model_id.split("/")[-1] + ".pt")
 
         if save_json_folder_name is None:
             save_json_folder_name = "save_pre_trained_model_json/"
 
         if zip_file_name is None:
-            zip_file_name = self.model_id.split("/")[-1]
+            zip_file_name = str(self.model_id.split("/")[-1] + ".zip")
 
         # save tokenizer.json in save_json_folder_name
         model.save(save_json_folder_name)
@@ -644,19 +652,19 @@ class SentenceTransformerModel:
             ({"input_ids": input_ids, "attention_mask": attention_mask}),
             strict=False,
         )
-        torch.jit.save(compiled_model, str(model_name + ".pt"))
-        print("model file is saved to " + os.getcwd() + "/" + str(model_name + ".pt"))
+        torch.jit.save(compiled_model, model_name)
+        print("model file is saved to " + os.getcwd() + "/" + model_name + "\n")
 
         # zip model file along with tokenizer.json as output
-        with ZipFile(str(zip_file_name + ".zip"), "w") as zipObj:
+        with ZipFile(str(zip_file_name), "w") as zipObj:
             zipObj.write(
-                os.path.join(os.getcwd(), str(model_name + ".pt")),
-                arcname=str(model_name + ".pt"),
+                os.path.join(os.getcwd(), str(model_name)),
+                arcname=str(model_name),
             )
             zipObj.write(
                 str(save_json_folder_name + "tokenizer.json"), arcname="tokenizer.json"
             )
-        print("zip file is saved to " + os.getcwd() + "/" + str(zip_file_name + ".zip"))
+        print("zip file is saved to " + os.getcwd() + "/" + str(zip_file_name) + "\n")
         return compiled_model
 
     def set_up_accelerate_config(
@@ -698,7 +706,7 @@ class SentenceTransformerModel:
         cache_dir = os.path.join(hf_cache_home, "accelerate")
 
         file_path = os.path.join(cache_dir + "/default_config.yaml")
-        print("generated config file: at " + file_path)
+        print("generated config file: at " + file_path + "\n")
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         if num_processes is None:
             if torch.cuda.is_available():
