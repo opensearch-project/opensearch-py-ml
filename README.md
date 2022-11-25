@@ -27,6 +27,15 @@ complex filtering and aggregation operations. It also provides rudimentary suppo
 clusters using the [ml-commons](https://github.com/opensearch-project/ml-commons) plugin.
 
 
+##Installing Opensearch-py-ml
+
+
+Opensearch-py-ml can be installed from [PyPI](https://pypi.org/project/opensearch-py-ml) via pip:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    $ python -m pip install opensearch-py-ml
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 ## Code of Conduct
 
 This project has adopted the 
