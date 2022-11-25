@@ -35,8 +35,9 @@
    "source": [
     "import warnings\n",
     "warnings.filterwarnings('ignore')\n",
+    "import opensearch_py_ml as oml\n",
     "from opensearchpy import OpenSearch\n",
-    "from opensearch_py_ml.sentence_transformer_model import SentenceTransformerModel\n"
+    "from opensearch_py_ml.sentence_transformer_model import SentenceTransformerModel"
    ]
   },
   {
@@ -158,7 +159,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 15,
+   "execution_count": 7,
    "id": "4b37e9ac",
    "metadata": {},
    "outputs": [
@@ -166,22 +167,31 @@
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "reading synthetic query file: /home/ec2-user/SageMaker/opensearch-py-ml-mingshl/synthetic_queries/output.p\n",
-      "Loading training examples... \n"
+      "reading synthetic query file: /home/ec2-user/SageMaker/opensearch-py-ml-mingshl/synthetic_queries/synthetic_queries_batch_3.p\n",
+      "\n",
+      "reading synthetic query file: /home/ec2-user/SageMaker/opensearch-py-ml-mingshl/synthetic_queries/synthetic_queries_batch_2.p\n",
+      "\n",
+      "reading synthetic query file: /home/ec2-user/SageMaker/opensearch-py-ml-mingshl/synthetic_queries/synthetic_queries_batch_1.p\n",
+      "\n",
+      "reading synthetic query file: /home/ec2-user/SageMaker/opensearch-py-ml-mingshl/synthetic_queries/synthetic_queries_batch_0.p\n",
+      "\n",
+      "Loading training examples... \n",
+      "\n"
      ]
     },
     {
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "100%|██████████| 773/773 [00:00<00:00, 781628.98it/s]"
+      "100%|██████████| 1692/1692 [00:00<00:00, 858860.26it/s]"
      ]
     },
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "generated config file: at/home/ec2-user/.cache/huggingface/accelerate/default_config.yaml\n",
+      "generated config file: at /home/ec2-user/.cache/huggingface/accelerate/default_config.yaml\n",
+      "\n",
       "[{'compute_environment': 'LOCAL_MACHINE', 'deepspeed_config': {'gradient_accumulation_steps': 1, 'offload_optimizer_device': 'none', 'offload_param_device': 'none', 'zero3_init_flag': False, 'zero_stage': 2}, 'distributed_type': 'DEEPSPEED', 'downcast_bf16': 'no', 'fsdp_config': {}, 'machine_rank': 0, 'main_process_ip': None, 'main_process_port': None, 'main_training_function': 'main', 'mixed_precision': 'no', 'num_machines': 1, 'num_processes': 2, 'use_cpu': False}]\n",
       "Launching training on 2 GPUs.\n"
      ]
@@ -197,13 +207,21 @@
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "Start training with accelerator...Start training with accelerator...\n",
+      "Start training with accelerator...\n",
+      "Start training with accelerator...\n",
       "\n",
-      "The number of training epoch are 20The number of training epoch are 20\n",
       "\n",
-      "The total number of steps training epoch are 25The total number of steps training epoch are 25\n",
+      "The number of training epoch are 20\n",
+      "The number of training epoch are 20\n",
       "\n",
-      "Training epoch 0...Training epoch 0...\n",
+      "\n",
+      "The total number of steps training epoch are 53\n",
+      "The total number of steps training epoch are 53\n",
+      "\n",
+      "\n",
+      "Training epoch 0...\n",
+      "Training epoch 0...\n",
+      "\n",
       "\n"
      ]
     },
@@ -211,147 +229,172 @@
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "100%|██████████| 13/13 [00:01<00:00, 11.84it/s]\n"
+      "100%|██████████| 27/27 [00:02<00:00, 13.22it/s]\n"
      ]
     },
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "Training epoch 1...\n"
+      "Training epoch 1...\n",
+      "\n"
      ]
     },
     {
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "100%|██████████| 13/13 [00:01<00:00, 11.67it/s]\n"
+      "100%|██████████| 27/27 [00:02<00:00, 13.10it/s]\n"
      ]
     },
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "Training epoch 1...\n"
+      "Training epoch 1...\n",
+      "\n"
      ]
     },
     {
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "100%|██████████| 13/13 [00:01<00:00, 12.38it/s]\n"
+      "100%|██████████| 27/27 [00:02<00:00, 13.31it/s]\n"
      ]
     },
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "Training epoch 2...\n"
+      "Training epoch 2...\n",
+      "\n"
      ]
     },
     {
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "100%|██████████| 13/13 [00:01<00:00, 12.26it/s]\n"
+      "100%|██████████| 27/27 [00:02<00:00, 13.19it/s]\n"
      ]
     },
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "Training epoch 2...\n"
+      "Training epoch 2...\n",
+      "\n"
      ]
     },
     {
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "100%|██████████| 13/13 [00:01<00:00, 12.07it/s]\n"
+      "100%|██████████| 27/27 [00:02<00:00, 13.27it/s]\n"
      ]
     },
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "Training epoch 3...\n"
+      "Training epoch 3...\n",
+      "\n"
      ]
     },
     {
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "100%|██████████| 13/13 [00:01<00:00, 12.19it/s]\n"
+      "100%|██████████| 27/27 [00:02<00:00, 13.29it/s]\n"
      ]
     },
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "Training epoch 3...\n"
+      "Training epoch 3...\n",
+      "\n"
      ]
     },
     {
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "100%|██████████| 13/13 [00:01<00:00, 11.84it/s]\n"
+      "100%|██████████| 27/27 [00:01<00:00, 13.54it/s]\n"
      ]
     },
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "Training epoch 4...\n"
+      "Training epoch 4...\n",
+      "\n"
      ]
     },
     {
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "100%|██████████| 13/13 [00:01<00:00, 11.96it/s]\n"
+      "100%|██████████| 27/27 [00:02<00:00, 13.20it/s]\n"
      ]
     },
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "Training epoch 4...\n"
+      "Training epoch 4...\n",
+      "\n"
      ]
     },
     {
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "100%|██████████| 13/13 [00:01<00:00, 12.38it/s]\n"
+      "100%|██████████| 27/27 [00:01<00:00, 13.59it/s]\n"
      ]
     },
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "Training epoch 5...\n"
+      "Training epoch 5...\n",
+      "\n"
      ]
     },
     {
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "100%|██████████| 13/13 [00:01<00:00, 12.28it/s]\n"
+      "100%|██████████| 27/27 [00:01<00:00, 13.60it/s]\n"
      ]
     },
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "Training epoch 5...\n"
+      "Training epoch 5...\n",
+      "\n"
      ]
     },
     {
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "100%|██████████| 13/13 [00:01<00:00, 12.22it/s]\n"
+      "100%|██████████| 27/27 [00:02<00:00, 13.21it/s]\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Training epoch 6...\n",
+      "\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "100%|██████████| 27/27 [00:02<00:00, 13.08it/s]\n"
      ]
     },
     {
@@ -365,105 +408,126 @@
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "100%|██████████| 13/13 [00:01<00:00, 12.32it/s]\n"
+      "  0%|          | 0/27 [00:00<?, ?it/s]"
      ]
     },
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "Training epoch 6...\n"
+      "\n"
      ]
     },
     {
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "100%|██████████| 13/13 [00:01<00:00, 12.74it/s]\n"
+      "100%|██████████| 27/27 [00:02<00:00, 13.39it/s]\n"
      ]
     },
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "Training epoch 7...\n"
+      "Training epoch 7...\n",
+      "\n"
      ]
     },
     {
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "100%|██████████| 13/13 [00:01<00:00, 12.49it/s]\n"
+      "100%|██████████| 27/27 [00:02<00:00, 13.29it/s]\n"
      ]
     },
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "Training epoch 7...\n"
+      "Training epoch 7...\n",
+      "\n"
      ]
     },
     {
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "100%|██████████| 13/13 [00:01<00:00, 12.68it/s]\n"
+      "100%|██████████| 27/27 [00:02<00:00, 13.45it/s]\n"
      ]
     },
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "Training epoch 8...\n"
+      "Training epoch 8...\n",
+      "\n"
      ]
     },
     {
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "100%|██████████| 13/13 [00:01<00:00, 12.09it/s]\n"
+      "100%|██████████| 27/27 [00:02<00:00, 13.27it/s]\n"
      ]
     },
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "Training epoch 8...\n"
+      "Training epoch 8...\n",
+      "\n"
      ]
     },
     {
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "100%|██████████| 13/13 [00:01<00:00, 12.66it/s]\n"
+      "100%|██████████| 27/27 [00:02<00:00, 13.23it/s]\n"
      ]
     },
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "Training epoch 9...\n"
+      "Training epoch 9...\n",
+      "\n"
      ]
     },
     {
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "100%|██████████| 13/13 [00:01<00:00, 12.55it/s]\n"
+      "100%|██████████| 27/27 [00:02<00:00, 13.48it/s]\n"
      ]
     },
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "Training epoch 9...\n"
+      "Training epoch 9...\n",
+      "\n"
      ]
     },
     {
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "100%|██████████| 13/13 [00:01<00:00, 12.89it/s]\n"
+      "100%|██████████| 27/27 [00:02<00:00, 13.19it/s]\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Training epoch 10...\n",
+      "\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "100%|██████████| 27/27 [00:02<00:00, 13.20it/s]\n"
      ]
     },
     {
@@ -477,245 +541,261 @@
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "100%|██████████| 13/13 [00:01<00:00, 12.66it/s]\n"
+      "  0%|          | 0/27 [00:00<?, ?it/s]"
      ]
     },
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "Training epoch 10...\n"
+      "\n"
      ]
     },
     {
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "100%|██████████| 13/13 [00:01<00:00, 12.77it/s]\n"
+      "100%|██████████| 27/27 [00:02<00:00, 13.47it/s]\n"
      ]
     },
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "Training epoch 11...\n"
+      "Training epoch 11...\n",
+      "\n"
      ]
     },
     {
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "100%|██████████| 13/13 [00:01<00:00, 12.86it/s]\n"
+      "100%|██████████| 27/27 [00:02<00:00, 13.36it/s]\n"
      ]
     },
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "Training epoch 11...\n"
+      "Training epoch 11...\n",
+      "\n"
      ]
     },
     {
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "100%|██████████| 13/13 [00:01<00:00, 12.64it/s]\n"
+      "100%|██████████| 27/27 [00:02<00:00, 13.48it/s]\n"
      ]
     },
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "Training epoch 12...\n"
+      "Training epoch 12...\n",
+      "\n"
      ]
     },
     {
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "100%|██████████| 13/13 [00:01<00:00, 12.87it/s]\n"
+      "100%|██████████| 27/27 [00:02<00:00, 13.33it/s]\n"
      ]
     },
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "Training epoch 12...\n"
+      "Training epoch 12...\n",
+      "\n"
      ]
     },
     {
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "100%|██████████| 13/13 [00:01<00:00, 12.96it/s]\n"
+      "100%|██████████| 27/27 [00:02<00:00, 13.42it/s]\n"
      ]
     },
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "Training epoch 13...\n"
+      "Training epoch 13...\n",
+      "\n"
      ]
     },
     {
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "100%|██████████| 13/13 [00:01<00:00, 12.84it/s]\n"
+      "100%|██████████| 27/27 [00:02<00:00, 13.49it/s]\n"
      ]
     },
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "Training epoch 13...\n"
+      "Training epoch 13...\n",
+      "\n"
      ]
     },
     {
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "100%|██████████| 13/13 [00:01<00:00, 12.68it/s]\n"
+      "100%|██████████| 27/27 [00:02<00:00, 13.35it/s]\n"
      ]
     },
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "Training epoch 14...\n"
+      "Training epoch 14...\n",
+      "\n"
      ]
     },
     {
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "100%|██████████| 13/13 [00:00<00:00, 13.05it/s]\n"
+      "100%|██████████| 27/27 [00:02<00:00, 13.34it/s]\n"
      ]
     },
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "Training epoch 14...\n"
+      "Training epoch 14...\n",
+      "\n"
      ]
     },
     {
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "100%|██████████| 13/13 [00:01<00:00, 12.32it/s]\n"
+      "100%|██████████| 27/27 [00:02<00:00, 13.45it/s]\n"
      ]
     },
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "Training epoch 15...\n"
+      "Training epoch 15...\n",
+      "\n"
      ]
     },
     {
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "100%|██████████| 13/13 [00:01<00:00, 12.05it/s]\n"
+      "100%|██████████| 27/27 [00:01<00:00, 13.51it/s]\n"
      ]
     },
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "Training epoch 15...\n"
+      "Training epoch 15...\n",
+      "\n"
      ]
     },
     {
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "100%|██████████| 13/13 [00:01<00:00, 12.70it/s]\n"
+      "100%|██████████| 27/27 [00:01<00:00, 13.60it/s]\n"
      ]
     },
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "Training epoch 16...\n"
+      "Training epoch 16...\n",
+      "\n"
      ]
     },
     {
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "100%|██████████| 13/13 [00:01<00:00, 12.40it/s]\n"
+      "100%|██████████| 27/27 [00:01<00:00, 13.69it/s]\n"
      ]
     },
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "Training epoch 16...\n"
+      "Training epoch 16...\n",
+      "\n"
      ]
     },
     {
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "100%|██████████| 13/13 [00:01<00:00, 12.64it/s]\n"
+      "100%|██████████| 27/27 [00:02<00:00, 13.36it/s]\n"
      ]
     },
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "Training epoch 17...\n"
+      "Training epoch 17...\n",
+      "\n"
      ]
     },
     {
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "100%|██████████| 13/13 [00:01<00:00, 12.57it/s]\n"
+      "100%|██████████| 27/27 [00:02<00:00, 13.08it/s]\n"
      ]
     },
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "Training epoch 17...\n"
+      "Training epoch 17...\n",
+      "\n"
      ]
     },
     {
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "100%|██████████| 13/13 [00:01<00:00, 12.96it/s]\n"
+      "100%|██████████| 27/27 [00:02<00:00, 13.26it/s]\n"
      ]
     },
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "Training epoch 18...\n"
+      "Training epoch 18...\n",
+      "\n"
      ]
     },
     {
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "100%|██████████| 13/13 [00:01<00:00, 13.00it/s]\n"
+      "100%|██████████| 27/27 [00:02<00:00, 13.39it/s]\n"
      ]
     },
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "Training epoch 18...\n"
+      "Training epoch 18...\n",
+      "\n"
      ]
     },
     {
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "100%|██████████| 13/13 [00:01<00:00, 12.85it/s]\n"
+      "100%|██████████| 27/27 [00:02<00:00, 13.19it/s]\n"
      ]
     },
     {
@@ -729,7 +809,21 @@
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "100%|██████████| 13/13 [00:01<00:00, 12.77it/s]\n"
+      "100%|██████████| 27/27 [00:02<00:00, 13.28it/s]"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "\n"
      ]
     },
     {
@@ -743,29 +837,50 @@
      "name": "stderr",
      "output_type": "stream",
      "text": [
-      "100%|██████████| 13/13 [00:01<00:00, 12.55it/s]\n",
-      "100%|██████████| 13/13 [00:01<00:00, 12.20it/s]\n"
+      "  0%|          | 0/27 [00:00<?, ?it/s]"
      ]
     },
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "Total training time: 22.39643096923828\n",
-      "Total training time: 22.410019636154175\n",
-      "Preparing model to save\n",
-      "Preparing model to save\n",
-      "Model saved to path: /home/ec2-user/SageMaker/opensearch-py-ml-mingshl/test_model.pt\n",
-      "Model saved to path: /home/ec2-user/SageMaker/opensearch-py-ml-mingshl/test_model.pt\n",
-      "zip file is saved to /home/ec2-user/SageMaker/opensearch-py-ml-mingshl/test_model.zip\n"
+      "\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "100%|██████████| 27/27 [00:01<00:00, 13.59it/s]\n",
+      "100%|██████████| 27/27 [00:02<00:00, 13.46it/s]\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Total training time: 41.95800018310547\n",
+      "Total training time: 41.95861291885376\n",
+      "\n",
+      "\n",
+      "Preparing model to save...\n",
+      "\n",
+      "Preparing model to save...\n",
+      "\n",
+      "Model saved to path: /home/ec2-user/SageMaker/opensearch-py-ml-mingshl/test2_model.pt\n",
+      "\n",
+      "Model saved to path: /home/ec2-user/SageMaker/opensearch-py-ml-mingshl/test2_model.pt\n",
+      "\n",
+      "zip file is saved to /home/ec2-user/SageMaker/opensearch-py-ml-mingshl/test2_model.zip\n",
+      "\n"
      ]
     }
    ],
    "source": [
     "model = SentenceTransformerModel()\n",
     "training = model.train(read_path = '/home/ec2-user/SageMaker/opensearch-py-ml-mingshl/synthetic_queries.zip',\n",
-    "                        output_model_name = 'test_model.pt',\n",
-    "                        zip_file_name= 'test_model.zip',\n",
+    "                        output_model_name = 'test2_model.pt',\n",
+    "                        zip_file_name= 'test2_model.zip',\n",
     "                        overwrite = True,\n",
     "                        use_accelerate  = True,  \n",
     "                        num_machines = 1,\n",
@@ -810,7 +925,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 23,
+   "execution_count": 9,
    "id": "503f8136",
    "metadata": {},
    "outputs": [
@@ -818,9 +933,163 @@
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "model file is saved to/home/ec2-user/SageMaker/opensearch-py-ml-mingshl/msmarco-distilbert-base-tas-b.pt\n",
-      "zip file is saved to /home/ec2-user/SageMaker/opensearch-py-ml-mingshl/msmarco-distilbert-base-tas-b.zip\n"
+      "model file is saved to /home/ec2-user/SageMaker/opensearch-py-ml-mingshl/msmarco-distilbert-base-tas-b.pt\n",
+      "\n",
+      "zip file is saved to /home/ec2-user/SageMaker/opensearch-py-ml-mingshl/msmarco-distilbert-base-tas-b.zip\n",
+      "\n"
      ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "SentenceTransformer(\n",
+       "  original_name=SentenceTransformer\n",
+       "  (0): Transformer(\n",
+       "    original_name=Transformer\n",
+       "    (auto_model): DistilBertModel(\n",
+       "      original_name=DistilBertModel\n",
+       "      (embeddings): Embeddings(\n",
+       "        original_name=Embeddings\n",
+       "        (word_embeddings): Embedding(original_name=Embedding)\n",
+       "        (position_embeddings): Embedding(original_name=Embedding)\n",
+       "        (LayerNorm): LayerNorm(original_name=LayerNorm)\n",
+       "        (dropout): Dropout(original_name=Dropout)\n",
+       "      )\n",
+       "      (transformer): Transformer(\n",
+       "        original_name=Transformer\n",
+       "        (layer): ModuleList(\n",
+       "          original_name=ModuleList\n",
+       "          (0): TransformerBlock(\n",
+       "            original_name=TransformerBlock\n",
+       "            (attention): MultiHeadSelfAttention(\n",
+       "              original_name=MultiHeadSelfAttention\n",
+       "              (dropout): Dropout(original_name=Dropout)\n",
+       "              (q_lin): Linear(original_name=Linear)\n",
+       "              (k_lin): Linear(original_name=Linear)\n",
+       "              (v_lin): Linear(original_name=Linear)\n",
+       "              (out_lin): Linear(original_name=Linear)\n",
+       "            )\n",
+       "            (sa_layer_norm): LayerNorm(original_name=LayerNorm)\n",
+       "            (ffn): FFN(\n",
+       "              original_name=FFN\n",
+       "              (dropout): Dropout(original_name=Dropout)\n",
+       "              (lin1): Linear(original_name=Linear)\n",
+       "              (lin2): Linear(original_name=Linear)\n",
+       "              (activation): GELUActivation(original_name=GELUActivation)\n",
+       "            )\n",
+       "            (output_layer_norm): LayerNorm(original_name=LayerNorm)\n",
+       "          )\n",
+       "          (1): TransformerBlock(\n",
+       "            original_name=TransformerBlock\n",
+       "            (attention): MultiHeadSelfAttention(\n",
+       "              original_name=MultiHeadSelfAttention\n",
+       "              (dropout): Dropout(original_name=Dropout)\n",
+       "              (q_lin): Linear(original_name=Linear)\n",
+       "              (k_lin): Linear(original_name=Linear)\n",
+       "              (v_lin): Linear(original_name=Linear)\n",
+       "              (out_lin): Linear(original_name=Linear)\n",
+       "            )\n",
+       "            (sa_layer_norm): LayerNorm(original_name=LayerNorm)\n",
+       "            (ffn): FFN(\n",
+       "              original_name=FFN\n",
+       "              (dropout): Dropout(original_name=Dropout)\n",
+       "              (lin1): Linear(original_name=Linear)\n",
+       "              (lin2): Linear(original_name=Linear)\n",
+       "              (activation): GELUActivation(original_name=GELUActivation)\n",
+       "            )\n",
+       "            (output_layer_norm): LayerNorm(original_name=LayerNorm)\n",
+       "          )\n",
+       "          (2): TransformerBlock(\n",
+       "            original_name=TransformerBlock\n",
+       "            (attention): MultiHeadSelfAttention(\n",
+       "              original_name=MultiHeadSelfAttention\n",
+       "              (dropout): Dropout(original_name=Dropout)\n",
+       "              (q_lin): Linear(original_name=Linear)\n",
+       "              (k_lin): Linear(original_name=Linear)\n",
+       "              (v_lin): Linear(original_name=Linear)\n",
+       "              (out_lin): Linear(original_name=Linear)\n",
+       "            )\n",
+       "            (sa_layer_norm): LayerNorm(original_name=LayerNorm)\n",
+       "            (ffn): FFN(\n",
+       "              original_name=FFN\n",
+       "              (dropout): Dropout(original_name=Dropout)\n",
+       "              (lin1): Linear(original_name=Linear)\n",
+       "              (lin2): Linear(original_name=Linear)\n",
+       "              (activation): GELUActivation(original_name=GELUActivation)\n",
+       "            )\n",
+       "            (output_layer_norm): LayerNorm(original_name=LayerNorm)\n",
+       "          )\n",
+       "          (3): TransformerBlock(\n",
+       "            original_name=TransformerBlock\n",
+       "            (attention): MultiHeadSelfAttention(\n",
+       "              original_name=MultiHeadSelfAttention\n",
+       "              (dropout): Dropout(original_name=Dropout)\n",
+       "              (q_lin): Linear(original_name=Linear)\n",
+       "              (k_lin): Linear(original_name=Linear)\n",
+       "              (v_lin): Linear(original_name=Linear)\n",
+       "              (out_lin): Linear(original_name=Linear)\n",
+       "            )\n",
+       "            (sa_layer_norm): LayerNorm(original_name=LayerNorm)\n",
+       "            (ffn): FFN(\n",
+       "              original_name=FFN\n",
+       "              (dropout): Dropout(original_name=Dropout)\n",
+       "              (lin1): Linear(original_name=Linear)\n",
+       "              (lin2): Linear(original_name=Linear)\n",
+       "              (activation): GELUActivation(original_name=GELUActivation)\n",
+       "            )\n",
+       "            (output_layer_norm): LayerNorm(original_name=LayerNorm)\n",
+       "          )\n",
+       "          (4): TransformerBlock(\n",
+       "            original_name=TransformerBlock\n",
+       "            (attention): MultiHeadSelfAttention(\n",
+       "              original_name=MultiHeadSelfAttention\n",
+       "              (dropout): Dropout(original_name=Dropout)\n",
+       "              (q_lin): Linear(original_name=Linear)\n",
+       "              (k_lin): Linear(original_name=Linear)\n",
+       "              (v_lin): Linear(original_name=Linear)\n",
+       "              (out_lin): Linear(original_name=Linear)\n",
+       "            )\n",
+       "            (sa_layer_norm): LayerNorm(original_name=LayerNorm)\n",
+       "            (ffn): FFN(\n",
+       "              original_name=FFN\n",
+       "              (dropout): Dropout(original_name=Dropout)\n",
+       "              (lin1): Linear(original_name=Linear)\n",
+       "              (lin2): Linear(original_name=Linear)\n",
+       "              (activation): GELUActivation(original_name=GELUActivation)\n",
+       "            )\n",
+       "            (output_layer_norm): LayerNorm(original_name=LayerNorm)\n",
+       "          )\n",
+       "          (5): TransformerBlock(\n",
+       "            original_name=TransformerBlock\n",
+       "            (attention): MultiHeadSelfAttention(\n",
+       "              original_name=MultiHeadSelfAttention\n",
+       "              (dropout): Dropout(original_name=Dropout)\n",
+       "              (q_lin): Linear(original_name=Linear)\n",
+       "              (k_lin): Linear(original_name=Linear)\n",
+       "              (v_lin): Linear(original_name=Linear)\n",
+       "              (out_lin): Linear(original_name=Linear)\n",
+       "            )\n",
+       "            (sa_layer_norm): LayerNorm(original_name=LayerNorm)\n",
+       "            (ffn): FFN(\n",
+       "              original_name=FFN\n",
+       "              (dropout): Dropout(original_name=Dropout)\n",
+       "              (lin1): Linear(original_name=Linear)\n",
+       "              (lin2): Linear(original_name=Linear)\n",
+       "              (activation): GELUActivation(original_name=GELUActivation)\n",
+       "            )\n",
+       "            (output_layer_norm): LayerNorm(original_name=LayerNorm)\n",
+       "          )\n",
+       "        )\n",
+       "      )\n",
+       "    )\n",
+       "  )\n",
+       "  (1): Pooling(original_name=Pooling)\n",
+       ")"
+      ]
+     },
+     "execution_count": 9,
+     "metadata": {},
+     "output_type": "execute_result"
     }
    ],
    "source": [
@@ -859,7 +1128,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": null,
+   "execution_count": 10,
    "id": "dbe84425",
    "metadata": {},
    "outputs": [],
@@ -870,14 +1139,32 @@
   },
   {
    "cell_type": "code",
-   "execution_count": null,
+   "execution_count": 11,
    "id": "94f473d5",
    "metadata": {
     "pycharm": {
      "is_executing": true
     }
    },
-   "outputs": [],
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "{'name': 'all-MiniLM-L6-v2',\n",
+       " 'version': 1,\n",
+       " 'model_format': 'TORCH_SCRIPT',\n",
+       " 'model_task_type': 'TEXT_EMBEDDING',\n",
+       " 'model_config': {'model_type': 'bert',\n",
+       "  'embedding_dimension': 384,\n",
+       "  'framework_type': 'sentence_transformers',\n",
+       "  'all_config': '{\"_name_or_path\":\"nreimers/MiniLM-L6-H384-uncased\",\"architectures\":[\"BertModel\"],\"attention_probs_dropout_prob\":0.1,\"gradient_checkpointing\":false,\"hidden_act\":\"gelu\",\"hidden_dropout_prob\":0.1,\"hidden_size\":384,\"initializer_range\":0.02,\"intermediate_size\":1536,\"layer_norm_eps\":1e-12,\"max_position_embeddings\":512,\"model_type\":\"bert\",\"num_attention_heads\":12,\"num_hidden_layers\":6,\"pad_token_id\":0,\"position_embedding_type\":\"absolute\",\"transformers_version\":\"4.8.2\",\"type_vocab_size\":2,\"use_cache\":true,\"vocab_size\":30522}'}}"
+      ]
+     },
+     "execution_count": 11,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
    "source": [
     "#user will need to prepare a model_config.json file to config the model, including model name ..\n",
     "#this is a sample of model_config.json file\n",
@@ -904,12 +1191,12 @@
     "\n",
     "   }\n",
     "\n",
-    "}"
+    "}\n"
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": 8,
+   "execution_count": 12,
    "id": "c7b0ff7e",
    "metadata": {},
    "outputs": [
@@ -918,8 +1205,8 @@
      "output_type": "stream",
      "text": [
       "Total number of chunks 27\n",
-      "Sha1 value of the model file:  d1fc88bc317ed3dc52c4c7dc4d51122c6989876e62167566289a8067ab5d51e7\n",
-      "Model meta data was created successfully. Model Id:  oglVm4QBDmk7AZE7yW-d\n",
+      "Sha1 value of the model file:  eaf923a163f4277c755821418a04fef9e6fc7c26f9d68caa192d615c25758b93\n",
+      "Model meta data was created successfully. Model Id:  tQnNsIQBDmk7AZE7HW-b\n",
       "uploading chunk 1 of 27\n",
       "{'status': 'Uploaded'}\n",
       "uploading chunk 2 of 27\n",
@@ -981,16 +1268,16 @@
    "source": [
     "# upload model to OpenSearch cluster, using model zip file path\n",
     "\n",
-    "model_path = '/home/ec2-user/SageMaker/opensearch-py-ml-mingshl/test_model.zip'\n",
+    "model_path = '/home/ec2-user/SageMaker/opensearch-py-ml-mingshl/test2_model.zip'\n",
     "ml_client.upload_model( model_path, '/home/ec2-user/SageMaker/opensearch-py-ml-mingshl/save_pre_trained_model_json/model_config.json', isVerbose=True)"
    ]
   }
  ],
  "metadata": {
   "kernelspec": {
-   "display_name": "Python 3 (ipykernel)",
+   "display_name": "conda_tensorflow2_p38",
    "language": "python",
-   "name": "python3"
+   "name": "conda_tensorflow2_p38"
   },
   "language_info": {
    "codemirror_mode": {
@@ -1002,7 +1289,7 @@
    "name": "python",
    "nbconvert_exporter": "python",
    "pygments_lexer": "ipython3",
-   "version": "3.9.15"
+   "version": "3.8.12"
   }
  },
  "nbformat": 4,
