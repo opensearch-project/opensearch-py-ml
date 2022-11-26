@@ -87,7 +87,7 @@ class SentenceTransformerModel:
             launch train_model function with the number of processors provided by users if NOT use accelerator,
             trigger train_model function with default setting
         compute_environment: str
-            optional, compute environment type to run model, if None, default using 'LOCAL_MACHINE'
+            optional, compute environment type to run model, if None, default using `LOCAL_MACHINE`
         num_machines: int
             optional, number of machine to run model , if None, default using 1
         num_processes: int
@@ -99,7 +99,7 @@ class SentenceTransformerModel:
         verbose: bool
             optional, use plotting to plot the training progress. Default as false.
 
-        Return
+        Returns
         -------
         None
         """
