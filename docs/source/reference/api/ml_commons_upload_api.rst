@@ -1,4 +1,4 @@
-upload_model
+Upload Model
 ==================
 
 .. currentmodule:: opensearch_py_ml
