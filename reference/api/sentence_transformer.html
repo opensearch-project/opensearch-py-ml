@@ -115,6 +115,54 @@
 </style>
 <section id="train">
 <h1>Train<a class="headerlink" href="#train" title="Permalink to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="opensearch_py_ml.sentence_transformer_model.SentenceTransformerModel.train">
+<span class="sig-prename descclassname"><span class="pre">opensearch_py_ml.sentence_transformer_model.SentenceTransformerModel.</span></span><span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">read_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_model_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zip_file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_accelerate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compute_environment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_machines</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_processes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">learning_rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_epochs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#opensearch_py_ml.sentence_transformer_model.SentenceTransformerModel.train" title="Permalink to this definition"></a></dt>
+<dd><p>Read the synthetic queries and use it to fine tune/train (and save) a sentence transformer model.</p>
+<section id="parameters">
+<h2>Parameters<a class="headerlink" href="#parameters" title="Permalink to this heading"></a></h2>
+<dl class="simple">
+<dt>read_path: str</dt><dd><p>required, path to the zipped file that contains generated queries, if None, raise exception.
+the zipped file should contain pickled file in list of dictionary format with key named as ‘query’,
+‘probability’ and ‘passages’. For example: [{‘query’:q1,’probability’: p1,’passages’: pa1}, …].
+‘probability’ is not required for training purpose.</p>
+</dd>
+<dt>overwrite: bool</dt><dd><p>optional, synthetic_queries/ folder in current directory is to store unzip queries files.
+Default to set overwrite as false and if the folder is not empty, raise exception to recommend users
+to either clean up folder or enable overwriting is True.</p>
+</dd>
+<dt>output_model_path: str=None</dt><dd><p>the path to store trained custom model. If None, default as current folder path</p>
+</dd>
+<dt>output_model_name: str=None</dt><dd><p>the name of the trained custom model. If None, default as ‘trained_model.pt’</p>
+</dd>
+<dt>zip_file_name: str =None</dt><dd><p>Optional, file name for zip file. if None, default as custom_tasb_model.zip</p>
+</dd>
+<dt>use_accelerate: bool = False,</dt><dd><p>Optional, use accelerate to fine tune model. Default as false to not use accelerator to fine tune model.
+If there are multiple gpus available in the machine, it’s recommended to use accelerate with num_processor&gt;1
+to speeed up the training progress. If use accelerator to train model, run auto setup accelerate confi and
+launch train_model function with the number of processors provided by users if NOT use accelerator,
+trigger train_model function with default setting</p>
+</dd>
+<dt>compute_environment: str</dt><dd><p>optional, compute environment type to run model, if None, default using <cite>LOCAL_MACHINE</cite></p>
+</dd>
+<dt>num_machines: int</dt><dd><p>optional, number of machine to run model , if None, default using 1</p>
+</dd>
+<dt>num_processes: int</dt><dd><p>optional, number of processors to run model , if None, default using 1</p>
+</dd>
+<dt>learning_rate: float</dt><dd><p>optional, learning rate to train model, default is 2e-5</p>
+</dd>
+<dt>num_epochs: int</dt><dd><p>optional, number of epochs to train model, default is 20</p>
+</dd>
+<dt>verbose: bool</dt><dd><p>optional, use plotting to plot the training progress. Default as false.</p>
+</dd>
+</dl>
+</section>
+<section id="returns">
+<h2>Returns<a class="headerlink" href="#returns" title="Permalink to this heading"></a></h2>
+<p>None</p>
+</section>
+</dd></dl>
+
 </section>
 
 
