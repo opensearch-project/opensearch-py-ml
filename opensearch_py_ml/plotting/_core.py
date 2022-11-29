@@ -23,7 +23,6 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from opensearch_py_ml.common import OPENSEARCH_TEST_CLIENT  # noqa: F401
 from opensearch_py_ml.plotting._matplotlib.hist import hist_frame, hist_series
 
 
@@ -52,6 +51,7 @@ def oml_hist_series(
     Examples
     --------
     >>> import matplotlib.pyplot as plt
+    >>> from tests import OPENSEARCH_TEST_CLIENT  # noqa: F401
     >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')
     >>> df[df.OriginWeather == 'Sunny']['FlightTimeMin'].hist(alpha=0.5, density=True) # doctest: +SKIP
     >>> df[df.OriginWeather != 'Sunny']['FlightTimeMin'].hist(alpha=0.5, density=True) # doctest: +SKIP
@@ -118,6 +118,8 @@ def oml_hist_frame(
 
     Examples
     --------
+    >>> from tests import OPENSEARCH_TEST_CLIENT
+
     >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')
     >>> hist = df.select_dtypes(include=[np.number]).hist(figsize=[10,10]) # doctest: +SKIP
     """

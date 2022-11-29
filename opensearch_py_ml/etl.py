@@ -32,7 +32,6 @@ from opensearchpy import OpenSearch
 from opensearchpy.helpers import parallel_bulk
 
 from opensearch_py_ml import DataFrame
-from opensearch_py_ml.common import OPENSEARCH_TEST_CLIENT  # noqa: F401
 from opensearch_py_ml.common import DEFAULT_CHUNK_SIZE, PANDAS_VERSION
 from opensearch_py_ml.field_mappings import FieldMappings, verify_mapping_compatibility
 
@@ -99,6 +98,7 @@ def pandas_to_opensearch(
     Examples
     --------
 
+    >>> from tests import OPENSEARCH_TEST_CLIENT
     >>> pd_df = pd.DataFrame(data={'A': 3.141,
     ...                            'B': 1,
     ...                            'C': 'foo',
@@ -133,6 +133,7 @@ def pandas_to_opensearch(
     it is readable on return `refresh=True`
 
 
+    >>> from tests import OPENSEARCH_TEST_CLIENT
     >>> oml_df = oml.pandas_to_opensearch(pd_df,
     ...                            OPENSEARCH_TEST_CLIENT,
     ...                            'pandas_to_opensearch',
@@ -263,6 +264,8 @@ def opensearch_to_pandas(
 
     Examples
     --------
+    >>> from tests import OPENSEARCH_TEST_CLIENT
+
     >>> oml_df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights').head()
     >>> type(oml_df)
     <class 'opensearch_py_ml.dataframe.DataFrame'>

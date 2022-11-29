@@ -56,7 +56,6 @@ from opensearch_py_ml.arithmetics import (
     ArithmeticSeries,
     ArithmeticString,
 )
-from opensearch_py_ml.common import OPENSEARCH_TEST_CLIENT  # noqa: F401
 from opensearch_py_ml.common import DEFAULT_NUM_ROWS_DISPLAYED, docstring_parameter
 from opensearch_py_ml.filter import (
     BooleanFilter,
@@ -111,6 +110,7 @@ class Series(NDFrame):
 
     Examples
     --------
+    >>> from tests import OPENSEARCH_TEST_CLIENT
     >>> oml.Series(os_client=OPENSEARCH_TEST_CLIENT, os_index_pattern='flights', name='Carrier')
     0         Kibana Airlines
     1        Logstash Airways
@@ -179,6 +179,8 @@ class Series(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> df = oml.Series(OPENSEARCH_TEST_CLIENT, 'ecommerce', name='total_quantity')
         >>> df.shape
         (4675, 1)
@@ -228,6 +230,8 @@ class Series(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')
         >>> df.Carrier
         0         Kibana Airlines
@@ -304,6 +308,8 @@ class Series(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')
         >>> df['Carrier'].value_counts()
         Logstash Airways    3331
@@ -620,6 +626,8 @@ class Series(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> oml_flights = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')
         >>> oml_flights["timestamp"].quantile([.2,.5,.75]) # doctest: +SKIP
         0.20   2018-01-09 04:30:57.289159912
@@ -724,6 +732,8 @@ class Series(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> oml_ecommerce = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce')
         >>> oml_ecommerce["day_of_week"].mode()
         0    Thursday
@@ -792,6 +802,8 @@ class Series(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> df = oml.DataFrame(
         ...   OPENSEARCH_TEST_CLIENT, "ecommerce",
         ...   columns=["category", "taxful_total_price"]
@@ -840,6 +852,8 @@ class Series(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
         >>> df.taxful_total_price
         0     36.98
@@ -900,6 +914,8 @@ class Series(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
         >>> df.taxful_total_price
         0     36.98
@@ -939,6 +955,8 @@ class Series(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
         >>> df.taxful_total_price
         0     36.98
@@ -978,6 +996,8 @@ class Series(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
         >>> df.taxful_total_price
         0     36.98
@@ -1017,6 +1037,8 @@ class Series(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
         >>> df.taxful_total_price
         0     36.98
@@ -1056,6 +1078,8 @@ class Series(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
         >>> df.taxful_total_price
         0     36.98
@@ -1095,6 +1119,8 @@ class Series(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
         >>> df.taxful_total_price
         0     36.98
@@ -1134,6 +1160,8 @@ class Series(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
         >>> df.taxful_total_price
         0     36.98
@@ -1166,6 +1194,8 @@ class Series(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
         >>> df.taxful_total_price
         0     36.98
@@ -1198,6 +1228,8 @@ class Series(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
         >>> df.taxful_total_price
         0     36.98
@@ -1230,6 +1262,8 @@ class Series(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
         >>> df.taxful_total_price
         0     36.98
@@ -1262,6 +1296,8 @@ class Series(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
         >>> df.taxful_total_price
         0     36.98
@@ -1294,6 +1330,8 @@ class Series(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
         >>> df.total_quantity
         0    2
@@ -1326,6 +1364,8 @@ class Series(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce').head(5)
         >>> df.taxful_total_price
         0     36.98
@@ -1448,6 +1488,8 @@ class Series(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> s = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')['AvgTicketPrice']
         >>> int(s.max())
         1199
@@ -1472,6 +1514,8 @@ class Series(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> s = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')['AvgTicketPrice']
         >>> int(s.mean())
         628
@@ -1496,6 +1540,8 @@ class Series(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> s = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')['AvgTicketPrice']
         >>> int(s.median())
         640
@@ -1520,6 +1566,8 @@ class Series(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> s = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')['AvgTicketPrice']
         >>> int(s.min())
         100
@@ -1544,6 +1592,8 @@ class Series(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> s = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')['AvgTicketPrice']
         >>> int(s.sum())
         8204364
@@ -1566,6 +1616,8 @@ class Series(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> s = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')['Carrier']
         >>> s.nunique()
         4
@@ -1606,6 +1658,8 @@ class Series(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> s = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')['AvgTicketPrice']
         >>> int(s.var())
         70964
@@ -1628,6 +1682,8 @@ class Series(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> s = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')['AvgTicketPrice']
         >>> int(s.std())
         266
@@ -1650,6 +1706,8 @@ class Series(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> s = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')['AvgTicketPrice']
         >>> int(s.mad())
         213
@@ -1678,6 +1736,8 @@ class Series(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights') # ignoring percentiles as they don't generate consistent results
         >>> df.AvgTicketPrice.describe()  # doctest: +SKIP
         count    13059.000000
@@ -1711,6 +1771,8 @@ class Series(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> oml_s = oml.Series(OPENSEARCH_TEST_CLIENT, 'flights', name='Carrier').head(5)
         >>> pd_s = oml.opensearch_to_pandas(oml_s)
         >>> print(f"type(oml_s)={type(oml_s)}\\ntype(pd_s)={type(pd_s)}")
