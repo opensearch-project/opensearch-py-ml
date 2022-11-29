@@ -25,7 +25,6 @@
 
 from typing import TYPE_CHECKING, List, Optional, Union
 
-from opensearch_py_ml.common import OPENSEARCH_TEST_CLIENT  # noqa: F401
 from opensearch_py_ml.query_compiler import QueryCompiler
 
 if TYPE_CHECKING:
@@ -76,6 +75,8 @@ class DataFrameGroupBy(GroupBy):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> df = oml.DataFrame(
         ...   OPENSEARCH_TEST_CLIENT, "flights",
         ...   columns=["AvgTicketPrice", "Cancelled", "dayOfWeek", "timestamp", "DestCountry"]
@@ -127,6 +128,8 @@ class DataFrameGroupBy(GroupBy):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> df = oml.DataFrame(
         ...   OPENSEARCH_TEST_CLIENT, "flights",
         ...   columns=["AvgTicketPrice", "Cancelled", "dayOfWeek", "timestamp", "DestCountry"]
@@ -178,6 +181,8 @@ class DataFrameGroupBy(GroupBy):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> df = oml.DataFrame(
         ...   OPENSEARCH_TEST_CLIENT, "flights",
         ...   columns=["AvgTicketPrice", "Cancelled", "dayOfWeek", "DestCountry"]
@@ -229,6 +234,8 @@ class DataFrameGroupBy(GroupBy):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> df = oml.DataFrame(
         ...   OPENSEARCH_TEST_CLIENT, "flights",
         ...   columns=["AvgTicketPrice", "Cancelled", "dayOfWeek", "timestamp", "DestCountry"]
@@ -280,6 +287,8 @@ class DataFrameGroupBy(GroupBy):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> df = oml.DataFrame(
         ...   OPENSEARCH_TEST_CLIENT, "flights",
         ...   columns=["AvgTicketPrice", "Cancelled", "dayOfWeek", "timestamp", "DestCountry"]
@@ -331,6 +340,8 @@ class DataFrameGroupBy(GroupBy):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> df = oml.DataFrame(
         ...   OPENSEARCH_TEST_CLIENT, "flights",
         ...   columns=["AvgTicketPrice", "Cancelled", "dayOfWeek", "DestCountry"]
@@ -382,6 +393,8 @@ class DataFrameGroupBy(GroupBy):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> df = oml.DataFrame(
         ...   OPENSEARCH_TEST_CLIENT, "flights",
         ...   columns=["AvgTicketPrice", "Cancelled", "dayOfWeek", "timestamp", "DestCountry"]
@@ -433,6 +446,8 @@ class DataFrameGroupBy(GroupBy):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> df = oml.DataFrame(
         ...   OPENSEARCH_TEST_CLIENT, "flights",
         ...   columns=["AvgTicketPrice", "Cancelled", "dayOfWeek", "timestamp", "DestCountry"]
@@ -484,6 +499,8 @@ class DataFrameGroupBy(GroupBy):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> df = oml.DataFrame(
         ...   OPENSEARCH_TEST_CLIENT, "flights",
         ...   columns=["AvgTicketPrice", "Cancelled", "dayOfWeek", "DestCountry"]
@@ -535,6 +552,8 @@ class DataFrameGroupBy(GroupBy):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> oml_df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')
         >>> oml_flights = oml_df.filter(["AvgTicketPrice", "FlightDelayMin", "dayOfWeek", "timestamp"])
         >>> oml_flights.groupby(["dayOfWeek", "Cancelled"]).quantile() # doctest: +SKIP
@@ -624,6 +643,8 @@ class DataFrameGroupBy(GroupBy):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> df = oml.DataFrame(
         ...   OPENSEARCH_TEST_CLIENT, "flights",
         ...   columns=["AvgTicketPrice", "Cancelled", "dayOfWeek", "DestCountry"]
@@ -678,6 +699,8 @@ class DataFrameGroupBy(GroupBy):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> df = oml.DataFrame(
         ...   OPENSEARCH_TEST_CLIENT, "flights",
         ...   columns=["AvgTicketPrice", "Cancelled", "dayOfWeek", "DestCountry"]

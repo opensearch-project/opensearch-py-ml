@@ -42,7 +42,6 @@ from pandas.io.formats.printing import pprint_thing  # type: ignore
 from pandas.util._validators import validate_bool_kwarg  # type: ignore
 
 import opensearch_py_ml.plotting as gfx
-from opensearch_py_ml.common import OPENSEARCH_TEST_CLIENT  # noqa: F401
 from opensearch_py_ml.common import DEFAULT_NUM_ROWS_DISPLAYED, docstring_parameter
 from opensearch_py_ml.filter import BooleanFilter
 from opensearch_py_ml.groupby import DataFrameGroupBy
@@ -77,6 +76,9 @@ class DataFrame(NDFrame):
     Examples
     --------
     Constructing DataFrame from an OpenSearch configuration arguments and an OpenSearch index
+
+    >>> from tests import OPENSEARCH_TEST_CLIENT
+
 
     >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')
     >>> df.head()
@@ -171,6 +173,8 @@ class DataFrame(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')
         >>> assert isinstance(df.columns, pd.Index)
         >>> df.columns
@@ -199,6 +203,8 @@ class DataFrame(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')
         >>> df.empty
         False
@@ -229,6 +235,8 @@ class DataFrame(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights', columns=['Origin', 'Dest'])
         >>> df.head(3)
                                     Origin                                          Dest
@@ -264,6 +272,8 @@ class DataFrame(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights', columns=['Origin', 'Dest'])
         >>> df.tail()
                                                                     Origin  \\
@@ -365,6 +375,8 @@ class DataFrame(NDFrame):
         Examples
         --------
         Drop a column
+
+        >>> from tests import OPENSEARCH_TEST_CLIENT
 
         >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce', columns=['customer_first_name', 'email', 'user'])
         >>> df.drop(columns=['user'])
@@ -576,6 +588,8 @@ class DataFrame(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce', columns=['customer_first_name', 'geoip.city_name'])
         >>> df.count()
         customer_first_name    4675
@@ -598,6 +612,8 @@ class DataFrame(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')
         >>> df = df[(df.OriginAirportID == 'AMS') & (df.FlightDelayMin > 60)]
         >>> df = df[['timestamp', 'OriginAirportID', 'DestAirportID', 'FlightDelayMin']]
@@ -693,6 +709,8 @@ class DataFrame(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, "ecommerce")
         >>> df.os_match("Men's", columns=["category"])
                                                       category currency  ...   type     user
@@ -754,6 +772,7 @@ class DataFrame(NDFrame):
         Apply a `geo-distance query`_ to a dataset with a geo-point column ``geoip.location``.
 
          .. _geo-distance query documentation from Elasticsearch: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-geo-distance-query.html
+        >>> from tests import OPENSEARCH_TEST_CLIENT
 
         >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce', columns=['customer_first_name', 'geoip.city_name'])
         >>> df.os_query({"bool": {"filter": {"geo_distance": {"distance": "1km", "geoip.location": [55.3, 25.3]}}}}).head()
@@ -831,6 +850,8 @@ class DataFrame(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce', columns=['customer_first_name', 'geoip.city_name'])
         >>> df.info()
         <class 'opensearch_py_ml.dataframe.DataFrame'>
@@ -1367,6 +1388,8 @@ class DataFrame(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights',
         ... columns=['AvgTicketPrice', 'Dest', 'Cancelled', 'timestamp', 'dayOfWeek'])
         >>> df.dtypes
@@ -1408,6 +1431,8 @@ class DataFrame(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce')
         >>> df.shape
         (4675, 45)
@@ -1470,6 +1495,8 @@ class DataFrame(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights', columns=['AvgTicketPrice', 'Cancelled']).head()
         >>> df
            AvgTicketPrice  Cancelled
@@ -1535,6 +1562,8 @@ class DataFrame(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights', columns=['AvgTicketPrice', 'Cancelled']).head()
         >>> df
            AvgTicketPrice  Cancelled
@@ -1631,6 +1660,8 @@ class DataFrame(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights', columns=['AvgTicketPrice', 'DistanceKilometers', 'timestamp', 'DestCountry'])
         >>> df.aggregate(['sum', 'min', 'std'], numeric_only=True).astype(int)
              AvgTicketPrice  DistanceKilometers
@@ -1706,8 +1737,10 @@ class DataFrame(NDFrame):
 
         Examples
         --------
-        >>> ed_flights = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights', columns=["AvgTicketPrice", "Cancelled", "dayOfWeek", "timestamp", "DestCountry"])
-        >>> ed_flights.groupby(["DestCountry", "Cancelled"]).agg(["min", "max"], numeric_only=True) # doctest: +NORMALIZE_WHITESPACE
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
+        >>> oml_flights = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights', columns=["AvgTicketPrice", "Cancelled", "dayOfWeek", "timestamp", "DestCountry"])
+        >>> oml_flights.groupby(["DestCountry", "Cancelled"]).agg(["min", "max"], numeric_only=True) # doctest: +NORMALIZE_WHITESPACE
                               AvgTicketPrice              dayOfWeek
                                          min          max       min  max
         DestCountry Cancelled
@@ -1725,7 +1758,7 @@ class DataFrame(NDFrame):
         <BLANKLINE>
         [63 rows x 4 columns]
 
-        >>> ed_flights.groupby(["DestCountry", "Cancelled"]).mean(numeric_only=True) # doctest: +NORMALIZE_WHITESPACE
+        >>> oml_flights.groupby(["DestCountry", "Cancelled"]).mean(numeric_only=True) # doctest: +NORMALIZE_WHITESPACE
                                AvgTicketPrice  dayOfWeek
         DestCountry Cancelled
         AE          False          643.956793   2.717949
@@ -1742,7 +1775,7 @@ class DataFrame(NDFrame):
         <BLANKLINE>
         [63 rows x 2 columns]
 
-        >>> ed_flights.groupby(["DestCountry", "Cancelled"]).min(numeric_only=False) # doctest: +NORMALIZE_WHITESPACE
+        >>> oml_flights.groupby(["DestCountry", "Cancelled"]).min(numeric_only=False) # doctest: +NORMALIZE_WHITESPACE
                                AvgTicketPrice  dayOfWeek           timestamp
         DestCountry Cancelled
         AE          False          110.799911          0 2018-01-01 19:31:30
@@ -1801,6 +1834,8 @@ class DataFrame(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> oml_ecommerce = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'ecommerce')
         >>> oml_df = oml_ecommerce.filter(["total_quantity", "geoip.city_name", "customer_birth_date", "day_of_week", "taxful_total_price"])
         >>> oml_df.mode(numeric_only=False)
@@ -1866,6 +1901,8 @@ class DataFrame(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> oml_df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')
         >>> oml_flights = oml_df.filter(["AvgTicketPrice", "FlightDelayMin", "dayOfWeek", "timestamp"])
         >>> oml_flights.quantile() # doctest: +SKIP
@@ -1909,6 +1946,8 @@ class DataFrame(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> oml_df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')
         >>> oml_flights = oml_df.filter(["AvgTicketPrice", "FlightDelayMin", "dayOfWeek", "timestamp"])
         >>> oml_flights.idxmax()
@@ -1941,6 +1980,8 @@ class DataFrame(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> oml_df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')
         >>> oml_flights = oml_df.filter(["AvgTicketPrice", "FlightDelayMin", "dayOfWeek", "timestamp"])
         >>> oml_flights.idxmin()
@@ -1977,6 +2018,8 @@ class DataFrame(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')
         >>> df.shape
         (13059, 27)
@@ -2021,6 +2064,8 @@ class DataFrame(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')
         >>> df.get('Carrier')
         0         Kibana Airlines
@@ -2152,6 +2197,8 @@ class DataFrame(NDFrame):
 
         Examples
         --------
+        >>> from tests import OPENSEARCH_TEST_CLIENT
+
         >>> oml_df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights', columns=['AvgTicketPrice', 'Carrier']).head(5)
         >>> pd_df = oml.opensearch_to_pandas(oml_df)
         >>> print(f"type(oml_df)={type(oml_df)}\\ntype(pd_df)={type(pd_df)}")
