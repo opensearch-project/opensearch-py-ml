@@ -139,6 +139,9 @@
 </section>
 <section id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this heading"></a></h2>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tests</span> <span class="kn">import</span> <span class="n">OPENSEARCH_TEST_CLIENT</span>
+</pre></div>
+</div>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">oml</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">OPENSEARCH_TEST_CLIENT</span><span class="p">,</span> <span class="s1">&#39;flights&#39;</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Origin&#39;</span><span class="p">,</span> <span class="s1">&#39;AvgTicketPrice&#39;</span><span class="p">,</span> <span class="s1">&#39;timestamp&#39;</span><span class="p">,</span> <span class="s1">&#39;dayOfWeek&#39;</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">os_dtypes</span>
 <span class="go">Origin            keyword</span>

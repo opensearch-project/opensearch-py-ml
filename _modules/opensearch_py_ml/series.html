@@ -129,7 +129,6 @@
     <span class="n">ArithmeticSeries</span><span class="p">,</span>
     <span class="n">ArithmeticString</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">opensearch_py_ml.common</span> <span class="kn">import</span> <span class="n">OPENSEARCH_TEST_CLIENT</span>  <span class="c1"># noqa: F401</span>
 <span class="kn">from</span> <span class="nn">opensearch_py_ml.common</span> <span class="kn">import</span> <span class="n">DEFAULT_NUM_ROWS_DISPLAYED</span><span class="p">,</span> <span class="n">docstring_parameter</span>
 <span class="kn">from</span> <span class="nn">opensearch_py_ml.filter</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">BooleanFilter</span><span class="p">,</span>
@@ -184,6 +183,7 @@
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; from tests import OPENSEARCH_TEST_CLIENT</span>
 <span class="sd">    &gt;&gt;&gt; oml.Series(os_client=OPENSEARCH_TEST_CLIENT, os_index_pattern=&#39;flights&#39;, name=&#39;Carrier&#39;)</span>
 <span class="sd">    0         Kibana Airlines</span>
 <span class="sd">    1        Logstash Airways</span>
@@ -252,6 +252,8 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from tests import OPENSEARCH_TEST_CLIENT</span>
+
 <span class="sd">        &gt;&gt;&gt; df = oml.Series(OPENSEARCH_TEST_CLIENT, &#39;ecommerce&#39;, name=&#39;total_quantity&#39;)</span>
 <span class="sd">        &gt;&gt;&gt; df.shape</span>
 <span class="sd">        (4675, 1)</span>
@@ -301,6 +303,8 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from tests import OPENSEARCH_TEST_CLIENT</span>
+
 <span class="sd">        &gt;&gt;&gt; df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;flights&#39;)</span>
 <span class="sd">        &gt;&gt;&gt; df.Carrier</span>
 <span class="sd">        0         Kibana Airlines</span>
@@ -377,6 +381,8 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from tests import OPENSEARCH_TEST_CLIENT</span>
+
 <span class="sd">        &gt;&gt;&gt; df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;flights&#39;)</span>
 <span class="sd">        &gt;&gt;&gt; df[&#39;Carrier&#39;].value_counts()</span>
 <span class="sd">        Logstash Airways    3331</span>
@@ -693,6 +699,8 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from tests import OPENSEARCH_TEST_CLIENT</span>
+
 <span class="sd">        &gt;&gt;&gt; oml_flights = oml.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;flights&#39;)</span>
 <span class="sd">        &gt;&gt;&gt; oml_flights[&quot;timestamp&quot;].quantile([.2,.5,.75]) # doctest: +SKIP</span>
 <span class="sd">        0.20   2018-01-09 04:30:57.289159912</span>
@@ -797,6 +805,8 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from tests import OPENSEARCH_TEST_CLIENT</span>
+
 <span class="sd">        &gt;&gt;&gt; oml_ecommerce = oml.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;ecommerce&#39;)</span>
 <span class="sd">        &gt;&gt;&gt; oml_ecommerce[&quot;day_of_week&quot;].mode()</span>
 <span class="sd">        0    Thursday</span>
@@ -865,6 +875,8 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from tests import OPENSEARCH_TEST_CLIENT</span>
+
 <span class="sd">        &gt;&gt;&gt; df = oml.DataFrame(</span>
 <span class="sd">        ...   OPENSEARCH_TEST_CLIENT, &quot;ecommerce&quot;,</span>
 <span class="sd">        ...   columns=[&quot;category&quot;, &quot;taxful_total_price&quot;]</span>
@@ -913,6 +925,8 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from tests import OPENSEARCH_TEST_CLIENT</span>
+
 <span class="sd">        &gt;&gt;&gt; df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;ecommerce&#39;).head(5)</span>
 <span class="sd">        &gt;&gt;&gt; df.taxful_total_price</span>
 <span class="sd">        0     36.98</span>
@@ -973,6 +987,8 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from tests import OPENSEARCH_TEST_CLIENT</span>
+
 <span class="sd">        &gt;&gt;&gt; df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;ecommerce&#39;).head(5)</span>
 <span class="sd">        &gt;&gt;&gt; df.taxful_total_price</span>
 <span class="sd">        0     36.98</span>
@@ -1012,6 +1028,8 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from tests import OPENSEARCH_TEST_CLIENT</span>
+
 <span class="sd">        &gt;&gt;&gt; df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;ecommerce&#39;).head(5)</span>
 <span class="sd">        &gt;&gt;&gt; df.taxful_total_price</span>
 <span class="sd">        0     36.98</span>
@@ -1051,6 +1069,8 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from tests import OPENSEARCH_TEST_CLIENT</span>
+
 <span class="sd">        &gt;&gt;&gt; df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;ecommerce&#39;).head(5)</span>
 <span class="sd">        &gt;&gt;&gt; df.taxful_total_price</span>
 <span class="sd">        0     36.98</span>
@@ -1090,6 +1110,8 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from tests import OPENSEARCH_TEST_CLIENT</span>
+
 <span class="sd">        &gt;&gt;&gt; df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;ecommerce&#39;).head(5)</span>
 <span class="sd">        &gt;&gt;&gt; df.taxful_total_price</span>
 <span class="sd">        0     36.98</span>
@@ -1129,6 +1151,8 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from tests import OPENSEARCH_TEST_CLIENT</span>
+
 <span class="sd">        &gt;&gt;&gt; df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;ecommerce&#39;).head(5)</span>
 <span class="sd">        &gt;&gt;&gt; df.taxful_total_price</span>
 <span class="sd">        0     36.98</span>
@@ -1168,6 +1192,8 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from tests import OPENSEARCH_TEST_CLIENT</span>
+
 <span class="sd">        &gt;&gt;&gt; df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;ecommerce&#39;).head(5)</span>
 <span class="sd">        &gt;&gt;&gt; df.taxful_total_price</span>
 <span class="sd">        0     36.98</span>
@@ -1207,6 +1233,8 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from tests import OPENSEARCH_TEST_CLIENT</span>
+
 <span class="sd">        &gt;&gt;&gt; df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;ecommerce&#39;).head(5)</span>
 <span class="sd">        &gt;&gt;&gt; df.taxful_total_price</span>
 <span class="sd">        0     36.98</span>
@@ -1239,6 +1267,8 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from tests import OPENSEARCH_TEST_CLIENT</span>
+
 <span class="sd">        &gt;&gt;&gt; df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;ecommerce&#39;).head(5)</span>
 <span class="sd">        &gt;&gt;&gt; df.taxful_total_price</span>
 <span class="sd">        0     36.98</span>
@@ -1271,6 +1301,8 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from tests import OPENSEARCH_TEST_CLIENT</span>
+
 <span class="sd">        &gt;&gt;&gt; df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;ecommerce&#39;).head(5)</span>
 <span class="sd">        &gt;&gt;&gt; df.taxful_total_price</span>
 <span class="sd">        0     36.98</span>
@@ -1303,6 +1335,8 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from tests import OPENSEARCH_TEST_CLIENT</span>
+
 <span class="sd">        &gt;&gt;&gt; df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;ecommerce&#39;).head(5)</span>
 <span class="sd">        &gt;&gt;&gt; df.taxful_total_price</span>
 <span class="sd">        0     36.98</span>
@@ -1335,6 +1369,8 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from tests import OPENSEARCH_TEST_CLIENT</span>
+
 <span class="sd">        &gt;&gt;&gt; df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;ecommerce&#39;).head(5)</span>
 <span class="sd">        &gt;&gt;&gt; df.taxful_total_price</span>
 <span class="sd">        0     36.98</span>
@@ -1367,6 +1403,8 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from tests import OPENSEARCH_TEST_CLIENT</span>
+
 <span class="sd">        &gt;&gt;&gt; df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;ecommerce&#39;).head(5)</span>
 <span class="sd">        &gt;&gt;&gt; df.total_quantity</span>
 <span class="sd">        0    2</span>
@@ -1399,6 +1437,8 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from tests import OPENSEARCH_TEST_CLIENT</span>
+
 <span class="sd">        &gt;&gt;&gt; df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;ecommerce&#39;).head(5)</span>
 <span class="sd">        &gt;&gt;&gt; df.taxful_total_price</span>
 <span class="sd">        0     36.98</span>
@@ -1521,6 +1561,8 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from tests import OPENSEARCH_TEST_CLIENT</span>
+
 <span class="sd">        &gt;&gt;&gt; s = oml.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;flights&#39;)[&#39;AvgTicketPrice&#39;]</span>
 <span class="sd">        &gt;&gt;&gt; int(s.max())</span>
 <span class="sd">        1199</span>
@@ -1545,6 +1587,8 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from tests import OPENSEARCH_TEST_CLIENT</span>
+
 <span class="sd">        &gt;&gt;&gt; s = oml.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;flights&#39;)[&#39;AvgTicketPrice&#39;]</span>
 <span class="sd">        &gt;&gt;&gt; int(s.mean())</span>
 <span class="sd">        628</span>
@@ -1569,6 +1613,8 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from tests import OPENSEARCH_TEST_CLIENT</span>
+
 <span class="sd">        &gt;&gt;&gt; s = oml.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;flights&#39;)[&#39;AvgTicketPrice&#39;]</span>
 <span class="sd">        &gt;&gt;&gt; int(s.median())</span>
 <span class="sd">        640</span>
@@ -1593,6 +1639,8 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from tests import OPENSEARCH_TEST_CLIENT</span>
+
 <span class="sd">        &gt;&gt;&gt; s = oml.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;flights&#39;)[&#39;AvgTicketPrice&#39;]</span>
 <span class="sd">        &gt;&gt;&gt; int(s.min())</span>
 <span class="sd">        100</span>
@@ -1617,6 +1665,8 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from tests import OPENSEARCH_TEST_CLIENT</span>
+
 <span class="sd">        &gt;&gt;&gt; s = oml.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;flights&#39;)[&#39;AvgTicketPrice&#39;]</span>
 <span class="sd">        &gt;&gt;&gt; int(s.sum())</span>
 <span class="sd">        8204364</span>
@@ -1639,6 +1689,8 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from tests import OPENSEARCH_TEST_CLIENT</span>
+
 <span class="sd">        &gt;&gt;&gt; s = oml.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;flights&#39;)[&#39;Carrier&#39;]</span>
 <span class="sd">        &gt;&gt;&gt; s.nunique()</span>
 <span class="sd">        4</span>
@@ -1679,6 +1731,8 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from tests import OPENSEARCH_TEST_CLIENT</span>
+
 <span class="sd">        &gt;&gt;&gt; s = oml.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;flights&#39;)[&#39;AvgTicketPrice&#39;]</span>
 <span class="sd">        &gt;&gt;&gt; int(s.var())</span>
 <span class="sd">        70964</span>
@@ -1701,6 +1755,8 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from tests import OPENSEARCH_TEST_CLIENT</span>
+
 <span class="sd">        &gt;&gt;&gt; s = oml.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;flights&#39;)[&#39;AvgTicketPrice&#39;]</span>
 <span class="sd">        &gt;&gt;&gt; int(s.std())</span>
 <span class="sd">        266</span>
@@ -1723,6 +1779,8 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from tests import OPENSEARCH_TEST_CLIENT</span>
+
 <span class="sd">        &gt;&gt;&gt; s = oml.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;flights&#39;)[&#39;AvgTicketPrice&#39;]</span>
 <span class="sd">        &gt;&gt;&gt; int(s.mad())</span>
 <span class="sd">        213</span>
@@ -1751,6 +1809,8 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from tests import OPENSEARCH_TEST_CLIENT</span>
+
 <span class="sd">        &gt;&gt;&gt; df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;flights&#39;) # ignoring percentiles as they don&#39;t generate consistent results</span>
 <span class="sd">        &gt;&gt;&gt; df.AvgTicketPrice.describe()  # doctest: +SKIP</span>
 <span class="sd">        count    13059.000000</span>
@@ -1784,6 +1844,8 @@
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; from tests import OPENSEARCH_TEST_CLIENT</span>
+
 <span class="sd">        &gt;&gt;&gt; oml_s = oml.Series(OPENSEARCH_TEST_CLIENT, &#39;flights&#39;, name=&#39;Carrier&#39;).head(5)</span>
 <span class="sd">        &gt;&gt;&gt; pd_s = oml.opensearch_to_pandas(oml_s)</span>
 <span class="sd">        &gt;&gt;&gt; print(f&quot;type(oml_s)={type(oml_s)}\\ntype(pd_s)={type(pd_s)}&quot;)</span>

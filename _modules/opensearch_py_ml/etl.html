@@ -105,7 +105,6 @@
 <span class="kn">from</span> <span class="nn">opensearchpy.helpers</span> <span class="kn">import</span> <span class="n">parallel_bulk</span>
 
 <span class="kn">from</span> <span class="nn">opensearch_py_ml</span> <span class="kn">import</span> <span class="n">DataFrame</span>
-<span class="kn">from</span> <span class="nn">opensearch_py_ml.common</span> <span class="kn">import</span> <span class="n">OPENSEARCH_TEST_CLIENT</span>  <span class="c1"># noqa: F401</span>
 <span class="kn">from</span> <span class="nn">opensearch_py_ml.common</span> <span class="kn">import</span> <span class="n">DEFAULT_CHUNK_SIZE</span><span class="p">,</span> <span class="n">PANDAS_VERSION</span>
 <span class="kn">from</span> <span class="nn">opensearch_py_ml.field_mappings</span> <span class="kn">import</span> <span class="n">FieldMappings</span><span class="p">,</span> <span class="n">verify_mapping_compatibility</span>
 
@@ -172,6 +171,7 @@
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
 
+<span class="sd">    &gt;&gt;&gt; from tests import OPENSEARCH_TEST_CLIENT</span>
 <span class="sd">    &gt;&gt;&gt; pd_df = pd.DataFrame(data={&#39;A&#39;: 3.141,</span>
 <span class="sd">    ...                            &#39;B&#39;: 1,</span>
 <span class="sd">    ...                            &#39;C&#39;: &#39;foo&#39;,</span>
@@ -206,6 +206,7 @@
 <span class="sd">    it is readable on return `refresh=True`</span>
 
 
+<span class="sd">    &gt;&gt;&gt; from tests import OPENSEARCH_TEST_CLIENT</span>
 <span class="sd">    &gt;&gt;&gt; oml_df = oml.pandas_to_opensearch(pd_df,</span>
 <span class="sd">    ...                            OPENSEARCH_TEST_CLIENT,</span>
 <span class="sd">    ...                            &#39;pandas_to_opensearch&#39;,</span>
@@ -336,6 +337,8 @@
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; from tests import OPENSEARCH_TEST_CLIENT</span>
+
 <span class="sd">    &gt;&gt;&gt; oml_df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;flights&#39;).head()</span>
 <span class="sd">    &gt;&gt;&gt; type(oml_df)</span>
 <span class="sd">    &lt;class &#39;opensearch_py_ml.dataframe.DataFrame&#39;&gt;</span>
