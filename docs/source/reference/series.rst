@@ -115,7 +115,7 @@ Serialization / IO / Conversion
 Opensearch Functions
 ~~~~~~~~~~~~~~~~~~~~~~~
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 2pip
 
    api/Series.os_info
    api/Series.os_match

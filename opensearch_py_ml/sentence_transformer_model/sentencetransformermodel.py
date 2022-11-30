@@ -5,6 +5,7 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
+import json
 import os
 import pickle
 import random
@@ -35,10 +36,12 @@ class SentenceTransformerModel:
         Parameters
         ----------
         model_id: str = None
-             the huggingface mode id to download sentence transformer model, if None, default as 'sentence-transformers/msmarco-distilbert-base-tas-b'
-        Return
-        ----------
-             None
+             the huggingface mode id to download sentence transformer model,
+             if None, default as 'sentence-transformers/msmarco-distilbert-base-tas-b'
+
+        Returns
+        -------
+        None
         """
         if model_id is None:
             self.model_id = "sentence-transformers/msmarco-distilbert-base-tas-b"
@@ -111,6 +114,7 @@ class SentenceTransformerModel:
         )
 
         if use_accelerate is True:
+
             self.set_up_accelerate_config(
                 compute_environment=compute_environment,
                 num_machines=num_machines,
@@ -156,7 +160,6 @@ class SentenceTransformerModel:
     #    public step by step functions:
     def read_queries(self, read_path: str, overwrite: bool = False) -> pd.DataFrame:
         """
-        Description:
         Read the queries generated from the Synthetic Query Generator (SQG) model, unzip files to current directory
         within synthetic_queries/ folder, output as a dataframe
 
@@ -168,9 +171,10 @@ class SentenceTransformerModel:
             optional, synthetic_queries/ folder in current directory is to store unzip queries files.
             Default to set overwrite as false and if the folder is not empty, raise exception to recommend users
             to either clean up folder or enable overwriting is True.
-        Return
-        ----------
-            The dataframe of queries.
+
+        Returns
+        -------
+        The dataframe of queries.
         """
 
         if read_path is None:
@@ -257,7 +261,6 @@ class SentenceTransformerModel:
         self, df, use_accelerate: bool = False
     ) -> List[str]:
         """
-        Description:
         Create input data for training
 
         Parameters
@@ -266,9 +269,10 @@ class SentenceTransformerModel:
             required for loading sentence transformer examples.
         use_accelerate: bool = False,
             Optional, use accelerate to fine tune model. Default as false to not use accelerator.
-        Return
-        ----------
-            the list of train examples.
+
+        Returns
+        -------
+        the list of train examples.
         """
 
         train_examples = []
@@ -326,9 +330,10 @@ class SentenceTransformerModel:
             optional, number of epochs to train model, default is 20
         verbose: float
             optional, use plotting to plot the training progress. Default as false.
-        Return
-        ----------
-            the torch script format trained model.
+
+        Returns
+        -------
+        the torch script format trained model.
         """
 
         if output_path is None:
@@ -562,9 +567,9 @@ class SentenceTransformerModel:
         zip_file_name: str =None
             Optional, file name for zip file. if None, default as concatenate model_id and '.zip'
 
-        Return
-        ----------
-            None
+        Returns
+        -------
+        None
         """
         if model_name is None:
             model_name = str(self.model_id.split("/")[-1] + ".pt")
@@ -599,7 +604,6 @@ class SentenceTransformerModel:
         zip_file_name: str = None,
     ):
         """
-        Description:
         download sentence transformer model directly from huggingface, convert model to torch script format,
         zip the model file and its tokenizer.json file to prepare to upload to the Open Search cluster
 
@@ -617,10 +621,10 @@ class SentenceTransformerModel:
         zip_file_name: str =None
             Optional, file name for zip file. e.g, "sample_model.zip". If None, default takes the model_id
             and add the extension with ".zip".
-        Return
-        ----------
-            the torch script format model
 
+        Returns
+        -------
+        the torch script format model
         """
 
         if model is None:
@@ -674,7 +678,6 @@ class SentenceTransformerModel:
         num_processes: int = None,
     ) -> None:
         """
-        Description:
         get default config setting based on the number of GPU on the machine
         if users require other configs, users can run !acclerate config for more options.
 
@@ -685,9 +688,9 @@ class SentenceTransformerModel:
         num_machines: int
             optional, number of machine to run model , if None, default using 1
 
-        Return
-        ----------
-            None
+        Returns
+        -------
+        None
         """
 
         if compute_environment is None or compute_environment == 0:
@@ -742,6 +745,95 @@ class SentenceTransformerModel:
 
         with open(file_path, "w") as file:
             yaml.dump(default_file, file)
+
+    def make_model_config_json(
+        self,
+        model_name: str = None,
+        version_number: int = 1,
+        embedding_dimension: int = 384,
+        all_config: dict = None,
+        model_type: str = None,
+    ) -> None:
+        """
+        parse from config.json file of pre-trained hugging-face model to generate a model_config.json file. If all required
+        fields are given by users, use the given parameters and will skip reading the config.json,
+
+        Parameters
+        ----------
+        model_name: str = None
+            Optional, The name of the model. If None, default to parse from model id, for example,
+            'msmarco-distilbert-base-tas-b'
+        version_number: int = 1,
+            Optional, The version number of the model. If None, default to be 1.
+        embedding_dimension: int = 384,
+            Optional, the embedding_dimension of the model. If None, parse from the config file of pre-trained
+            hugging-face model, if not found, default to be 384.
+        all_config: dict = None,
+            Optional, the embedding_dimension of the model. If None, parse from the config file of pre-trained
+            hugging-face model.
+        model_type: str = None,
+            Optional, the embedding_dimension of the model. If None, parse from the config file of pre-trained
+            hugging-face model.
+
+        Returns
+        -------
+        None
+        """
+        folder_path = os.path.join(os.getcwd() + "/trained_pytorch_model/")
+        config_json_file_path = os.path.join(
+            os.getcwd() + "/trained_pytorch_model/config.json"
+        )
+
+        if (
+            all_config is None
+            or model_type is None
+            or model_type is None
+            or embedding_dimension == 364
+        ):
+            if not os.path.exists(config_json_file_path):
+                raise Exception(
+                    str("Cannot find config.json in" + config_json_file_path)
+                )
+            f = open(config_json_file_path)
+            if all_config is None:
+                all_config = json.load(f)
+            if model_type is None:
+                model_type = all_config["model_type"]
+
+            embedding_dimension_mapping_list = ["dim", "hidden_size", "d_model"]
+            for mapping_item in embedding_dimension_mapping_list:
+                if mapping_item in all_config.keys():
+                    embedding_dimension = all_config[mapping_item]
+                    break
+
+            f.close()
+
+        if model_name is None:
+            model_name = self.model_id.split("/")[-1]
+
+        print("reading config file: at" + config_json_file_path)
+
+        default_file = {
+            "name": model_name,
+            "version": version_number,
+            "model_format": "TORCH_SCRIPT",
+            "model_task_type": "TEXT_EMBEDDING",
+            "model_config": {
+                "model_type": model_type,
+                "embedding_dimension": embedding_dimension,
+                "framework_type": "sentence_transformers",
+                "all_config": str(all_config),
+            },
+        }
+
+        print("generating model_config.json file...")
+        print(default_file)
+
+        model_config_file_path = os.path.join(folder_path + "model_config.json")
+        os.makedirs(os.path.dirname(model_config_file_path), exist_ok=True)
+        with open(model_config_file_path, "w") as file:
+            json.dump(default_file, file)
+        print("model_config.json file is saved at", model_config_file_path, ".")
 
     # private methods
     def __qryrem(self, x):
