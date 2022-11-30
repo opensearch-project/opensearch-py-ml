@@ -10,4 +10,3 @@ accelerate
 sentence_transformers
 tqdm
 transformers
-json

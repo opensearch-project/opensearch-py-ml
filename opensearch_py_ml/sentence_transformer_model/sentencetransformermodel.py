@@ -750,8 +750,8 @@ class SentenceTransformerModel:
         self,
         model_name: str = None,
         version_number: int = 1,
-        embedding_dimension: int = 384,
-        all_config: dict = None,
+        embedding_dimension: int = 768,
+        all_config: str = None,
         model_type: str = None,
     ) -> None:
         """
@@ -765,14 +765,14 @@ class SentenceTransformerModel:
             'msmarco-distilbert-base-tas-b'
         version_number: int = 1,
             Optional, The version number of the model. If None, default to be 1.
-        embedding_dimension: int = 384,
-            Optional, the embedding_dimension of the model. If None, parse from the config file of pre-trained
-            hugging-face model, if not found, default to be 384.
+        embedding_dimension: int = 768,
+            Optional, the embedding_dimension of the model. If None, parse embedding_dimension from the config file of
+             pre-trained hugging-face model, if not found, default to be 768.
         all_config: dict = None,
-            Optional, the embedding_dimension of the model. If None, parse from the config file of pre-trained
+            Optional, the all_config of the model. If None, parse all contents from the config file of pre-trained
             hugging-face model.
         model_type: str = None,
-            Optional, the embedding_dimension of the model. If None, parse from the config file of pre-trained
+            Optional, the model_type of the model. If None, parse model_type from the config file of pre-trained
             hugging-face model.
 
         Returns
@@ -783,16 +783,17 @@ class SentenceTransformerModel:
         config_json_file_path = os.path.join(
             os.getcwd() + "/trained_pytorch_model/config.json"
         )
+        if model_name is None:
+            model_name = self.model_id.split("/")[-1]
 
-        if (
-            all_config is None
-            or model_type is None
-            or model_type is None
-            or embedding_dimension == 364
-        ):
+        if all_config is None or model_type is None or embedding_dimension == 768:
             if not os.path.exists(config_json_file_path):
                 raise Exception(
-                    str("Cannot find config.json in" + config_json_file_path)
+                    str(
+                        "Cannot find config.json in"
+                        + config_json_file_path
+                        + ". Please check the config.son file in the path."
+                    )
                 )
             f = open(config_json_file_path)
             if all_config is None:
@@ -807,9 +808,6 @@ class SentenceTransformerModel:
                     break
 
             f.close()
-
-        if model_name is None:
-            model_name = self.model_id.split("/")[-1]
 
         print("reading config file: at" + config_json_file_path)
 

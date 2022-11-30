@@ -10,7 +10,7 @@ Constructor
 .. toctree::
    :maxdepth: 2
 
-   api/sentence_transformer.init
+   api/sentence_transformer
 
 Train Model
 ~~~~~~~~~~~

@@ -1,5 +1,5 @@
-(Optional) SentenceTransformerModel.zip_model
-=============================================
+SentenceTransformerModel.zip_model
+===================================
 
 .. currentmodule:: opensearch_py_ml
 
