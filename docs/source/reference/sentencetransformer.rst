@@ -30,13 +30,6 @@ Train Model
    api/sentence_transformer.train_model
    api/sentence_transformer.zip_model
 
-Config Model
-~~~~~~~~~~~~
-.. toctree::
-   :maxdepth: 2
-
-   api/sentence_transformer.make_model_config_json
-
 Export Model
 ~~~~~~~~~~~~
 .. toctree::
@@ -44,3 +37,9 @@ Export Model
 
    api/sentence_transformer.save_as_pt
 
+Config Model
+~~~~~~~~~~~~
+.. toctree::
+   :maxdepth: 2
+
+   api/sentence_transformer.make_model_config_json

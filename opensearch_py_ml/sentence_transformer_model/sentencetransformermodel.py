@@ -28,21 +28,48 @@ from transformers import TrainingArguments, get_linear_schedule_with_warmup
 
 
 class SentenceTransformerModel:
-    def __init__(self, model_id: str = None) -> None:
+    def __init__(
+        self, model_id: str = None, folder_path: str = None, overwrite: bool = False
+    ) -> None:
         """
         Description:
-        Initiate a sentence transformer model object.
+        Initiate a sentence transformer model object. The model id will be used tp download pretrained model from the
+        hugging-face and served as the default name for model files, and the folder_path will be the default location
+        to store files generated in the following functions.
 
         Parameters
         ----------
         model_id: str = None
-             the huggingface mode id to download sentence transformer model,
+             Optional, the huggingface mode id to download sentence transformer model,
              if None, default as 'sentence-transformers/msmarco-distilbert-base-tas-b'
-
+        folder_path: str = None
+             Optional, the path of the folder to save output files, such as queries, pre-trained model, after-trained
+             custom model and configuration files. if None, default as "/model_files/" under the current work directory.
+        overwrite: bool = False
+             Optional,  choose to overwrite the folder at folder path. Default as false. So when training different
+             sentence transformer models,it's recommended to give designated folder path per model training. But if the
+             training process get interrupted in between, users can choose overwrite = True to restart the process.
         Returns
         -------
         None
         """
+        default_folder_path = os.path.join(os.getcwd() + "/model_files/")
+
+        # check folder exist in default_folder_path
+        if os.path.exists(default_folder_path) and not overwrite:
+            print(
+                "To prevent overwritten, please enter a different folder path or delete the 'model_files' folder or enable overwrite = True"
+            )
+            raise Exception(
+                str(
+                    "The default folder path already exists at : " + default_folder_path
+                )
+            )
+
+        if folder_path is None:
+            self.folder_path = default_folder_path
+        else:
+            self.folder_path = folder_path
         if model_id is None:
             self.model_id = "sentence-transformers/msmarco-distilbert-base-tas-b"
         else:
@@ -80,9 +107,9 @@ class SentenceTransformerModel:
         output_model_path: str=None
             the path to store trained custom model. If None, default as current folder path
         output_model_name: str=None
-            the name of the trained custom model. If None, default as 'trained_model.pt'
+            the name of the trained custom model. If None, default as model_id + '.pt'
         zip_file_name: str =None
-            Optional, file name for zip file. if None, default as custom_tasb_model.zip
+            Optional, file name for zip file. if None, default as model_id + '.zip'
         use_accelerate: bool = False,
             Optional, use accelerate to fine tune model. Default as false to not use accelerator to fine tune model.
             If there are multiple gpus available in the machine, it's recommended to use accelerate with num_processor>1
@@ -113,7 +140,7 @@ class SentenceTransformerModel:
             query_df, use_accelerate
         )
 
-        if use_accelerate is True:
+        if use_accelerate is True and num_processes != 0:
 
             self.set_up_accelerate_config(
                 compute_environment=compute_environment,
@@ -185,9 +212,8 @@ class SentenceTransformerModel:
         # assign a local folder 'synthetic_queries/' to store the unzip file,
         # check if the folder contains sub-folders and files, remove and clean up the folder before unzip.
         # walk through the zip file and read the file paths into file_list
-        unzip_path = os.path.join(os.getcwd(), "synthetic_queries/")
+        unzip_path = os.path.join(self.folder_path, "synthetic_queries/")
 
-        # ML add warning here and confirm with user to proceed
         if os.path.exists(unzip_path):
             if len(os.listdir(unzip_path)) > 0:
                 if overwrite:
@@ -207,8 +233,9 @@ class SentenceTransformerModel:
                                 )
                 else:
                     raise Exception(
-                        unzip_path
-                        + " folder is not empty, please clean up folder, or enable overwrite = True. Try again."
+                        "'synthetic_queries' folder is not empty, please clean up folder, or enable overwrite = "
+                        + "True. Try again. Please check "
+                        + unzip_path
                     )
 
         file_list = []
@@ -319,9 +346,9 @@ class SentenceTransformerModel:
         model_id: str = None
             optional,the url to download sentence transformer model, if None, default as 'sentence-transformers/msmarco-distilbert-base-tas-b'
         output_path: str=None
-            optional,the path to store trained custom model. If None, default as current folder path
+            optional,the path to store trained custom model. If None, default as default_folder_path from constructor
         output_model_name: str=None
-            optional,the name of the trained custom model. If None, default as 'trained_model.pt'
+            optional,the name of the trained custom model. If None, default as model_id + '.pt'
         use_accelerate: bool = False,
             Optional, use accelerate to fine tune model. Default as false to not use accelerator.
         learning_rate: float
@@ -337,14 +364,14 @@ class SentenceTransformerModel:
         """
 
         if output_path is None:
-            output_path = os.getcwd()
+            output_path = self.folder_path
         if model_id is None:
             model_id = "sentence-transformers/msmarco-distilbert-base-tas-b"
         if output_model_name is None:
             output_model_name = str(self.model_id.split("/")[-1] + ".pt")
 
         # prepare an output model path for later saving the pt model.
-        output_model_path = output_path + "/" + output_model_name
+        output_model_path = os.path.join(output_path, output_model_name)
 
         # declare variables before assignment for training
         batch_size = 32
@@ -526,7 +553,7 @@ class SentenceTransformerModel:
                         plt.show()
 
         # saving the pytorch model and the tokenizers.json file is saving at this step
-        model.save("trained_pytorch_model/")
+        model.save(output_path)
         device = "cpu"
         cpu_model = model.to(device)
         print(f"Total training time: {time.time() - init_time}\n")
@@ -546,8 +573,10 @@ class SentenceTransformerModel:
         )
 
         print("Preparing model to save...\n")
+        # openfile = open(output_model_path,'w')
+        # torch.jit.save(traced_cpu, openfile)
+        # openfile.close()
         torch.jit.save(traced_cpu, output_model_path)
-
         print("Model saved to path: " + output_model_path + "\n")
         return traced_cpu
 
@@ -575,32 +604,38 @@ class SentenceTransformerModel:
             model_name = str(self.model_id.split("/")[-1] + ".pt")
 
         if model_path is None:
-            model_path = os.path.join(os.getcwd(), str(model_name))
+            model_path = os.path.join(self.folder_path, str(model_name))
         else:
             model_path = os.path.join(model_path, str(model_name))
 
         if zip_file_name is None:
             zip_file_name = str(model_name + ".zip")
 
-        if not os.path.exists("trained_pytorch_model/tokenizer.json"):
+        tokenizer_json_path = os.path.join(self.folder_path, "tokenizer.json")
+        zip_file_path = os.path.join(self.folder_path, zip_file_name)
+
+        if not os.path.exists(tokenizer_json_path):
             raise Exception(
-                "Cannot find tokenizer.json in trained_pytorch_model/tokenizer.json"
+                "Cannot find tokenizer.json file, please check at "
+                + tokenizer_json_path
             )
         if not os.path.exists(model_path):
-            raise Exception("Cannot find model in the model path")
+            raise Exception(
+                "Cannot find model in the model path , please check at " + model_path
+            )
 
         # Create a ZipFile Object
-        with ZipFile(zip_file_name, "w") as zipObj:
+        with ZipFile(zip_file_path, "w") as zipObj:
             zipObj.write(model_path)
-            zipObj.write("trained_pytorch_model/tokenizer.json")
-        print("zip file is saved to " + os.getcwd() + "/" + zip_file_name + "\n")
+            zipObj.write(tokenizer_json_path)
+        print("zip file is saved to " + zip_file_path + "\n")
 
     def save_as_pt(
         self,
         sentences: [str],
         model=None,
         model_name: str = None,
-        save_json_folder_name: str = None,
+        save_json_folder_path: str = None,
         zip_file_name: str = None,
     ):
         """
@@ -618,6 +653,9 @@ class SentenceTransformerModel:
         model_name: str
             Optional, model name to name the model file, e.g, "sample_model.pt". If None, default takes the
             model_id and add the extension with ".pt".
+        save_json_folder_path:
+             Optional, path to save model json file, e.g, "home/save_pre_trained_model_json/"). If None, default as
+             default_folder_path from the constructor.
         zip_file_name: str =None
             Optional, file name for zip file. e.g, "sample_model.zip". If None, default takes the model_id
             and add the extension with ".zip".
@@ -633,14 +671,17 @@ class SentenceTransformerModel:
         if model_name is None:
             model_name = str(self.model_id.split("/")[-1] + ".pt")
 
-        if save_json_folder_name is None:
-            save_json_folder_name = "save_pre_trained_model_json/"
+        model_path = os.path.join(self.folder_path, model_name)
+
+        if save_json_folder_path is None:
+            save_json_folder_path = self.folder_path
 
         if zip_file_name is None:
             zip_file_name = str(self.model_id.split("/")[-1] + ".zip")
+        zip_file_path = os.path.join(self.folder_path, zip_file_name)
 
         # save tokenizer.json in save_json_folder_name
-        model.save(save_json_folder_name)
+        model.save(save_json_folder_path)
 
         # convert to pt format will need to be in cpu,
         # set the device to cpu, convert its input_ids and attention_mask in cpu and save as .pt format
@@ -656,19 +697,19 @@ class SentenceTransformerModel:
             ({"input_ids": input_ids, "attention_mask": attention_mask}),
             strict=False,
         )
-        torch.jit.save(compiled_model, model_name)
-        print("model file is saved to " + os.getcwd() + "/" + model_name + "\n")
+        torch.jit.save(compiled_model, model_path)
+        print("model file is saved to ", model_path)
 
         # zip model file along with tokenizer.json as output
-        with ZipFile(str(zip_file_name), "w") as zipObj:
+        with ZipFile(str(zip_file_path), "w") as zipObj:
             zipObj.write(
-                os.path.join(os.getcwd(), str(model_name)),
+                model_path,
                 arcname=str(model_name),
             )
             zipObj.write(
-                str(save_json_folder_name + "tokenizer.json"), arcname="tokenizer.json"
+                str(save_json_folder_path + "tokenizer.json"), arcname="tokenizer.json"
             )
-        print("zip file is saved to " + os.getcwd() + "/" + str(zip_file_name) + "\n")
+        print("zip file is saved to ", zip_file_path, "\n")
         return compiled_model
 
     def set_up_accelerate_config(
@@ -779,10 +820,8 @@ class SentenceTransformerModel:
         -------
         None
         """
-        folder_path = os.path.join(os.getcwd() + "/trained_pytorch_model/")
-        config_json_file_path = os.path.join(
-            os.getcwd() + "/trained_pytorch_model/config.json"
-        )
+        folder_path = self.folder_path
+        config_json_file_path = os.path.join(folder_path, "config.json")
         if model_name is None:
             model_name = self.model_id.split("/")[-1]
 
