@@ -53,7 +53,7 @@ class SentenceTransformerModel:
         -------
         None
         """
-        default_folder_path = os.path.join(os.getcwd() + "/model_files/")
+        default_folder_path = os.path.join(os.getcwd() + "/model_files")
 
         # check folder exist in default_folder_path
         if os.path.exists(default_folder_path) and not overwrite:
@@ -212,7 +212,7 @@ class SentenceTransformerModel:
         # assign a local folder 'synthetic_queries/' to store the unzip file,
         # check if the folder contains sub-folders and files, remove and clean up the folder before unzip.
         # walk through the zip file and read the file paths into file_list
-        unzip_path = os.path.join(self.folder_path, "synthetic_queries/")
+        unzip_path = os.path.join(self.folder_path, "synthetic_queries")
 
         if os.path.exists(unzip_path):
             if len(os.listdir(unzip_path)) > 0:
@@ -316,8 +316,6 @@ class SentenceTransformerModel:
                     )
                 )
         else:
-            #  ML: broken down the class into following
-            #  train_examples = tasb_dataset_vanilla(df)
             queries = list(df["query"])
             passages = list(df["passages"])
             for i in tqdm(range(len(df)), total=len(df)):
@@ -446,7 +444,6 @@ class SentenceTransformerModel:
             init_time = time.time()
             total_loss = []
 
-            # TO DO: to add more comments to explain the training epoch
             for epoch in range(num_epochs):
                 print("Training epoch " + str(epoch) + "...\n")
                 for step, batch in tqdm(
@@ -548,7 +545,7 @@ class SentenceTransformerModel:
                     scheduler.step()
                     optimizer.zero_grad()
 
-                    if not j % 500 and j != 0:  # MS: change 500
+                    if not j % 500 and j != 0:
                         plt.plot(loss[::100])
                         plt.show()
 
@@ -573,9 +570,6 @@ class SentenceTransformerModel:
         )
 
         print("Preparing model to save...\n")
-        # openfile = open(output_model_path,'w')
-        # torch.jit.save(traced_cpu, openfile)
-        # openfile.close()
         torch.jit.save(traced_cpu, output_model_path)
         print("Model saved to path: " + output_model_path + "\n")
         return traced_cpu
@@ -749,7 +743,7 @@ class SentenceTransformerModel:
 
         cache_dir = os.path.join(hf_cache_home, "accelerate")
 
-        file_path = os.path.join(cache_dir + "/default_config.yaml")
+        file_path = os.path.join(cache_dir, "default_config.yaml")
         print("generated config file: at " + file_path + "\n")
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         if num_processes is None:
@@ -838,7 +832,16 @@ class SentenceTransformerModel:
             if all_config is None:
                 all_config = json.load(f)
             if model_type is None:
-                model_type = all_config["model_type"]
+                if "model_type" in all_config.keys():
+                    model_type = all_config["model_type"]
+                else:
+                    raise Exception(
+                        str(
+                            "Cannot find model_type in config.json file"
+                            + config_json_file_path
+                            + ". Please check the config.son file in the path."
+                        )
+                    )
 
             embedding_dimension_mapping_list = ["dim", "hidden_size", "d_model"]
             for mapping_item in embedding_dimension_mapping_list:
@@ -866,7 +869,7 @@ class SentenceTransformerModel:
         print("generating model_config.json file...")
         print(default_file)
 
-        model_config_file_path = os.path.join(folder_path + "model_config.json")
+        model_config_file_path = os.path.join(folder_path, "model_config.json")
         os.makedirs(os.path.dirname(model_config_file_path), exist_ok=True)
         with open(model_config_file_path, "w") as file:
             json.dump(default_file, file)
