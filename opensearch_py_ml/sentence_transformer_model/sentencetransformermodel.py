@@ -53,7 +53,7 @@ class SentenceTransformerModel:
         -------
         None
         """
-        default_folder_path = os.path.join(os.getcwd() + "/model_files")
+        default_folder_path = os.path.join(os.getcwd(), "model_files")
 
         # check folder exist in default_folder_path
         if os.path.exists(default_folder_path) and not overwrite:
