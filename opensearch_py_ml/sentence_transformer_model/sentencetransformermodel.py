@@ -256,10 +256,13 @@ class SentenceTransformerModel:
             )
 
         for file_path in file_list:
-            f = open(file_path, "rb")
-            print("reading synthetic query file: " + file_path + "\n")
-            process.append(pickle.load(f))
-            f.close()
+            try:
+                with open(file_path, "rb") as f:
+                    print("reading synthetic query file: " + file_path + "\n")
+                    process.append(pickle.load(f))
+            except IOError:
+                print("Failed to open synthetic query file: " + file_path + "\n")
+            # f.close()
 
         # reading the files to get the probability, queries and passages
         prob = []
@@ -722,6 +725,9 @@ class SentenceTransformerModel:
             optional, compute environment type to run model, if None, default using 'LOCAL_MACHINE'
         num_machines: int
             optional, number of machine to run model , if None, default using 1
+        num_processes: int
+            optional, number of processes to run model, if None, default to check how many gpus are available and use all.
+            if no gpu is available, use cpu.
 
         Returns
         -------
@@ -744,16 +750,17 @@ class SentenceTransformerModel:
         cache_dir = os.path.join(hf_cache_home, "accelerate")
 
         file_path = os.path.join(cache_dir, "default_config.yaml")
+        use_cpu = False
         print("generated config file: at " + file_path + "\n")
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         if num_processes is None:
             if torch.cuda.is_available():
                 num_processes = torch.cuda.device_count()
-
             else:
                 num_processes = 1
+                use_cpu = True
 
-        default_file = [
+        model_config_content = [
             {
                 "compute_environment": compute_environment,
                 "deepspeed_config": {
@@ -773,24 +780,32 @@ class SentenceTransformerModel:
                 "mixed_precision": "no",
                 "num_machines": num_machines,
                 "num_processes": num_processes,
-                "use_cpu": False,
+                "use_cpu": use_cpu,
             }
         ]
-        print(default_file)
+        print(model_config_content)
 
-        with open(file_path, "w") as file:
-            yaml.dump(default_file, file)
+        try:
+            with open(file_path, "w") as file:
+                print(
+                    "generating config file for ml common upload: " + file_path + "\n"
+                )
+                yaml.dump(model_config_content, file)
+        except IOError:
+            print(
+                "Failed to open config file for ml common upload: " + file_path + "\n"
+            )
 
     def make_model_config_json(
         self,
         model_name: str = None,
         version_number: int = 1,
-        embedding_dimension: int = 768,
+        embedding_dimension: int = None,
         all_config: str = None,
         model_type: str = None,
     ) -> None:
         """
-        parse from config.json file of pre-trained hugging-face model to generate a model_config.json file. If all required
+        parse from config.json file of pre-trained hugging-face model to generate a ml-commons_model_config.json file. If all required
         fields are given by users, use the given parameters and will skip reading the config.json,
 
         Parameters
@@ -817,9 +832,10 @@ class SentenceTransformerModel:
         folder_path = self.folder_path
         config_json_file_path = os.path.join(folder_path, "config.json")
         if model_name is None:
-            model_name = self.model_id.split("/")[-1]
+            model_name = self.model_id
 
-        if all_config is None or model_type is None or embedding_dimension == 768:
+        # if user input model_type and embedding_dimension, it will skip reading the config.json file
+        if model_type is None or embedding_dimension is None:
             if not os.path.exists(config_json_file_path):
                 raise Exception(
                     str(
@@ -828,32 +844,54 @@ class SentenceTransformerModel:
                         + ". Please check the config.son file in the path."
                     )
                 )
-            f = open(config_json_file_path)
-            if all_config is None:
-                all_config = json.load(f)
-            if model_type is None:
-                if "model_type" in all_config.keys():
-                    model_type = all_config["model_type"]
-                else:
-                    raise Exception(
-                        str(
-                            "Cannot find model_type in config.json file"
-                            + config_json_file_path
-                            + ". Please check the config.son file in the path."
-                        )
-                    )
+            try:
+                with open(config_json_file_path) as f:
+                    print("reading config file: at" + config_json_file_path)
+                    config_content = json.load(f)
+                    if all_config is None:
+                        all_config = config_content
+                    if model_type is None:
+                        if "model_type" in config_content.keys():
+                            model_type = config_content["model_type"]
+                        else:
+                            print(
+                                "Please check file or input model_type and embedding_dimension in the argument"
+                            )
+                            raise Exception(
+                                str(
+                                    "Cannot find model_type in config.json file"
+                                    + config_json_file_path
+                                    + ". Please check the config.son file in the path."
+                                )
+                            )
+                    if embedding_dimension is None:
+                        embedding_dimension_mapping_list = [
+                            "dim",
+                            "hidden_size",
+                            "d_model",
+                        ]
+                        for mapping_item in embedding_dimension_mapping_list:
+                            if mapping_item in config_content.keys():
+                                embedding_dimension = config_content[mapping_item]
+                                break
+                            else:
+                                print(
+                                    'Cannot find "dim" or "hidden_size" or "d_model" in config.json file at ',
+                                    config_json_file_path,
+                                )
+                                print(
+                                    "Please add in the config file or input in the argument for embedding_dimension "
+                                )
+                                embedding_dimension = 768
+            except IOError:
+                print(
+                    "Cannot open in config.json file at ",
+                    config_json_file_path,
+                    ". Please check the config.son ",
+                    "file in the path.",
+                )
 
-            embedding_dimension_mapping_list = ["dim", "hidden_size", "d_model"]
-            for mapping_item in embedding_dimension_mapping_list:
-                if mapping_item in all_config.keys():
-                    embedding_dimension = all_config[mapping_item]
-                    break
-
-            f.close()
-
-        print("reading config file: at" + config_json_file_path)
-
-        default_file = {
+        model_config_content = {
             "name": model_name,
             "version": version_number,
             "model_format": "TORCH_SCRIPT",
@@ -862,18 +900,22 @@ class SentenceTransformerModel:
                 "model_type": model_type,
                 "embedding_dimension": embedding_dimension,
                 "framework_type": "sentence_transformers",
-                "all_config": str(all_config),
+                "all_config": json.dumps(all_config),
             },
         }
 
-        print("generating model_config.json file...")
-        print(default_file)
+        print("generating ml-commons_model_config.json file...")
+        print(model_config_content)
 
-        model_config_file_path = os.path.join(folder_path, "model_config.json")
+        model_config_file_path = os.path.join(
+            folder_path, "ml-commons_model_config.json"
+        )
         os.makedirs(os.path.dirname(model_config_file_path), exist_ok=True)
         with open(model_config_file_path, "w") as file:
-            json.dump(default_file, file)
-        print("model_config.json file is saved at", model_config_file_path, ".")
+            json.dump(model_config_content, file)
+        print(
+            "ml-commons_model_config.json file is saved at", model_config_file_path, "."
+        )
 
     # private methods
     def __qryrem(self, x):
