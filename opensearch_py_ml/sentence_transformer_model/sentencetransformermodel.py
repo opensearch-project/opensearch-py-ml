@@ -262,7 +262,6 @@ class SentenceTransformerModel:
                     process.append(pickle.load(f))
             except IOError:
                 print("Failed to open synthetic query file: " + file_path + "\n")
-            # f.close()
 
         # reading the files to get the probability, queries and passages
         prob = []
