@@ -12,7 +12,7 @@ jobs:
         cluster: ["opensearch"]
         secured: ["true"]
         entry:
-          - { opensearch_version: 2.3.0 }
+          - { opensearch_version: 2.4.0 }
 
     steps:
       - name: Checkout
