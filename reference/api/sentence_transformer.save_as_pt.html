@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sentence Transformer &mdash; Opensearch-py-ml 1.0.0b1 documentation</title>
+  <title>SentenceTransformerModel.save_as_pt &mdash; Opensearch-py-ml 1.0.0b1 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/plot_directive.css" type="text/css" />
@@ -22,8 +22,8 @@
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="SentenceTransformerModel.train" href="sentence_transformer.train.html" />
-    <link rel="prev" title="Sentence Transformer" href="../sentencetransformer.html" /> 
+    <link rel="next" title="SentenceTransformerModel.make_model_config_json" href="sentence_transformer.make_model_config_json.html" />
+    <link rel="prev" title="SentenceTransformerModel.zip_model" href="sentence_transformer.zip_model.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -52,13 +52,13 @@
 <li class="toctree-l2"><a class="reference internal" href="../io.html">Input/Output</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../mlcommons.html">MLCommons Support</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="../sentencetransformer.html">Sentence Transformer</a><ul class="current">
-<li class="toctree-l3 current"><a class="reference internal" href="../sentencetransformer.html#constructor">Constructor</a><ul class="current">
-<li class="toctree-l4 current"><a class="current reference internal" href="#">Sentence Transformer</a></li>
-</ul>
-</li>
+<li class="toctree-l3"><a class="reference internal" href="../sentencetransformer.html#constructor">Constructor</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../sentencetransformer.html#train-model">Train Model</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../sentencetransformer.html#optional-step-by-step-train-model">(Optional) Step by Step Train Model</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../sentencetransformer.html#export-model">Export Model</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="../sentencetransformer.html#export-model">Export Model</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">SentenceTransformerModel.save_as_pt</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="../sentencetransformer.html#config-model">Config Model</a></li>
 </ul>
 </li>
@@ -83,9 +83,9 @@
       <li><a href="../../index.html" class="icon icon-home"></a></li>
           <li class="breadcrumb-item"><a href="../index.html">API Reference</a></li>
           <li class="breadcrumb-item"><a href="../sentencetransformer.html">Sentence Transformer</a></li>
-      <li class="breadcrumb-item active">Sentence Transformer</li>
+      <li class="breadcrumb-item active">SentenceTransformerModel.save_as_pt</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../../_sources/reference/api/sentence_transformer.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../../_sources/reference/api/sentence_transformer.save_as_pt.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -117,12 +117,38 @@
     text-align: unset;
 }
 </style>
-<section id="sentence-transformer">
-<h1>Sentence Transformer<a class="headerlink" href="#sentence-transformer" title="Permalink to this heading"></a></h1>
+<section id="sentencetransformermodel-save-as-pt">
+<h1>SentenceTransformerModel.save_as_pt<a class="headerlink" href="#sentencetransformermodel-save-as-pt" title="Permalink to this heading"></a></h1>
 <dl class="py function">
-<dt class="sig sig-object py" id="opensearch_py_ml.sentence_transformer_model.SentenceTransformerModel">
-<span class="sig-prename descclassname"><span class="pre">opensearch_py_ml.sentence_transformer_model.</span></span><span class="sig-name descname"><span class="pre">SentenceTransformerModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">folder_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/opensearch_py_ml/sentence_transformer_model/sentencetransformermodel.html#SentenceTransformerModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#opensearch_py_ml.sentence_transformer_model.SentenceTransformerModel" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dt class="sig sig-object py" id="opensearch_py_ml.sentence_transformer_model.SentenceTransformerModel.save_as_pt">
+<span class="sig-prename descclassname"><span class="pre">opensearch_py_ml.sentence_transformer_model.SentenceTransformerModel.</span></span><span class="sig-name descname"><span class="pre">save_as_pt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self,</span> <span class="pre">sentences:</span> <span class="pre">[&lt;class</span> <span class="pre">'str'&gt;],</span> <span class="pre">model=None,</span> <span class="pre">model_name:</span> <span class="pre">~typing.Optional[str]</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">save_json_folder_path:</span> <span class="pre">~typing.Optional[str]</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">zip_file_name:</span> <span class="pre">~typing.Optional[str]</span> <span class="pre">=</span> <span class="pre">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#opensearch_py_ml.sentence_transformer_model.SentenceTransformerModel.save_as_pt" title="Permalink to this definition"></a></dt>
+<dd><p>download sentence transformer model directly from huggingface, convert model to torch script format,
+zip the model file and its tokenizer.json file to prepare to upload to the Open Search cluster</p>
+<section id="parameters">
+<h2>Parameters<a class="headerlink" href="#parameters" title="Permalink to this heading"></a></h2>
+<dl class="simple">
+<dt>sentences:[str]</dt><dd><p>Required, for example  sentences = [‘today is sunny’]</p>
+</dd>
+<dt>model: str</dt><dd><p>Optional, if provide model in parameters, will convert model to torch script format,
+else, not provided model then it will download sentence transformer model from huggingface.
+If None, default takes model_id = “sentence-transformers/msmarco-distilbert-base-tas-b”.</p>
+</dd>
+<dt>model_name: str</dt><dd><p>Optional, model name to name the model file, e.g, “sample_model.pt”. If None, default takes the
+model_id and add the extension with “.pt”.</p>
+</dd>
+<dt>save_json_folder_path:</dt><dd><p>Optional, path to save model json file, e.g, “home/save_pre_trained_model_json/”). If None, default as
+default_folder_path from the constructor.</p>
+</dd>
+<dt>zip_file_name: str =None</dt><dd><p>Optional, file name for zip file. e.g, “sample_model.zip”. If None, default takes the model_id
+and add the extension with “.zip”.</p>
+</dd>
+</dl>
+</section>
+<section id="returns">
+<h2>Returns<a class="headerlink" href="#returns" title="Permalink to this heading"></a></h2>
+<p>the torch script format model</p>
+</section>
+</dd></dl>
 
 </section>
 
@@ -130,8 +156,8 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../sentencetransformer.html" class="btn btn-neutral float-left" title="Sentence Transformer" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="sentence_transformer.train.html" class="btn btn-neutral float-right" title="SentenceTransformerModel.train" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="sentence_transformer.zip_model.html" class="btn btn-neutral float-left" title="SentenceTransformerModel.zip_model" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="sentence_transformer.make_model_config_json.html" class="btn btn-neutral float-right" title="SentenceTransformerModel.make_model_config_json" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

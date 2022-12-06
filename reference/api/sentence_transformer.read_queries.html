@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sentence Transformer &mdash; Opensearch-py-ml 1.0.0b1 documentation</title>
+  <title>SentenceTransformerModel.read_queries &mdash; Opensearch-py-ml 1.0.0b1 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/plot_directive.css" type="text/css" />
@@ -22,8 +22,8 @@
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="SentenceTransformerModel.train" href="sentence_transformer.train.html" />
-    <link rel="prev" title="Sentence Transformer" href="../sentencetransformer.html" /> 
+    <link rel="next" title="SentenceTransformerModel.load_sentence_transformer_example" href="sentence_transformer.load_sentence_transformer_example.html" />
+    <link rel="prev" title="SentenceTransformerModel.train" href="sentence_transformer.train.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -52,12 +52,16 @@
 <li class="toctree-l2"><a class="reference internal" href="../io.html">Input/Output</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../mlcommons.html">MLCommons Support</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="../sentencetransformer.html">Sentence Transformer</a><ul class="current">
-<li class="toctree-l3 current"><a class="reference internal" href="../sentencetransformer.html#constructor">Constructor</a><ul class="current">
-<li class="toctree-l4 current"><a class="current reference internal" href="#">Sentence Transformer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../sentencetransformer.html#constructor">Constructor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../sentencetransformer.html#train-model">Train Model</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="../sentencetransformer.html#optional-step-by-step-train-model">(Optional) Step by Step Train Model</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">SentenceTransformerModel.read_queries</a></li>
+<li class="toctree-l4"><a class="reference internal" href="sentence_transformer.load_sentence_transformer_example.html">SentenceTransformerModel.load_sentence_transformer_example</a></li>
+<li class="toctree-l4"><a class="reference internal" href="sentence_transformer.set_up_accelerate_config.html">SentenceTransformerModel.set_up_accelerate_config</a></li>
+<li class="toctree-l4"><a class="reference internal" href="sentence_transformer.train_model.html">SentenceTransformerModel.train_model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="sentence_transformer.zip_model.html">SentenceTransformerModel.zip_model</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="../sentencetransformer.html#train-model">Train Model</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../sentencetransformer.html#optional-step-by-step-train-model">(Optional) Step by Step Train Model</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../sentencetransformer.html#export-model">Export Model</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../sentencetransformer.html#config-model">Config Model</a></li>
 </ul>
@@ -83,9 +87,9 @@
       <li><a href="../../index.html" class="icon icon-home"></a></li>
           <li class="breadcrumb-item"><a href="../index.html">API Reference</a></li>
           <li class="breadcrumb-item"><a href="../sentencetransformer.html">Sentence Transformer</a></li>
-      <li class="breadcrumb-item active">Sentence Transformer</li>
+      <li class="breadcrumb-item active">SentenceTransformerModel.read_queries</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../../_sources/reference/api/sentence_transformer.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../../_sources/reference/api/sentence_transformer.read_queries.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -117,12 +121,29 @@
     text-align: unset;
 }
 </style>
-<section id="sentence-transformer">
-<h1>Sentence Transformer<a class="headerlink" href="#sentence-transformer" title="Permalink to this heading"></a></h1>
+<section id="sentencetransformermodel-read-queries">
+<h1>SentenceTransformerModel.read_queries<a class="headerlink" href="#sentencetransformermodel-read-queries" title="Permalink to this heading"></a></h1>
 <dl class="py function">
-<dt class="sig sig-object py" id="opensearch_py_ml.sentence_transformer_model.SentenceTransformerModel">
-<span class="sig-prename descclassname"><span class="pre">opensearch_py_ml.sentence_transformer_model.</span></span><span class="sig-name descname"><span class="pre">SentenceTransformerModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">folder_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/opensearch_py_ml/sentence_transformer_model/sentencetransformermodel.html#SentenceTransformerModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#opensearch_py_ml.sentence_transformer_model.SentenceTransformerModel" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dt class="sig sig-object py" id="opensearch_py_ml.sentence_transformer_model.SentenceTransformerModel.read_queries">
+<span class="sig-prename descclassname"><span class="pre">opensearch_py_ml.sentence_transformer_model.SentenceTransformerModel.</span></span><span class="sig-name descname"><span class="pre">read_queries</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">read_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="headerlink" href="#opensearch_py_ml.sentence_transformer_model.SentenceTransformerModel.read_queries" title="Permalink to this definition"></a></dt>
+<dd><p>Read the queries generated from the Synthetic Query Generator (SQG) model, unzip files to current directory
+within synthetic_queries/ folder, output as a dataframe</p>
+<section id="parameters">
+<h2>Parameters<a class="headerlink" href="#parameters" title="Permalink to this heading"></a></h2>
+<dl class="simple">
+<dt>read_path: str</dt><dd><p>required, path to the zipped file that contains generated queries, if None, raise exception</p>
+</dd>
+<dt>overwrite: bool</dt><dd><p>optional, synthetic_queries/ folder in current directory is to store unzip queries files.
+Default to set overwrite as false and if the folder is not empty, raise exception to recommend users
+to either clean up folder or enable overwriting is True.</p>
+</dd>
+</dl>
+</section>
+<section id="returns">
+<h2>Returns<a class="headerlink" href="#returns" title="Permalink to this heading"></a></h2>
+<p>The dataframe of queries.</p>
+</section>
+</dd></dl>
 
 </section>
 
@@ -130,8 +151,8 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../sentencetransformer.html" class="btn btn-neutral float-left" title="Sentence Transformer" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="sentence_transformer.train.html" class="btn btn-neutral float-right" title="SentenceTransformerModel.train" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="sentence_transformer.train.html" class="btn btn-neutral float-left" title="SentenceTransformerModel.train" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="sentence_transformer.load_sentence_transformer_example.html" class="btn btn-neutral float-right" title="SentenceTransformerModel.load_sentence_transformer_example" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

@@ -374,9 +374,18 @@ div.rendered_html tbody tr:hover {
 <p>Step 3: Upload the model to OpenSearch cluster</p>
 <section id="Step-0:-Import-packages-and-set-up-client">
 <h2>Step 0: Import packages and set up client<a class="headerlink" href="#Step-0:-Import-packages-and-set-up-client" title="Permalink to this heading"></a></h2>
-<p>Install <code class="docutils literal notranslate"><span class="pre">opensearchpy</span></code> and <code class="docutils literal notranslate"><span class="pre">opensearch_py_ml</span></code> through pypi</p>
+<p>Install required packages for opensearch_py_ml.sentence_transformer_model Install <code class="docutils literal notranslate"><span class="pre">opensearchpy</span></code> and <code class="docutils literal notranslate"><span class="pre">opensearch-py-ml</span></code> through pypi</p>
+<p>Please refer <a class="reference external" href="https://pytorch.org/">https://pytorch.org/</a> to proper install torch based on your environment setting.</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># pip install pandas matplotlib numpy torch accelerate sentence_transformers tqdm transformers opensearch-py opensearch-py-ml</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">warnings</span>
@@ -388,7 +397,7 @@ div.rendered_html tbody tr:hover {
 </div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># import mlcommon to later upload the model to OpenSearch Cluster</span>
@@ -397,7 +406,7 @@ div.rendered_html tbody tr:hover {
 </div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">CLUSTER_URL</span> <span class="o">=</span> <span class="s1">&#39;https://localhost:9200&#39;</span>
@@ -405,7 +414,7 @@ div.rendered_html tbody tr:hover {
 </div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">get_os_client</span><span class="p">(</span><span class="n">cluster_url</span> <span class="o">=</span> <span class="n">CLUSTER_URL</span><span class="p">,</span>
@@ -426,7 +435,7 @@ div.rendered_html tbody tr:hover {
 </div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">client</span> <span class="o">=</span> <span class="n">get_os_client</span><span class="p">()</span>
@@ -436,49 +445,11 @@ div.rendered_html tbody tr:hover {
 </section>
 <section id="Step-1:-Read-synthetic-queries-and-train/fine-tune-model-using-a-hugging-face-sentence-transformer-model">
 <h2>Step 1: Read synthetic queries and train/fine-tune model using a hugging face sentence transformer model<a class="headerlink" href="#Step-1:-Read-synthetic-queries-and-train/fine-tune-model-using-a-hugging-face-sentence-transformer-model" title="Permalink to this heading"></a></h2>
-<p>With a synthetic queries zip file, users can fine tune a sentence transformer model. The <code class="docutils literal notranslate"><span class="pre">train</span></code> function will import synthestic queries, load sentence transformer example and train the model using a hugging face sentence transformer model.</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>&quot;&quot;&quot;
-Description:
-read the synthetic queries and use it to fine tune/train a sentence transformer model to save a zip file
-
-Parameters:
-read_path: str
-    required, path to read the generated queries zip file, if None, default as &#39;synthetic_query&#39; folder
-    in current directory
-model_id: str = None
-    optional, the url to download sentence transformer model, if None, default as
-    &#39;sentence-transformers/msmarco-distilbert-base-tas-b
-output_model_path: str=None
-    optional, the path to store trained custom model. If None, default as current folder path
-output_model_name: str=None
-    optional, the name of the trained custom model. If None, default as &#39;trained_model.pt&#39;
-zip_file_name: str =None
-    optional, file name for zip file. if None, default as custom_tasb_model.zip
-use_accelerate: bool = False,
-    Optional, use accelerate to fine tune model. Default as false to not use accelerator to fine tune model.
-    If there are multiple gpus available in the machine, it&#39;s recommended to use accelerate with
-    num_processor&gt;1 to speeed up the training progress. If use accelerator to train model, run auto setup
-    accelerate confi and launch train_model function with the number of processors provided by users
-    if NOT use accelerator,trigger train_model function with default setting
-compute_environment: str
-    optional, compute environment type to run model, if None, default using &#39;LOCAL_MACHINE&#39;
-num_machines: int
-    optional, number of machine to run model , if None, default using 1
-num_processes: int
-    optional, number of processors to run model , if None, default using 1
-learning_rate: float
-    optional, learning rate to train model, default is 2e-5
-num_epochs: int
-    optional, number of epochs to train model, default is 20
-verbose: bool
-    optional, use plotting to plot the training progress. Default as false.
-Return:
-    None
-&quot;&quot;&quot;
-</pre></div>
-</div>
+<p>With a synthetic queries zip file, users can fine tune a sentence transformer model.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">SentenceTransformerModel</span></code> class will inititate an object for training, exporting and configuring the model. Plese visit the <a class="reference external" href="https://opensearch-project.github.io/opensearch-py-ml/reference/api/sentence_transformer.html#opensearch_py_ml.sentence_transformer_model.SentenceTransformerModel">SentenceTransformerModel</a> for API Reference .</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">train</span></code> function will import synthestic queries, load sentence transformer example and train the model using a hugging face sentence transformer model. Plese visit the <a class="reference external" href="https://opensearch-project.github.io/opensearch-py-ml/reference/api/sentence_transformer.html#opensearch_py_ml.sentence_transformer_model.SentenceTransformerModel.train">SentenceTransformerModel.train</a> for API Reference .</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># clean up cache before training to free up spaces</span>
@@ -491,11 +462,14 @@ Return:
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">SentenceTransformerModel</span><span class="p">()</span>
-<span class="n">training</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">read_path</span> <span class="o">=</span> <span class="s1">&#39;/home/ec2-user/SageMaker/opensearch-py-ml-mingshl/synthetic_queries.zip&#39;</span><span class="p">,</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># initiate SentenceTransformerModel object and run train function</span>
+<span class="c1"># num_processes should be less than the number of gpus on the users&#39; machine, if None, it will auto apply</span>
+<span class="c1"># all the available gpus on the machine</span>
+<span class="n">custom_model</span> <span class="o">=</span> <span class="n">SentenceTransformerModel</span><span class="p">(</span><span class="n">overwrite</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+<span class="n">training</span> <span class="o">=</span> <span class="n">custom_model</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">read_path</span> <span class="o">=</span> <span class="s1">&#39;/home/ec2-user/SageMaker/opensearch-py-ml-test/synthetic_queries.zip&#39;</span><span class="p">,</span>
                         <span class="n">output_model_name</span> <span class="o">=</span> <span class="s1">&#39;test2_model.pt&#39;</span><span class="p">,</span>
                         <span class="n">zip_file_name</span><span class="o">=</span> <span class="s1">&#39;test2_model.zip&#39;</span><span class="p">,</span>
                         <span class="n">overwrite</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -510,13 +484,13 @@ Return:
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-reading synthetic query file: /home/ec2-user/SageMaker/opensearch-py-ml-mingshl/synthetic_queries/synthetic_queries_batch_3.p
+reading synthetic query file: /home/ec2-user/SageMaker/opensearch-py-ml-test/model_files/synthetic_queries/synthetic_queries_batch_3.p
 
-reading synthetic query file: /home/ec2-user/SageMaker/opensearch-py-ml-mingshl/synthetic_queries/synthetic_queries_batch_2.p
+reading synthetic query file: /home/ec2-user/SageMaker/opensearch-py-ml-test/model_files/synthetic_queries/synthetic_queries_batch_2.p
 
-reading synthetic query file: /home/ec2-user/SageMaker/opensearch-py-ml-mingshl/synthetic_queries/synthetic_queries_batch_1.p
+reading synthetic query file: /home/ec2-user/SageMaker/opensearch-py-ml-test/model_files/synthetic_queries/synthetic_queries_batch_1.p
 
-reading synthetic query file: /home/ec2-user/SageMaker/opensearch-py-ml-mingshl/synthetic_queries/synthetic_queries_batch_0.p
+reading synthetic query file: /home/ec2-user/SageMaker/opensearch-py-ml-test/model_files/synthetic_queries/synthetic_queries_batch_0.p
 
 Loading training examples...
 
@@ -527,7 +501,7 @@ Loading training examples...
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-100%|██████████| 1692/1692 [00:00&lt;00:00, 858860.26it/s]
+100%|██████████| 243/243 [00:00&lt;00:00, 629923.28it/s]
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -538,6 +512,8 @@ Loading training examples...
 generated config file: at /home/ec2-user/.cache/huggingface/accelerate/default_config.yaml
 
 [{&#39;compute_environment&#39;: &#39;LOCAL_MACHINE&#39;, &#39;deepspeed_config&#39;: {&#39;gradient_accumulation_steps&#39;: 1, &#39;offload_optimizer_device&#39;: &#39;none&#39;, &#39;offload_param_device&#39;: &#39;none&#39;, &#39;zero3_init_flag&#39;: False, &#39;zero_stage&#39;: 2}, &#39;distributed_type&#39;: &#39;DEEPSPEED&#39;, &#39;downcast_bf16&#39;: &#39;no&#39;, &#39;fsdp_config&#39;: {}, &#39;machine_rank&#39;: 0, &#39;main_process_ip&#39;: None, &#39;main_process_port&#39;: None, &#39;main_training_function&#39;: &#39;main&#39;, &#39;mixed_precision&#39;: &#39;no&#39;, &#39;num_machines&#39;: 1, &#39;num_processes&#39;: 2, &#39;use_cpu&#39;: False}]
+generating config file for ml common upload: /home/ec2-user/.cache/huggingface/accelerate/default_config.yaml
+
 Launching training on 2 GPUs.
 </pre></div></div>
 </div>
@@ -555,20 +531,18 @@ Launching training on 2 GPUs.
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Start training with accelerator...
+
+The number of training epoch are 20
+
+The total number of steps training epoch are 8
 Start training with accelerator...
 
 
 The number of training epoch are 20
-The number of training epoch are 20
 
-
-The total number of steps training epoch are 53
-The total number of steps training epoch are 53
-
+The total number of steps training epoch are 8
 
 Training epoch 0...
-Training epoch 0...
-
 
 </pre></div></div>
 </div>
@@ -577,7 +551,24 @@ Training epoch 0...
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-100%|██████████| 27/27 [00:02&lt;00:00, 13.22it/s]
+  0%|          | 0/4 [00:00&lt;?, ?it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training epoch 0...
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 4/4 [00:00&lt;00:00,  6.20it/s]
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -594,7 +585,7 @@ Training epoch 1...
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-100%|██████████| 27/27 [00:02&lt;00:00, 13.10it/s]
+100%|██████████| 4/4 [00:00&lt;00:00,  5.89it/s]
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -611,7 +602,7 @@ Training epoch 1...
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-100%|██████████| 27/27 [00:02&lt;00:00, 13.31it/s]
+100%|██████████| 4/4 [00:00&lt;00:00, 17.57it/s]
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -628,7 +619,7 @@ Training epoch 2...
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-100%|██████████| 27/27 [00:02&lt;00:00, 13.19it/s]
+100%|██████████| 4/4 [00:00&lt;00:00, 17.68it/s]
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -645,7 +636,7 @@ Training epoch 2...
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-100%|██████████| 27/27 [00:02&lt;00:00, 13.27it/s]
+100%|██████████| 4/4 [00:00&lt;00:00, 17.30it/s]
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -662,7 +653,7 @@ Training epoch 3...
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-100%|██████████| 27/27 [00:02&lt;00:00, 13.29it/s]
+100%|██████████| 4/4 [00:00&lt;00:00, 17.64it/s]
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -671,6 +662,21 @@ Training epoch 3...
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Training epoch 3...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+  0%|          | 0/4 [00:00&lt;?, ?it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
 
 </pre></div></div>
 </div>
@@ -679,7 +685,7 @@ Training epoch 3...
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-100%|██████████| 27/27 [00:01&lt;00:00, 13.54it/s]
+100%|██████████| 4/4 [00:00&lt;00:00, 16.76it/s]
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -688,6 +694,21 @@ Training epoch 3...
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Training epoch 4...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 4/4 [00:00&lt;00:00, 16.75it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
 
 </pre></div></div>
 </div>
@@ -696,7 +717,7 @@ Training epoch 4...
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-100%|██████████| 27/27 [00:02&lt;00:00, 13.20it/s]
+
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -705,6 +726,21 @@ Training epoch 4...
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Training epoch 4...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+  0%|          | 0/4 [00:00&lt;?, ?it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
 
 </pre></div></div>
 </div>
@@ -713,7 +749,7 @@ Training epoch 4...
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-100%|██████████| 27/27 [00:01&lt;00:00, 13.59it/s]
+100%|██████████| 4/4 [00:00&lt;00:00, 16.90it/s]
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -722,6 +758,21 @@ Training epoch 4...
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Training epoch 5...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 4/4 [00:00&lt;00:00, 16.68it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
 
 </pre></div></div>
 </div>
@@ -730,7 +781,7 @@ Training epoch 5...
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-100%|██████████| 27/27 [00:01&lt;00:00, 13.60it/s]
+
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -739,7 +790,6 @@ Training epoch 5...
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Training epoch 5...
-
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -747,7 +797,7 @@ Training epoch 5...
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-100%|██████████| 27/27 [00:02&lt;00:00, 13.21it/s]
+  0%|          | 0/4 [00:00&lt;?, ?it/s]
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -755,7 +805,6 @@ Training epoch 5...
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Training epoch 6...
 
 </pre></div></div>
 </div>
@@ -764,7 +813,7 @@ Training epoch 6...
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-100%|██████████| 27/27 [00:02&lt;00:00, 13.08it/s]
+100%|██████████| 4/4 [00:00&lt;00:00, 16.99it/s]
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -780,7 +829,7 @@ Training epoch 6...
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-  0%|          | 0/27 [00:00&lt;?, ?it/s]
+100%|██████████| 4/4 [00:00&lt;00:00, 16.98it/s]
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -796,7 +845,39 @@ Training epoch 6...
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-100%|██████████| 27/27 [00:02&lt;00:00, 13.39it/s]
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training epoch 6...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+  0%|          | 0/4 [00:00&lt;?, ?it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 4/4 [00:00&lt;00:00, 16.97it/s]
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -805,6 +886,21 @@ Training epoch 6...
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Training epoch 7...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 4/4 [00:00&lt;00:00, 17.04it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
 
 </pre></div></div>
 </div>
@@ -813,7 +909,7 @@ Training epoch 7...
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-100%|██████████| 27/27 [00:02&lt;00:00, 13.29it/s]
+100%|██████████| 4/4 [00:00&lt;00:00, 16.88it/s]
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -822,6 +918,21 @@ Training epoch 7...
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Training epoch 7...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+  0%|          | 0/4 [00:00&lt;?, ?it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
 
 </pre></div></div>
 </div>
@@ -830,7 +941,7 @@ Training epoch 7...
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-100%|██████████| 27/27 [00:02&lt;00:00, 13.45it/s]
+100%|██████████| 4/4 [00:00&lt;00:00, 16.92it/s]
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -839,6 +950,21 @@ Training epoch 7...
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Training epoch 8...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 4/4 [00:00&lt;00:00, 16.70it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
 
 </pre></div></div>
 </div>
@@ -847,7 +973,7 @@ Training epoch 8...
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-100%|██████████| 27/27 [00:02&lt;00:00, 13.27it/s]
+
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -856,6 +982,21 @@ Training epoch 8...
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Training epoch 8...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+  0%|          | 0/4 [00:00&lt;?, ?it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
 
 </pre></div></div>
 </div>
@@ -864,7 +1005,7 @@ Training epoch 8...
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-100%|██████████| 27/27 [00:02&lt;00:00, 13.23it/s]
+100%|██████████| 4/4 [00:00&lt;00:00, 16.80it/s]
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -873,6 +1014,21 @@ Training epoch 8...
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Training epoch 9...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 4/4 [00:00&lt;00:00, 16.79it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
 
 </pre></div></div>
 </div>
@@ -881,7 +1037,7 @@ Training epoch 9...
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-100%|██████████| 27/27 [00:02&lt;00:00, 13.48it/s]
+
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -890,6 +1046,21 @@ Training epoch 9...
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Training epoch 9...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+  0%|          | 0/4 [00:00&lt;?, ?it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
 
 </pre></div></div>
 </div>
@@ -898,7 +1069,8 @@ Training epoch 9...
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-100%|██████████| 27/27 [00:02&lt;00:00, 13.19it/s]
+100%|██████████| 4/4 [00:00&lt;00:00, 16.93it/s]
+100%|██████████| 4/4 [00:00&lt;00:00, 16.92it/s]
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -907,7 +1079,6 @@ Training epoch 9...
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Training epoch 10...
-
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -915,7 +1086,7 @@ Training epoch 10...
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-100%|██████████| 27/27 [00:02&lt;00:00, 13.20it/s]
+
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -923,6 +1094,7 @@ Training epoch 10...
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
+
 Training epoch 10...
 </pre></div></div>
 </div>
@@ -931,7 +1103,7 @@ Training epoch 10...
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-  0%|          | 0/27 [00:00&lt;?, ?it/s]
+  0%|          | 0/4 [00:00&lt;?, ?it/s]
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -947,7 +1119,7 @@ Training epoch 10...
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-100%|██████████| 27/27 [00:02&lt;00:00, 13.47it/s]
+100%|██████████| 4/4 [00:00&lt;00:00, 17.21it/s]
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -964,7 +1136,7 @@ Training epoch 11...
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-100%|██████████| 27/27 [00:02&lt;00:00, 13.36it/s]
+100%|██████████| 4/4 [00:00&lt;00:00, 16.93it/s]
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -981,7 +1153,7 @@ Training epoch 11...
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-100%|██████████| 27/27 [00:02&lt;00:00, 13.48it/s]
+100%|██████████| 4/4 [00:00&lt;00:00, 17.21it/s]
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -990,6 +1162,21 @@ Training epoch 11...
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Training epoch 12...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 4/4 [00:00&lt;00:00, 17.59it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
 
 </pre></div></div>
 </div>
@@ -998,7 +1185,7 @@ Training epoch 12...
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-100%|██████████| 27/27 [00:02&lt;00:00, 13.33it/s]
+100%|██████████| 4/4 [00:00&lt;00:00, 17.42it/s]
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -1007,6 +1194,21 @@ Training epoch 12...
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Training epoch 12...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+  0%|          | 0/4 [00:00&lt;?, ?it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
 
 </pre></div></div>
 </div>
@@ -1015,7 +1217,7 @@ Training epoch 12...
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-100%|██████████| 27/27 [00:02&lt;00:00, 13.42it/s]
+100%|██████████| 4/4 [00:00&lt;00:00, 15.97it/s]
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -1024,6 +1226,21 @@ Training epoch 12...
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Training epoch 13...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 4/4 [00:00&lt;00:00, 15.98it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
 
 </pre></div></div>
 </div>
@@ -1032,7 +1249,7 @@ Training epoch 13...
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-100%|██████████| 27/27 [00:02&lt;00:00, 13.49it/s]
+
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -1041,6 +1258,21 @@ Training epoch 13...
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Training epoch 13...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+  0%|          | 0/4 [00:00&lt;?, ?it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
 
 </pre></div></div>
 </div>
@@ -1049,7 +1281,7 @@ Training epoch 13...
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-100%|██████████| 27/27 [00:02&lt;00:00, 13.35it/s]
+100%|██████████| 4/4 [00:00&lt;00:00, 17.08it/s]
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -1058,6 +1290,21 @@ Training epoch 13...
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Training epoch 14...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 4/4 [00:00&lt;00:00, 17.21it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
 
 </pre></div></div>
 </div>
@@ -1066,7 +1313,7 @@ Training epoch 14...
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-100%|██████████| 27/27 [00:02&lt;00:00, 13.34it/s]
+100%|██████████| 4/4 [00:00&lt;00:00, 16.97it/s]
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -1075,6 +1322,21 @@ Training epoch 14...
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Training epoch 14...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+  0%|          | 0/4 [00:00&lt;?, ?it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
 
 </pre></div></div>
 </div>
@@ -1083,7 +1345,7 @@ Training epoch 14...
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-100%|██████████| 27/27 [00:02&lt;00:00, 13.45it/s]
+100%|██████████| 4/4 [00:00&lt;00:00, 17.07it/s]
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -1092,6 +1354,21 @@ Training epoch 14...
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Training epoch 15...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 4/4 [00:00&lt;00:00, 17.19it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
 
 </pre></div></div>
 </div>
@@ -1100,7 +1377,7 @@ Training epoch 15...
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-100%|██████████| 27/27 [00:01&lt;00:00, 13.51it/s]
+100%|██████████| 4/4 [00:00&lt;00:00, 17.03it/s]
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -1109,6 +1386,21 @@ Training epoch 15...
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Training epoch 15...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+  0%|          | 0/4 [00:00&lt;?, ?it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
 
 </pre></div></div>
 </div>
@@ -1117,7 +1409,7 @@ Training epoch 15...
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-100%|██████████| 27/27 [00:01&lt;00:00, 13.60it/s]
+100%|██████████| 4/4 [00:00&lt;00:00, 16.95it/s]
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -1126,6 +1418,21 @@ Training epoch 15...
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Training epoch 16...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 4/4 [00:00&lt;00:00, 16.93it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
 
 </pre></div></div>
 </div>
@@ -1134,7 +1441,7 @@ Training epoch 16...
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-100%|██████████| 27/27 [00:01&lt;00:00, 13.69it/s]
+
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -1143,6 +1450,21 @@ Training epoch 16...
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Training epoch 16...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+  0%|          | 0/4 [00:00&lt;?, ?it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
 
 </pre></div></div>
 </div>
@@ -1151,7 +1473,7 @@ Training epoch 16...
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-100%|██████████| 27/27 [00:02&lt;00:00, 13.36it/s]
+100%|██████████| 4/4 [00:00&lt;00:00, 17.00it/s]
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -1168,7 +1490,7 @@ Training epoch 17...
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-100%|██████████| 27/27 [00:02&lt;00:00, 13.08it/s]
+100%|██████████| 4/4 [00:00&lt;00:00, 16.91it/s]
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -1177,6 +1499,21 @@ Training epoch 17...
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Training epoch 17...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+  0%|          | 0/4 [00:00&lt;?, ?it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
 
 </pre></div></div>
 </div>
@@ -1185,7 +1522,7 @@ Training epoch 17...
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-100%|██████████| 27/27 [00:02&lt;00:00, 13.26it/s]
+100%|██████████| 4/4 [00:00&lt;00:00, 16.93it/s]
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -1194,6 +1531,21 @@ Training epoch 17...
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Training epoch 18...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+100%|██████████| 4/4 [00:00&lt;00:00, 16.94it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
 
 </pre></div></div>
 </div>
@@ -1202,7 +1554,7 @@ Training epoch 18...
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-100%|██████████| 27/27 [00:02&lt;00:00, 13.39it/s]
+100%|██████████| 4/4 [00:00&lt;00:00, 16.85it/s]
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -1211,6 +1563,21 @@ Training epoch 18...
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Training epoch 18...
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+  0%|          | 0/4 [00:00&lt;?, ?it/s]
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
 
 </pre></div></div>
 </div>
@@ -1219,7 +1586,7 @@ Training epoch 18...
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-100%|██████████| 27/27 [00:02&lt;00:00, 13.19it/s]
+100%|██████████| 4/4 [00:00&lt;00:00, 17.14it/s]
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -1235,7 +1602,7 @@ Training epoch 19...
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-100%|██████████| 27/27 [00:02&lt;00:00, 13.28it/s]
+100%|██████████| 4/4 [00:00&lt;00:00, 17.10it/s]
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -1251,7 +1618,7 @@ Training epoch 19...
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-
+100%|██████████| 4/4 [00:00&lt;00:00, 17.04it/s]
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -1267,7 +1634,7 @@ Training epoch 19...
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-  0%|          | 0/27 [00:00&lt;?, ?it/s]
+  0%|          | 0/4 [00:00&lt;?, ?it/s]
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
@@ -1283,8 +1650,8 @@ Training epoch 19...
 </div>
 <div class="output_area stderr docutils container">
 <div class="highlight"><pre>
-100%|██████████| 27/27 [00:01&lt;00:00, 13.59it/s]
-100%|██████████| 27/27 [00:02&lt;00:00, 13.46it/s]
+100%|██████████| 4/4 [00:00&lt;00:00, 17.34it/s]
+100%|██████████| 4/4 [00:00&lt;00:00, 16.85it/s]
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -1292,19 +1659,19 @@ Training epoch 19...
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Total training time: 41.95800018310547
-Total training time: 41.95861291885376
+Total training time: 6.4779393672943115
 
-
-Preparing model to save...
+Total training time: 6.483149528503418
 
 Preparing model to save...
 
-Model saved to path: /home/ec2-user/SageMaker/opensearch-py-ml-mingshl/test2_model.pt
+Preparing model to save...
 
-Model saved to path: /home/ec2-user/SageMaker/opensearch-py-ml-mingshl/test2_model.pt
+Model saved to path: /home/ec2-user/SageMaker/opensearch-py-ml-test/model_files/test2_model.pt
 
-zip file is saved to /home/ec2-user/SageMaker/opensearch-py-ml-mingshl/test2_model.zip
+Model saved to path: /home/ec2-user/SageMaker/opensearch-py-ml-test/model_files/test2_model.pt
+
+zip file is saved to /home/ec2-user/SageMaker/opensearch-py-ml-test/model_files/test2_model.zip
 
 </pre></div></div>
 </div>
@@ -1313,38 +1680,15 @@ zip file is saved to /home/ec2-user/SageMaker/opensearch-py-ml-mingshl/test2_mod
 <h2>Step 2: (Optional) Save model<a class="headerlink" href="#Step-2:-(Optional)-Save-model" title="Permalink to this heading"></a></h2>
 <p>If following step 1, the model zip will be auto generated, and the print message will indicate the zip file path as shown above.</p>
 <p>But if using other pretrained sentence transformer model from Hugging face, users can use <code class="docutils literal notranslate"><span class="pre">save_as_pt</span></code> function to save a pre-trained sentence transformer model for inferencing or benchmark with other models.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">save_as_pt</span></code> function will prepare the model in proper format(Torch Script) along with tokenizers configuration file to upload to OpenSearch. The <code class="docutils literal notranslate"><span class="pre">save_as_pt</span></code> function takes the following arguments.</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>&quot;&quot;&quot;
-Description:
-download sentence transformer model directly from huggingface, convert model to torch script format,
-zip the model file and its tokenizer.json file to prepare to upload to the Open Search cluster
-
-Parameters:
-sentences:[str]
-    Required, for example  sentences = [&#39;today is sunny&#39;]
-model: str
-    Optional, if provide model in parameters, will convert model to torch script format,
-    else, not provided model then it will download sentence transformer model from huggingface.
-    If None, default takes model_id = &quot;sentence-transformers/msmarco-distilbert-base-tas-b&quot;.
-model_name: str
-    Optional, model name to name the model file, e.g, &quot;sample_model.pt&quot;. If None, default takes the
-    model_id and add the extension with &quot;.pt&quot;.
-zip_file_name: str =None
-    Optional, file name for zip file. e.g, &quot;sample_model.zip&quot;. If None, default takes the model_id
-    and add the extension with &quot;.zip&quot;.
-    None
-
-&quot;&quot;&quot;
-</pre></div>
-</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">save_as_pt</span></code> function will prepare the model in proper format(Torch Script) along with tokenizers configuration file to upload to OpenSearch. Plese visit the <a class="reference external" href="https://opensearch-project.github.io/opensearch-py-ml/reference/api/sentence_transformer.html#opensearch_py_ml.sentence_transformer_model.SentenceTransformerModel.save_as_pt">SentenceTransformerModel.save_as_pt</a> for API Reference .</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># default to download model id, &quot;sentence-transformers/msmarco-distilbert-base-tas-b&quot; from hugging face</span>
 <span class="c1"># and output a model in a zip file containing model.pt file and tokenizers.json file.</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">SentenceTransformerModel</span><span class="p">()</span>
-<span class="n">model</span><span class="o">.</span><span class="n">save_as_pt</span><span class="p">(</span><span class="n">sentences</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;today is sunny&#39;</span><span class="p">])</span>
+<span class="n">pre_trained_model</span> <span class="o">=</span> <span class="n">SentenceTransformerModel</span><span class="p">(</span><span class="n">folder_path</span> <span class="o">=</span> <span class="s1">&#39;/home/ec2-user/SageMaker/opensearch-py-ml-test/export_huggingface/&#39;</span><span class="p">,</span> <span class="n">overwrite</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+<span class="n">pre_trained_model</span><span class="o">.</span><span class="n">save_as_pt</span><span class="p">(</span><span class="n">sentences</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;today is sunny&#39;</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -1353,9 +1697,8 @@ zip_file_name: str =None
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-model file is saved to /home/ec2-user/SageMaker/opensearch-py-ml-mingshl/msmarco-distilbert-base-tas-b.pt
-
-zip file is saved to /home/ec2-user/SageMaker/opensearch-py-ml-mingshl/msmarco-distilbert-base-tas-b.zip
+model file is saved to  /home/ec2-user/SageMaker/opensearch-py-ml-test/export_huggingface/msmarco-distilbert-base-tas-b.pt
+zip file is saved to  /home/ec2-user/SageMaker/opensearch-py-ml-test/export_huggingface/msmarco-distilbert-base-tas-b.zip
 
 </pre></div></div>
 </div>
@@ -1513,27 +1856,33 @@ SentenceTransformer(
 </section>
 <section id="Step-3:-Upload-the-model-to-OpenSearch-cluster">
 <h2>Step 3: Upload the model to OpenSearch cluster<a class="headerlink" href="#Step-3:-Upload-the-model-to-OpenSearch-cluster" title="Permalink to this heading"></a></h2>
-<p>In general, the ml common client supports uploading sentence transformer models. With a zip file contains model in Torch Script format, and a configuration file for tokenizers in json format, the <code class="docutils literal notranslate"><span class="pre">upload_model</span></code> function connects to opensearch through ml client and upload the model. The <code class="docutils literal notranslate"><span class="pre">upload_model</span></code> function takes three agruments:</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>&quot;&quot;&quot;
-Description:
-upload a zip file and model_config file to OpenSearch cluster.
-Parameters:
-model_path: str
-    file path of the model file (zip file expected). The zip file should contain two files. The first file
-    is a model file in Torch Script format, e.g, &quot;model.pt&quot;. The second file is a configuration file for
-    tokenizers in json format, e.g, &quot;tokenizers.json&quot;.
-model_config_file: str
-    file path of the model config file (json file expected), which includes necessary config info for the
-    model, including model name, version number and etc. The details for model configuration are here:
-    https://opensearch.org/docs/latest/ml-commons-plugin/model-serving-framework/. An example file will
-    show in the below cells.
-Return:
-    None
-&quot;&quot;&quot;
+<p>After generated a model zip file, the users will need to describe model configuration in a ml-commons_model_config.json file. The <code class="docutils literal notranslate"><span class="pre">make_model_config_json</span></code> function in sentencetransformermodel class will parse the config file from hugging-face config.son file. If users would like to use a different config than the pre-trained sentence transformer, <code class="docutils literal notranslate"><span class="pre">make_model_config_json</span></code> function provide arguuments to change the configuration content and generated a ml-commons_model_config.json file. Plese
+visit the <a class="reference external" href="https://opensearch-project.github.io/opensearch-py-ml/reference/api/sentence_transformer.html#opensearch_py_ml.sentence_transformer_model.SentenceTransformerModel.make_model_config_json">SentenceTransformerModel.make_model_config_json</a> for API Reference .</p>
+<p>In general, the ml common client supports uploading sentence transformer models. With a zip file contains model in Torch Script format, and a configuration file for tokenizers in json format, the <code class="docutils literal notranslate"><span class="pre">upload_model</span></code> function connects to opensearch through ml client and upload the model. Plese visit the <a class="reference external" href="https://opensearch-project.github.io/opensearch-py-ml/reference/api/ml_commons_upload_api.html#opensearch_py_ml.ml_commons_integration.MLCommonClient.upload_model">MLCommonClient.upload_model</a>
+for API Reference.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#users will need to prepare a ml-commons_model_config.json file to config the model, including model name ..</span>
+<span class="c1">#this is a helpful function in py-ml.sentence_transformer_model to generate ml-commons_model_config.json file</span>
+<span class="n">custom_model</span><span class="o">.</span><span class="n">make_model_config_json</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+reading config file: at/home/ec2-user/SageMaker/opensearch-py-ml-test/model_files/config.json
+generating ml-commons_model_config.json file...
+{&#39;name&#39;: &#39;sentence-transformers/msmarco-distilbert-base-tas-b&#39;, &#39;version&#39;: 1, &#39;model_format&#39;: &#39;TORCH_SCRIPT&#39;, &#39;model_task_type&#39;: &#39;TEXT_EMBEDDING&#39;, &#39;model_config&#39;: {&#39;model_type&#39;: &#39;distilbert&#39;, &#39;embedding_dimension&#39;: 768, &#39;framework_type&#39;: &#39;sentence_transformers&#39;, &#39;all_config&#39;: &#39;{&#34;_name_or_path&#34;: &#34;/home/ec2-user/.cache/torch/sentence_transformers/sentence-transformers_msmarco-distilbert-base-tas-b/&#34;, &#34;activation&#34;: &#34;gelu&#34;, &#34;architectures&#34;: [&#34;DistilBertModel&#34;], &#34;attention_dropout&#34;: 0.1, &#34;dim&#34;: 768, &#34;dropout&#34;: 0.1, &#34;hidden_dim&#34;: 3072, &#34;initializer_range&#34;: 0.02, &#34;max_position_embeddings&#34;: 512, &#34;model_type&#34;: &#34;distilbert&#34;, &#34;n_heads&#34;: 12, &#34;n_layers&#34;: 6, &#34;pad_token_id&#34;: 0, &#34;qa_dropout&#34;: 0.1, &#34;seq_classif_dropout&#34;: 0.2, &#34;sinusoidal_pos_embds&#34;: false, &#34;tie_weights_&#34;: true, &#34;torch_dtype&#34;: &#34;float32&#34;, &#34;transformers_version&#34;: &#34;4.25.1&#34;, &#34;vocab_size&#34;: 30522}&#39;}}
+ml-commons_model_config.json file is saved at /home/ec2-user/SageMaker/opensearch-py-ml-test/model_files/ml-commons_model_config.json .
+</pre></div></div>
+</div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#connect to ml_common client with OpenSearch client</span>
@@ -1542,62 +1891,14 @@ Return:
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#user will need to prepare a model_config.json file to config the model, including model name ..</span>
-<span class="c1">#this is a sample of model_config.json file</span>
-
-<span class="p">{</span>
-
-   <span class="s2">&quot;name&quot;</span><span class="p">:</span><span class="s2">&quot;all-MiniLM-L6-v2&quot;</span><span class="p">,</span>
-
-   <span class="s2">&quot;version&quot;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span>
-
-   <span class="s2">&quot;model_format&quot;</span><span class="p">:</span><span class="s2">&quot;TORCH_SCRIPT&quot;</span><span class="p">,</span>
-
-   <span class="s2">&quot;model_task_type&quot;</span><span class="p">:</span><span class="s2">&quot;TEXT_EMBEDDING&quot;</span><span class="p">,</span>
-
-   <span class="s2">&quot;model_config&quot;</span><span class="p">:{</span>
-
-      <span class="s2">&quot;model_type&quot;</span><span class="p">:</span><span class="s2">&quot;bert&quot;</span><span class="p">,</span>
-
-      <span class="s2">&quot;embedding_dimension&quot;</span><span class="p">:</span><span class="mi">384</span><span class="p">,</span>
-
-      <span class="s2">&quot;framework_type&quot;</span><span class="p">:</span><span class="s2">&quot;sentence_transformers&quot;</span><span class="p">,</span>
-
-      <span class="s2">&quot;all_config&quot;</span><span class="p">:</span><span class="s2">&quot;{</span><span class="se">\&quot;</span><span class="s2">_name_or_path</span><span class="se">\&quot;</span><span class="s2">:</span><span class="se">\&quot;</span><span class="s2">nreimers/MiniLM-L6-H384-uncased</span><span class="se">\&quot;</span><span class="s2">,</span><span class="se">\&quot;</span><span class="s2">architectures</span><span class="se">\&quot;</span><span class="s2">:[</span><span class="se">\&quot;</span><span class="s2">BertModel</span><span class="se">\&quot;</span><span class="s2">],</span><span class="se">\&quot;</span><span class="s2">attention_probs_dropout_prob</span><span class="se">\&quot;</span><span class="s2">:0.1,</span><span class="se">\&quot;</span><span class="s2">gradient_checkpointing</span><span class="se">\&quot;</span><span class="s2">:false,</span><span class="se">\&quot;</span><span class="s2">hidden_act</span><span class="se">\&quot;</span><span class="s2">:</span><span class="se">\&quot;</span><span class="s2">gelu</span><span class="se">\&quot;</span><span class="s2">,</span><span class="se">\&quot;</span><span class="s2">hidden_dropout_prob</span><span class="se">\&quot;</span><span class="s2">:0.1,</span><span class="se">\&quot;</span><span class="s2">hidden_size</span><span class="se">\&quot;</span><span class="s2">:384,</span><span class="se">\&quot;</span><span class="s2">initializer_range</span><span class="se">\&quot;</span><span class="s2">:0.02,</span><span class="se">\&quot;</span><span class="s2">intermediate_size</span><span class="se">\&quot;</span><span class="s2">:1536,</span><span class="se">\&quot;</span><span class="s2">layer_norm_eps</span><span class="se">\&quot;</span><span class="s2">:1e-12,</span><span class="se">\&quot;</span><span class="s2">max_position_embeddings</span><span class="se">\&quot;</span><span class="s2">:512,</span><span class="se">\&quot;</span><span class="s2">model_type</span><span class="se">\&quot;</span><span class="s2">:</span><span class="se">\&quot;</span><span class="s2">bert</span><span class="se">\&quot;</span><span class="s2">,</span><span class="se">\&quot;</span><span class="s2">num_attention_heads</span><span class="se">\&quot;</span><span class="s2">:12,</span><span class="se">\&quot;</span><span class="s2">num_hidden_layers</span><span class="se">\&quot;</span><span class="s2">:6,</span><span class="se">\&quot;</span><span class="s2">pad_token_id</span><span class="se">\&quot;</span><span class="s2">:0,</span><span class="se">\&quot;</span><span class="s2">position_embedding_type</span><span class="se">\&quot;</span><span class="s2">:</span><span class="se">\&quot;</span><span class="s2">absolute</span><span class="se">\&quot;</span><span class="s2">,</span><span class="se">\&quot;</span><span class="s2">transformers_version</span><span class="se">\&quot;</span><span class="s2">:</span><span class="se">\&quot;</span><span class="s2">4.8.2</span><span class="se">\&quot;</span><span class="s2">,</span><span class="se">\&quot;</span><span class="s2">type_vocab_size</span><span class="se">\&quot;</span><span class="s2">:2,</span><span class="se">\&quot;</span><span class="s2">use_cache</span><span class="se">\&quot;</span><span class="s2">:true,</span><span class="se">\&quot;</span><span class="s2">vocab_size</span><span class="se">\&quot;</span><span class="s2">:30522}&quot;</span>
-
-   <span class="p">}</span>
-
-<span class="p">}</span>
-<br/></pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
-</pre></div>
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-{&#39;name&#39;: &#39;all-MiniLM-L6-v2&#39;,
- &#39;version&#39;: 1,
- &#39;model_format&#39;: &#39;TORCH_SCRIPT&#39;,
- &#39;model_task_type&#39;: &#39;TEXT_EMBEDDING&#39;,
- &#39;model_config&#39;: {&#39;model_type&#39;: &#39;bert&#39;,
-  &#39;embedding_dimension&#39;: 384,
-  &#39;framework_type&#39;: &#39;sentence_transformers&#39;,
-  &#39;all_config&#39;: &#39;{&#34;_name_or_path&#34;:&#34;nreimers/MiniLM-L6-H384-uncased&#34;,&#34;architectures&#34;:[&#34;BertModel&#34;],&#34;attention_probs_dropout_prob&#34;:0.1,&#34;gradient_checkpointing&#34;:false,&#34;hidden_act&#34;:&#34;gelu&#34;,&#34;hidden_dropout_prob&#34;:0.1,&#34;hidden_size&#34;:384,&#34;initializer_range&#34;:0.02,&#34;intermediate_size&#34;:1536,&#34;layer_norm_eps&#34;:1e-12,&#34;max_position_embeddings&#34;:512,&#34;model_type&#34;:&#34;bert&#34;,&#34;num_attention_heads&#34;:12,&#34;num_hidden_layers&#34;:6,&#34;pad_token_id&#34;:0,&#34;position_embedding_type&#34;:&#34;absolute&#34;,&#34;transformers_version&#34;:&#34;4.8.2&#34;,&#34;type_vocab_size&#34;:2,&#34;use_cache&#34;:true,&#34;vocab_size&#34;:30522}&#39;}}
-</pre></div></div>
-</div>
-<div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># upload model to OpenSearch cluster, using model zip file path</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># upload model to OpenSearch cluster, using model zip file path and ml-commons_model_config.json file generated above</span>
 
-<span class="n">model_path</span> <span class="o">=</span> <span class="s1">&#39;/home/ec2-user/SageMaker/opensearch-py-ml-mingshl/test2_model.zip&#39;</span>
-<span class="n">ml_client</span><span class="o">.</span><span class="n">upload_model</span><span class="p">(</span> <span class="n">model_path</span><span class="p">,</span> <span class="s1">&#39;/home/ec2-user/SageMaker/opensearch-py-ml-mingshl/save_pre_trained_model_json/model_config.json&#39;</span><span class="p">,</span> <span class="n">isVerbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">model_path</span> <span class="o">=</span> <span class="s1">&#39;/home/ec2-user/SageMaker/opensearch-py-ml-test/model_files/test2_model.zip&#39;</span>
+<span class="n">model_config_path</span> <span class="o">=</span> <span class="s1">&#39;/home/ec2-user/SageMaker/opensearch-py-ml-test/model_files/ml-commons_model_config.json&#39;</span>
+<span class="n">ml_client</span><span class="o">.</span><span class="n">upload_model</span><span class="p">(</span> <span class="n">model_path</span><span class="p">,</span> <span class="n">model_config_path</span><span class="p">,</span> <span class="n">isVerbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1607,8 +1908,8 @@ Return:
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Total number of chunks 27
-Sha1 value of the model file:  eaf923a163f4277c755821418a04fef9e6fc7c26f9d68caa192d615c25758b93
-Model meta data was created successfully. Model Id:  tQnNsIQBDmk7AZE7HW-b
+Sha1 value of the model file:  99ef396378d5e7ea42a259ea2bdc9601da1321a8cb6c2a2b406f23c3c06930db
+Model meta data was created successfully. Model Id:  jZ_F4IQBBEaXGrFggi-x
 uploading chunk 1 of 27
 {&#39;status&#39;: &#39;Uploaded&#39;}
 uploading chunk 2 of 27
