@@ -128,21 +128,20 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">default_folder_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="s2">&quot;model_files&quot;</span><span class="p">)</span>
 
-        <span class="c1"># check folder exist in default_folder_path</span>
-        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">default_folder_path</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">overwrite</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span>
-                <span class="s2">&quot;To prevent overwritten, please enter a different folder path or delete the &#39;model_files&#39; folder or enable overwrite = True&quot;</span>
-            <span class="p">)</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
-                <span class="nb">str</span><span class="p">(</span>
-                    <span class="s2">&quot;The default folder path already exists at : &quot;</span> <span class="o">+</span> <span class="n">default_folder_path</span>
-                <span class="p">)</span>
-            <span class="p">)</span>
-
         <span class="k">if</span> <span class="n">folder_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">folder_path</span> <span class="o">=</span> <span class="n">default_folder_path</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">folder_path</span> <span class="o">=</span> <span class="n">folder_path</span>
+
+        <span class="c1"># check folder exist in self.folder_path</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">folder_path</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">overwrite</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="s2">&quot;To prevent overwritten, please enter a different folder path or delete the folder or enable overwrite = True&quot;</span>
+            <span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                <span class="nb">str</span><span class="p">(</span><span class="s2">&quot;The default folder path already exists at : &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">folder_path</span><span class="p">)</span>
+            <span class="p">)</span>
+
         <span class="k">if</span> <span class="n">model_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">model_id</span> <span class="o">=</span> <span class="s2">&quot;sentence-transformers/msmarco-distilbert-base-tas-b&quot;</span>
         <span class="k">else</span><span class="p">:</span>
