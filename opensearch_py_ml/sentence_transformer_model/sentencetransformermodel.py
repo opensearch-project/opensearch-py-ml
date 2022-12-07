@@ -63,7 +63,7 @@ class SentenceTransformerModel:
         # check folder exist in self.folder_path
         if os.path.exists(self.folder_path) and not overwrite:
             print(
-                "To prevent overwritten, please enter a different folder path or delete the 'model_files' folder or enable overwrite = True"
+                "To prevent overwritten, please enter a different folder path or delete the folder or enable overwrite = True"
             )
             raise Exception(
                 str(
