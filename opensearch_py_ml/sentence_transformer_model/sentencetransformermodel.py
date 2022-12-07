@@ -66,9 +66,7 @@ class SentenceTransformerModel:
                 "To prevent overwritten, please enter a different folder path or delete the folder or enable overwrite = True"
             )
             raise Exception(
-                str(
-                    "The default folder path already exists at : " + self.folder_path
-                )
+                str("The default folder path already exists at : " + self.folder_path)
             )
 
         if model_id is None:
