@@ -55,21 +55,20 @@ class SentenceTransformerModel:
         """
         default_folder_path = os.path.join(os.getcwd(), "model_files")
 
-        # check folder exist in default_folder_path
-        if os.path.exists(default_folder_path) and not overwrite:
-            print(
-                "To prevent overwritten, please enter a different folder path or delete the 'model_files' folder or enable overwrite = True"
-            )
-            raise Exception(
-                str(
-                    "The default folder path already exists at : " + default_folder_path
-                )
-            )
-
         if folder_path is None:
             self.folder_path = default_folder_path
         else:
             self.folder_path = folder_path
+
+        # check folder exist in self.folder_path
+        if os.path.exists(self.folder_path) and not overwrite:
+            print(
+                "To prevent overwritten, please enter a different folder path or delete the folder or enable overwrite = True"
+            )
+            raise Exception(
+                str("The default folder path already exists at : " + self.folder_path)
+            )
+
         if model_id is None:
             self.model_id = "sentence-transformers/msmarco-distilbert-base-tas-b"
         else:
