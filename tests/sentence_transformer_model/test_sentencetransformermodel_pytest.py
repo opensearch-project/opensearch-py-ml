@@ -55,9 +55,8 @@ def test_folder_path():
     assert "The default folder path already exists" in exc_info.value.args[0]
 
 
-# test without required_fields should raise TypeError
 def test_check_required_fields():
-
+    # test without required_fields should raise TypeError
     with pytest.raises(TypeError):
         test_model.train()
 
@@ -81,7 +80,7 @@ def test_missing_files():
     with pytest.raises(FileNotFoundError):
         test_model.read_queries(read_path="1234")
 
-    # test synthetic queries already exists in folder
+        # test synthetic queries already exists in folder
     with pytest.raises(Exception) as exc_info:
         temp_path = os.path.join(
             os.path.dirname(os.path.abspath("__file__")),
@@ -93,12 +92,12 @@ def test_missing_files():
         test_model2.read_queries(TESTDATA_FILENAME)
         test_model2.read_queries(TESTDATA_FILENAME)
         clean_test_folder(temp_path)
-    assert "folder is not empty" in exc_info.value.args[0]
+    assert "folder is not empty" in str(exc_info.value)
 
     # test no tokenizer.json file
     with pytest.raises(Exception) as exc_info:
         test_model.zip_model()
-    assert "Cannot find tokenizer.json file" in exc_info.value.args[0]
+    assert "Cannot find tokenizer.json file" in str(exc_info.value)
 
     # test no model file
     with pytest.raises(Exception) as exc_info:
@@ -113,7 +112,7 @@ def test_missing_files():
         os.remove(os.path.join(temp_path, "msmarco-distilbert-base-tas-b.pt"))
         test_model3.zip_model()
         clean_test_folder(temp_path)
-    assert "Cannot find model in the model path" in exc_info.value.args[0]
+    assert "Cannot find model in the model path" in str(exc_info.value)
 
     # test no config.json
     with pytest.raises(Exception) as exc_info:
@@ -128,6 +127,6 @@ def test_missing_files():
         os.remove(os.path.join(temp_path, "config.json"))
         test_model4.make_model_config_json()
         clean_test_folder(temp_path)
-    assert "Cannot find config.json" in exc_info.value.args[0]
+    assert "Cannot find config.json" in str(exc_info.value)
 
     clean_test_folder(TEST_FOLDER)
