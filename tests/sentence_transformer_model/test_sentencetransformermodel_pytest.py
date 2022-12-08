@@ -18,9 +18,11 @@ TEST_FOLDER = os.path.join(
 TESTDATA_FILENAME = os.path.join(
     os.path.dirname(os.path.abspath("__file__")), "tests", "sample_zip.zip"
 )
+TESTDATA_UNZIP_FOLDER = os.path.join(
+    os.path.dirname(os.path.abspath("__file__")), "tests", "sample_zip"
+)
 
 
-# helpful function to clean up folder
 def clean_test_folder(TEST_FOLDER):
     if os.path.exists(TEST_FOLDER):
         for files in os.listdir(TEST_FOLDER):
@@ -43,6 +45,23 @@ def clean_test_folder(TEST_FOLDER):
 
 clean_test_folder(TEST_FOLDER)
 test_model = SentenceTransformerModel(folder_path=TEST_FOLDER)
+
+
+def test_check_attribute():
+    try:
+        check_attribute = getattr(test_model, "model_id", "folder_path")
+    except AttributeError:
+        check_attribute = False
+    assert check_attribute
+
+    assert test_model.folder_path == TEST_FOLDER
+    assert test_model.model_id == "sentence-transformers/msmarco-distilbert-base-tas-b"
+
+    clean_test_folder(TEST_FOLDER)
+    test_model1 = SentenceTransformerModel(
+        folder_path=TEST_FOLDER, model_id="sentence-transformers/all-MiniLM-L6-v2"
+    )
+    assert test_model1.model_id == "sentence-transformers/all-MiniLM-L6-v2"
 
 
 def test_folder_path():
@@ -129,4 +148,6 @@ def test_missing_files():
         clean_test_folder(temp_path)
     assert "Cannot find config.json" in str(exc_info.value)
 
-    clean_test_folder(TEST_FOLDER)
+
+clean_test_folder(TEST_FOLDER)
+clean_test_folder(TESTDATA_UNZIP_FOLDER)
