@@ -702,7 +702,8 @@ class SentenceTransformerModel:
                 arcname=str(model_name),
             )
             zipObj.write(
-                str(save_json_folder_path + "tokenizer.json"), arcname="tokenizer.json"
+                os.path.join(save_json_folder_path, "tokenizer.json"),
+                arcname="tokenizer.json",
             )
         print("zip file is saved to ", zip_file_path, "\n")
         return compiled_model
@@ -917,9 +918,13 @@ class SentenceTransformerModel:
 
     # private methods
     def __qryrem(self, x):
-        # for removing the "QRY:" token
-        y = x.passages.split(" QRY:")[0].split("<|startoftext|>")
-        return y[1]
+        # for removing the "QRY:" token if they exist in passages
+        if "QRY:" in x.passages and "<|startoftext|>" in x.passages:
+            y = x.passages.split(" QRY:")[0].split("<|startoftext|>")
+            return y[1]
+        else:
+            print("QRY: and <|startoftext|> not found in passages. ")
+            return x
 
     def __is_notebook(self) -> bool:
         try:
