@@ -923,7 +923,6 @@ class SentenceTransformerModel:
             y = x.passages.split(" QRY:")[0].split("<|startoftext|>")
             return y[1]
         else:
-            print("QRY: and <|startoftext|> not found in passages. ")
             return x
 
     def __is_notebook(self) -> bool:
