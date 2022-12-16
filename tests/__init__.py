@@ -342,3 +342,8 @@ TEST_NESTED_USER_GROUP_DOCS = [
         "_source": {"group": "new york", "user": [{"first": "Bill", "last": "Jones"}]},
     },
 ]
+
+ML_FILE_NAME = "all-MiniLM-L6-v2_torchscript_sentence-transformer.zip"
+ML_FILE_PATH = ROOT_DIR + "/" + ML_FILE_NAME
+ML_FILE_URL = "https://github.com/opensearch-project/ml-commons/raw/2.x/ml-algorithms/src/test/resources/org/opensearch/ml/engine/algorithms/text_embedding/all-MiniLM-L6-v2_torchscript_sentence-transformer.zip?raw=true"
+ML_CONFIG_FILE_PATH = ROOT_DIR + "/model_config.json"

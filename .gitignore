@@ -56,3 +56,8 @@ venv.bak/
 # Coverage
 .coverage
 .coverage.*
+
+#model file
+all-MiniLM-L6-v2_torchscript_sentence-transformer.zip
+# torch generated files
+tests/test_SentenceTransformerModel
