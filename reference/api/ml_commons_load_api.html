@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Upload Model &mdash; Opensearch-py-ml 1.0.0b1 documentation</title>
+  <title>Load Model &mdash; Opensearch-py-ml 1.0.0b1 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/plot_directive.css" type="text/css" />
@@ -22,8 +22,8 @@
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Load Model" href="ml_commons_load_api.html" />
-    <link rel="prev" title="MLCommons Support" href="../mlcommons.html" /> 
+    <link rel="next" title="Sentence Transformer" href="../sentencetransformer.html" />
+    <link rel="prev" title="Upload Model" href="ml_commons_upload_api.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -51,11 +51,11 @@
 <li class="toctree-l2"><a class="reference internal" href="../general_utility_functions.html">General Utility Functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../io.html">Input/Output</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="../mlcommons.html">MLCommons Support</a><ul class="current">
-<li class="toctree-l3 current"><a class="reference internal" href="../mlcommons.html#upload-model">Upload Model</a><ul class="current">
-<li class="toctree-l4 current"><a class="current reference internal" href="#">Upload Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../mlcommons.html#upload-model">Upload Model</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="../mlcommons.html#load-model">Load Model</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Load Model</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="../mlcommons.html#load-model">Load Model</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../sentencetransformer.html">Sentence Transformer</a></li>
@@ -80,9 +80,9 @@
       <li><a href="../../index.html" class="icon icon-home"></a></li>
           <li class="breadcrumb-item"><a href="../index.html">API Reference</a></li>
           <li class="breadcrumb-item"><a href="../mlcommons.html">MLCommons Support</a></li>
-      <li class="breadcrumb-item active">Upload Model</li>
+      <li class="breadcrumb-item active">Load Model</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../../_sources/reference/api/ml_commons_upload_api.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../../_sources/reference/api/ml_commons_load_api.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -114,20 +114,16 @@
     text-align: unset;
 }
 </style>
-<section id="upload-model">
-<h1>Upload Model<a class="headerlink" href="#upload-model" title="Permalink to this heading"></a></h1>
+<section id="load-model">
+<h1>Load Model<a class="headerlink" href="#load-model" title="Permalink to this heading"></a></h1>
 <dl class="py function">
-<dt class="sig sig-object py" id="opensearch_py_ml.ml_commons.MLCommonClient.upload_model">
-<span class="sig-prename descclassname"><span class="pre">opensearch_py_ml.ml_commons.MLCommonClient.</span></span><span class="sig-name descname"><span class="pre">upload_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">isVerbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#opensearch_py_ml.ml_commons.MLCommonClient.upload_model" title="Permalink to this definition"></a></dt>
-<dd><p>This method uploads model into opensearch cluster using ml-common plugin’s api.</p>
-<p>first this method creates a model id to store model metadata and then breaks the model zip file into
-multiple chunks and then upload chunks into opensearch cluster.</p>
+<dt class="sig sig-object py" id="opensearch_py_ml.ml_commons.MLCommonClient.load_model">
+<span class="sig-prename descclassname"><span class="pre">opensearch_py_ml.ml_commons.MLCommonClient.</span></span><span class="sig-name descname"><span class="pre">load_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#opensearch_py_ml.ml_commons.MLCommonClient.load_model" title="Permalink to this definition"></a></dt>
+<dd><p>This method loads model into opensearch cluster using ml-common plugin’s load model api.</p>
 <section id="parameters">
 <h2>Parameters<a class="headerlink" href="#parameters" title="Permalink to this heading"></a></h2>
 <dl class="simple">
-<dt>model_path: string</dt><dd><p>path of the zip file of the model</p>
-</dd>
-<dt>model_config_path: string</dt><dd><p>filepath of the model metadata. A json file of model metadata is expected</p>
+<dt>model_id: string</dt><dd><p>unique id of the model</p>
 </dd>
 <dt>isVerbose: boolean, default False</dt><dd><p>if isVerbose is true method will print more messages.</p>
 </dd>
@@ -136,7 +132,7 @@ multiple chunks and then upload chunks into opensearch cluster.</p>
 <section id="returns">
 <h2>Returns<a class="headerlink" href="#returns" title="Permalink to this heading"></a></h2>
 <dl class="simple">
-<dt>model_id: string</dt><dd><p>returns the model_id so that we can use this for further operation.</p>
+<dt>object</dt><dd><p>returns a json object, with task_id and status key.</p>
 </dd>
 </dl>
 </section>
@@ -148,8 +144,8 @@ multiple chunks and then upload chunks into opensearch cluster.</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../mlcommons.html" class="btn btn-neutral float-left" title="MLCommons Support" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="ml_commons_load_api.html" class="btn btn-neutral float-right" title="Load Model" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="ml_commons_upload_api.html" class="btn btn-neutral float-left" title="Upload Model" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../sentencetransformer.html" class="btn btn-neutral float-right" title="Sentence Transformer" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

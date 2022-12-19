@@ -11,3 +11,10 @@ Upload Model
    :maxdepth: 2
 
    api/ml_commons_upload_api
+
+Load Model
+~~~~~~~~~~~~~~
+.. toctree::
+   :maxdepth: 2
+
+   api/ml_commons_load_api
