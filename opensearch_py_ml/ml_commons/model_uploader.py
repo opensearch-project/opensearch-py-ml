@@ -13,7 +13,7 @@ from typing import Any, Iterable, Union
 
 from opensearchpy import OpenSearch
 
-from opensearch_py_ml.ml_commons_integration.ml_common_utils import (
+from opensearch_py_ml.ml_commons.ml_common_utils import (
     BUF_SIZE,
     ML_BASE_URI,
     MODEL_MAX_SIZE,
@@ -21,7 +21,7 @@ from opensearch_py_ml.ml_commons_integration.ml_common_utils import (
 )
 
 
-class MLCommonModelUploader:
+class ModelUploader:
     """
     Class for uploading model using ml-commons apis in opensearch cluster.
     """
@@ -40,9 +40,9 @@ class MLCommonModelUploader:
     def __init__(self, os_client: OpenSearch):
         self._client = os_client
 
-    def upload_model(
+    def _upload_model(
         self, model_path: str, model_meta_path: str, isVerbose: bool
-    ) -> None:
+    ) -> str:
 
         """
         This method uploads model into opensearch cluster using ml-common plugin's api.
@@ -61,7 +61,7 @@ class MLCommonModelUploader:
         )
 
         # we are generating the sha1 hash for the model zip file
-        hash_val_model_file = self.generate_hash(model_path)
+        hash_val_model_file = self._generate_hash(model_path)
 
         if isVerbose:
             print("Total number of chunks", total_num_chunks)
@@ -75,13 +75,12 @@ class MLCommonModelUploader:
         model_meta_json[self.TOTAL_CHUNKS_FIELD] = total_num_chunks
         model_meta_json[self.MODEL_CONTENT_HASH_VALUE] = hash_val_model_file
 
-        if self.check_mandatory_field(model_meta_json):
+        if self._check_mandatory_field(model_meta_json):
             meta_output: Union[bool, Any] = self._client.transport.perform_request(
                 method="POST",
                 url=f"{ML_BASE_URI}/{self.META_API_ENDPOINT}",
                 body=model_meta_json,
             )
-
             print(
                 "Model meta data was created successfully. Model Id: ",
                 meta_output.get("model_id"),
@@ -112,12 +111,13 @@ class MLCommonModelUploader:
                     if isVerbose:
                         print(output)
                 print("Model uploaded successfully")
+                return model_id
             else:
                 raise Exception(
                     "Model meta doc creation wasn't successful. Please check the errors"
                 )
 
-    def check_mandatory_field(self, model_meta: dict) -> bool:
+    def _check_mandatory_field(self, model_meta: dict) -> bool:
         """
         This method checks if model meta doc has all the required fields to create a model meta doc in opensearch.
 
@@ -156,14 +156,13 @@ class MLCommonModelUploader:
         else:
             raise ValueError("Model metadata can't be empty")
 
-    def generate_hash(self, model_file_path: str) -> str:
+    def _generate_hash(self, model_file_path: str) -> str:
         """
         Generate sha1 hash value for the model zip file.
 
-        @param model_meta         dict     content of the model meta file
+        @param model_file_path    str     file path of the model file
 
-        @return                   boolean  if all the required fields are present returns True otherwise
-                                            raise exception
+        @return                   string  sha256 hash
         """
 
         sha256 = hashlib.sha256()

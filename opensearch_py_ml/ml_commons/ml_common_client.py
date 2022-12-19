@@ -7,12 +7,8 @@
 
 from opensearchpy import OpenSearch
 
-from opensearch_py_ml.ml_commons_integration.load.ml_common_load_client import (
-    MLCommonLoadClient,
-)
-from opensearch_py_ml.ml_commons_integration.upload.ml_common_model_uploader import (
-    MLCommonModelUploader,
-)
+from opensearch_py_ml.ml_commons.ml_common_utils import ML_BASE_URI
+from opensearch_py_ml.ml_commons.model_uploader import ModelUploader
 
 
 class MLCommonClient:
@@ -23,15 +19,14 @@ class MLCommonClient:
 
     def __init__(self, os_client: OpenSearch):
         self._client = os_client
-        self._model_uploader = MLCommonModelUploader(os_client)
-        self._load_client = MLCommonLoadClient(os_client)
+        self._model_uploader = ModelUploader(os_client)
 
     def upload_model(
         self,
         model_path: str,
         model_config_path: str,
         isVerbose: bool = False,
-    ) -> None:
+    ) -> str:
         """
         This method uploads model into opensearch cluster using ml-common plugin's api.
 
@@ -49,12 +44,36 @@ class MLCommonClient:
 
         Returns
         -------
-        None
-            Doesn't return anything.
+        model_id: string
+            returns the model_id so that we can use this for further operation.
 
         """
 
-        self._model_uploader.upload_model(model_path, model_config_path, isVerbose)
+        return self._model_uploader._upload_model(
+            model_path, model_config_path, isVerbose
+        )
 
-    def load_model(self, model_name: str, version_number: int):  # type: ignore
-        return self._load_client.load_model(model_name, version_number)
+    def load_model(self, model_id: str):  # type: ignore
+        """
+        This method loads model into opensearch cluster using ml-common plugin's load model api.
+
+        Parameters
+        ----------
+        model_id: string
+                     unique id of the model
+        isVerbose: boolean, default False
+                     if isVerbose is true method will print more messages.
+
+        Returns
+        -------
+        object
+            returns a json object, with task_id and status key.
+
+        """
+        MODEL_LOAD_API_ENDPOINT = f"models/{model_id}/_load"
+        API_URL = f"{ML_BASE_URI}/{MODEL_LOAD_API_ENDPOINT}"
+
+        return self._client.transport.perform_request(
+            method="POST",
+            url=API_URL,
+        )

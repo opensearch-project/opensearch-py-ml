@@ -4,3 +4,9 @@
 # compatible open source license.
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
+
+# Integrating MLCommons plugin
+
+from opensearch_py_ml.ml_commons.ml_common_client import MLCommonClient
+
+__all__ = ["MLCommonClient"]
