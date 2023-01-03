@@ -5,6 +5,9 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
+
+from typing import List
+
 from opensearchpy import OpenSearch
 
 from opensearch_py_ml.ml_commons.ml_common_utils import ML_BASE_URI
@@ -35,17 +38,17 @@ class MLCommonClient:
 
         Parameters
         ----------
-        model_path: string
-                     path of the zip file of the model
-        model_config_path: string
-                     filepath of the model metadata. A json file of model metadata is expected
-        isVerbose: boolean, default False
-                     if isVerbose is true method will print more messages.
+        :param model_path: path of the zip file of the model
+        :type model_path: string
+        :param model_config_path: filepath of the model metadata. A json file of model metadata is expected
+        :type model_config_path: string
+        :param isVerbose: if isVerbose is true method will print more messages. default False
+        :type isVerbose: boolean
 
         Returns
         -------
-        model_id: string
-            returns the model_id so that we can use this for further operation.
+        :return: returns the model_id so that we can use this for further operation.
+        :rtype: string
 
         """
 
@@ -59,15 +62,13 @@ class MLCommonClient:
 
         Parameters
         ----------
-        model_id: string
-                     unique id of the model
-        isVerbose: boolean, default False
-                     if isVerbose is true method will print more messages.
+        :param model_id: unique id of the model
+        :type model_id: string
 
         Returns
         -------
-        object
-            returns a json object, with task_id and status key.
+        :return: returns a json object, with task_id and status key.
+        :rtype: object
 
         """
         MODEL_LOAD_API_ENDPOINT = f"models/{model_id}/_load"
@@ -76,4 +77,57 @@ class MLCommonClient:
         return self._client.transport.perform_request(
             method="POST",
             url=API_URL,
+        )
+
+    def get_task_info(self, task_id: str):  # type: ignore
+        """
+        This method return information about a task running into opensearch cluster (using ml commons api)
+        when we load a model.
+
+        Parameters
+        ----------
+        :param task_id: unique id of the task
+        :type task_id: string
+
+        Returns
+        -------
+        :return: returns a json object, with detailed information about the task
+        :rtype: object
+        """
+
+        MODEL_TASK_API_ENDPOINT = f"tasks/{task_id}"
+        API_URL = f"{ML_BASE_URI}/{MODEL_TASK_API_ENDPOINT}"
+
+        return self._client.transport.perform_request(
+            method="GET",
+            url=API_URL,
+        )
+
+    def generate_embedding(self, model_id: str, sentences: List[str]):  # type: ignore
+        """
+        This method return embedding for given sentences (using ml commons _predict api)
+
+        Parameters
+        ----------
+        :param model_id: unique id of the nlp model
+        :type model_id: string
+        :param sentences: List of sentences
+        :type sentences: list of string
+
+        Returns
+        -------
+        :return: returns a json object `inference_results` which is a list of embedding results of given sentences
+            every item has 4 properties: name, data_type, shape, data (embedding value)
+        :rtype: object
+        """
+
+        SENTENCE_EMBEDDING_API_ENDPOINT = f"_predict/text_embedding/{model_id}"
+        API_URL = f"{ML_BASE_URI}/{SENTENCE_EMBEDDING_API_ENDPOINT}"
+
+        API_BODY = {"text_docs": sentences, "target_response": ["sentence_embedding"]}
+
+        return self._client.transport.perform_request(
+            method="POST",
+            url=API_URL,
+            body=API_BODY,
         )

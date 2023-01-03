@@ -8,6 +8,7 @@
 import json
 import os
 import pickle
+import platform
 import random
 import shutil
 import subprocess
@@ -28,27 +29,36 @@ from transformers import TrainingArguments, get_linear_schedule_with_warmup
 
 
 class SentenceTransformerModel:
+    """
+    Class for training, exporting and configuring the SentenceTransformers model.
+    """
+
+    DEFAULT_MODEL_ID = "sentence-transformers/msmarco-distilbert-base-tas-b"
+    SYNTHETIC_QUERY_FOLDER = "synthetic_queries"
+
     def __init__(
-        self, model_id: str = None, folder_path: str = None, overwrite: bool = False
+        self,
+        model_id: str = DEFAULT_MODEL_ID,
+        folder_path: str = None,
+        overwrite: bool = False,
     ) -> None:
         """
-        Description:
-        Initiate a sentence transformer model object. The model id will be used tp download pretrained model from the
-        hugging-face and served as the default name for model files, and the folder_path will be the default location
-        to store files generated in the following functions.
+        Description: Initiate a sentence transformer model class object. The model id will be used to download
+        pretrained model from the hugging-face and served as the default name for model files, and the folder_path
+        will be the default location to store files generated in the following functions.
 
         Parameters
         ----------
-        model_id: str = None
+        model_id: str
              Optional, the huggingface mode id to download sentence transformer model,
-             if None, default as 'sentence-transformers/msmarco-distilbert-base-tas-b'
+            default model id: 'sentence-transformers/msmarco-distilbert-base-tas-b'
         folder_path: str = None
              Optional, the path of the folder to save output files, such as queries, pre-trained model, after-trained
              custom model and configuration files. if None, default as "/model_files/" under the current work directory.
         overwrite: bool = False
              Optional,  choose to overwrite the folder at folder path. Default as false. So when training different
              sentence transformer models,it's recommended to give designated folder path per model training. But if the
-             training process get interrupted in between, users can choose overwrite = True to restart the process.
+             training process get interrupted in between, users can choose to overwrite = True to restart the process.
         Returns
         -------
         None
@@ -63,16 +73,14 @@ class SentenceTransformerModel:
         # check folder exist in self.folder_path
         if os.path.exists(self.folder_path) and not overwrite:
             print(
-                "To prevent overwritten, please enter a different folder path or delete the folder or enable overwrite = True"
+                "To prevent overwritten, please enter a different folder path or delete the folder or enable "
+                "overwrite = True "
             )
             raise Exception(
                 str("The default folder path already exists at : " + self.folder_path)
             )
 
-        if model_id is None:
-            self.model_id = "sentence-transformers/msmarco-distilbert-base-tas-b"
-        else:
-            self.model_id = model_id
+        self.model_id = model_id
 
     def train(
         self,
@@ -112,7 +120,7 @@ class SentenceTransformerModel:
         use_accelerate: bool = False,
             Optional, use accelerate to fine tune model. Default as false to not use accelerator to fine tune model.
             If there are multiple gpus available in the machine, it's recommended to use accelerate with num_processor>1
-            to speeed up the training progress. If use accelerator to train model, run auto setup accelerate confi and
+            to speeed up the training progress. If use accelerator to train model, run auto setup accelerate config and
             launch train_model function with the number of processors provided by users if NOT use accelerator,
             trigger train_model function with default setting
         compute_environment: str
@@ -139,6 +147,9 @@ class SentenceTransformerModel:
             query_df, use_accelerate
         )
 
+        if output_model_path is None:
+            output_model_path = self.folder_path
+
         if use_accelerate is True and num_processes != 0:
 
             self.set_up_accelerate_config(
@@ -148,6 +159,20 @@ class SentenceTransformerModel:
             )
 
             if self.__is_notebook():
+                # MPS needs to be only enabled for MACOS: https://pytorch.org/docs/master/notes/mps.html
+                if platform.system() == "Darwin":
+                    if not torch.backends.mps.is_available():
+                        if not torch.backends.mps.is_built():
+                            print(
+                                "MPS not available because the current PyTorch install was not "
+                                "built with MPS enabled."
+                            )
+                        else:
+                            print(
+                                "MPS not available because the current MacOS version is not 12.3+ "
+                                "and/or you do not have an MPS-enabled device on this machine."
+                            )
+                        exit(1)  # Existing the script as the script will break anyway
                 notebook_launcher(
                     self.train_model,
                     args=(
@@ -163,12 +188,30 @@ class SentenceTransformerModel:
                     num_processes=num_processes,
                 )
             else:
-                subprocess.run(
-                    [
-                        "accelerate launch self.train_model(train_examples, self.model_id, output_model_path, output_model_name,use_accelerate,learning_rate,num_epochs,verbose)"
-                    ]
-                )
-        else:
+                try:
+                    subprocess.Popen(
+                        [
+                            "accelerate",
+                            "launch",
+                            self.train_model(
+                                train_examples,
+                                self.model_id,
+                                output_model_path,
+                                output_model_name,
+                                use_accelerate,
+                                learning_rate,
+                                num_epochs,
+                                verbose,
+                            ),
+                        ],
+                    )
+                # TypeError: expected str, bytes or os.PathLike object, not TopLevelTracedModule happens after
+                # running process.
+                except TypeError:
+                    self.zip_model(output_model_path, output_model_name, zip_file_name)
+                    return None
+
+        else:  # when use_accelerate is not true
             self.train_model(
                 train_examples,
                 self.model_id,
@@ -211,7 +254,7 @@ class SentenceTransformerModel:
         # assign a local folder 'synthetic_queries/' to store the unzip file,
         # check if the folder contains sub-folders and files, remove and clean up the folder before unzip.
         # walk through the zip file and read the file paths into file_list
-        unzip_path = os.path.join(self.folder_path, "synthetic_queries")
+        unzip_path = os.path.join(self.folder_path, self.SYNTHETIC_QUERY_FOLDER)
 
         if os.path.exists(unzip_path):
             if len(os.listdir(unzip_path)) > 0:
@@ -237,6 +280,7 @@ class SentenceTransformerModel:
                         + unzip_path
                     )
 
+        # appending all the file paths of synthetic query files in a list.
         file_list = []
         process = []
         with ZipFile(read_path, "r") as zip_ref:
@@ -251,7 +295,7 @@ class SentenceTransformerModel:
 
         if num_file == 0:
             raise Exception(
-                "Zipped file is empty. Please provide a zip file with nonzero synthetic queries."
+                "Zipped file is empty. Please provide a zip file with synthetic queries."
             )
 
         for file_path in file_list:
@@ -279,21 +323,23 @@ class SentenceTransformerModel:
             list(zip(prob, query, passages)), columns=["prob", "query", "passages"]
         )
 
+        # dropping duplicate queries
         df = df.drop_duplicates(subset=["query"])
+        # for removing the "QRY:" token if they exist in passages
         df["passages"] = df.apply(lambda x: self.__qryrem(x), axis=1)
-
+        # shuffled data within dataframe
         df = df.sample(frac=1)
         return df
 
     def load_sentence_transformer_example(
-        self, df, use_accelerate: bool = False
+        self, query_df, use_accelerate: bool = False
     ) -> List[str]:
         """
-        Create input data for training
+        Create input data for training the model
 
         Parameters
         ----------
-        df: pd.DataFrame
+        query_df: pd.DataFrame
             required for loading sentence transformer examples.
         use_accelerate: bool = False,
             Optional, use accelerate to fine tune model. Default as false to not use accelerator.
@@ -307,19 +353,19 @@ class SentenceTransformerModel:
         print("Loading training examples... \n")
 
         if use_accelerate is False:
-            for i in tqdm(range(len(df)), total=len(df)):
+            for i in tqdm(range(len(query_df)), total=len(query_df)):
                 train_examples.append(
                     InputExample(
                         texts=[
-                            df[i : i + 1]["passages"].values[0],
-                            df[i : i + 1]["query"].values[0],
+                            query_df[i : i + 1]["passages"].values[0],
+                            query_df[i : i + 1]["query"].values[0],
                         ]
                     )
                 )
         else:
-            queries = list(df["query"])
-            passages = list(df["passages"])
-            for i in tqdm(range(len(df)), total=len(df)):
+            queries = list(query_df["query"])
+            passages = list(query_df["passages"])
+            for i in tqdm(range(len(query_df)), total=len(query_df)):
                 train_examples.append([queries[i], passages[i]])
         return train_examples
 
@@ -442,6 +488,7 @@ class SentenceTransformerModel:
             model, optimizer, train_dataloader, scheduler = accelerator.prepare(
                 model, optimizer, train_dataloader, scheduler
             )
+            model.to(accelerator.device)
             init_time = time.time()
             total_loss = []
 
@@ -603,10 +650,18 @@ class SentenceTransformerModel:
         else:
             model_path = os.path.join(model_path, str(model_name))
 
+        print("model path is: ", model_path)
+
         if zip_file_name is None:
             zip_file_name = str(model_name + ".zip")
 
+        zip_file_name_without_extension = zip_file_name.split(".")[0]
+
+        print("Zip file name without extension: ", zip_file_name_without_extension)
+
         tokenizer_json_path = os.path.join(self.folder_path, "tokenizer.json")
+        print("tokenizer_json_path: ", tokenizer_json_path)
+
         zip_file_path = os.path.join(self.folder_path, zip_file_name)
 
         if not os.path.exists(tokenizer_json_path):
@@ -621,8 +676,11 @@ class SentenceTransformerModel:
 
         # Create a ZipFile Object
         with ZipFile(zip_file_path, "w") as zipObj:
-            zipObj.write(model_path)
-            zipObj.write(tokenizer_json_path)
+            zipObj.write(model_path, zip_file_name_without_extension + "/" + model_name)
+            zipObj.write(
+                tokenizer_json_path,
+                zip_file_name_without_extension + "/" + "tokenizer.json",
+            )
         print("zip file is saved to " + zip_file_path + "\n")
 
     def save_as_pt(
@@ -845,7 +903,7 @@ class SentenceTransformerModel:
                 )
             try:
                 with open(config_json_file_path) as f:
-                    print("reading config file: at" + config_json_file_path)
+                    print("reading config file from: " + config_json_file_path)
                     config_content = json.load(f)
                     if all_config is None:
                         all_config = config_content
@@ -903,7 +961,7 @@ class SentenceTransformerModel:
             },
         }
 
-        print("generating ml-commons_model_config.json file...")
+        print("generating ml-commons_model_config.json file...\n")
         print(model_config_content)
 
         model_config_file_path = os.path.join(
@@ -913,7 +971,7 @@ class SentenceTransformerModel:
         with open(model_config_file_path, "w") as file:
             json.dump(model_config_content, file)
         print(
-            "ml-commons_model_config.json file is saved at", model_config_file_path, "."
+            "ml-commons_model_config.json file is saved at : ", model_config_file_path
         )
 
     # private methods

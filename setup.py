@@ -86,7 +86,7 @@ setup(
         "opensearch-py>=2",
         "pandas>=1.5,<2",
         "matplotlib>=3.6.0,<4",
-        "numpy>=1.23.3,<2",
+        "numpy>=1.24.0,<2",
     ],
     python_requires=">=3.8",
     package_data={"opensearch_py_ml": ["py.typed"]},

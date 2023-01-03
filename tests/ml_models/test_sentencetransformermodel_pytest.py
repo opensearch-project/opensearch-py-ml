@@ -10,7 +10,7 @@ import shutil
 
 import pytest
 
-from opensearch_py_ml.sentence_transformer_model import SentenceTransformerModel
+from opensearch_py_ml.ml_models import SentenceTransformerModel
 
 TEST_FOLDER = os.path.join(
     os.path.dirname(os.path.abspath("__file__")), "tests", "test_model_files"
@@ -58,6 +58,8 @@ def test_check_attribute():
     assert test_model.model_id == "sentence-transformers/msmarco-distilbert-base-tas-b"
 
     default_folder = os.path.join(os.getcwd(), "model_files")
+    print(default_folder)
+
     clean_test_folder(default_folder)
     test_model0 = SentenceTransformerModel()
     assert test_model0.folder_path == default_folder
