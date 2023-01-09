@@ -142,7 +142,7 @@ def test_integration_model_train_upload_full_cycle():
                 time.sleep(60)
 
                 try:
-                    unload_obj = ml_client.unload_model(model_id)
+                    ml_client.unload_model(model_id)
                     # print("unloaded object", unload_obj)
                     # assert len(unload_obj) > 0
                     ml_model_status = ml_client.get_model_info(model_id)
