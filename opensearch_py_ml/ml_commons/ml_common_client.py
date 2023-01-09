@@ -103,6 +103,29 @@ class MLCommonClient:
             url=API_URL,
         )
 
+    def get_model_info(self, model_id: str):  # type: ignore
+        """
+        This method return information about a model uploaded into opensearch cluster (using ml commons api).
+
+        Parameters
+        ----------
+        :param model_id: unique id of the model
+        :type model_id: string
+
+        Returns
+        -------
+        :return: returns a json object, with detailed information about the model
+        :rtype: object
+        """
+
+        MODEL_INFO_API_ENDPOINT = f"models/{model_id}"
+        API_URL = f"{ML_BASE_URI}/{MODEL_INFO_API_ENDPOINT}"
+
+        return self._client.transport.perform_request(
+            method="GET",
+            url=API_URL,
+        )
+
     def generate_embedding(self, model_id: str, sentences: List[str]):  # type: ignore
         """
         This method return embedding for given sentences (using ml commons _predict api)
@@ -130,4 +153,60 @@ class MLCommonClient:
             method="POST",
             url=API_URL,
             body=API_BODY,
+        )
+
+    def unload_model(self, model_id: str, node_ids: List[str] = []):  # type: ignore
+        """
+        This method unloads a model from all the nodes or from the given list of nodes (using ml commons _unload api)
+
+        Parameters
+        ----------
+        :param model_id: unique id of the nlp model
+        :type model_id: string
+        :param node_ids: List of nodes
+        :type node_ids: list of string
+
+        Returns
+        -------
+        :return: returns a json object with defining from which nodes the model has unloaded.
+        :rtype: object
+        """
+
+        UNLOAD_MODEL_API_ENDPOINT = f"models/{model_id}/_unload"
+        API_URL = f"{ML_BASE_URI}/{UNLOAD_MODEL_API_ENDPOINT}"
+
+        API_BODY = {"node_ids": node_ids}
+        if len(node_ids) > 0:
+            return self._client.transport.perform_request(
+                method="POST",
+                url=API_URL,
+                body=API_BODY,
+            )
+        else:
+            return self._client.transport.perform_request(
+                method="POST",
+                url=API_URL,
+            )
+
+    def delete_model(self, model_id: str):  # type: ignore
+        """
+        This method deletes a model from opensearch cluster (using ml commons api).
+
+        Parameters
+        ----------
+        :param model_id: unique id of the model
+        :type model_id: string
+
+        Returns
+        -------
+        :return: returns a json object, with detailed information about the deleted model
+        :rtype: object
+        """
+
+        MODEL_DELETE_API_ENDPOINT = f"models/{model_id}"
+        API_URL = f"{ML_BASE_URI}/{MODEL_DELETE_API_ENDPOINT}"
+
+        return self._client.transport.perform_request(
+            method="DELETE",
+            url=API_URL,
         )

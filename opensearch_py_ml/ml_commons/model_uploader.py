@@ -49,9 +49,19 @@ class ModelUploader:
         first this method creates a model id to store model metadata and then breaks the model zip file into
         multiple chunks and then upload chunks into cluster.
 
-        @param model_path         string     path of the zip file of the model
-        @param model_meta_path    string     filepath of the model metadata. A json file of model metadata is expected
-        @param isVerbose          bool       if isVerbose is true method will print more messages.
+        Parameters
+        ----------
+        :param model_path: path of the zip file of the model
+        :type model_path: string
+        :param model_meta_path: filepath of the model metadata. A json file of model metadata is expected
+        :type model_meta_path: string
+        :param isVerbose: if isVerbose is true method will print more messages
+        :type isVerbose: bool
+
+        Returns
+        -------
+        :return: returns model id which is created by the model metadata
+        :rtype: string
         """
         if os.stat(model_path).st_size > MODEL_MAX_SIZE:
             raise Exception("Model file size exceeds the limit of 4GB")
@@ -109,7 +119,8 @@ class ModelUploader:
                         body=chunk,
                     )
                     if isVerbose:
-                        print(output)
+                        print("Model id:", output)
+
                 print("Model uploaded successfully")
                 return model_id
             else:
@@ -119,12 +130,18 @@ class ModelUploader:
 
     def _check_mandatory_field(self, model_meta: dict) -> bool:
         """
-        This method checks if model meta doc has all the required fields to create a model meta doc in opensearch.
+        This method checks if model meta doc has all the required fields to create a model meta doc in opensearch
 
-        @param model_meta         dict     content of the model meta file
+        Parameters
+        ----------
+        :param model_meta: content of the model meta file
+        :type model_meta: dict
 
-        @return                   boolean  if all the required fields are present returns True otherwise
+        Returns
+        -------
+        :return: if all the required fields are present returns True otherwise
                                             raise exception
+        :rtype: bool
         """
 
         if model_meta:
@@ -160,9 +177,17 @@ class ModelUploader:
         """
         Generate sha1 hash value for the model zip file.
 
-        @param model_file_path    str     file path of the model file
+        Parameters
+        ----------
+        :param model_file_path: file path of the model file
+        :type model_file_path: string
 
-        @return                   string  sha256 hash
+
+        Returns
+        -------
+        :return: sha256 hash
+        :rtype: string
+
         """
 
         sha256 = hashlib.sha256()

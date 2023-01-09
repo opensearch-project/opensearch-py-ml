@@ -107,6 +107,15 @@ def test_integration_model_train_upload_full_cycle():
                 raised = True
             assert raised == False, "Raised Exception in loading model"
 
+            raised = False
+            try:
+                ml_model_status = ml_client.get_model_info(model_id)
+                assert ml_model_status.get("model_format") == "TORCH_SCRIPT"
+                assert ml_model_status.get("algorithm") == "TEXT_EMBEDDING"
+            except:  # noqa: E722
+                raised = True
+            assert raised == False, "Raised Exception in getting model info"
+
             if task_id:
                 time.sleep(10)
                 raised = False
@@ -118,18 +127,37 @@ def test_integration_model_train_upload_full_cycle():
                 except:  # noqa: E722
                     raised = True
                 assert raised == False, "Raised Exception in pulling task info"
-            # This is test is being flaky. Sometimes the test is passing and sometimes showing 500 error
-            # due to memory circuit breaker.
-            # Todo: We need to revisit this test.
-            # try:
-            #     raised = False
-            #     sentences = ["First test sentence", "Second test sentence"]
-            #     embedding_result = ml_client.generate_embedding(model_id, sentences)
-            #     print(embedding_result)
-            #     assert len(embedding_result.get("inference_results")) == 2
-            # except:  # noqa: E722
-            #     raised = True
-            # assert raised == False, "Raised Exception in generating sentence embedding"
+                # This is test is being flaky. Sometimes the test is passing and sometimes showing 500 error
+                # due to memory circuit breaker.
+                # Todo: We need to revisit this test.
+                # try:
+                #     raised = False
+                #     sentences = ["First test sentence", "Second test sentence"]
+                #     embedding_result = ml_client.generate_embedding(model_id, sentences)
+                #     print(embedding_result)
+                #     assert len(embedding_result.get("inference_results")) == 2
+                # except:  # noqa: E722
+                #     raised = True
+                # assert raised == False, "Raised Exception in generating sentence embedding"
+                time.sleep(60)
+
+                try:
+                    unload_obj = ml_client.unload_model(model_id)
+                    # print("unloaded object", unload_obj)
+                    # assert len(unload_obj) > 0
+                    ml_model_status = ml_client.get_model_info(model_id)
+                    print("ml_model_status", ml_model_status)
+                    assert ml_model_status.get("model_state") == "UNLOADED"
+                except:  # noqa: E722
+                    raised = True
+                assert raised == False, "Raised Exception in unloading model"
+
+                try:
+                    delete_model_obj = ml_client.delete_model(model_id)
+                    assert delete_model_obj.get("result") == "deleted"
+                except:  # noqa: E722
+                    raised = True
+                assert raised == False, "Raised Exception in deleting model"
 
 
 def test_check_attribute():
