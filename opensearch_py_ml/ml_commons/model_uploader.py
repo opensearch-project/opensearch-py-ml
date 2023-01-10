@@ -53,7 +53,22 @@ class ModelUploader:
         ----------
         :param model_path: path of the zip file of the model
         :type model_path: string
-        :param model_meta_path: filepath of the model metadata. A json file of model metadata is expected
+        :param model_meta_path:
+            filepath of the model metadata. A json file of model metadata is expected
+            Model metadata format example:
+                {
+                    "name": "all-MiniLM-L6-v2",
+                    "version": 1,
+                    "model_format": "TORCH_SCRIPT",
+                    "model_config": {
+                        "model_type": "bert",
+                        "embedding_dimension": 384,
+                        "framework_type": "sentence_transformers",
+                        "all_config": '{"_name_or_path":"nreimers/MiniLM-L6-H384-uncased","architectures":["BertModel"],"attention_probs_dropout_prob":0.1,"gradient_checkpointing":false,"hidden_act":"gelu","hidden_dropout_prob":0.1,"hidden_size":384,"initializer_range":0.02,"intermediate_size":1536,"layer_norm_eps":1e-12,"max_position_embeddings":512,"model_type":"bert","num_attention_heads":12,"num_hidden_layers":6,"pad_token_id":0,"position_embedding_type":"absolute","transformers_version":"4.8.2","type_vocab_size":2,"use_cache":true,"vocab_size":30522}',
+                    },
+                }
+            refer to:
+                https://opensearch.org/docs/latest/ml-commons-plugin/model-serving-framework/#upload-model-to-opensearch
         :type model_meta_path: string
         :param isVerbose: if isVerbose is true method will print more messages
         :type isVerbose: bool
