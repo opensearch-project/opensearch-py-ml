@@ -1,11 +1,11 @@
 #
 # Basic requirements
 #
-pandas>=1.5,<2
-matplotlib>=3.6.0,<4
-numpy>=1.23.3,<2
-opensearch-py>=2
-torch>=1.13.1
+pandas>=1.5.2,<2
+matplotlib>=3.6.2,<4
+numpy>=1.24.0,<2
+opensearch-py==2.0.1
+torch==1.13.1
 accelerate
 sentence_transformers
 tqdm
@@ -22,6 +22,6 @@ nbval
 #
 # Docs
 #
-nox
-mypy
+# nox
+# mypy
 

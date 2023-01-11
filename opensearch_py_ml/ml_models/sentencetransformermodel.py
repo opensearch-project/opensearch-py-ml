@@ -8,6 +8,7 @@
 import json
 import os
 import pickle
+import platform
 import random
 import shutil
 import subprocess
@@ -28,30 +29,43 @@ from transformers import TrainingArguments, get_linear_schedule_with_warmup
 
 
 class SentenceTransformerModel:
+    """
+    Class for training, exporting and configuring the SentenceTransformers model.
+    """
+
+    DEFAULT_MODEL_ID = "sentence-transformers/msmarco-distilbert-base-tas-b"
+    SYNTHETIC_QUERY_FOLDER = "synthetic_queries"
+
     def __init__(
-        self, model_id: str = None, folder_path: str = None, overwrite: bool = False
+        self,
+        model_id: str = DEFAULT_MODEL_ID,
+        folder_path: str = None,
+        overwrite: bool = False,
     ) -> None:
         """
-        Description:
-        Initiate a sentence transformer model object. The model id will be used tp download pretrained model from the
-        hugging-face and served as the default name for model files, and the folder_path will be the default location
-        to store files generated in the following functions.
+        Description: Initiate a sentence transformer model class object. The model id will be used to download
+        pretrained model from the hugging-face and served as the default name for model files, and the folder_path
+        will be the default location to store files generated in the following functions.
 
         Parameters
         ----------
-        model_id: str = None
-             Optional, the huggingface mode id to download sentence transformer model,
-             if None, default as 'sentence-transformers/msmarco-distilbert-base-tas-b'
-        folder_path: str = None
-             Optional, the path of the folder to save output files, such as queries, pre-trained model, after-trained
-             custom model and configuration files. if None, default as "/model_files/" under the current work directory.
-        overwrite: bool = False
-             Optional,  choose to overwrite the folder at folder path. Default as false. So when training different
-             sentence transformer models,it's recommended to give designated folder path per model training. But if the
-             training process get interrupted in between, users can choose overwrite = True to restart the process.
+        :param model_id: Optional, the huggingface mode id to download sentence transformer model,
+            default model id: 'sentence-transformers/msmarco-distilbert-base-tas-b'
+        :type model_id: string
+        :param folder_path: Optional, the path of the folder to save output files, such as queries, pre-trained model,
+            after-trained custom model and configuration files. if None, default as "/model_files/" under the current
+            work directory
+        :type folder_path: string
+        :param overwrite: Optional,  choose to overwrite the folder at folder path. Default as false. So when training
+                    different sentence transformer models,it's recommended to give designated folder path per model
+                    training. But if the training process get interrupted in between, users can choose to
+                    overwrite = True to restart the process
+        :type overwrite: bool
+
         Returns
         -------
-        None
+        :return: no return value expected
+        :rtype: None
         """
         default_folder_path = os.path.join(os.getcwd(), "model_files")
 
@@ -63,16 +77,14 @@ class SentenceTransformerModel:
         # check folder exist in self.folder_path
         if os.path.exists(self.folder_path) and not overwrite:
             print(
-                "To prevent overwritten, please enter a different folder path or delete the folder or enable overwrite = True"
+                "To prevent overwritten, please enter a different folder path or delete the folder or enable "
+                "overwrite = True "
             )
             raise Exception(
                 str("The default folder path already exists at : " + self.folder_path)
             )
 
-        if model_id is None:
-            self.model_id = "sentence-transformers/msmarco-distilbert-base-tas-b"
-        else:
-            self.model_id = model_id
+        self.model_id = model_id
 
     def train(
         self,
@@ -94,43 +106,56 @@ class SentenceTransformerModel:
 
         Parameters
         ----------
-        read_path: str
+        :param read_path:
             required, path to the zipped file that contains generated queries, if None, raise exception.
             the zipped file should contain pickled file in list of dictionary format with key named as 'query',
             'probability' and 'passages'. For example: [{'query':q1,'probability': p1,'passages': pa1}, ...].
-            'probability' is not required for training purpose.
-        overwrite: bool
+            'probability' is not required for training purpose
+        :type read_path: string
+        :param overwrite:
             optional, synthetic_queries/ folder in current directory is to store unzip queries files.
             Default to set overwrite as false and if the folder is not empty, raise exception to recommend users
-            to either clean up folder or enable overwriting is True.
-        output_model_path: str=None
+            to either clean up folder or enable overwriting is True
+        :type overwrite: bool
+        :param output_model_path:
             the path to store trained custom model. If None, default as current folder path
-        output_model_name: str=None
+        :type output_model_path: string
+        :param output_model_name:
             the name of the trained custom model. If None, default as model_id + '.pt'
-        zip_file_name: str =None
+        :type output_model_name: string
+        :param zip_file_name:
             Optional, file name for zip file. if None, default as model_id + '.zip'
-        use_accelerate: bool = False,
+        :type zip_file_name: string
+        :param use_accelerate:
             Optional, use accelerate to fine tune model. Default as false to not use accelerator to fine tune model.
             If there are multiple gpus available in the machine, it's recommended to use accelerate with num_processor>1
-            to speeed up the training progress. If use accelerator to train model, run auto setup accelerate confi and
+            to speeed up the training progress. If use accelerator to train model, run auto setup accelerate config and
             launch train_model function with the number of processors provided by users if NOT use accelerator,
             trigger train_model function with default setting
-        compute_environment: str
+        :type use_accelerate: bool
+        :param compute_environment:
             optional, compute environment type to run model, if None, default using `LOCAL_MACHINE`
-        num_machines: int
+        :type compute_environment: string
+        :param num_machines:
             optional, number of machine to run model , if None, default using 1
-        num_processes: int
+        :type num_machines: int
+        :param num_processes:
             optional, number of processors to run model , if None, default using 1
-        learning_rate: float
+        :type num_processes: int
+        :param learning_rate:
             optional, learning rate to train model, default is 2e-5
-        num_epochs: int
+        :type learning_rate: float
+        :param num_epochs:
             optional, number of epochs to train model, default is 20
-        verbose: bool
-            optional, use plotting to plot the training progress. Default as false.
+        :type num_epochs: int
+        :param verbose:
+            optional, use plotting to plot the training progress. Default as false
+        :type verbose: bool
 
         Returns
         -------
-        None
+        :return: no return value expected
+        :rtype: None
         """
 
         query_df = self.read_queries(read_path, overwrite)
@@ -139,15 +164,33 @@ class SentenceTransformerModel:
             query_df, use_accelerate
         )
 
+        if output_model_path is None:
+            output_model_path = self.folder_path
+
         if use_accelerate is True and num_processes != 0:
 
             self.set_up_accelerate_config(
                 compute_environment=compute_environment,
                 num_machines=num_machines,
                 num_processes=num_processes,
+                verbose=verbose,
             )
 
             if self.__is_notebook():
+                # MPS needs to be only enabled for MACOS: https://pytorch.org/docs/master/notes/mps.html
+                if platform.system() == "Darwin":
+                    if not torch.backends.mps.is_available():
+                        if not torch.backends.mps.is_built():
+                            print(
+                                "MPS not available because the current PyTorch install was not "
+                                "built with MPS enabled."
+                            )
+                        else:
+                            print(
+                                "MPS not available because the current MacOS version is not 12.3+ "
+                                "and/or you do not have an MPS-enabled device on this machine."
+                            )
+                        exit(1)  # Existing the script as the script will break anyway
                 notebook_launcher(
                     self.train_model,
                     args=(
@@ -163,12 +206,30 @@ class SentenceTransformerModel:
                     num_processes=num_processes,
                 )
             else:
-                subprocess.run(
-                    [
-                        "accelerate launch self.train_model(train_examples, self.model_id, output_model_path, output_model_name,use_accelerate,learning_rate,num_epochs,verbose)"
-                    ]
-                )
-        else:
+                try:
+                    subprocess.run(
+                        [
+                            "accelerate",
+                            "launch",
+                            self.train_model(
+                                train_examples,
+                                self.model_id,
+                                output_model_path,
+                                output_model_name,
+                                use_accelerate,
+                                learning_rate,
+                                num_epochs,
+                                verbose,
+                            ),
+                        ],
+                    )
+                # TypeError: expected str, bytes or os.PathLike object, not TopLevelTracedModule happens after
+                # running process.
+                except TypeError:
+                    self.zip_model(output_model_path, output_model_name, zip_file_name)
+                    return None
+
+        else:  # when use_accelerate is not true
             self.train_model(
                 train_examples,
                 self.model_id,
@@ -191,16 +252,19 @@ class SentenceTransformerModel:
 
         Parameters
         ----------
-        read_path: str
+        :param read_path:
             required, path to the zipped file that contains generated queries, if None, raise exception
-        overwrite: bool
+        :type read_path: string
+        :param overwrite:
             optional, synthetic_queries/ folder in current directory is to store unzip queries files.
             Default to set overwrite as false and if the folder is not empty, raise exception to recommend users
-            to either clean up folder or enable overwriting is True.
+            to either clean up folder or enable overwriting is True
+        :type overwrite: bool
 
         Returns
         -------
-        The dataframe of queries.
+        :return: The dataframe of queries.
+        :rtype: panda dataframe
         """
 
         if read_path is None:
@@ -211,7 +275,7 @@ class SentenceTransformerModel:
         # assign a local folder 'synthetic_queries/' to store the unzip file,
         # check if the folder contains sub-folders and files, remove and clean up the folder before unzip.
         # walk through the zip file and read the file paths into file_list
-        unzip_path = os.path.join(self.folder_path, "synthetic_queries")
+        unzip_path = os.path.join(self.folder_path, self.SYNTHETIC_QUERY_FOLDER)
 
         if os.path.exists(unzip_path):
             if len(os.listdir(unzip_path)) > 0:
@@ -237,6 +301,7 @@ class SentenceTransformerModel:
                         + unzip_path
                     )
 
+        # appending all the file paths of synthetic query files in a list.
         file_list = []
         process = []
         with ZipFile(read_path, "r") as zip_ref:
@@ -251,7 +316,7 @@ class SentenceTransformerModel:
 
         if num_file == 0:
             raise Exception(
-                "Zipped file is empty. Please provide a zip file with nonzero synthetic queries."
+                "Zipped file is empty. Please provide a zip file with synthetic queries."
             )
 
         for file_path in file_list:
@@ -279,47 +344,52 @@ class SentenceTransformerModel:
             list(zip(prob, query, passages)), columns=["prob", "query", "passages"]
         )
 
+        # dropping duplicate queries
         df = df.drop_duplicates(subset=["query"])
+        # for removing the "QRY:" token if they exist in passages
         df["passages"] = df.apply(lambda x: self.__qryrem(x), axis=1)
-
+        # shuffled data within dataframe
         df = df.sample(frac=1)
         return df
 
     def load_sentence_transformer_example(
-        self, df, use_accelerate: bool = False
+        self, query_df, use_accelerate: bool = False
     ) -> List[str]:
         """
-        Create input data for training
+        Create input data for training the model
 
         Parameters
         ----------
-        df: pd.DataFrame
-            required for loading sentence transformer examples.
-        use_accelerate: bool = False,
-            Optional, use accelerate to fine tune model. Default as false to not use accelerator.
+        :param query_df:
+            required for loading sentence transformer examples
+        :type query_df: pd.DataFrame
+        :param use_accelerate:
+            Optional, use accelerate to fine tune model. Default as false to not use accelerator
+        :type use_accelerate: bool
 
         Returns
         -------
-        the list of train examples.
+        :return: the list of train examples.
+        :rtype: list
         """
 
         train_examples = []
         print("Loading training examples... \n")
 
         if use_accelerate is False:
-            for i in tqdm(range(len(df)), total=len(df)):
+            for i in tqdm(range(len(query_df)), total=len(query_df)):
                 train_examples.append(
                     InputExample(
                         texts=[
-                            df[i : i + 1]["passages"].values[0],
-                            df[i : i + 1]["query"].values[0],
+                            query_df[i : i + 1]["passages"].values[0],
+                            query_df[i : i + 1]["query"].values[0],
                         ]
                     )
                 )
         else:
-            queries = list(df["query"])
-            passages = list(df["passages"])
-            for i in tqdm(range(len(df)), total=len(df)):
+            queries = list(query_df["query"])
+            passages = list(query_df["passages"])
+            for i in tqdm(range(len(query_df)), total=len(query_df)):
                 train_examples.append([queries[i], passages[i]])
         return train_examples
 
@@ -340,26 +410,36 @@ class SentenceTransformerModel:
 
         Parameters
         ----------
-        train_examples:
+        :param train_examples:
             required, input for the sentence transformer model training
-        model_id: str = None
-            optional,the url to download sentence transformer model, if None, default as 'sentence-transformers/msmarco-distilbert-base-tas-b'
-        output_path: str=None
+        :type train_examples: list of strings
+        :param model_id:
+            [optional] the url to download sentence transformer model, if None,
+            default as 'sentence-transformers/msmarco-distilbert-base-tas-b'
+        :type model_id: string
+        :param output_path:
             optional,the path to store trained custom model. If None, default as default_folder_path from constructor
-        output_model_name: str=None
+        :type output_path: string
+        :param output_model_name:
             optional,the name of the trained custom model. If None, default as model_id + '.pt'
-        use_accelerate: bool = False,
-            Optional, use accelerate to fine tune model. Default as false to not use accelerator.
-        learning_rate: float
+        :type output_model_name: string
+        :param use_accelerate:
+            Optional, use accelerate to fine tune model. Default as false to not use accelerator
+        :type use_accelerate: bool
+        :param learning_rate:
             optional, learning rate to train model, default is 2e-5
-        num_epochs: int
+        :type learning_rate: float
+        :param num_epochs:
             optional, number of epochs to train model, default is 20
-        verbose: float
-            optional, use plotting to plot the training progress. Default as false.
+        :type num_epochs: int
+        :param verbose:
+            optional, use plotting to plot the training progress and printing more logs. Default as false
+        :type verbose: bool
 
         Returns
         -------
-        the torch script format trained model.
+        :return: the torch script format trained model.
+        :rtype: .pt file
         """
 
         if output_path is None:
@@ -426,7 +506,8 @@ class SentenceTransformerModel:
             )
 
             print("Start training with accelerator...\n")
-            print(f"The number of training epoch are {num_epochs}\n")
+            if verbose:
+                print(f"The number of training epoch are {num_epochs}\n")
             print(
                 f"The total number of steps training epoch are {len(train_dataloader)}\n"
             )
@@ -442,6 +523,7 @@ class SentenceTransformerModel:
             model, optimizer, train_dataloader, scheduler = accelerator.prepare(
                 model, optimizer, train_dataloader, scheduler
             )
+            model.to(accelerator.device)
             init_time = time.time()
             total_loss = []
 
@@ -506,7 +588,8 @@ class SentenceTransformerModel:
             init_time = time.time()
 
             print("Start training without accelerator...\n")
-            print(f"The number of training epoch are {num_epochs}\n")
+            if verbose:
+                print(f"The number of training epoch are {num_epochs}\n")
             print(f"The total number of steps training epoch are {steps_size}\n")
 
             for epoch in range(num_epochs):
@@ -569,14 +652,18 @@ class SentenceTransformerModel:
             ),
             strict=False,
         )
-
-        print("Preparing model to save...\n")
+        if verbose:
+            print("Preparing model to save...\n")
         torch.jit.save(traced_cpu, output_model_path)
         print("Model saved to path: " + output_model_path + "\n")
         return traced_cpu
 
     def zip_model(
-        self, model_path: str = None, model_name: str = None, zip_file_name: str = None
+        self,
+        model_path: str = None,
+        model_name: str = None,
+        zip_file_name: str = None,
+        verbose: bool = False,
     ) -> None:
         """
         Description:
@@ -584,16 +671,21 @@ class SentenceTransformerModel:
 
         Parameters
         ----------
-        model_path: str
-            Optional, path to find the model file, if None, default as concatenate model_id and '.pt' file in current path
-        model_name: str=None
+        :param model_path:
+            Optional, path to find the model file, if None, default as concatenate model_id and
+            '.pt' file in current path
+        :type model_path: string
+        :param model_name:
             the name of the trained custom model. If None, default as concatenate model_id and '.pt'
-        zip_file_name: str =None
+        :type model_name: string
+        :param zip_file_name: str =None
             Optional, file name for zip file. if None, default as concatenate model_id and '.zip'
+        :type zip_file_name: string
 
         Returns
         -------
-        None
+        :return: no return value expected
+        :rtype: None
         """
         if model_name is None:
             model_name = str(self.model_id.split("/")[-1] + ".pt")
@@ -603,10 +695,20 @@ class SentenceTransformerModel:
         else:
             model_path = os.path.join(model_path, str(model_name))
 
+        if verbose:
+            print("model path is: ", model_path)
+
         if zip_file_name is None:
             zip_file_name = str(model_name + ".zip")
 
+        zip_file_name_without_extension = zip_file_name.split(".")[0]
+
+        if verbose:
+            print("Zip file name without extension: ", zip_file_name_without_extension)
+
         tokenizer_json_path = os.path.join(self.folder_path, "tokenizer.json")
+        print("tokenizer_json_path: ", tokenizer_json_path)
+
         zip_file_path = os.path.join(self.folder_path, zip_file_name)
 
         if not os.path.exists(tokenizer_json_path):
@@ -621,8 +723,11 @@ class SentenceTransformerModel:
 
         # Create a ZipFile Object
         with ZipFile(zip_file_path, "w") as zipObj:
-            zipObj.write(model_path)
-            zipObj.write(tokenizer_json_path)
+            zipObj.write(model_path, zip_file_name_without_extension + "/" + model_name)
+            zipObj.write(
+                tokenizer_json_path,
+                zip_file_name_without_extension + "/" + "tokenizer.json",
+            )
         print("zip file is saved to " + zip_file_path + "\n")
 
     def save_as_pt(
@@ -639,25 +744,31 @@ class SentenceTransformerModel:
 
         Parameters
         ----------
-        sentences:[str]
+        :param sentences:
             Required, for example  sentences = ['today is sunny']
-        model: str
+        :type sentences: List of string [str]
+        :param model:
             Optional, if provide model in parameters, will convert model to torch script format,
             else, not provided model then it will download sentence transformer model from huggingface.
-            If None, default takes model_id = "sentence-transformers/msmarco-distilbert-base-tas-b".
-        model_name: str
+            If None, default takes model_id = "sentence-transformers/msmarco-distilbert-base-tas-b"
+        :type model: string
+        :param model_name:
             Optional, model name to name the model file, e.g, "sample_model.pt". If None, default takes the
-            model_id and add the extension with ".pt".
-        save_json_folder_path:
+            model_id and add the extension with ".pt"
+        :type model_name: string
+        :param save_json_folder_path:
              Optional, path to save model json file, e.g, "home/save_pre_trained_model_json/"). If None, default as
              default_folder_path from the constructor.
-        zip_file_name: str =None
+        :type save_json_folder_path: string
+        :param zip_file_name:
             Optional, file name for zip file. e.g, "sample_model.zip". If None, default takes the model_id
-            and add the extension with ".zip".
+            and add the extension with ".zip"
+        :type zip_file_name: string
 
         Returns
         -------
-        the torch script format model
+        :return: the torch script format model
+        :rtype: .pt model
         """
 
         if model is None:
@@ -713,6 +824,7 @@ class SentenceTransformerModel:
         compute_environment: str = None,
         num_machines: int = 1,
         num_processes: int = None,
+        verbose: bool = False,
     ) -> None:
         """
         get default config setting based on the number of GPU on the machine
@@ -720,17 +832,24 @@ class SentenceTransformerModel:
 
         Parameters
         ----------
-        compute_environment: str
+        :param compute_environment:
             optional, compute environment type to run model, if None, default using 'LOCAL_MACHINE'
-        num_machines: int
+        :type compute_environment: string
+        :param num_machines:
             optional, number of machine to run model , if None, default using 1
-        num_processes: int
-            optional, number of processes to run model, if None, default to check how many gpus are available and use all.
-            if no gpu is available, use cpu.
+        :type num_machines: int
+        :param num_processes:
+            optional, number of processes to run model, if None, default to check how many gpus are available and
+            use all. if no gpu is available, use cpu
+        :type num_processes: int
+        :param verbose:
+            optional, use printing more logs. Default as false
+        :type verbose: bool
 
         Returns
         -------
-        None
+        :return: no return value expected
+        :rtype: None
         """
 
         if compute_environment is None or compute_environment == 0:
@@ -750,7 +869,8 @@ class SentenceTransformerModel:
 
         file_path = os.path.join(cache_dir, "default_config.yaml")
         use_cpu = False
-        print("generated config file: at " + file_path + "\n")
+        if verbose:
+            print("generated config file: at " + file_path + "\n")
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         if num_processes is None:
             if torch.cuda.is_available():
@@ -786,9 +906,12 @@ class SentenceTransformerModel:
 
         try:
             with open(file_path, "w") as file:
-                print(
-                    "generating config file for ml common upload: " + file_path + "\n"
-                )
+                if verbose:
+                    print(
+                        "generating config file for ml common upload: "
+                        + file_path
+                        + "\n"
+                    )
                 yaml.dump(model_config_content, file)
         except IOError:
             print(
@@ -798,10 +921,11 @@ class SentenceTransformerModel:
     def make_model_config_json(
         self,
         model_name: str = None,
-        version_number: int = 1,
+        version_number: str = 1,
         embedding_dimension: int = None,
         all_config: str = None,
         model_type: str = None,
+        verbose: bool = False,
     ) -> None:
         """
         parse from config.json file of pre-trained hugging-face model to generate a ml-commons_model_config.json file. If all required
@@ -809,24 +933,33 @@ class SentenceTransformerModel:
 
         Parameters
         ----------
-        model_name: str = None
+        :param model_name:
             Optional, The name of the model. If None, default to parse from model id, for example,
             'msmarco-distilbert-base-tas-b'
-        version_number: int = 1,
-            Optional, The version number of the model. If None, default to be 1.
-        embedding_dimension: int = 768,
+        :type model_name: string
+        :param version_number:
+            Optional, The version number of the model. default is 1
+        :type version_number: string
+        :param embedding_dimension:
             Optional, the embedding_dimension of the model. If None, parse embedding_dimension from the config file of
-             pre-trained hugging-face model, if not found, default to be 768.
-        all_config: dict = None,
+             pre-trained hugging-face model, if not found, default to be 768
+        :type embedding_dimension: int
+        :param all_config:
             Optional, the all_config of the model. If None, parse all contents from the config file of pre-trained
-            hugging-face model.
-        model_type: str = None,
+            hugging-face model
+        :type all_config: dict
+        :param model_type:
             Optional, the model_type of the model. If None, parse model_type from the config file of pre-trained
-            hugging-face model.
+            hugging-face model
+        :type model_type: string
+        :param verbose:
+            optional, use printing more logs. Default as false
+        :type verbose: bool
 
         Returns
         -------
-        None
+        :return: no return value expected
+        :rtype: None
         """
         folder_path = self.folder_path
         config_json_file_path = os.path.join(folder_path, "config.json")
@@ -845,7 +978,8 @@ class SentenceTransformerModel:
                 )
             try:
                 with open(config_json_file_path) as f:
-                    print("reading config file: at" + config_json_file_path)
+                    if verbose:
+                        print("reading config file from: " + config_json_file_path)
                     config_content = json.load(f)
                     if all_config is None:
                         all_config = config_content
@@ -902,9 +1036,9 @@ class SentenceTransformerModel:
                 "all_config": json.dumps(all_config),
             },
         }
-
-        print("generating ml-commons_model_config.json file...")
-        print(model_config_content)
+        if verbose:
+            print("generating ml-commons_model_config.json file...\n")
+            print(model_config_content)
 
         model_config_file_path = os.path.join(
             folder_path, "ml-commons_model_config.json"
@@ -913,7 +1047,7 @@ class SentenceTransformerModel:
         with open(model_config_file_path, "w") as file:
             json.dump(model_config_content, file)
         print(
-            "ml-commons_model_config.json file is saved at", model_config_file_path, "."
+            "ml-commons_model_config.json file is saved at : ", model_config_file_path
         )
 
     # private methods

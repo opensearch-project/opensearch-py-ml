@@ -110,7 +110,7 @@ def test(session, pandas_version: str):
         "-r",
         "requirements-dev.txt",
         "--timeout",
-        "1000",
+        "1500",
     )
     session.install(".")
     session.run("python", "-m", "pip", "install", f"pandas~={pandas_version}")

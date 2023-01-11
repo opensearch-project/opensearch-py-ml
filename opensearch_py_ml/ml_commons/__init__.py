@@ -7,6 +7,6 @@
 
 # Integrating MLCommons plugin
 
-from opensearch_py_ml.ml_commons.ml_common_client import MLCommonClient
+from opensearch_py_ml.ml_commons.ml_commons_client import MLCommonClient
 
 __all__ = ["MLCommonClient"]
