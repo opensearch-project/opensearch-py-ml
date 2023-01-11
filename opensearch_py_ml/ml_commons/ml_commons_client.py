@@ -56,7 +56,7 @@ class MLCommonClient:
             model_path, model_config_path, isVerbose
         )
 
-    def load_model(self, model_id: str):  # type: ignore
+    def load_model(self, model_id: str) -> object:
         """
         This method loads model into opensearch cluster using ml-common plugin's load model api.
 
@@ -71,15 +71,15 @@ class MLCommonClient:
         :rtype: object
 
         """
-        MODEL_LOAD_API_ENDPOINT = f"models/{model_id}/_load"
-        API_URL = f"{ML_BASE_URI}/{MODEL_LOAD_API_ENDPOINT}"
+
+        API_URL = f"{ML_BASE_URI}/models/{model_id}/_load"
 
         return self._client.transport.perform_request(
             method="POST",
             url=API_URL,
         )
 
-    def get_task_info(self, task_id: str):  # type: ignore
+    def get_task_info(self, task_id: str) -> object:
         """
         This method return information about a task running into opensearch cluster (using ml commons api)
         when we load a model.
@@ -95,15 +95,14 @@ class MLCommonClient:
         :rtype: object
         """
 
-        MODEL_TASK_API_ENDPOINT = f"tasks/{task_id}"
-        API_URL = f"{ML_BASE_URI}/{MODEL_TASK_API_ENDPOINT}"
+        API_URL = f"{ML_BASE_URI}/tasks/{task_id}"
 
         return self._client.transport.perform_request(
             method="GET",
             url=API_URL,
         )
 
-    def get_model_info(self, model_id: str):  # type: ignore
+    def get_model_info(self, model_id: str) -> object:
         """
         This method return information about a model uploaded into opensearch cluster (using ml commons api).
 
@@ -118,15 +117,14 @@ class MLCommonClient:
         :rtype: object
         """
 
-        MODEL_INFO_API_ENDPOINT = f"models/{model_id}"
-        API_URL = f"{ML_BASE_URI}/{MODEL_INFO_API_ENDPOINT}"
+        API_URL = f"{ML_BASE_URI}/models/{model_id}"
 
         return self._client.transport.perform_request(
             method="GET",
             url=API_URL,
         )
 
-    def generate_embedding(self, model_id: str, sentences: List[str]):  # type: ignore
+    def generate_embedding(self, model_id: str, sentences: List[str]) -> object:
         """
         This method return embedding for given sentences (using ml commons _predict api)
 
@@ -144,8 +142,7 @@ class MLCommonClient:
         :rtype: object
         """
 
-        SENTENCE_EMBEDDING_API_ENDPOINT = f"_predict/text_embedding/{model_id}"
-        API_URL = f"{ML_BASE_URI}/{SENTENCE_EMBEDDING_API_ENDPOINT}"
+        API_URL = f"{ML_BASE_URI}/_predict/text_embedding/{model_id}"
 
         API_BODY = {"text_docs": sentences, "target_response": ["sentence_embedding"]}
 
@@ -155,7 +152,7 @@ class MLCommonClient:
             body=API_BODY,
         )
 
-    def unload_model(self, model_id: str, node_ids: List[str] = []):  # type: ignore
+    def unload_model(self, model_id: str, node_ids: List[str] = []) -> object:
         """
         This method unloads a model from all the nodes or from the given list of nodes (using ml commons _unload api)
 
@@ -172,8 +169,7 @@ class MLCommonClient:
         :rtype: object
         """
 
-        UNLOAD_MODEL_API_ENDPOINT = f"models/{model_id}/_unload"
-        API_URL = f"{ML_BASE_URI}/{UNLOAD_MODEL_API_ENDPOINT}"
+        API_URL = f"{ML_BASE_URI}/models/{model_id}/_unload"
 
         API_BODY = {"node_ids": node_ids}
         if len(node_ids) > 0:
@@ -188,7 +184,8 @@ class MLCommonClient:
                 url=API_URL,
             )
 
-    def delete_model(self, model_id: str):  # type: ignore
+    def delete_model(self, model_id: str) -> object:
+
         """
         This method deletes a model from opensearch cluster (using ml commons api).
 
@@ -203,8 +200,7 @@ class MLCommonClient:
         :rtype: object
         """
 
-        MODEL_DELETE_API_ENDPOINT = f"models/{model_id}"
-        API_URL = f"{ML_BASE_URI}/{MODEL_DELETE_API_ENDPOINT}"
+        API_URL = f"{ML_BASE_URI}/models/{model_id}"
 
         return self._client.transport.perform_request(
             method="DELETE",
