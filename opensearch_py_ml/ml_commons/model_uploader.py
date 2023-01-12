@@ -49,8 +49,6 @@ class ModelUploader:
         first this method creates a model id to store model metadata and then breaks the model zip file into
         multiple chunks and then upload chunks into cluster.
 
-        Parameters
-        ----------
         :param model_path: path of the zip file of the model
         :type model_path: string
         :param model_meta_path:
@@ -72,9 +70,6 @@ class ModelUploader:
         :type model_meta_path: string
         :param isVerbose: if isVerbose is true method will print more messages
         :type isVerbose: bool
-
-        Returns
-        -------
         :return: returns model id which is created by the model metadata
         :rtype: string
         """

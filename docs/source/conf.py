@@ -52,6 +52,7 @@ extensions = [
     "sphinx.ext.viewcode",
     "nbsphinx",
     "sphinx.ext.todo",
+    "sphinx_rtd_theme",
 ]
 
 
