@@ -45,10 +45,8 @@ class SentenceTransformerModel:
         """
         Description: Initiate a sentence transformer model class object. The model id will be used to download
         pretrained model from the hugging-face and served as the default name for model files, and the folder_path
-        will be the default location to store files generated in the following functions.
+        will be the default location to store files generated in the following functions
 
-        Parameters
-        ----------
         :param model_id: Optional, the huggingface mode id to download sentence transformer model,
             default model id: 'sentence-transformers/msmarco-distilbert-base-tas-b'
         :type model_id: string
@@ -61,9 +59,6 @@ class SentenceTransformerModel:
                     training. But if the training process get interrupted in between, users can choose to
                     overwrite = True to restart the process
         :type overwrite: bool
-
-        Returns
-        -------
         :return: no return value expected
         :rtype: None
         """
@@ -250,8 +245,6 @@ class SentenceTransformerModel:
         Read the queries generated from the Synthetic Query Generator (SQG) model, unzip files to current directory
         within synthetic_queries/ folder, output as a dataframe
 
-        Parameters
-        ----------
         :param read_path:
             required, path to the zipped file that contains generated queries, if None, raise exception
         :type read_path: string
@@ -260,9 +253,6 @@ class SentenceTransformerModel:
             Default to set overwrite as false and if the folder is not empty, raise exception to recommend users
             to either clean up folder or enable overwriting is True
         :type overwrite: bool
-
-        Returns
-        -------
         :return: The dataframe of queries.
         :rtype: panda dataframe
         """
@@ -358,17 +348,12 @@ class SentenceTransformerModel:
         """
         Create input data for training the model
 
-        Parameters
-        ----------
         :param query_df:
             required for loading sentence transformer examples
         :type query_df: pd.DataFrame
         :param use_accelerate:
             Optional, use accelerate to fine tune model. Default as false to not use accelerator
         :type use_accelerate: bool
-
-        Returns
-        -------
         :return: the list of train examples.
         :rtype: list
         """
@@ -408,8 +393,6 @@ class SentenceTransformerModel:
         Description:
         Takes in training data and a sentence transformer url to train a custom semantic search model
 
-        Parameters
-        ----------
         :param train_examples:
             required, input for the sentence transformer model training
         :type train_examples: list of strings
@@ -435,9 +418,6 @@ class SentenceTransformerModel:
         :param verbose:
             optional, use plotting to plot the training progress and printing more logs. Default as false
         :type verbose: bool
-
-        Returns
-        -------
         :return: the torch script format trained model.
         :rtype: .pt file
         """
@@ -669,8 +649,6 @@ class SentenceTransformerModel:
         Description:
         zip the model file and its tokenizer.json file to prepare to upload to the Open Search cluster
 
-        Parameters
-        ----------
         :param model_path:
             Optional, path to find the model file, if None, default as concatenate model_id and
             '.pt' file in current path
@@ -681,9 +659,6 @@ class SentenceTransformerModel:
         :param zip_file_name: str =None
             Optional, file name for zip file. if None, default as concatenate model_id and '.zip'
         :type zip_file_name: string
-
-        Returns
-        -------
         :return: no return value expected
         :rtype: None
         """
@@ -742,8 +717,6 @@ class SentenceTransformerModel:
         download sentence transformer model directly from huggingface, convert model to torch script format,
         zip the model file and its tokenizer.json file to prepare to upload to the Open Search cluster
 
-        Parameters
-        ----------
         :param sentences:
             Required, for example  sentences = ['today is sunny']
         :type sentences: List of string [str]
@@ -764,9 +737,6 @@ class SentenceTransformerModel:
             Optional, file name for zip file. e.g, "sample_model.zip". If None, default takes the model_id
             and add the extension with ".zip"
         :type zip_file_name: string
-
-        Returns
-        -------
         :return: the torch script format model
         :rtype: .pt model
         """
@@ -828,10 +798,8 @@ class SentenceTransformerModel:
     ) -> None:
         """
         get default config setting based on the number of GPU on the machine
-        if users require other configs, users can run !acclerate config for more options.
+        if users require other configs, users can run !acclerate config for more options
 
-        Parameters
-        ----------
         :param compute_environment:
             optional, compute environment type to run model, if None, default using 'LOCAL_MACHINE'
         :type compute_environment: string
@@ -845,9 +813,6 @@ class SentenceTransformerModel:
         :param verbose:
             optional, use printing more logs. Default as false
         :type verbose: bool
-
-        Returns
-        -------
         :return: no return value expected
         :rtype: None
         """
@@ -929,10 +894,8 @@ class SentenceTransformerModel:
     ) -> None:
         """
         parse from config.json file of pre-trained hugging-face model to generate a ml-commons_model_config.json file. If all required
-        fields are given by users, use the given parameters and will skip reading the config.json,
+        fields are given by users, use the given parameters and will skip reading the config.json
 
-        Parameters
-        ----------
         :param model_name:
             Optional, The name of the model. If None, default to parse from model id, for example,
             'msmarco-distilbert-base-tas-b'
@@ -940,9 +903,8 @@ class SentenceTransformerModel:
         :param version_number:
             Optional, The version number of the model. default is 1
         :type version_number: string
-        :param embedding_dimension:
-            Optional, the embedding_dimension of the model. If None, parse embedding_dimension from the config file of
-             pre-trained hugging-face model, if not found, default to be 768
+        :param embedding_dimension: Optional, the embedding_dimension of the model. If None, parse embedding_dimension
+            from the config file of pre-trained hugging-face model, if not found, default to be 768
         :type embedding_dimension: int
         :param all_config:
             Optional, the all_config of the model. If None, parse all contents from the config file of pre-trained
@@ -955,9 +917,6 @@ class SentenceTransformerModel:
         :param verbose:
             optional, use printing more logs. Default as false
         :type verbose: bool
-
-        Returns
-        -------
         :return: no return value expected
         :rtype: None
         """
