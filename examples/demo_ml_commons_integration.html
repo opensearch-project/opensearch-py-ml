@@ -1,0 +1,802 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Demo Notebook for MLCommons Integration &mdash; Opensearch-py-ml 1.0.0b1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/plot_directive.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Demo Notebook for Sentence Transformer Model Training, Saving and Uploading to OpenSearch" href="demo_transformer_model_train_save_upload_to_openSearch.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Opensearch-py-ml
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0.0b1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">API Reference</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="demo_notebook.html">Demo Notebook for Dataframe</a></li>
+<li class="toctree-l2"><a class="reference internal" href="online_retail_analysis.html">Online Retail analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_transformer_model_train_save_upload_to_openSearch.html">Demo Notebook for Sentence Transformer Model Training, Saving and Uploading to OpenSearch</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_transformer_model_train_save_upload_to_openSearch.html#id1">Demo Notebook for Sentence Transformer Model Training, Saving and Uploading to OpenSearch</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Demo Notebook for MLCommons Integration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Step-0:-Import-packages-and-set-up-client">Step 0: Import packages and set up client</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Step-1:-Upload-NLP-model-from-local-file-to-Opensearch-cluster">Step 1: Upload NLP model from local file to Opensearch cluster</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Step-2:-Load-Model">Step 2: Load Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Step-3:-Get-Task">Step 3: Get Task</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Step-4:-Get-Model">Step 4: Get Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Step-5:-Generate-Sentence-Embedding">Step 5: Generate Sentence Embedding</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Step-6:-Unload-Model">Step 6: Unload Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Step-7:-Delete-Model">Step 7: Delete Model</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Opensearch-py-ml</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="index.html">Examples</a> &raquo;</li>
+        
+      <li>Demo Notebook for MLCommons Integration</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/examples/demo_ml_commons_integration.ipynb.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt *,
+div.nbinput.container div.input_area pre,
+div.nboutput.container div.output_area pre,
+div.nbinput.container div.input_area .highlight,
+div.nboutput.container div.output_area .highlight {
+    border: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+div.nbinput.container > div[class*=highlight],
+div.nboutput.container > div[class*=highlight] {
+    margin: 0;
+}
+
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt * {
+    background: none;
+}
+
+div.nboutput.container div.output_area .highlight,
+div.nboutput.container div.output_area pre {
+    background: unset;
+}
+
+div.nboutput.container div.output_area div.highlight {
+    color: unset;  /* override Pygments text color */
+}
+
+/* avoid gaps between output lines */
+div.nboutput.container div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput.container,
+div.nboutput.container {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput.container,
+    div.nboutput.container {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput.container {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast.container {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput.container div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput.container div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput.container div.prompt,
+div.nboutput.container div.prompt {
+    width: 4.5ex;
+    padding-top: 5px;
+    position: relative;
+    user-select: none;
+}
+
+div.nbinput.container div.prompt > div,
+div.nboutput.container div.prompt > div {
+    position: absolute;
+    right: 0;
+    margin-right: 0.3ex;
+}
+
+@media (max-width: 540px) {
+    div.nbinput.container div.prompt,
+    div.nboutput.container div.prompt {
+        width: unset;
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput.container div.prompt.empty {
+        padding: 0;
+    }
+
+    div.nbinput.container div.prompt > div,
+    div.nboutput.container div.prompt > div {
+        position: unset;
+    }
+}
+
+/* disable scrollbars and line breaks on prompts */
+div.nbinput.container div.prompt pre,
+div.nboutput.container div.prompt pre {
+    overflow: hidden;
+    white-space: pre;
+}
+
+/* input/output area */
+div.nbinput.container div.input_area,
+div.nboutput.container div.output_area {
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput.container div.input_area,
+    div.nboutput.container div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput.container div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    /*background: #f5f5f5;*/
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput.container div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput.container div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput.container div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+
+div.nbinput.container div.input_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight].math,
+div.nboutput.container div.output_area.rendered_html,
+div.nboutput.container div.output_area > div.output_javascript,
+div.nboutput.container div.output_area:not(.rendered_html) > img{
+    padding: 5px;
+    margin: 0;
+}
+
+/* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
+div.nbinput.container div.input_area > div[class^='highlight'],
+div.nboutput.container div.output_area > div[class^='highlight']{
+    overflow-y: hidden;
+}
+
+/* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
+.prompt .copybtn {
+    display: none;
+}
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+.jp-RenderedHTMLCommon table,
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+.jp-RenderedHTMLCommon thead,
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+.jp-RenderedHTMLCommon tr,
+.jp-RenderedHTMLCommon th,
+.jp-RenderedHTMLCommon td,
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+.jp-RenderedHTMLCommon th,
+div.rendered_html th {
+  font-weight: bold;
+}
+.jp-RenderedHTMLCommon tbody tr:nth-child(odd),
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+.jp-RenderedHTMLCommon tbody tr:hover,
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="Demo-Notebook-for-MLCommons-Integration">
+<h1>Demo Notebook for MLCommons Integration<a class="headerlink" href="#Demo-Notebook-for-MLCommons-Integration" title="Permalink to this heading">¶</a></h1>
+<p>This notebook provides a walkthrough guidance for users to invoke MLCommons apis to upload ml models to opensearch cluster</p>
+<p>Step 0: Import packages and set up client</p>
+<p>Step 1: Upload NLP model from local file to Opensearch cluster</p>
+<p>Step 2: Load Model</p>
+<p>Step 3: Get Task</p>
+<p>Step 4: Get Model</p>
+<p>Step 5: Generate Sentence Embedding</p>
+<p>Step 6: Unload Model</p>
+<p>Step 7: Delete Model</p>
+<section id="Step-0:-Import-packages-and-set-up-client">
+<h2>Step 0: Import packages and set up client<a class="headerlink" href="#Step-0:-Import-packages-and-set-up-client" title="Permalink to this heading">¶</a></h2>
+<p>Install required packages for opensearch_py_ml.sentence_transformer_model Install <code class="docutils literal notranslate"><span class="pre">opensearchpy</span></code> and <code class="docutils literal notranslate"><span class="pre">opensearch-py-ml</span></code> through pypi</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>pip<span class="w"> </span>install<span class="w"> </span>opensearch-py<span class="w"> </span>opensearch-py-ml
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">warnings</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">opensearchpy</span> <span class="kn">import</span> <span class="n">OpenSearch</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">CLUSTER_URL</span> <span class="o">=</span> <span class="s1">&#39;https://localhost:9200&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">get_os_client</span><span class="p">(</span><span class="n">cluster_url</span> <span class="o">=</span> <span class="n">CLUSTER_URL</span><span class="p">,</span>
+                  <span class="n">username</span><span class="o">=</span><span class="s1">&#39;admin&#39;</span><span class="p">,</span>
+                  <span class="n">password</span><span class="o">=</span><span class="s1">&#39;admin&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Get OpenSearch client</span>
+<span class="sd">    :param cluster_url: cluster URL like https://ml-te-netwo-1s12ba42br23v-ff1736fa7db98ff2.elb.us-west-2.amazonaws.com:443</span>
+<span class="sd">    :return: OpenSearch client</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">OpenSearch</span><span class="p">(</span>
+        <span class="n">hosts</span><span class="o">=</span><span class="p">[</span><span class="n">cluster_url</span><span class="p">],</span>
+        <span class="n">http_auth</span><span class="o">=</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="p">),</span>
+        <span class="n">verify_certs</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">client</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">client</span> <span class="o">=</span> <span class="n">get_os_client</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Step-1:-Upload-NLP-model-from-local-file-to-Opensearch-cluster">
+<h2>Step 1: Upload NLP model from local file to Opensearch cluster<a class="headerlink" href="#Step-1:-Upload-NLP-model-from-local-file-to-Opensearch-cluster" title="Permalink to this heading">¶</a></h2>
+<p>We can upload machine learning models to Opensearch cluster using MLCommons upload_model api. In this demo we will show how can we upload model which is stored in our local files.</p>
+<p>To demonstrate, we download the model zip file from the url: <a class="reference external" href="https://github.com/opensearch-project/ml-commons/raw/2.x/ml-algorithms/src/test/resources/org/opensearch/ml/engine/algorithms/text_embedding/all-MiniLM-L6-v2_torchscript_sentence-transformer.zip?raw=true">https://github.com/opensearch-project/ml-commons/raw/2.x/ml-algorithms/src/test/resources/org/opensearch/ml/engine/algorithms/text_embedding/all-MiniLM-L6-v2_torchscript_sentence-transformer.zip?raw=true</a></p>
+<p>To upload model to the cluster, we need a zip file containing a torchScript file (.pt extension) and a tokenizer.json file. Please refer to the previous download. We also need a json file with defining the config information with following these request fields:</p>
+<p><a class="reference external" href="https://opensearch.org/docs/latest/ml-commons-plugin/api/#request-fields">https://opensearch.org/docs/latest/ml-commons-plugin/api/#request-fields</a></p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#connect to ml_common client with OpenSearch client</span>
+<span class="kn">from</span> <span class="nn">opensearch_py_ml.ml_commons</span> <span class="kn">import</span> <span class="n">MLCommonClient</span>
+<span class="n">ml_client</span> <span class="o">=</span> <span class="n">MLCommonClient</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
+
+
+<span class="n">model_path</span> <span class="o">=</span> <span class="s1">&#39;/Volumes/workplace/upload_content/all-MiniLM-L6-v2_torchscript_sentence-transformer.zip&#39;</span>
+<span class="n">model_config_path</span> <span class="o">=</span> <span class="s1">&#39;/Volumes/workplace/upload_content/all-MiniLM-L6-v2_torchscript.json&#39;</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">all-MiniLM-L6-v2_torchscript.json content:</span>
+
+<span class="sd">{</span>
+<span class="sd">    &quot;name&quot;: &quot;all-MiniLM-L6-v2&quot;,</span>
+<span class="sd">    &quot;version&quot;: 1,</span>
+<span class="sd">    &quot;model_format&quot;: &quot;TORCH_SCRIPT&quot;,</span>
+<span class="sd">    &quot;model_config&quot;: {</span>
+<span class="sd">        &quot;model_type&quot;: &quot;bert&quot;,</span>
+<span class="sd">        &quot;embedding_dimension&quot;: 384,</span>
+<span class="sd">        &quot;framework_type&quot;: &quot;sentence_transformers&quot;</span>
+<span class="sd">    }</span>
+<span class="sd">}</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="n">ml_client</span><span class="o">.</span><span class="n">upload_model</span><span class="p">(</span><span class="n">model_path</span><span class="p">,</span> <span class="n">model_config_path</span><span class="p">,</span> <span class="n">isVerbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Total number of chunks 9
+Sha1 value of the model file:  9376c2ebd7c83f99ec2526323786c348d2382e6d86576f750c89ea544d6bbb14
+Model meta data was created successfully. Model Id:  jtuRoIUBqB81FWKil3qA
+uploading chunk 1 of 9
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 2 of 9
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 3 of 9
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 4 of 9
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 5 of 9
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 6 of 9
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 7 of 9
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 8 of 9
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 9 of 9
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+Model uploaded successfully
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&#39;jtuRoIUBqB81FWKil3qA&#39;
+</pre></div></div>
+</div>
+</section>
+<section id="Step-2:-Load-Model">
+<h2>Step 2: Load Model<a class="headerlink" href="#Step-2:-Load-Model" title="Permalink to this heading">¶</a></h2>
+<p>In the last step we upload a model and the model id is: <code class="docutils literal notranslate"><span class="pre">jtuRoIUBqB81FWKil3qA</span></code>. Now we will load this model in opensearch memory.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[30]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><br/><span></span><span class="n">load_model_output</span> <span class="o">=</span> <span class="n">ml_client</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s2">&quot;jtuRoIUBqB81FWKil3qA&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">load_model_output</span><span class="p">)</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;task_id&#39;: &#39;kNuaoIUBqB81FWKimHoo&#39;, &#39;status&#39;: &#39;CREATED&#39;}
+</pre></div></div>
+</div>
+</section>
+<section id="Step-3:-Get-Task">
+<h2>Step 3: Get Task<a class="headerlink" href="#Step-3:-Get-Task" title="Permalink to this heading">¶</a></h2>
+<p>When we invoke load model api of mlcommons plugin, a task get created. We can see the task id (<code class="docutils literal notranslate"><span class="pre">j9uRoIUBqB81FWKi_Xqu</span></code>) from previous output. Now, we can get the detailed information of the task using this task id</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[31]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><br/><span></span><span class="n">task_info</span> <span class="o">=</span> <span class="n">ml_client</span><span class="o">.</span><span class="n">get_task_info</span><span class="p">(</span><span class="s2">&quot;kNuaoIUBqB81FWKimHoo&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">task_info</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;model_id&#39;: &#39;jtuRoIUBqB81FWKil3qA&#39;, &#39;task_type&#39;: &#39;LOAD_MODEL&#39;, &#39;function_name&#39;: &#39;TEXT_EMBEDDING&#39;, &#39;state&#39;: &#39;COMPLETED&#39;, &#39;worker_node&#39;: &#39;56rNfEbPSG6p8ZZli59Zpg,Lncik04uQxe-cw3BC14wNA&#39;, &#39;create_time&#39;: 1673436764200, &#39;last_update_time&#39;: 1673436768619, &#39;is_async&#39;: True}
+</pre></div></div>
+</div>
+</section>
+<section id="Step-4:-Get-Model">
+<h2>Step 4: Get Model<a class="headerlink" href="#Step-4:-Get-Model" title="Permalink to this heading">¶</a></h2>
+<p>With using the model id, we can also pull information about the model metadata from the opensearch cluster.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[32]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><br/><span></span><span class="n">model_info</span> <span class="o">=</span> <span class="n">ml_client</span><span class="o">.</span><span class="n">get_model_info</span><span class="p">(</span><span class="s2">&quot;jtuRoIUBqB81FWKil3qA&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">model_info</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;name&#39;: &#39;all-MiniLM-L6-v2&#39;, &#39;algorithm&#39;: &#39;TEXT_EMBEDDING&#39;, &#39;model_version&#39;: &#39;1&#39;, &#39;model_format&#39;: &#39;TORCH_SCRIPT&#39;, &#39;model_state&#39;: &#39;LOADED&#39;, &#39;model_content_hash_value&#39;: &#39;9376c2ebd7c83f99ec2526323786c348d2382e6d86576f750c89ea544d6bbb14&#39;, &#39;model_config&#39;: {&#39;model_type&#39;: &#39;bert&#39;, &#39;embedding_dimension&#39;: 384, &#39;framework_type&#39;: &#39;SENTENCE_TRANSFORMERS&#39;}, &#39;created_time&#39;: 1673436174206, &#39;last_loaded_time&#39;: 1673436768616, &#39;total_chunks&#39;: 9}
+</pre></div></div>
+</div>
+</section>
+<section id="Step-5:-Generate-Sentence-Embedding">
+<h2>Step 5: Generate Sentence Embedding<a class="headerlink" href="#Step-5:-Generate-Sentence-Embedding" title="Permalink to this heading">¶</a></h2>
+<p>Now using the loaded model in memory, we can generate embedding for sentences. We can provide a list of sentences to get a list of embedding for the sentences.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[33]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Now using this model we can generate sentence embedding.</span>
+
+<span class="n">input_sentences</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Test sentence1&quot;</span><span class="p">,</span> <span class="s2">&quot;Test sentence2&quot;</span><span class="p">]</span>
+
+<span class="n">embedding_output</span> <span class="o">=</span> <span class="n">ml_client</span><span class="o">.</span><span class="n">generate_embedding</span><span class="p">(</span><span class="s2">&quot;jtuRoIUBqB81FWKil3qA&quot;</span><span class="p">,</span> <span class="n">input_sentences</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">embedding_output</span><span class="p">)</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;inference_results&#39;: [{&#39;output&#39;: [{&#39;name&#39;: &#39;sentence_embedding&#39;, &#39;data_type&#39;: &#39;FLOAT32&#39;, &#39;shape&#39;: [384], &#39;data&#39;: [0.01634426, 0.09597998, 0.019145392, 0.06294038, -0.008701664, 0.018567331, 0.10390024, 0.01438248, -0.053841658, 0.028416203, 0.12721275, -0.078425184, 0.042815633, -0.021008862, -0.0083344765, -0.015378756, 0.025418157, -0.057775266, -0.08016912, 0.04194826, 0.0363033, -0.03286257, -0.0021801298, 0.06573708, -0.0006939303, 0.016743109, -0.033662688, 0.027211811, 0.079936594, -0.033478886, -0.0053786216, 0.026796935, 0.03215637, 0.078822225, 0.058919754, -0.012447697, 0.020444121, 0.02177262, -0.01903451, 0.0064995894, 0.013272167, -0.12131438, 0.06135812, -0.029969675, 0.018355636, -0.018626912, -0.031622734, 0.050837226, -0.07211012, -0.05208043, -0.080562316, -0.03143466, -0.12672405, -0.026447112, -0.01855498, 0.008953681, -0.033323012, 0.013190011, -0.015476841, 0.02531755, 0.014650791, -0.04100695, -0.045453914, 0.013998013, 0.14769986, -0.047261648, -0.012467081, -0.08881012, -0.05570281, 0.0712261, -0.039342202, 0.038937036, -0.051908433, -0.00073560484, -0.00965733, -0.023361731, -0.01817136, -0.050704572, 0.070016384, -0.03315723, -0.05588047, -0.11302812, -0.023925511, 0.05982981, -0.011716958, 0.023926955, 0.039997865, -0.040580716, -0.085276745, 0.03153387, 0.044347618, -0.05342982, 0.047986772, 0.03003427, -0.019422347, 0.037067372, -0.035920687, -0.055759996, 0.07310818, 0.11989054, 0.036263727, 0.08207659, 0.008022722, 0.030792497, -0.13393529, -0.030079365, -0.011143185, -0.07769103, 0.048576567, 0.008873915, -0.011693786, -0.005572598, 0.022179736, 0.023285802, -0.02322297, -0.0086314585, -0.06169645, 0.074581005, -0.08478598, 0.014265052, 0.053637274, 0.037687458, -0.0003650253, -0.0025565536, -0.069411986, -0.03757694, 0.10751158, -3.6506626e-33, -0.00039979295, -0.076281495, 0.008236987, 0.07288374, -0.010404403, 0.03450566, -0.041246623, 0.07417152, -0.028544689, 0.027238453, -0.043053217, -0.07892754, 0.013420991, 0.06982227, 0.027308218, 0.054115873, -0.006496352, 0.0491422, -0.035359364, 0.031573195, 0.038797047, -0.0054345205, 0.001889496, -0.05236429, -0.05850431, -0.065740205, 0.020804454, -0.040512808, -0.021420127, 0.007874725, -0.050352618, -0.044390827, -0.074056536, 0.07783067, 0.026813269, 0.057499446, 0.059855614, -0.07843816, 0.031994343, -0.014461099, -0.10742861, 0.0012253163, 0.02684723, 0.037464924, 0.082663976, -0.028964438, -0.040711842, 0.029962765, 0.036543205, 0.047913086, -0.027071452, 0.05592548, 0.011957646, -0.011235236, 0.07890914, 0.03498861, 0.013008991, 0.0043966803, -0.0030608699, 0.057213582, 0.062335074, 0.03937604, -0.013421687, 0.06766718, 0.016941072, 0.014179919, -0.07211461, -0.103996426, 0.08631027, 0.047391485, -0.06324244, -0.030241685, -0.037412625, 0.029702762, -0.009549861, -0.00936647, 0.0070465724, 0.073045425, -0.03230818, -0.076140955, 0.054314557, -0.078628875, -0.008608382, -0.0001752814, -0.10352248, 0.04011253, 0.039781496, -0.10547884, 0.05295363, -0.014632758, 0.020501006, 0.0004922633, 0.014714992, -0.022512991, 0.119042255, 1.3009909e-33, -0.06695981, 0.07593038, -0.07180961, 0.057854734, 0.0771047, -0.017831368, 0.039707676, -0.10238095, -0.056155723, 0.07074799, -0.011220892, -0.026719425, -0.013620614, -0.04699431, -0.04227398, -0.012863522, 0.060370754, -0.052579205, -0.06188015, 0.056674514, -0.02349881, 0.09246634, -0.018347887, 0.026955727, -0.09232782, 0.03773358, -0.012151918, -0.038024627, -0.058464605, -0.030182807, 0.03847946, -0.010517141, 0.0020448545, 0.052692227, 0.035475314, -0.030654425, 0.12824024, -0.070657946, -0.036348704, 0.09540714, 0.08978835, 0.011235279, 0.039276138, 0.054187495, 0.023046806, 0.03394825, -0.04372884, -0.0822965, -0.009858812, 0.054309264, -0.07950183, 0.027309302, -0.034415472, 0.027562853, -0.035126418, -0.0013632256, -0.048644997, -0.013266542, -0.013280997, 0.008072423, -0.058368832, 0.08316359, -0.023912717, 0.059019696, 0.007333858, -0.10157429, -0.042652518, 0.044809453, 0.049821526, 0.007843348, 0.01932498, 0.0036992638, -0.024309473, -0.063431464, 0.007172044, -0.016480152, -0.08295212, -0.03129551, -0.013853532, -0.07565003, -0.066451065, -0.01808126, -0.020513905, 0.014240977, -0.032792173, 0.0061437194, 0.118426874, -0.009156214, -0.0010845538, 0.03584563, 0.065727085, 0.047776014, -0.0010052099, -0.033534173, 0.011426561, -1.4758526e-08, -0.024822427, -0.02113463, -0.005916312, 0.039044585, -0.021751031, 0.01278796, 0.011611024, -0.034474954, -0.039748512, 0.0053140265, 0.056406986, 0.05625209, -0.04697646, 0.04579422, 0.011643376, -0.0026553248, -0.07521455, -0.04422073, -0.009371363, -0.015119218, 0.014581117, 0.03695163, -0.03171466, 0.07529782, -0.05357154, 0.033440016, 0.039774638, 0.08706076, 0.0025169866, 0.0382578, 0.11021784, 0.06740451, -0.026612226, -0.03936226, -0.0045970045, 0.04209974, 0.039566025, -0.017948482, 0.057373285, 0.025577404, -0.043269508, -0.009497045, -0.06392292, 0.011329891, 0.0017350775, -0.10386286, -0.056629132, -0.050229024, -0.033140086, -0.11811668, -0.030147059, -0.016945554, -0.0048561604, 0.015984274, 0.04119243, 0.05478528, 0.033628885, -0.0045552105, -0.10151723, 0.02756038, 0.11790716, 0.06925377, -0.0069620605, -0.082503565]}]}, {&#39;output&#39;: [{&#39;name&#39;: &#39;sentence_embedding&#39;, &#39;data_type&#39;: &#39;FLOAT32&#39;, &#39;shape&#39;: [384], &#39;data&#39;: [0.029890021, 0.09822348, 0.019957757, 0.07651902, 0.0013569797, 0.020354444, 0.095648974, 0.021821575, -0.04957005, 0.009695183, 0.1411955, -0.07984934, 0.04524654, -0.036256645, 0.00011893607, 0.0022806316, 0.02341174, -0.06303974, -0.08363444, 0.016858013, 0.071026385, -0.035983488, 0.002197475, 0.040751398, -0.00018642341, 0.054280244, -0.046747886, 0.05143693, 0.0795994, -0.037969496, -0.0049146577, 0.019310897, -0.0133642545, 0.06416289, 0.054441895, -0.035581913, 0.028993765, 0.0342641, -0.022894736, -0.013163268, 0.0073839137, -0.13331115, 0.060948387, -0.02845979, 0.029584795, -0.0024815626, -0.029877836, 0.04145469, -0.07078607, -0.044555377, -0.0864968, -0.021645771, -0.11845037, -0.031633895, -0.013730348, 0.04959232, -0.033084806, 0.026348935, -0.0017932784, 0.017277319, 0.023652047, -0.033142205, -0.05828084, 0.023370937, 0.1472322, -0.058540717, -0.0067704157, -0.076985836, -0.05492527, 0.07371975, -0.04290564, 0.055664636, -0.021686591, -0.0076739225, 0.0011026153, -0.026553316, -0.02833705, -0.054923203, 0.073237605, -0.045602042, -0.04053986, -0.13309641, -0.02452086, 0.056935184, -0.021789031, 0.019202353, 0.042757515, -0.048649188, -0.10916028, 0.029957185, 0.04291542, -0.046399377, 0.04101825, 0.03916927, -0.01434633, 0.049800027, -0.047455456, -0.04616458, 0.061777044, 0.13315107, 0.03745541, 0.06764448, -0.014000683, 0.009649745, -0.122041255, -0.036858596, -0.004643711, -0.07573207, 0.06717273, 0.011294109, 0.0054268525, 0.024108453, 0.017889855, 0.034661073, -0.011044889, 0.025785085, -0.040445812, 0.07686975, -0.07299325, 0.014831794, 0.062170886, 0.037714113, -0.02069125, -0.01760425, -0.07429676, -0.04936486, 0.1105561, -2.7905332e-33, -0.011852265, -0.0800382, 0.014258211, 0.08300188, -0.0143750515, 0.030850943, -0.041131783, 0.07910475, -0.027350277, 0.029759267, -0.040353704, -0.10233099, 0.007990642, 0.06098539, 0.054313872, 0.052607622, 0.015881486, 0.038820058, -0.016791245, 0.039259758, 0.045087006, 0.00384578, 0.0059468723, -0.047981992, -0.033978373, -0.07355664, 0.038137518, -0.04436654, -0.028767021, 0.016650094, -0.04195262, -0.052975018, -0.06422168, 0.097124524, 0.03126186, 0.034069516, 0.0638325, -0.07341366, 0.02375476, -0.026233898, -0.0861261, 0.019097282, 0.017946113, 0.038809914, 0.08312302, -0.04264862, -0.0058717853, 0.016290732, 0.06564457, 0.038125, -0.012984925, 0.055059038, 0.01222137, 0.01667332, 0.07152203, 0.04760967, 0.017634975, 0.011020588, 0.010761541, 0.051334303, 0.049065627, 0.041859634, -0.016465204, 0.06156411, 0.0148474155, 0.02258631, -0.072870255, -0.10713199, 0.08118678, 0.059418812, -0.05864616, -0.035723507, -0.0062641073, 0.0553041, 0.00436192, -0.01649167, 0.008804094, 0.056831624, -0.016007287, -0.082276404, 0.036272306, -0.0749919, -0.013022677, -0.0003523263, -0.09185644, 0.017111592, 0.034535103, -0.10925177, 0.058366645, -0.000114755756, 0.01322465, 0.012895966, 0.0026634776, -0.02905693, 0.12556021, 9.174597e-34, -0.062185932, 0.093839265, -0.067736775, 0.055619992, 0.07129513, -0.025203235, 0.034357868, -0.08441684, -0.04938299, 0.071598805, 0.0026896866, -0.029293677, 0.010375755, -0.045888692, -0.022427378, -0.008538487, 0.04469134, -0.034274112, -0.05042528, 0.06049299, -0.023181554, 0.096922964, -0.001283251, 0.027363997, -0.079843804, 0.022125797, 0.002612132, -0.03676003, -0.074442096, -0.03492448, 0.04125023, -0.0014785945, -0.03134513, 0.048168607, 0.045192797, -0.036954265, 0.12187, -0.067072295, -0.05073731, 0.08354596, 0.090986386, 0.0168384, 0.02606656, 0.040874176, 0.004698817, 0.010746192, -0.015653882, -0.09104311, -0.009351908, 0.047290348, -0.08026982, 0.009906348, -0.0410962, 0.036067385, -0.03581137, 0.00073806883, -0.044023, -0.027330618, -0.011528306, -0.0016003717, -0.059933245, 0.06781199, -0.018232884, 0.03103683, 0.008883944, -0.108087465, -0.04625325, 0.06830844, 0.056314223, 0.0006508865, -0.025790976, -0.01133251, -0.035103947, -0.0476359, -0.025700083, -0.020045416, -0.07982874, -0.020322429, -0.0055968873, -0.08593495, -0.059094246, -0.02761195, -0.014367017, 0.016388077, -0.04377766, 0.011402222, 0.09235144, -0.009467399, -0.017747259, 0.040929265, 0.06330896, 0.04455678, 0.004279351, -0.02992636, 0.02093499, -1.4727579e-08, -0.03943038, -0.040383834, -0.0042225793, 0.032629047, -0.02176627, 0.01698233, -0.016816363, -0.016481314, -0.040303707, -0.008478312, 0.030917661, 0.055279437, -0.044757076, 0.026943574, 0.0030834714, 0.026121125, -0.056304026, -0.030277165, -0.01823297, -0.018756147, 0.006627037, 0.028671997, -0.015978226, 0.076803155, -0.06691047, 0.04744138, 0.037455965, 0.06437736, -0.003293694, 0.04117527, 0.10529296, 0.061080433, -0.03605559, -0.049858045, 0.0012305217, 0.0133359, 0.05163055, -0.03245063, 0.045467533, 0.039037384, -0.020681677, -0.024131402, -0.062601104, 0.0331833, 0.013199262, -0.11745606, -0.038941618, -0.06446683, -0.025967512, -0.119937025, -0.020080011, -0.02623407, 0.0034411254, 0.03095272, 0.031439085, 0.05771451, 0.029965712, 0.010320532, -0.115953445, 0.020067582, 0.10960932, 0.06594976, -0.0033476541, -0.08135458]}]}]}
+</pre></div></div>
+</div>
+</section>
+<section id="Step-6:-Unload-Model">
+<h2>Step 6: Unload Model<a class="headerlink" href="#Step-6:-Unload-Model" title="Permalink to this heading">¶</a></h2>
+<p>After generating the embedding if we want we can unload the model from memory. <code class="docutils literal notranslate"><span class="pre">unload_model</span></code> method takes two input.</p>
+<ol class="arabic simple">
+<li><p>model_id –&gt; Which model we want to unload</p></li>
+<li><p>node_ids –&gt; list of the nodes from where we want to unload the model.</p></li>
+</ol>
+<p>If we don’t provide <code class="docutils literal notranslate"><span class="pre">node_ids</span></code> then method will unload model from all the nodes available like the following example.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[34]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><br/><span></span><span class="n">unload_model_response</span> <span class="o">=</span> <span class="n">ml_client</span><span class="o">.</span><span class="n">unload_model</span><span class="p">(</span><span class="s2">&quot;jtuRoIUBqB81FWKil3qA&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">unload_model_response</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;Lncik04uQxe-cw3BC14wNA&#39;: {&#39;stats&#39;: {&#39;jtuRoIUBqB81FWKil3qA&#39;: &#39;unloaded&#39;}}, &#39;56rNfEbPSG6p8ZZli59Zpg&#39;: {&#39;stats&#39;: {&#39;jtuRoIUBqB81FWKil3qA&#39;: &#39;unloaded&#39;}}}
+</pre></div></div>
+</div>
+</section>
+<section id="Step-7:-Delete-Model">
+<h2>Step 7: Delete Model<a class="headerlink" href="#Step-7:-Delete-Model" title="Permalink to this heading">¶</a></h2>
+<p>We can also delete the model from the index using the model id.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[35]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><br/><span></span><span class="n">delete_model_response</span> <span class="o">=</span> <span class="n">ml_client</span><span class="o">.</span><span class="n">delete_model</span><span class="p">(</span><span class="s2">&quot;jtuRoIUBqB81FWKil3qA&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">delete_model_response</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;_index&#39;: &#39;.plugins-ml-model&#39;, &#39;_id&#39;: &#39;jtuRoIUBqB81FWKil3qA&#39;, &#39;_version&#39;: 9, &#39;result&#39;: &#39;deleted&#39;, &#39;_shards&#39;: {&#39;total&#39;: 2, &#39;successful&#39;: 2, &#39;failed&#39;: 0}, &#39;_seq_no&#39;: 1397, &#39;_primary_term&#39;: 38}
+</pre></div></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="demo_transformer_model_train_save_upload_to_openSearch.html" class="btn btn-neutral float-left" title="Demo Notebook for Sentence Transformer Model Training, Saving and Uploading to OpenSearch" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2023, Opensearch.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

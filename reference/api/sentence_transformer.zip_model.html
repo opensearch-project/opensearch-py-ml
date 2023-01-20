@@ -220,42 +220,24 @@
 <span class="sig-prename descclassname"><span class="pre">opensearch_py_ml.ml_models.SentenceTransformerModel.</span></span><span class="sig-name descname"><span class="pre">zip_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zip_file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#opensearch_py_ml.ml_models.SentenceTransformerModel.zip_model" title="Permalink to this definition">¶</a></dt>
 <dd><p>Description:
 zip the model file and its tokenizer.json file to prepare to upload to the Open Search cluster</p>
-<section id="parameters">
-<h2>Parameters<a class="headerlink" href="#parameters" title="Permalink to this heading">¶</a></h2>
 <dl class="field-list simple">
-<dt class="field-odd">param model_path<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Optional, path to find the model file, if None, default as concatenate model_id and
-‘.pt’ file in current path</p>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_path</strong> (<em>string</em>) – Optional, path to find the model file, if None, default as concatenate model_id and
+‘.pt’ file in current path</p></li>
+<li><p><strong>model_name</strong> (<em>string</em>) – the name of the trained custom model. If None, default as concatenate model_id and ‘.pt’</p></li>
+<li><p><strong>zip_file_name</strong> (<em>string</em>) – str =None
+Optional, file name for zip file. if None, default as concatenate model_id and ‘.zip’</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em>) – optional, use to print more logs. Default as false</p></li>
+</ul>
 </dd>
-<dt class="field-even">type model_path<span class="colon">:</span></dt>
-<dd class="field-even"><p>string</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>no return value expected</p>
 </dd>
-<dt class="field-odd">param model_name<span class="colon">:</span></dt>
-<dd class="field-odd"><p>the name of the trained custom model. If None, default as concatenate model_id and ‘.pt’</p>
-</dd>
-<dt class="field-even">type model_name<span class="colon">:</span></dt>
-<dd class="field-even"><p>string</p>
-</dd>
-<dt class="field-odd">param zip_file_name<span class="colon">:</span></dt>
-<dd class="field-odd"><p>str =None
-Optional, file name for zip file. if None, default as concatenate model_id and ‘.zip’</p>
-</dd>
-<dt class="field-even">type zip_file_name<span class="colon">:</span></dt>
-<dd class="field-even"><p>string</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
 </dd>
 </dl>
-</section>
-<section id="returns">
-<h2>Returns<a class="headerlink" href="#returns" title="Permalink to this heading">¶</a></h2>
-<dl class="field-list simple">
-<dt class="field-odd">return<span class="colon">:</span></dt>
-<dd class="field-odd"><p>no return value expected</p>
-</dd>
-<dt class="field-even">rtype<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-</section>
 </dd></dl>
 
 </section>

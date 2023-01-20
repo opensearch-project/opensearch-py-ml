@@ -216,57 +216,28 @@
 <span class="sig-prename descclassname"><span class="pre">opensearch_py_ml.ml_models.SentenceTransformerModel.</span></span><span class="sig-name descname"><span class="pre">save_as_pt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self,</span> <span class="pre">sentences:</span> <span class="pre">[&lt;class</span> <span class="pre">'str'&gt;],</span> <span class="pre">model=None,</span> <span class="pre">model_name:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">save_json_folder_path:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">zip_file_name:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#opensearch_py_ml.ml_models.SentenceTransformerModel.save_as_pt" title="Permalink to this definition">¶</a></dt>
 <dd><p>download sentence transformer model directly from huggingface, convert model to torch script format,
 zip the model file and its tokenizer.json file to prepare to upload to the Open Search cluster</p>
-<section id="parameters">
-<h2>Parameters<a class="headerlink" href="#parameters" title="Permalink to this heading">¶</a></h2>
 <dl class="field-list simple">
-<dt class="field-odd">param sentences<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Required, for example  sentences = [‘today is sunny’]</p>
-</dd>
-<dt class="field-even">type sentences<span class="colon">:</span></dt>
-<dd class="field-even"><p>List of string [str]</p>
-</dd>
-<dt class="field-odd">param model<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Optional, if provide model in parameters, will convert model to torch script format,
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sentences</strong> (<em>List</em><em> of </em><em>string</em><em> [</em><em>str</em><em>]</em>) – Required, for example  sentences = [‘today is sunny’]</p></li>
+<li><p><strong>model</strong> (<em>string</em>) – Optional, if provide model in parameters, will convert model to torch script format,
 else, not provided model then it will download sentence transformer model from huggingface.
-If None, default takes model_id = “sentence-transformers/msmarco-distilbert-base-tas-b”</p>
+If None, default takes model_id = “sentence-transformers/msmarco-distilbert-base-tas-b”</p></li>
+<li><p><strong>model_name</strong> (<em>string</em>) – Optional, model name to name the model file, e.g, “sample_model.pt”. If None, default takes the
+model_id and add the extension with “.pt”</p></li>
+<li><p><strong>save_json_folder_path</strong> (<em>string</em>) – Optional, path to save model json file, e.g, “home/save_pre_trained_model_json/”). If None, default as
+default_folder_path from the constructor</p></li>
+<li><p><strong>zip_file_name</strong> (<em>string</em>) – Optional, file name for zip file. e.g, “sample_model.zip”. If None, default takes the model_id
+and add the extension with “.zip”</p></li>
+</ul>
 </dd>
-<dt class="field-even">type model<span class="colon">:</span></dt>
-<dd class="field-even"><p>string</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the torch script format model</p>
 </dd>
-<dt class="field-odd">param model_name<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Optional, model name to name the model file, e.g, “sample_model.pt”. If None, default takes the
-model_id and add the extension with “.pt”</p>
-</dd>
-<dt class="field-even">type model_name<span class="colon">:</span></dt>
-<dd class="field-even"><p>string</p>
-</dd>
-<dt class="field-odd">param save_json_folder_path<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Optional, path to save model json file, e.g, “home/save_pre_trained_model_json/”). If None, default as
-default_folder_path from the constructor.</p>
-</dd>
-<dt class="field-even">type save_json_folder_path<span class="colon">:</span></dt>
-<dd class="field-even"><p>string</p>
-</dd>
-<dt class="field-odd">param zip_file_name<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Optional, file name for zip file. e.g, “sample_model.zip”. If None, default takes the model_id
-and add the extension with “.zip”</p>
-</dd>
-<dt class="field-even">type zip_file_name<span class="colon">:</span></dt>
-<dd class="field-even"><p>string</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>.pt model</p>
 </dd>
 </dl>
-</section>
-<section id="returns">
-<h2>Returns<a class="headerlink" href="#returns" title="Permalink to this heading">¶</a></h2>
-<dl class="field-list simple">
-<dt class="field-odd">return<span class="colon">:</span></dt>
-<dd class="field-odd"><p>the torch script format model</p>
-</dd>
-<dt class="field-even">rtype<span class="colon">:</span></dt>
-<dd class="field-even"><p>.pt model</p>
-</dd>
-</dl>
-</section>
 </dd></dl>
 
 </section>

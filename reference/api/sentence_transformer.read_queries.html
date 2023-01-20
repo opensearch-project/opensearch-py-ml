@@ -220,36 +220,22 @@
 <span class="sig-prename descclassname"><span class="pre">opensearch_py_ml.ml_models.SentenceTransformerModel.</span></span><span class="sig-name descname"><span class="pre">read_queries</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">read_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="headerlink" href="#opensearch_py_ml.ml_models.SentenceTransformerModel.read_queries" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read the queries generated from the Synthetic Query Generator (SQG) model, unzip files to current directory
 within synthetic_queries/ folder, output as a dataframe</p>
-<section id="parameters">
-<h2>Parameters<a class="headerlink" href="#parameters" title="Permalink to this heading">¶</a></h2>
 <dl class="field-list simple">
-<dt class="field-odd">param read_path<span class="colon">:</span></dt>
-<dd class="field-odd"><p>required, path to the zipped file that contains generated queries, if None, raise exception</p>
-</dd>
-<dt class="field-even">type read_path<span class="colon">:</span></dt>
-<dd class="field-even"><p>string</p>
-</dd>
-<dt class="field-odd">param overwrite<span class="colon">:</span></dt>
-<dd class="field-odd"><p>optional, synthetic_queries/ folder in current directory is to store unzip queries files.
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>read_path</strong> (<em>string</em>) – required, path to the zipped file that contains generated queries, if None, raise exception</p></li>
+<li><p><strong>overwrite</strong> (<em>bool</em>) – optional, synthetic_queries/ folder in current directory is to store unzip queries files.
 Default to set overwrite as false and if the folder is not empty, raise exception to recommend users
-to either clean up folder or enable overwriting is True</p>
+to either clean up folder or enable overwriting is True</p></li>
+</ul>
 </dd>
-<dt class="field-even">type overwrite<span class="colon">:</span></dt>
-<dd class="field-even"><p>bool</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The dataframe of queries.</p>
 </dd>
-</dl>
-</section>
-<section id="returns">
-<h2>Returns<a class="headerlink" href="#returns" title="Permalink to this heading">¶</a></h2>
-<dl class="field-list simple">
-<dt class="field-odd">return<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The dataframe of queries.</p>
-</dd>
-<dt class="field-even">rtype<span class="colon">:</span></dt>
-<dd class="field-even"><p>panda dataframe</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>panda dataframe</p>
 </dd>
 </dl>
-</section>
 </dd></dl>
 
 </section>
