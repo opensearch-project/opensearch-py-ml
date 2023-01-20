@@ -61,4 +61,5 @@ venv.bak/
 all-MiniLM-L6-v2_torchscript_sentence-transformer.zip
 # torch generated files
 tests/test_SentenceTransformerModel
+tests/ml_commons/test_model_files
 docs/source/examples/synthetic_queries

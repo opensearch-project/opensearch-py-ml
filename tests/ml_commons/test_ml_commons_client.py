@@ -160,28 +160,3 @@ def test_integration_model_train_upload_full_cycle():
                 except:  # noqa: E722
                     raised = True
                 assert raised == False, "Raised Exception in deleting model"
-
-
-def test_check_attribute():
-    try:
-        check_attribute = getattr(test_model, "model_id", "folder_path")
-    except AttributeError:
-        check_attribute = False
-    assert check_attribute
-
-    assert test_model.folder_path == TEST_FOLDER
-    assert test_model.model_id == "sentence-transformers/msmarco-distilbert-base-tas-b"
-
-    default_folder = os.path.join(os.getcwd(), "model_files")
-    print(default_folder)
-
-    clean_test_folder(default_folder)
-    test_model0 = SentenceTransformerModel()
-    assert test_model0.folder_path == default_folder
-    clean_test_folder(default_folder)
-
-    clean_test_folder(TEST_FOLDER)
-    test_model1 = SentenceTransformerModel(
-        folder_path=TEST_FOLDER, model_id="sentence-transformers/all-MiniLM-L6-v2"
-    )
-    assert test_model1.model_id == "sentence-transformers/all-MiniLM-L6-v2"

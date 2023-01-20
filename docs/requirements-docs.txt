@@ -3,6 +3,7 @@ pandas>=1.5,<2
 matplotlib>=3.6.0,<4
 nbval
 sphinx
+sphinx-rtd-theme
 sphinx_rtd_theme
 nbsphinx
 pandoc
