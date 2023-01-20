@@ -57,7 +57,7 @@ def test_check_attribute():
     assert test_model.folder_path == TEST_FOLDER
     assert test_model.model_id == "sentence-transformers/msmarco-distilbert-base-tas-b"
 
-    default_folder = os.path.join(os.getcwd(), "model_files")
+    default_folder = os.path.join(os.getcwd(), "sentence_transformer_model_files")
 
     clean_test_folder(default_folder)
     test_model0 = SentenceTransformerModel()
