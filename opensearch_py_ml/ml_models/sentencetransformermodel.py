@@ -54,10 +54,9 @@ class SentenceTransformerModel:
             after-trained custom model and configuration files. if None, default as "/model_files/" under the current
             work directory
         :type folder_path: string
-        :param overwrite: Optional,  choose to overwrite the folder at folder path. Default as false. So when training
-                    different sentence transformer models,it's recommended to give designated folder path per model
-                    training. But if the training process get interrupted in between, users can choose to
-                    overwrite = True to restart the process
+        :param overwrite: Optional,  choose to overwrite the folder at folder path. Default as false. When training
+                    different sentence transformer models, it's recommended to give designated folder path every time.
+                    Users can choose to overwrite = True to overwrite previous runs
         :type overwrite: bool
         :return: no return value expected
         :rtype: None
@@ -74,7 +73,7 @@ class SentenceTransformerModel:
         # Check if self.folder_path exists
         if os.path.exists(self.folder_path) and not overwrite:
             print(
-                "To prevent overwritten, please enter a different folder path or delete the folder or enable "
+                "To prevent overwriting, please enter a different folder path or delete the folder or enable "
                 "overwrite = True "
             )
             raise Exception(
@@ -93,7 +92,7 @@ class SentenceTransformerModel:
         num_machines: int = 1,
         num_gpu: int = 0,
         learning_rate: float = 2e-5,
-        num_epochs: int = 20,
+        num_epochs: int = 10,
         verbose: bool = False,
         percentile: float = 95,
     ) -> None:
@@ -132,7 +131,7 @@ class SentenceTransformerModel:
             optional, learning rate to train model, default is 2e-5
         :type learning_rate: float
         :param num_epochs:
-            optional, number of epochs to train model, default is 20
+            optional, number of epochs to train model, default is 10
         :type num_epochs: int
         :param verbose:
             optional, use plotting to plot the training progress. Default as false
@@ -357,7 +356,7 @@ class SentenceTransformerModel:
         model_id: str = None,
         output_model_name: str = None,
         learning_rate: float = 2e-5,
-        num_epochs: int = 20,
+        num_epochs: int = 10,
         verbose: bool = False,
         num_gpu: int = 0,
         percentile: float = 95,
@@ -380,7 +379,7 @@ class SentenceTransformerModel:
             optional, learning rate to train model, default is 2e-5
         :type learning_rate: float
         :param num_epochs:
-            optional, number of epochs to train model, default is 20
+            optional, number of epochs to train model, default is 10
         :type num_epochs: int
         :param verbose:
             optional, use plotting to plot the training progress and printing more logs. Default as false
@@ -389,9 +388,10 @@ class SentenceTransformerModel:
             Number of gpu will be used for training. Default 0
         :type num_gpu: int
         :param percentile:
-            we find the max length of {percentile}% of the documents. Default is 95%
-            Since this length is measured in terms of words and not tokens we multiply it by 1.4 to approximate the
-            fact that 1 word in the english vocabulary roughly translates to 1.3 to 1.5 tokens
+            To save memory while training we truncate all passages beyond a certain max_length.
+            Most middle-sized transformers have a max length limit of 512 tokens. However, certain corpora can
+            have shorter documents. We find the word length of all documents, sort them in increasing order and
+            take the max length of {percentile}% of the documents. Default is 95%
         :type percentile: float
         :return: the torch script format trained model.
         :rtype: .pt file
