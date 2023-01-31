@@ -10,6 +10,7 @@ from typing import List
 
 from opensearchpy import OpenSearch
 
+import time
 from opensearch_py_ml.ml_commons.ml_common_utils import ML_BASE_URI
 from opensearch_py_ml.ml_commons.model_uploader import ModelUploader
 
@@ -79,17 +80,34 @@ class MLCommonClient:
             url=API_URL,
         )
 
-    def get_task_info(self, task_id: str) -> object:
+    def get_task_info(self, task_id: str, wait_until_task_done: bool = False) -> object:
         """
         This method return information about a task running into opensearch cluster (using ml commons api)
         when we load a model
 
         :param task_id: unique id of the task
         :type task_id: string
+        :param wait_until_task_done: a boolean indicator if we want to wait until a task done before
+            returning the task related information
+        :type task_id: bool
         :return: returns a json object, with detailed information about the task
         :rtype: object
         """
+        if wait_until_task_done:
+            end = time.time() + 120  # timeout seconds
+            task_flag = False
+            while not task_flag or time.time() < end:
+                time.sleep(1)
+                output = self._get_task_info(task_id)
+                if (
+                    output["state"] == "COMPLETED"
+                    or output["state"] == "FAILED"
+                    or output["state"] == "COMPLETED_WITH_ERROR"
+                ):
+                    task_flag = True
+        return self._get_task_info(task_id)
 
+    def _get_task_info(self, task_id: str):
         API_URL = f"{ML_BASE_URI}/tasks/{task_id}"
 
         return self._client.transport.perform_request(

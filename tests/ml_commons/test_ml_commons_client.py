@@ -118,11 +118,12 @@ def test_integration_model_train_upload_full_cycle():
             assert raised == False, "Raised Exception in getting model info"
 
             if task_id:
-                time.sleep(60)
                 raised = False
                 ml_task_status = None
                 try:
-                    ml_task_status = ml_client.get_task_info(task_id)
+                    ml_task_status = ml_client.get_task_info(
+                        task_id, wait_until_task_done=True
+                    )
                     assert ml_task_status.get("task_type") == "LOAD_MODEL"
                     print("State:", ml_task_status.get("state"))
                     assert ml_task_status.get("state") != "FAILED"

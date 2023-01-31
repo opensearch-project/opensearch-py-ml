@@ -715,7 +715,7 @@ class SentenceTransformerModel:
         model_name: str = None,
         save_json_folder_path: str = None,
         zip_file_name: str = None,
-    ) -> None:
+    ) -> str:
         """
         download sentence transformer model directly from huggingface, convert model to torch script format,
         zip the model file and its tokenizer.json file to prepare to upload to the Open Search cluster
@@ -739,8 +739,8 @@ class SentenceTransformerModel:
             Optional, file name for zip file. e.g, "sample_model.zip". If None, default takes the model_id
             and add the extension with ".zip"
         :type zip_file_name: string
-        :return: None. Model file saves in a zip with the tokenzier.json file in local file system
-        :rtype: None
+        :return: model zip file path. The file path where the zip file is being saved
+        :rtype: string
         """
 
         model = SentenceTransformer(model_id)
@@ -791,6 +791,7 @@ class SentenceTransformerModel:
                 arcname="tokenizer.json",
             )
         print("zip file is saved to ", zip_file_path, "\n")
+        return zip_file_path
 
     def save_as_onnx(
         self,
@@ -798,7 +799,7 @@ class SentenceTransformerModel:
         model_name: str = None,
         output_path: str = None,
         zip_file_name: str = None,
-    ) -> None:
+    ) -> str:
         """
         download sentence transformer model directly from huggingface, convert model to onnx format,
         zip the model file and its tokenizer.json file to prepare to upload to the Open Search cluster
@@ -819,8 +820,8 @@ class SentenceTransformerModel:
             Optional, file name for zip file. e.g, "sample_model.zip". If None, default takes the model_id
             and add the extension with ".zip"
         :type zip_file_name: string
-        :return: None. Model file saves in a zip with the tokenzier.json file in local file system
-        :rtype: None
+        :return: model zip file path. The file path where the zip file is being saved
+        :rtype: string
         """
 
         model = SentenceTransformer(model_id)
@@ -859,6 +860,7 @@ class SentenceTransformerModel:
                 arcname="tokenizer.json",
             )
         print("zip file is saved to ", zip_file_path, "\n")
+        return zip_file_path
 
     def set_up_accelerate_config(
         self,
