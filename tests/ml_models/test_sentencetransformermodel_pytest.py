@@ -87,7 +87,7 @@ def test_check_required_fields():
         test_model.train()
 
     with pytest.raises(TypeError):
-        test_model.load_sentence_transformer_example()
+        test_model.load_training_data()
 
     with pytest.raises(TypeError):
         test_model.train_model()
@@ -154,6 +154,20 @@ def test_missing_files():
         test_model4.make_model_config_json()
         clean_test_folder(temp_path)
     assert "Cannot find config.json" in str(exc_info.value)
+
+
+def test_save_as_pt():
+    try:
+        test_model.save_as_pt(sentences=["today is sunny"])
+    except Exception as exec:
+        assert False, f"Tracing model in torchScript raised an exception {exec}"
+
+
+def test_save_as_onnx():
+    try:
+        test_model.save_as_onnx()
+    except Exception as exec:
+        assert False, f"Tracing model in ONNX raised an exception {exec}"
 
 
 clean_test_folder(TEST_FOLDER)

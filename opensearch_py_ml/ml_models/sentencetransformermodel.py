@@ -13,6 +13,7 @@ import random
 import shutil
 import subprocess
 import time
+from pathlib import Path
 from typing import List
 from zipfile import ZipFile
 
@@ -26,6 +27,7 @@ from sentence_transformers import SentenceTransformer
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from transformers import TrainingArguments, get_linear_schedule_with_warmup
+from transformers.convert_graph_to_onnx import convert
 
 
 class SentenceTransformerModel:
@@ -93,6 +95,7 @@ class SentenceTransformerModel:
         num_gpu: int = 0,
         learning_rate: float = 2e-5,
         num_epochs: int = 10,
+        batch_size: int = 32,
         verbose: bool = False,
         percentile: float = 95,
     ) -> None:
@@ -133,6 +136,9 @@ class SentenceTransformerModel:
         :param num_epochs:
             optional, number of epochs to train model, default is 10
         :type num_epochs: int
+        :param batch_size:
+            optional, batch size for training, default is 32
+        :type batch_size: int
         :param verbose:
             optional, use plotting to plot the training progress. Default as false
         :type verbose: bool
@@ -150,7 +156,7 @@ class SentenceTransformerModel:
 
         query_df = self.read_queries(read_path, overwrite)
 
-        train_examples = self.load_sentence_transformer_example(query_df)
+        train_examples = self.load_training_data(query_df)
 
         if num_gpu > 1:
 
@@ -184,6 +190,7 @@ class SentenceTransformerModel:
                         output_model_name,
                         learning_rate,
                         num_epochs,
+                        batch_size,
                         verbose,
                         num_gpu,
                         percentile,
@@ -202,6 +209,7 @@ class SentenceTransformerModel:
                                 output_model_name,
                                 learning_rate,
                                 num_epochs,
+                                batch_size,
                                 verbose,
                                 num_gpu,
                                 percentile,
@@ -221,6 +229,7 @@ class SentenceTransformerModel:
                 output_model_name,
                 learning_rate,
                 num_epochs,
+                batch_size,
                 verbose,
                 num_gpu,
                 percentile,
@@ -318,6 +327,10 @@ class SentenceTransformerModel:
                     passages.append(dict_str["passage"])
                     if "probability" in dict_str.keys():
                         prob.append(dict_str["probability"])  # language modeling score
+                    else:
+                        prob.append(
+                            "-1"
+                        )  # "-1" will serve as a label saying that the probability does not exist.
 
         df = pd.DataFrame(
             list(zip(prob, query, passages)), columns=["prob", "query", "passages"]
@@ -331,12 +344,12 @@ class SentenceTransformerModel:
         df = df.sample(frac=1)
         return df
 
-    def load_sentence_transformer_example(self, query_df) -> List[List[str]]:
+    def load_training_data(self, query_df) -> List[List[str]]:
         """
         Create input data for training the model
 
         :param query_df:
-            required for loading sentence transformer examples
+            required for loading training data
         :type query_df: pd.DataFrame
         :return: the list of train examples.
         :rtype: list
@@ -352,11 +365,12 @@ class SentenceTransformerModel:
 
     def train_model(
         self,
-        train_examples: List[str],
+        train_examples: List[List[str]],
         model_id: str = None,
         output_model_name: str = None,
         learning_rate: float = 2e-5,
         num_epochs: int = 10,
+        batch_size: int = 32,
         verbose: bool = False,
         num_gpu: int = 0,
         percentile: float = 95,
@@ -367,7 +381,7 @@ class SentenceTransformerModel:
 
         :param train_examples:
             required, input for the sentence transformer model training
-        :type train_examples: list of strings
+        :type train_examples: List of strings in another list
         :param model_id:
             [optional] the url to download sentence transformer model, if None,
             default as 'sentence-transformers/msmarco-distilbert-base-tas-b'
@@ -381,6 +395,9 @@ class SentenceTransformerModel:
         :param num_epochs:
             optional, number of epochs to train model, default is 10
         :type num_epochs: int
+        :param batch_size:
+            optional, batch size for training, default is 32
+        :type batch_size: int
         :param verbose:
             optional, use plotting to plot the training progress and printing more logs. Default as false
         :type verbose: bool
@@ -403,7 +420,6 @@ class SentenceTransformerModel:
             output_model_name = str(self.model_id.split("/")[-1] + ".pt")
 
         # declare variables before assignment for training
-        batch_size = 32
         corp_len = []
 
         # Load a model from HuggingFace
@@ -413,15 +429,11 @@ class SentenceTransformerModel:
         for i in range(len(train_examples)):
             corp_len.append(len(train_examples[i][1].split(" ")))
 
-        # In the following, we find the max length of 95% of the documents. Since this length is measured in terms of
-
-        # words and not tokens we multiply it by 1.4 to approximate the fact that 1 word in the english vocabulary
-
-        # roughly translates to 1.3 to 1.5 tokens. For instance the word butterfly will be split by most tokeniers into
-
-        # butter and fly, but the word sun will be kept as it is.
-
-        # Note that this ratio will be higher if the corpus is jargon heavy and/or domain specific.
+        # In the following, we find the max length of 95% of the documents (when sorted by increasing word length).
+        # Since this length is measured in terms of words and not tokens we multiply it by 1.4 to approximate the
+        # fact that 1 word in the english vocabulary roughly translates to 1.3 to 1.5 tokens. For instance the word
+        # butterfly will be split by most tokenizers into butter and fly, but the word sun will be probably kept as it
+        # is. Note that this ratio will be higher if the corpus is jargon heavy and/or domain specific.
 
         corp_max_tok_len = int(np.percentile(corp_len, percentile) * 1.4)
         model.tokenizer.model_max_length = corp_max_tok_len
@@ -475,6 +487,12 @@ class SentenceTransformerModel:
                 print(
                     f"The total number of steps per training epoch are {len(train_dataloader)}\n"
                 )
+
+            # The following training loop trains the sentence transformer model using the standard contrastive loss
+            # with in-batch negatives. The particular contrastive loss that we use is the Multi-class N-pair Loss (
+            # eq. 6, Sohn, NeurIPS 2016). In addition, we symmetrize the loss with respect to queries and passages (
+            # as also used in OpenAI's CLIP model). The performance improves with the number of in-batch negatives
+            # but larger batch sizes can lead to out of memory issues, so please use the batch-size judiciously.
 
             for epoch in range(num_epochs):
                 print(
@@ -547,6 +565,12 @@ class SentenceTransformerModel:
             print(
                 f"The total number of steps per training epoch are {len(train_examples) // batch_size}\n"
             )
+
+            # The following training loop trains the sentence transformer model using the standard contrastive loss
+            # with in-batch negatives. The particular contrastive loss that we use is the Multi-class N-pair Loss (
+            # eq. 6, Sohn, NeurIPS 2016). In addition, we symmetrize the loss with respect to queries and passages (
+            # as also used in OpenAI's CLIP model). The performance improves with the number of in-batch negatives
+            # but larger batch sizes can lead to out of memory issues, so please use the batch-size judiciously.
 
             for epoch in range(num_epochs):
                 random.shuffle(train_examples)
@@ -687,11 +711,11 @@ class SentenceTransformerModel:
     def save_as_pt(
         self,
         sentences: [str],
-        model=None,
+        model_id="sentence-transformers/msmarco-distilbert-base-tas-b",
         model_name: str = None,
         save_json_folder_path: str = None,
         zip_file_name: str = None,
-    ):
+    ) -> str:
         """
         download sentence transformer model directly from huggingface, convert model to torch script format,
         zip the model file and its tokenizer.json file to prepare to upload to the Open Search cluster
@@ -699,11 +723,10 @@ class SentenceTransformerModel:
         :param sentences:
             Required, for example  sentences = ['today is sunny']
         :type sentences: List of string [str]
-        :param model:
-            Optional, if provide model in parameters, will convert model to torch script format,
-            else, not provided model then it will download sentence transformer model from huggingface.
-            If None, default takes model_id = "sentence-transformers/msmarco-distilbert-base-tas-b"
-        :type model: string
+        :param model_id:
+            sentence transformer model id to download model from sentence transformers.
+            default model_id = "sentence-transformers/msmarco-distilbert-base-tas-b"
+        :type model_id: string
         :param model_name:
             Optional, model name to name the model file, e.g, "sample_model.pt". If None, default takes the
             model_id and add the extension with ".pt"
@@ -716,15 +739,14 @@ class SentenceTransformerModel:
             Optional, file name for zip file. e.g, "sample_model.zip". If None, default takes the model_id
             and add the extension with ".zip"
         :type zip_file_name: string
-        :return: the torch script format model
-        :rtype: .pt model
+        :return: model zip file path. The file path where the zip file is being saved
+        :rtype: string
         """
 
-        if model is None:
-            model = SentenceTransformer(self.model_id)
+        model = SentenceTransformer(model_id)
 
         if model_name is None:
-            model_name = str(self.model_id.split("/")[-1] + ".pt")
+            model_name = str(model_id.split("/")[-1] + ".pt")
 
         model_path = os.path.join(self.folder_path, model_name)
 
@@ -732,7 +754,7 @@ class SentenceTransformerModel:
             save_json_folder_path = self.folder_path
 
         if zip_file_name is None:
-            zip_file_name = str(self.model_id.split("/")[-1] + ".zip")
+            zip_file_name = str(model_id.split("/")[-1] + ".zip")
         zip_file_path = os.path.join(self.folder_path, zip_file_name)
 
         # save tokenizer.json in save_json_folder_name
@@ -741,15 +763,18 @@ class SentenceTransformerModel:
         # convert to pt format will need to be in cpu,
         # set the device to cpu, convert its input_ids and attention_mask in cpu and save as .pt format
         device = torch.device("cpu")
-        torch.tensor(1)
         cpu_model = model.to(device)
-        features = cpu_model.tokenizer(sentences)
-        out_q = features
-        input_ids = torch.tensor(out_q["input_ids"]).to("cpu")
-        attention_mask = torch.tensor(out_q["attention_mask"]).to("cpu")
+        features = cpu_model.tokenizer(
+            sentences, return_tensors="pt", padding=True, truncation=True
+        ).to(device)
         compiled_model = torch.jit.trace(
-            cpu_model.to("cpu"),
-            ({"input_ids": input_ids, "attention_mask": attention_mask}),
+            cpu_model,
+            (
+                {
+                    "input_ids": features["input_ids"],
+                    "attention_mask": features["attention_mask"],
+                }
+            ),
             strict=False,
         )
         torch.jit.save(compiled_model, model_path)
@@ -766,7 +791,76 @@ class SentenceTransformerModel:
                 arcname="tokenizer.json",
             )
         print("zip file is saved to ", zip_file_path, "\n")
-        return compiled_model
+        return zip_file_path
+
+    def save_as_onnx(
+        self,
+        model_id="sentence-transformers/msmarco-distilbert-base-tas-b",
+        model_name: str = None,
+        output_path: str = None,
+        zip_file_name: str = None,
+    ) -> str:
+        """
+        download sentence transformer model directly from huggingface, convert model to onnx format,
+        zip the model file and its tokenizer.json file to prepare to upload to the Open Search cluster
+
+        :param model_id:
+            sentence transformer model id to download model from sentence transformers.
+            default model_id = "sentence-transformers/msmarco-distilbert-base-tas-b"
+        :type model_id: string
+        :param model_name:
+            Optional, model name to name the model file, e.g, "sample_model.pt". If None, default takes the
+            model_id and add the extension with ".pt"
+        :type model_name: string
+        :param output_path:
+             Optional, path to save model json file, e.g, "home/save_pre_trained_model_json/"). If None, default as
+             default_folder_path from the constructor
+        :type output_path: string
+        :param zip_file_name:
+            Optional, file name for zip file. e.g, "sample_model.zip". If None, default takes the model_id
+            and add the extension with ".zip"
+        :type zip_file_name: string
+        :return: model zip file path. The file path where the zip file is being saved
+        :rtype: string
+        """
+
+        model = SentenceTransformer(model_id)
+
+        if model_name is None:
+            model_name = str(model_id.split("/")[-1] + ".onnx")
+
+        model_path = os.path.join(self.folder_path, "onnx", model_name)
+
+        if output_path is None:
+            output_path = self.folder_path
+
+        if zip_file_name is None:
+            zip_file_name = str(model_id.split("/")[-1] + ".zip")
+
+        zip_file_path = os.path.join(self.folder_path, zip_file_name)
+
+        # save tokenizer.json in output_path
+        model.save(output_path)
+
+        convert(
+            framework="pt",
+            model=model_id,
+            output=Path(model_path),
+            opset=16,
+        )
+
+        # zip model file along with tokenizer.json as output
+        with ZipFile(str(zip_file_path), "w") as zipObj:
+            zipObj.write(
+                model_path,
+                arcname=str(model_name),
+            )
+            zipObj.write(
+                os.path.join(output_path, "tokenizer.json"),
+                arcname="tokenizer.json",
+            )
+        print("zip file is saved to ", zip_file_path, "\n")
+        return zip_file_path
 
     def set_up_accelerate_config(
         self,

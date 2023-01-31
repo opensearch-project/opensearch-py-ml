@@ -36,6 +36,7 @@ Export Model
    :maxdepth: 2
 
    api/sentence_transformer.save_as_pt
+   api/sentence_transformer.save_as_onnx
 
 Config Model
 ~~~~~~~~~~~~
