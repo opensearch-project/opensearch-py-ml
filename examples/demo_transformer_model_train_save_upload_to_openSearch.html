@@ -102,7 +102,6 @@
 <li class="toctree-l2"><a class="reference internal" href="online_retail_analysis.html">Online Retail analysis</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Demo Notebook for Sentence Transformer Model Training, Saving and Uploading to OpenSearch</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#Introduction">Introduction</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#Passage-retrieval">Passage retrieval</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#Synthetic-query-generation">Synthetic query generation</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#Train-BERT-Model-with-synthetic-query-data">Train BERT Model with synthetic query data</a></li>
 </ul>
@@ -123,6 +122,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="demo_ml_commons_integration.html">Demo Notebook for MLCommons Integration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_tracing_model_torchscript_onnx.html">Demo Notebook to trace Sentence Transformers model</a></li>
 </ul>
 </li>
 </ul>
@@ -477,18 +477,13 @@ div.rendered_html tbody tr:hover {
 <h1>Demo Notebook for Sentence Transformer Model Training, Saving and Uploading to OpenSearch<a class="headerlink" href="#Demo-Notebook-for-Sentence-Transformer-Model-Training,-Saving-and-Uploading-to-OpenSearch" title="Permalink to this heading">¶</a></h1>
 <section id="Introduction">
 <h2>Introduction<a class="headerlink" href="#Introduction" title="Permalink to this heading">¶</a></h2>
-<p>Deep learning models are very powerful and have been shown to improve state-of-the-art for several tasks. However, they need a lot of labelled training data. Such data is often hard to obtain. In this notebook, we show how pre-trained large language models can be used to circumvent this issue. We introduce the technique of synthetic data generation and use it obtain a transformer model that is custom built for a given set of documents for the task of search.</p>
-<section id="Passage-retrieval">
-<h3>Passage retrieval<a class="headerlink" href="#Passage-retrieval" title="Permalink to this heading">¶</a></h3>
-<p>We focus on the task of passage retrieval i.e the corpus consists of passages, and it is searched at run-time given a user query. A passage could be any piece of unstructured text such as sentences, documents or webpages.</p>
-<p>Deep neural networks such as transformers have been shown to give state-of-the-art results for the task of passage/document retireval given large enough labelled dataset. For passage retrieval a labelled dataset would consist of (query, relevant passage) pairs.</p>
-<p>Labelled datasets such as MS Marco and Natural questions consist of more than 500K (query, passage) pairs and can be used to train transfomers. However transformers trained on these datasets have limited performance on out-of-domain datasets <a class="reference external" href="https://arxiv.org/abs/2104.08663">https://arxiv.org/abs/2104.08663</a>. This is a well know fact – medium sized transformers have toruble generalizing on out-of-distribution data. Thus to use transformers for search we need domain specific labelled data. Unfortunately such data is not generally
-avaialable and is hard to acquire.</p>
-</section>
+<p>This notebook introduces the technique of synthetic data generation and how it can be used to obtain a deep learning model for Search that is custom built for a given set of documents.</p>
+<p>Deep learning models are very powerful and have been shown to improve state of the art in several disciplines and tasks. However, they need a lot of labelled training data. Such data is often hard to obtain. In this notebook, we show how pre-trained large language models can be used to circumvent this issue.</p>
+<p>We focus on the task of passage retrieval i.e the corpus consists of passages which is searched at run-time given a user query. This search can be performed by transformers such as BERT as long as BERT is trained on a labelled dataset that consists of pairs such as (queries, relevant passage). Such a BERT model can be used for semantic search.</p>
 <section id="Synthetic-query-generation">
 <h3>Synthetic query generation<a class="headerlink" href="#Synthetic-query-generation" title="Permalink to this heading">¶</a></h3>
-<p>In the absence of such labelled data we provide a synthetic query generator (SQG) model that can be used to create synthetic queries given a passage. The SQG model is a large transformer model that has been trained to generate human like queries given a passage. It can be used to create a labelled dataset of (synthetic queries, passage). A transformer model can be trained on this synthetic data and used for semantic search. In fact, we have shown that such synthetically trained models beat the
-current state-of-the-art.</p>
+<p>In the absence of such labelled data we provide a synthetic query generator (SQG) model that can be used to create synthetic queries given a passage. The SQG model is a large transformer model that has been trained to generate human like queries given a passage. Thus it can be used to create a labelled dataset of (synthetic queries, passage). A BERT model can be trained on this synthetic data and used for semantic search. In fact, we have shown that such synthetically trained models beat the
+current state-of-the-art models.</p>
 </section>
 <section id="Train-BERT-Model-with-synthetic-query-data">
 <h3>Train BERT Model with synthetic query data<a class="headerlink" href="#Train-BERT-Model-with-synthetic-query-data" title="Permalink to this heading">¶</a></h3>
@@ -507,8 +502,9 @@ current state-of-the-art.</p>
 <p>Install required packages for opensearch_py_ml.sentence_transformer_model Install <code class="docutils literal notranslate"><span class="pre">opensearchpy</span></code> and <code class="docutils literal notranslate"><span class="pre">opensearch-py-ml</span></code> through pypi</p>
 <p>generate.py script is released with the Synthetic Query Generation model.</p>
 <p>Please refer <a class="reference external" href="https://pytorch.org/">https://pytorch.org/</a> to proper install torch based on your environment setting.</p>
+<p>Please install the following packages from the terminal if you haven’t already. They can be also installed from the notebook by uncommenting the line and execute.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># pip install pandas matplotlib numpy torch accelerate sentence_transformers tqdm transformers opensearch-py opensearch-py-ml detoxify datasets</span>
@@ -516,11 +512,12 @@ current state-of-the-art.</p>
 </div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">warnings</span>
-<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">DeprecationWarning</span><span class="p">)</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Unverified HTTPS request&quot;</span><span class="p">)</span>
 <span class="kn">import</span> <span class="nn">opensearch_py_ml</span> <span class="k">as</span> <span class="nn">oml</span>
 <span class="kn">from</span> <span class="nn">opensearchpy</span> <span class="kn">import</span> <span class="n">OpenSearch</span>
 <span class="kn">import</span> <span class="nn">generate</span> <span class="c1"># generate.py script is release with the</span>
@@ -536,7 +533,7 @@ current state-of-the-art.</p>
 </div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># import mlcommon to later upload the model to OpenSearch Cluster</span>
@@ -545,7 +542,7 @@ current state-of-the-art.</p>
 </div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">CLUSTER_URL</span> <span class="o">=</span> <span class="s1">&#39;https://localhost:9200&#39;</span>
@@ -553,7 +550,7 @@ current state-of-the-art.</p>
 </div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">get_os_client</span><span class="p">(</span><span class="n">cluster_url</span> <span class="o">=</span> <span class="n">CLUSTER_URL</span><span class="p">,</span>
@@ -574,7 +571,7 @@ current state-of-the-art.</p>
 </div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">client</span> <span class="o">=</span> <span class="n">get_os_client</span><span class="p">()</span>
@@ -582,7 +579,7 @@ current state-of-the-art.</p>
 </div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">myselect</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
@@ -595,13 +592,18 @@ current state-of-the-art.</p>
 </section>
 <section id="Step-2:-Import-the-data/passages-for-synthetic-query-generation">
 <h2>Step 2: Import the data/passages for synthetic query generation<a class="headerlink" href="#Step-2:-Import-the-data/passages-for-synthetic-query-generation" title="Permalink to this heading">¶</a></h2>
-<p>There are three supported options to read datasets : * Option 1: read from a local data folder in jsonl file * Option 2: read from a list of passages * Option 3: read from OpenSearch client by index_name</p>
+<p>There are three supported options to read datasets :</p>
+<ul class="simple">
+<li><p>Option 1: read from a local data folder in jsonl file</p></li>
+<li><p>Option 2: read from a list of passages</p></li>
+<li><p>Option 3: read from OpenSearch client by index_name</p></li>
+</ul>
 <p>For the purpose of this notebook we will demonstrate option 2: read from a list of passages.</p>
 <p>We take the MS Marco dataset of passages as our example dataset.</p>
 <section id="2.1)-Load-the-data-and-convert-into-a-pandas-dataframe">
 <h3>2.1) Load the data and convert into a pandas dataframe<a class="headerlink" href="#2.1)-Load-the-data-and-convert-into-a-pandas-dataframe" title="Permalink to this heading">¶</a></h3>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">dataset</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="s2">&quot;ms_marco&quot;</span><span class="p">,</span><span class="s2">&quot;v1.1&quot;</span><span class="p">)</span>
@@ -609,22 +611,8 @@ current state-of-the-art.</p>
 </pre></div>
 </div>
 </div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area stderr docutils container">
-<div class="highlight"><pre>
-Reusing dataset ms_marco (/Users/dhrubo/.cache/huggingface/datasets/ms_marco/v1.1/1.1.0/b6a62715fa5219aea5275dd3556601004cd63945cb63e36e022f77bb3cbbca84)
-</pre></div></div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<script type="application/vnd.jupyter.widget-view+json">{"model_id": "f214b68bd52d45efab430b7a6c132240", "version_major": 2, "version_minor": 0}</script></div>
-</div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="p">[</span><span class="s2">&quot;passage&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">myselect</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
@@ -632,9 +620,8 @@ Reusing dataset ms_marco (/Users/dhrubo/.cache/huggingface/datasets/ms_marco/v1.
 </pre></div>
 </div>
 </div>
-<p>The above cells create a dataframe that consists of queries and passages</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Setting print options to display full columns</span>
@@ -646,130 +633,40 @@ Reusing dataset ms_marco (/Users/dhrubo/.cache/huggingface/datasets/ms_marco/v1.
 </div>
 </div>
 <p>The dataset looks like,</p>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">10</span><span class="p">]</span>
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
-</pre></div>
-</div>
-<div class="output_area rendered_html docutils container">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>query</th>
-      <th>passage</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>walgreens store sales average</td>
-      <td>The average Walgreens salary ranges from approximately $15,000 per year for Customer Service Associate / Cashier to $179,900 per year for District Manager. Average Walgreens hourly pay ranges from approximately $7.35 per hour for Laboratory Technician to $68.90 per hour for Pharmacy Manager. Salary information comes from 7,810 data points collected directly from employees, users, and jobs on Indeed.</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>how much do bartenders make</td>
-      <td>According to the Bureau of Labor Statistics, the average hourly wage for a bartender is $10.36, and the average yearly take-home is $21,550. Bartending can be a lot of things. For some it is exciting, for others exhausting. At times there is a lot of fun to be had, at others it is rather dull. But for the most part, bartending is almost always rewarding in the financial sense, as long as you stick with it.</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>what is a furuncle boil</td>
-      <td>A boil, also called a furuncle, is a deep folliculitis, infection of the hair follicle. It is most commonly caused by infection by the bacterium Staphylococcus aureus, resulting in a painful swollen area on the skin caused by an accumulation of pus and dead tissue. Signs and symptoms [edit]. Boils are bumpy, red, pus-filled lumps around a hair follicle that are tender, warm, and very painful. They range from pea-sized to golf ball-sized. A yellow or white point at the center of the lump can be seen when the boil is ready to drain or discharge pus.</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>what can urinalysis detect</td>
-      <td>Urinalysis is a test that evaluates a sample of your urine. Urinalysis is used to detect and assess a wide range of disorders, such as urinary tract infection, kidney disease and diabetes. Urinalysis involves examining the appearance, concentration and content of urine. Abnormal urinalysis results may point to a disease or illness. For example, a urinary tract infection can make urine look cloudy instead of clear. Increased levels of protein in urine can be a sign of kidney disease.</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>what is vitamin a used for</td>
-      <td>Vitamin A is also used for shigellosis, diseases of the nervous system, nose infections, loss of sense of smell, asthma, persistent headaches, kidney stones, overactive thyroid, iron-poor blood (anemia), deafness, ringing in the ears, and precancerous mouth sores (leukoplakia). It can also be made in a laboratory. Vitamin A is used for treating vitamin A deficiency. It is also used to reduce complications of diseases such as malaria, HIV, measles, and diarrhea in children with</td>
-    </tr>
-    <tr>
-      <th>5</th>
-      <td>what causes genetic alterations in normal cells</td>
-      <td>The initiation of cell transformation is generally associated with genetic alterations in normal cells that lead to the loss of intercellular-and/or extracellular-matrix- (ECM-) mediated cell adhesion. Cancer afflicts an organ or a tissue by inducing abnormal and uncontrolled division of cells that either constitute it or migrate to it. At the cellular level, this is caused by genetic alterations in networks that regulate cell division and cell death.</td>
-    </tr>
-    <tr>
-      <th>6</th>
-      <td>cost to frame basement</td>
-      <td>Our free calculator uses recent, trusted data to estimate costs for your Basement Wall Framing project. For a basic 125 square feet project in zip code 47474, the benchmark cost to Frame Basement Walls ranges between $2.51 - $3.17 per square foot* . To estimate costs for your project:</td>
-    </tr>
-    <tr>
-      <th>7</th>
-      <td>erudite divergent definition</td>
-      <td>The smart ones, the ones value knowledge and logic are Erudite. They know everything. . Erudite is one of the five factions in the world of Divergent, the one and only faction dedicated to knowledge, intelligence, curiosity, and astuteness. It was formed by those who blamed ignorance for the war that had occurred in the past, causing them to split into factions in the first place. They also use Dauntless as their soldiers near the end of Divergent. They have a close relationship with Amity, but Amity are not involved in the war because they are the peace faction. No relationship is stated between Erudite and Candor.</td>
-    </tr>
-    <tr>
-      <th>8</th>
-      <td>why is albumin normally absent in urine</td>
-      <td>Share. Albumin is a protein present in the blood. Proteins are normally absent in urine because the kidney cells generally prevent large molecules including proteins, from being excreted. Some proteins may appear in the urine in normal individuals also if blood levels are very high. In kidney diseases, albumin will appear in the urine even with normal blood levels.</td>
-    </tr>
-    <tr>
-      <th>9</th>
-      <td>where was movie the birds filmed</td>
-      <td>The Birds filming location: the Schoolhouse: Bodega Lane, Bodega, Northern California. Alfred Hitchcock ’s film of the Daphne du Maurier short story (originally set in Cornwall, England) uses lots of process (special effects) shots but, as usual, the director plays fair with the geography. The Birds filming location: the restaurant: Tides Wharf and Restaurant, Bodega Bay, Northern California. The Tides Wharf &amp; Restaurant, in which the assorted locals shelter from the bird attacks, has expanded into an unrecognisable hotel complex since the film was made. The big surprise is that there is no town.</td>
-    </tr>
-  </tbody>
-</table>
-</div></div>
-</div>
 <p>The MS Marco dataset has real queries for passages but we will pretend that it does not and generate synthetic queries for each passage</p>
 </section>
 <section id="2.2)-Convert-the-data-into-a-list-of-strings-and-instantiate-an-object-of-the-class-Synthetic_Query_Generation">
 <h3>2.2) Convert the data into a list of strings and instantiate an object of the class Synthetic_Query_Generation<a class="headerlink" href="#2.2)-Convert-the-data-into-a-list-of-strings-and-instantiate-an-object-of-the-class-Synthetic_Query_Generation" title="Permalink to this heading">¶</a></h3>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sample_passages</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">passage</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ss</span> <span class="o">=</span> <span class="n">Synthetic_Query_Generation</span><span class="p">(</span><span class="n">sentences</span> <span class="o">=</span> <span class="n">sample_passages</span><span class="p">[:</span><span class="mi">8</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area stderr docutils container">
-<div class="highlight"><pre>
-Special tokens have been added in the vocabulary, make sure the associated word embeddings are fine-tuned or trained.
-</pre></div></div>
-</div>
 </section>
 </section>
 <section id="Step-3:-Generate-synthetic-queries">
 <h2>Step 3: Generate synthetic queries<a class="headerlink" href="#Step-3:-Generate-synthetic-queries" title="Permalink to this heading">¶</a></h2>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">three_step_query</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">generate_synthetic_queries</span><span class="p">(</span><span class="n">num_machines</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
@@ -780,67 +677,6 @@ Special tokens have been added in the vocabulary, make sure the associated word 
                                                  <span class="n">toxic_cutoff</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-Tokenizing corpus...
-Preparing input_ids and attention_mask...
-</pre></div></div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area stderr docutils container">
-<div class="highlight"><pre>
-100%|██████████| 8/8 [00:00&lt;00:00, 424.24it/s]
-</pre></div></div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-0 number of documents out of 8 are longer than 512 tokens and were discarded
-</pre></div></div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area stderr docutils container">
-<div class="highlight"><pre>
-
-</pre></div></div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-The number of steps for creating queries:  8
-Running on CPU...
-</pre></div></div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area stderr docutils container">
-<div class="highlight"><pre>
-100%|██████████| 8/8 [03:25&lt;00:00, 25.68s/it]
-</pre></div></div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-The total number of synthetic queries before detoxify is 80
-68good queries are kept after detoxify.
-File is saved to /Volumes/workplace/opensearch-py-ml/src/opensearch-py-ml/queries_after_detoxify/synthetic_queries_batch_.p file.
-Zip file is saved to/Volumes/workplace/opensearch-py-ml/src/opensearch-py-ml/clean_synthetic_queries.zip
-</pre></div></div>
 </div>
 <p>A lot of actions are being executed in the above cell. We elaborate them step by step,</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>1) Convert the data into a form that can be consumed by the Synthetic query generator (SQG) model. This amounts to tokenizing the data using a tokenizer. The SQG model is a fine-tuned version of the GPT-XL model https://huggingface.co/gpt2-xl and the tokenizer is the GPT tokenizer.
@@ -862,8 +698,8 @@ It also needs the number of GPUs and the number of machines/nodes that it can us
 </div>
 <section id="This-is-how-the-sample-queries-look-like,">
 <h3>This is how the sample queries look like,<a class="headerlink" href="#This-is-how-the-sample-queries-look-like," title="Permalink to this heading">¶</a></h3>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># initiate SentenceTransformerModel object</span>
@@ -878,90 +714,6 @@ It also needs the number of GPUs and the number of machines/nodes that it can us
 </pre></div>
 </div>
 </div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-Reading synthetic query file: /Volumes/workplace/upload_content/model_files/synthetic_queries/synthetic_queries_batch.p
-
-</pre></div></div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
-</pre></div>
-</div>
-<div class="output_area rendered_html docutils container">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>prob</th>
-      <th>query</th>
-      <th>passages</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>11</th>
-      <td>0.000058</td>
-      <td>what is the salary range for a bb bar</td>
-      <td>According to the Bureau of Labor Statistics, the average hourly wage for a bartender is $10.36, and the average yearly take-home is $21,550. Bartending can be a lot of things. For some it is exciting, for others exhausting. At times there is a lot of fun to be had, at others it is rather dull. But for the most part, bartending is almost always rewarding in the financial sense, as long as you stick with it.</td>
-    </tr>
-    <tr>
-      <th>67</th>
-      <td>0.000027</td>
-      <td>are divergent known for their science</td>
-      <td>The smart ones, the ones value knowledge and logic are Erudite. They know everything.. Erudite is one of the five factions in the world of Divergent, the one and only faction dedicated to knowledge, intelligence, curiosity, and astuteness. It was formed by those who blamed ignorance for the war that had occurred in the past, causing them to split into factions in the first place. They also use Dauntless as their soldiers near the end of Divergent. They have a close relationship with Amity, but Amity are not involved in the war because they are the peace faction. No relationship is stated between Erudite and Candor.</td>
-    </tr>
-    <tr>
-      <th>33</th>
-      <td>0.000088</td>
-      <td>what diseases do urinalis tests show</td>
-      <td>Urinalysis is a test that evaluates a sample of your urine. Urinalysis is used to detect and assess a wide range of disorders, such as urinary tract infection, kidney disease and diabetes. Urinalysis involves examining the appearance, concentration and content of urine. Abnormal urinalysis results may point to a disease or illness. For example, a urinary tract infection can make urine look cloudy instead of clear. Increased levels of protein in urine can be a sign of kidney disease.</td>
-    </tr>
-    <tr>
-      <th>46</th>
-      <td>0.000001</td>
-      <td>what is a primary role for growth factors?</td>
-      <td>The initiation of cell transformation is generally associated with genetic alterations in normal cells that lead to the loss of intercellular-and/or extracellular-matrix- (ECM-) mediated cell adhesion. Cancer afflicts an organ or a tissue by inducing abnormal and uncontrolled division of cells that either constitute it or migrate to it. At the cellular level, this is caused by genetic alterations in networks that regulate cell division and cell death.</td>
-    </tr>
-    <tr>
-      <th>49</th>
-      <td>0.000610</td>
-      <td>definition of initiation of gene expression</td>
-      <td>The initiation of cell transformation is generally associated with genetic alterations in normal cells that lead to the loss of intercellular-and/or extracellular-matrix- (ECM-) mediated cell adhesion. Cancer afflicts an organ or a tissue by inducing abnormal and uncontrolled division of cells that either constitute it or migrate to it. At the cellular level, this is caused by genetic alterations in networks that regulate cell division and cell death.</td>
-    </tr>
-    <tr>
-      <th>0</th>
-      <td>5.286169</td>
-      <td>how much does walgreen assistant manager make</td>
-      <td>The average Walgreens salary ranges from approximately $15,000 per year for Customer Service Associate / Cashier to $179,900 per year for District Manager. Average Walgreens hourly pay ranges from approximately $7.35 per hour for Laboratory Technician to $68.90 per hour for Pharmacy Manager. Salary information comes from 7,810 data points collected directly from employees, users, and jobs on Indeed.</td>
-    </tr>
-    <tr>
-      <th>65</th>
-      <td>0.100414</td>
-      <td>what kind of people make up divergent</td>
-      <td>The smart ones, the ones value knowledge and logic are Erudite. They know everything.. Erudite is one of the five factions in the world of Divergent, the one and only faction dedicated to knowledge, intelligence, curiosity, and astuteness. It was formed by those who blamed ignorance for the war that had occurred in the past, causing them to split into factions in the first place. They also use Dauntless as their soldiers near the end of Divergent. They have a close relationship with Amity, but Amity are not involved in the war because they are the peace faction. No relationship is stated between Erudite and Candor.</td>
-    </tr>
-  </tbody>
-</table>
-</div></div>
-</div>
 </section>
 </section>
 <section id="Step-4:-Read-synthetic-queries-and-train/fine-tune-a-hugging-face-sentence-transformer-model-on-synthetic-data">
@@ -970,7 +722,7 @@ Reading synthetic query file: /Volumes/workplace/upload_content/model_files/synt
 <p>The <code class="docutils literal notranslate"><span class="pre">SentenceTransformerModel</span></code> class will inititate an object for training, exporting and configuring the model. Plese visit the <a class="reference external" href="https://opensearch-project.github.io/opensearch-py-ml/reference/api/sentence_transformer.html#opensearch_py_ml.sentence_transformer_model.SentenceTransformerModel">SentenceTransformerModel</a> for API Reference .</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">train</span></code> function will import synthestic queries, load sentence transformer example and train the model using a hugging face sentence transformer model. Plese visit the <a class="reference external" href="https://opensearch-project.github.io/opensearch-py-ml/reference/api/sentence_transformer.html#opensearch_py_ml.sentence_transformer_model.SentenceTransformerModel.train">SentenceTransformerModel.train</a> for API Reference .</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># clean up cache before training to free up spaces</span>
@@ -982,8 +734,8 @@ Reading synthetic query file: /Volumes/workplace/upload_content/model_files/synt
 </pre></div>
 </div>
 </div>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><br/><span></span><span class="n">training</span> <span class="o">=</span> <span class="n">custom_model</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">read_path</span> <span class="o">=</span> <span class="s1">&#39;/Volumes/workplace/upload_content/clean_synthetic_queries.zip&#39;</span><span class="p">,</span>
@@ -995,62 +747,6 @@ Reading synthetic query file: /Volumes/workplace/upload_content/model_files/synt
 </pre></div>
 </div>
 </div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-Reading synthetic query file: /Volumes/workplace/upload_content/model_files/synthetic_queries/synthetic_queries_batch.p
-
-Loading training examples...
-
-</pre></div></div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area stderr docutils container">
-<div class="highlight"><pre>
-100%|██████████| 66/66 [00:00&lt;00:00, 244544.23it/s]
-</pre></div></div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-Start training without accelerator...
-
-The number of training epoch are 1
-
-The total number of steps per training epoch are 2
-
-Training epoch 0...
-
-</pre></div></div>
-</div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area stderr docutils container">
-<div class="highlight"><pre>
-100%|██████████| 2/2 [00:10&lt;00:00,  5.44s/it]
-</pre></div></div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-Total training time: 11.379661083221436
-
-Model saved to path: /Volumes/workplace/upload_content/model_files/
-
-tokenizer_json_path:  /Volumes/workplace/upload_content/model_files/tokenizer.json
-zip file is saved to /Volumes/workplace/upload_content/model_files/test2_model.zip
-
-</pre></div></div>
-</div>
 </section>
 <section id="Step-5:-(Optional)-Save-model">
 <h2>Step 5: (Optional) Save model<a class="headerlink" href="#Step-5:-(Optional)-Save-model" title="Permalink to this heading">¶</a></h2>
@@ -1058,13 +754,13 @@ zip file is saved to /Volumes/workplace/upload_content/model_files/test2_model.z
 <p>But if using other pretrained sentence transformer model from Hugging face, users can use <code class="docutils literal notranslate"><span class="pre">save_as_pt</span></code> function to save a pre-trained sentence transformer model for inferencing or benchmark with other models.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">save_as_pt</span></code> function will prepare the model in proper format(Torch Script) along with tokenizers configuration file to upload to OpenSearch. Plese visit the <a class="reference external" href="https://opensearch-project.github.io/opensearch-py-ml/reference/api/sentence_transformer.html#opensearch_py_ml.sentence_transformer_model.SentenceTransformerModel.save_as_pt">SentenceTransformerModel.save_as_pt</a> for API Reference .</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># default to download model id, &quot;sentence-transformers/msmarco-distilbert-base-tas-b&quot; from hugging face</span>
 <span class="c1"># and output a model in a zip file containing model.pt file and tokenizers.json file.</span>
-<span class="n">pre_trained_model</span> <span class="o">=</span> <span class="n">SentenceTransformerModel</span><span class="p">(</span><span class="n">folder_path</span> <span class="o">=</span> <span class="s1">&#39;/Volumes/workplace/upload_content/export_huggingface/&#39;</span><span class="p">,</span> <span class="n">overwrite</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
-<span class="n">pre_trained_model</span><span class="o">.</span><span class="n">save_as_pt</span><span class="p">(</span><span class="n">sentences</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;today is sunny&#39;</span><span class="p">])</span>
+<span class="n">pre_trained_model</span> <span class="o">=</span> <span class="n">SentenceTransformerModel</span><span class="p">(</span><span class="n">folder_path</span> <span class="o">=</span> <span class="s1">&#39;/Volumes/workplace/upload_content/&#39;</span><span class="p">,</span> <span class="n">overwrite</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+<span class="n">pre_trained_model</span><span class="o">.</span><span class="n">save_as_pt</span><span class="p">(</span><span class="n">model_id</span> <span class="o">=</span> <span class="s2">&quot;sentence-transformers/all-MiniLM-L6-v2&quot;</span><span class="p">,</span> <span class="n">sentences</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Sentences needs to be bigger&quot;</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -1073,154 +769,18 @@ zip file is saved to /Volumes/workplace/upload_content/model_files/test2_model.z
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-model file is saved to  /Volumes/workplace/upload_content/export_huggingface/msmarco-distilbert-base-tas-b.pt
-zip file is saved to  /Volumes/workplace/upload_content/export_huggingface/msmarco-distilbert-base-tas-b.zip
+model file is saved to  /Volumes/workplace/upload_content/all-MiniLM-L6-v2.pt
+zip file is saved to  /Volumes/workplace/upload_content/all-MiniLM-L6-v2.zip
 
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-SentenceTransformer(
-  original_name=SentenceTransformer
-  (0): Transformer(
-    original_name=Transformer
-    (auto_model): DistilBertModel(
-      original_name=DistilBertModel
-      (embeddings): Embeddings(
-        original_name=Embeddings
-        (word_embeddings): Embedding(original_name=Embedding)
-        (position_embeddings): Embedding(original_name=Embedding)
-        (LayerNorm): LayerNorm(original_name=LayerNorm)
-        (dropout): Dropout(original_name=Dropout)
-      )
-      (transformer): Transformer(
-        original_name=Transformer
-        (layer): ModuleList(
-          original_name=ModuleList
-          (0): TransformerBlock(
-            original_name=TransformerBlock
-            (attention): MultiHeadSelfAttention(
-              original_name=MultiHeadSelfAttention
-              (dropout): Dropout(original_name=Dropout)
-              (q_lin): Linear(original_name=Linear)
-              (k_lin): Linear(original_name=Linear)
-              (v_lin): Linear(original_name=Linear)
-              (out_lin): Linear(original_name=Linear)
-            )
-            (sa_layer_norm): LayerNorm(original_name=LayerNorm)
-            (ffn): FFN(
-              original_name=FFN
-              (dropout): Dropout(original_name=Dropout)
-              (lin1): Linear(original_name=Linear)
-              (lin2): Linear(original_name=Linear)
-            )
-            (output_layer_norm): LayerNorm(original_name=LayerNorm)
-          )
-          (1): TransformerBlock(
-            original_name=TransformerBlock
-            (attention): MultiHeadSelfAttention(
-              original_name=MultiHeadSelfAttention
-              (dropout): Dropout(original_name=Dropout)
-              (q_lin): Linear(original_name=Linear)
-              (k_lin): Linear(original_name=Linear)
-              (v_lin): Linear(original_name=Linear)
-              (out_lin): Linear(original_name=Linear)
-            )
-            (sa_layer_norm): LayerNorm(original_name=LayerNorm)
-            (ffn): FFN(
-              original_name=FFN
-              (dropout): Dropout(original_name=Dropout)
-              (lin1): Linear(original_name=Linear)
-              (lin2): Linear(original_name=Linear)
-            )
-            (output_layer_norm): LayerNorm(original_name=LayerNorm)
-          )
-          (2): TransformerBlock(
-            original_name=TransformerBlock
-            (attention): MultiHeadSelfAttention(
-              original_name=MultiHeadSelfAttention
-              (dropout): Dropout(original_name=Dropout)
-              (q_lin): Linear(original_name=Linear)
-              (k_lin): Linear(original_name=Linear)
-              (v_lin): Linear(original_name=Linear)
-              (out_lin): Linear(original_name=Linear)
-            )
-            (sa_layer_norm): LayerNorm(original_name=LayerNorm)
-            (ffn): FFN(
-              original_name=FFN
-              (dropout): Dropout(original_name=Dropout)
-              (lin1): Linear(original_name=Linear)
-              (lin2): Linear(original_name=Linear)
-            )
-            (output_layer_norm): LayerNorm(original_name=LayerNorm)
-          )
-          (3): TransformerBlock(
-            original_name=TransformerBlock
-            (attention): MultiHeadSelfAttention(
-              original_name=MultiHeadSelfAttention
-              (dropout): Dropout(original_name=Dropout)
-              (q_lin): Linear(original_name=Linear)
-              (k_lin): Linear(original_name=Linear)
-              (v_lin): Linear(original_name=Linear)
-              (out_lin): Linear(original_name=Linear)
-            )
-            (sa_layer_norm): LayerNorm(original_name=LayerNorm)
-            (ffn): FFN(
-              original_name=FFN
-              (dropout): Dropout(original_name=Dropout)
-              (lin1): Linear(original_name=Linear)
-              (lin2): Linear(original_name=Linear)
-            )
-            (output_layer_norm): LayerNorm(original_name=LayerNorm)
-          )
-          (4): TransformerBlock(
-            original_name=TransformerBlock
-            (attention): MultiHeadSelfAttention(
-              original_name=MultiHeadSelfAttention
-              (dropout): Dropout(original_name=Dropout)
-              (q_lin): Linear(original_name=Linear)
-              (k_lin): Linear(original_name=Linear)
-              (v_lin): Linear(original_name=Linear)
-              (out_lin): Linear(original_name=Linear)
-            )
-            (sa_layer_norm): LayerNorm(original_name=LayerNorm)
-            (ffn): FFN(
-              original_name=FFN
-              (dropout): Dropout(original_name=Dropout)
-              (lin1): Linear(original_name=Linear)
-              (lin2): Linear(original_name=Linear)
-            )
-            (output_layer_norm): LayerNorm(original_name=LayerNorm)
-          )
-          (5): TransformerBlock(
-            original_name=TransformerBlock
-            (attention): MultiHeadSelfAttention(
-              original_name=MultiHeadSelfAttention
-              (dropout): Dropout(original_name=Dropout)
-              (q_lin): Linear(original_name=Linear)
-              (k_lin): Linear(original_name=Linear)
-              (v_lin): Linear(original_name=Linear)
-              (out_lin): Linear(original_name=Linear)
-            )
-            (sa_layer_norm): LayerNorm(original_name=LayerNorm)
-            (ffn): FFN(
-              original_name=FFN
-              (dropout): Dropout(original_name=Dropout)
-              (lin1): Linear(original_name=Linear)
-              (lin2): Linear(original_name=Linear)
-            )
-            (output_layer_norm): LayerNorm(original_name=LayerNorm)
-          )
-        )
-      )
-    )
-  )
-  (1): Pooling(original_name=Pooling)
-)
+&#39;/Volumes/workplace/upload_content/all-MiniLM-L6-v2.zip&#39;
 </pre></div></div>
 </div>
 </section>
@@ -1230,8 +790,8 @@ SentenceTransformer(
 visit the <a class="reference external" href="https://opensearch-project.github.io/opensearch-py-ml/reference/api/sentence_transformer.html#opensearch_py_ml.sentence_transformer_model.SentenceTransformerModel.make_model_config_json">SentenceTransformerModel.make_model_config_json</a> for API Reference .</p>
 <p>In general, the ml common client supports uploading sentence transformer models. With a zip file contains model in Torch Script format, and a configuration file for tokenizers in json format, the <code class="docutils literal notranslate"><span class="pre">upload_model</span></code> function connects to opensearch through ml client and upload the model. Plese visit the <a class="reference external" href="https://opensearch-project.github.io/opensearch-py-ml/reference/api/ml_commons_upload_api.html#opensearch_py_ml.ml_commons_integration.MLCommonClient.upload_model">MLCommonClient.upload_model</a>
 for API Reference.</p>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#users will need to prepare a ml-commons_model_config.json file to config the model, including model name ..</span>
@@ -1239,14 +799,6 @@ for API Reference.</p>
 <span class="n">custom_model</span><span class="o">.</span><span class="n">make_model_config_json</span><span class="p">()</span>
 </pre></div>
 </div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-ml-commons_model_config.json file is saved at :  /Volumes/workplace/upload_content/model_files/ml-commons_model_config.json
-</pre></div></div>
 </div>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
@@ -1260,13 +812,13 @@ ml-commons_model_config.json file is saved at :  /Volumes/workplace/upload_conte
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># upload model to OpenSearch cluster, using model zip file path and ml-commons_model_config.json file generated above</span>
 
-<span class="n">model_path</span> <span class="o">=</span> <span class="s1">&#39;/Volumes/workplace/upload_content/model_files/test2_model.zip&#39;</span>
-<span class="n">model_config_path</span> <span class="o">=</span> <span class="s1">&#39;/Volumes/workplace/upload_content/model_files/ml-commons_model_config.json&#39;</span>
+<span class="n">model_path</span> <span class="o">=</span> <span class="s1">&#39;/Volumes/workplace/upload_content/all-MiniLM-L6-v2.zip&#39;</span>
+<span class="n">model_config_path</span> <span class="o">=</span> <span class="s1">&#39;/Volumes/workplace/upload_content/model_config.json&#39;</span>
 <span class="n">ml_client</span><span class="o">.</span><span class="n">upload_model</span><span class="p">(</span> <span class="n">model_path</span><span class="p">,</span> <span class="n">model_config_path</span><span class="p">,</span> <span class="n">isVerbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -1276,74 +828,48 @@ ml-commons_model_config.json file is saved at :  /Volumes/workplace/upload_conte
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Total number of chunks 27
-Sha1 value of the model file:  1a198957ec8a759e83f1e862ad46bb120c6c1b5a031e75c415c1a893c87a3da7
-Model meta data was created successfully. Model Id:  cz2RloUB6UQeRtfO8Jph
-uploading chunk 1 of 27
-{&#39;status&#39;: &#39;Uploaded&#39;}
-uploading chunk 2 of 27
-{&#39;status&#39;: &#39;Uploaded&#39;}
-uploading chunk 3 of 27
-{&#39;status&#39;: &#39;Uploaded&#39;}
-uploading chunk 4 of 27
-{&#39;status&#39;: &#39;Uploaded&#39;}
-uploading chunk 5 of 27
-{&#39;status&#39;: &#39;Uploaded&#39;}
-uploading chunk 6 of 27
-{&#39;status&#39;: &#39;Uploaded&#39;}
-uploading chunk 7 of 27
-{&#39;status&#39;: &#39;Uploaded&#39;}
-uploading chunk 8 of 27
-{&#39;status&#39;: &#39;Uploaded&#39;}
-uploading chunk 9 of 27
-{&#39;status&#39;: &#39;Uploaded&#39;}
-uploading chunk 10 of 27
-{&#39;status&#39;: &#39;Uploaded&#39;}
-uploading chunk 11 of 27
-{&#39;status&#39;: &#39;Uploaded&#39;}
-uploading chunk 12 of 27
-{&#39;status&#39;: &#39;Uploaded&#39;}
-uploading chunk 13 of 27
-{&#39;status&#39;: &#39;Uploaded&#39;}
-uploading chunk 14 of 27
-{&#39;status&#39;: &#39;Uploaded&#39;}
-uploading chunk 15 of 27
-{&#39;status&#39;: &#39;Uploaded&#39;}
-uploading chunk 16 of 27
-{&#39;status&#39;: &#39;Uploaded&#39;}
-uploading chunk 17 of 27
-{&#39;status&#39;: &#39;Uploaded&#39;}
-uploading chunk 18 of 27
-{&#39;status&#39;: &#39;Uploaded&#39;}
-uploading chunk 19 of 27
-{&#39;status&#39;: &#39;Uploaded&#39;}
-uploading chunk 20 of 27
-{&#39;status&#39;: &#39;Uploaded&#39;}
-uploading chunk 21 of 27
-{&#39;status&#39;: &#39;Uploaded&#39;}
-uploading chunk 22 of 27
-{&#39;status&#39;: &#39;Uploaded&#39;}
-uploading chunk 23 of 27
-{&#39;status&#39;: &#39;Uploaded&#39;}
-uploading chunk 24 of 27
-{&#39;status&#39;: &#39;Uploaded&#39;}
-uploading chunk 25 of 27
-{&#39;status&#39;: &#39;Uploaded&#39;}
-uploading chunk 26 of 27
-{&#39;status&#39;: &#39;Uploaded&#39;}
-uploading chunk 27 of 27
-{&#39;status&#39;: &#39;Uploaded&#39;}
+Total number of chunks 10
+Sha1 value of the model file:  61fd5a1425960681da49d084dca0e52fd0fabcc0f2e1c4d57c4e20e193bde483
+Model meta data was created successfully. Model Id:  lGFG9IUBTo3f8n5R8nM6
+uploading chunk 1 of 10
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 2 of 10
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 3 of 10
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 4 of 10
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 5 of 10
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 6 of 10
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 7 of 10
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 8 of 10
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 9 of 10
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 10 of 10
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
 Model uploaded successfully
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
 </pre></div>
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-&#39;cz2RloUB6UQeRtfO8Jph&#39;
+&#39;lGFG9IUBTo3f8n5R8nM6&#39;
 </pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
 </div>
 </section>
 </section>

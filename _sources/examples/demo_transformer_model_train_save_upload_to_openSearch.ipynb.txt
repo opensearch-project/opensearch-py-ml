@@ -10,20 +10,16 @@
     "\n",
     "## Introduction\n",
     "\n",
-    "Deep learning models are very powerful and have been shown to improve state-of-the-art for several tasks. However, they need a lot of labelled training data. Such data is often hard to obtain. In this notebook, we show how pre-trained large language models can be used to circumvent this issue. We introduce the technique of synthetic data generation and use it obtain a transformer model that is custom built for a given set of documents for the task of search. \n",
+    "This notebook introduces the technique of synthetic data generation and how it can be used to obtain a deep learning model for Search that is custom built for a given set of documents. \n",
     "\n",
+    "Deep learning models are very powerful and have been shown to improve state of the art in several disciplines and tasks. However, they need a lot of labelled training data. Such data is often hard to obtain.  In this notebook, we show how pre-trained large language models can be used to circumvent this issue. \n",
     "\n",
-    "### Passage retrieval\n",
+    "We focus on the task of passage retrieval i.e the corpus consists of passages which is searched at run-time given a user query. This search can be performed by transformers such as BERT as long as BERT is trained on a labelled dataset that consists of pairs such as (queries, relevant passage). Such a BERT model can be used for semantic search. \n",
     "\n",
-    "We focus on the task of passage retrieval i.e the corpus consists of passages, and it is searched at run-time given a user query. A passage could be any piece of unstructured text such as sentences, documents or webpages. \n",
-    "\n",
-    "Deep neural networks such as transformers have been shown to give state-of-the-art results for the task of passage/document retireval given large enough labelled dataset. For passage retrieval a labelled dataset would consist of (query, relevant passage) pairs. \n",
-    "\n",
-    "Labelled datasets such as MS Marco and Natural questions consist of more than 500K (query, passage) pairs and can be used to train transfomers. However transformers trained on these datasets have limited performance on out-of-domain datasets https://arxiv.org/abs/2104.08663. This is a well know fact -- medium sized transformers have toruble generalizing on out-of-distribution data. Thus to use transformers for search we need domain specific labelled data. Unfortunately such data is not generally avaialable and is hard to acquire. \n",
     "\n",
     "### Synthetic query generation\n",
     "\n",
-    "In the absence of such labelled data we provide a synthetic query generator (SQG) model that can be used to create synthetic queries given a passage. The SQG model is a large transformer model that has been trained to generate human like queries given a passage. It can be used to create a labelled dataset of (synthetic queries, passage). A transformer model can be trained on this synthetic data and used for semantic search. In fact, we have shown that such synthetically trained models beat the current state-of-the-art.\n",
+    "In the absence of such labelled data we provide a synthetic query generator (SQG) model that can be used to create synthetic queries given a passage. The SQG model is a large transformer model that has been trained to generate human like queries given a passage. Thus it can be used to create a labelled dataset of (synthetic queries, passage). A BERT model can be trained on this synthetic data and used for semantic search. In fact, we have shown that such synthetically trained models beat the current state-of-the-art models.\n",
     "\n",
     "### Train BERT Model with synthetic query data\n",
     "\n",
@@ -58,12 +54,14 @@
     "\n",
     "generate.py script is released with the Synthetic Query Generation model.\n",
     "\n",
-    "Please refer https://pytorch.org/ to proper install torch based on your environment setting.  "
+    "Please refer https://pytorch.org/ to proper install torch based on your environment setting.\n",
+    "\n",
+    "Please install the following packages from the terminal if you haven't already. They can be also installed from the notebook by uncommenting the line and execute."
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": 1,
+   "execution_count": null,
    "id": "17a3e085",
    "metadata": {
     "scrolled": true
@@ -75,7 +73,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 2,
+   "execution_count": 3,
    "id": "87c021df",
    "metadata": {
     "pycharm": {
@@ -85,7 +83,8 @@
    "outputs": [],
    "source": [
     "import warnings\n",
-    "warnings.filterwarnings('ignore')\n",
+    "warnings.filterwarnings('ignore', category=DeprecationWarning)\n",
+    "warnings.filterwarnings(\"ignore\", message=\"Unverified HTTPS request\")\n",
     "import opensearch_py_ml as oml\n",
     "from opensearchpy import OpenSearch\n",
     "import generate # generate.py script is release with the \n",
@@ -101,7 +100,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 3,
+   "execution_count": 4,
    "id": "798cac25",
    "metadata": {},
    "outputs": [],
@@ -112,7 +111,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 4,
+   "execution_count": 5,
    "id": "5c85ae17",
    "metadata": {},
    "outputs": [],
@@ -122,7 +121,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 5,
+   "execution_count": 6,
    "id": "77442abf",
    "metadata": {},
    "outputs": [],
@@ -145,7 +144,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 6,
+   "execution_count": 7,
    "id": "89e1cb2a",
    "metadata": {},
    "outputs": [],
@@ -155,8 +154,8 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 7,
-   "id": "946a3f3f",
+   "execution_count": 8,
+   "id": "9bc33a2d",
    "metadata": {},
    "outputs": [],
    "source": [
@@ -168,7 +167,7 @@
   },
   {
    "cell_type": "markdown",
-   "id": "0d059192",
+   "id": "aa2294d0",
    "metadata": {},
    "source": [
     "## Step 2: Import the data/passages for synthetic query generation"
@@ -176,18 +175,21 @@
   },
   {
    "cell_type": "markdown",
-   "id": "62482261",
+   "id": "b414dce7",
    "metadata": {},
    "source": [
     "There are three supported options to read datasets :\n",
+    "\n",
     "* Option 1: read from a local data folder in jsonl file \n",
+    "\n",
     "* Option 2: read from a list of passages\n",
+    "\n",
     "* Option 3: read from OpenSearch client by index_name"
    ]
   },
   {
    "cell_type": "markdown",
-   "id": "fce20823",
+   "id": "5a58882e",
    "metadata": {},
    "source": [
     "For the purpose of this notebook we will demonstrate option 2: read from a list of passages. \n",
@@ -197,7 +199,7 @@
   },
   {
    "cell_type": "markdown",
-   "id": "643103a3",
+   "id": "49d19cd5",
    "metadata": {},
    "source": [
     "### 2.1) Load the data and convert into a pandas dataframe"
@@ -205,32 +207,10 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 12,
-   "id": "a0faa5d5",
+   "execution_count": null,
+   "id": "fe008eb4",
    "metadata": {},
-   "outputs": [
-    {
-     "name": "stderr",
-     "output_type": "stream",
-     "text": [
-      "Reusing dataset ms_marco (/Users/dhrubo/.cache/huggingface/datasets/ms_marco/v1.1/1.1.0/b6a62715fa5219aea5275dd3556601004cd63945cb63e36e022f77bb3cbbca84)\n"
-     ]
-    },
-    {
-     "data": {
-      "application/vnd.jupyter.widget-view+json": {
-       "model_id": "f214b68bd52d45efab430b7a6c132240",
-       "version_major": 2,
-       "version_minor": 0
-      },
-      "text/plain": [
-       "  0%|          | 0/3 [00:00<?, ?it/s]"
-      ]
-     },
-     "metadata": {},
-     "output_type": "display_data"
-    }
-   ],
+   "outputs": [],
    "source": [
     "dataset = load_dataset(\"ms_marco\",\"v1.1\")\n",
     "df = pd.DataFrame.from_dict(dataset[\"validation\"])"
@@ -238,8 +218,8 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 13,
-   "id": "f4ed45f4",
+   "execution_count": null,
+   "id": "3b1927c9",
    "metadata": {},
    "outputs": [],
    "source": [
@@ -248,17 +228,9 @@
    ]
   },
   {
-   "cell_type": "markdown",
-   "id": "1cd3cba4",
-   "metadata": {},
-   "source": [
-    "The above cells create a dataframe that consists of queries and passages"
-   ]
-  },
-  {
    "cell_type": "code",
-   "execution_count": 14,
-   "id": "a64162e7",
+   "execution_count": null,
+   "id": "659063f7",
    "metadata": {},
    "outputs": [],
    "source": [
@@ -271,7 +243,7 @@
   },
   {
    "cell_type": "markdown",
-   "id": "b1037278",
+   "id": "68580786",
    "metadata": {},
    "source": [
     "The dataset looks like,"
@@ -279,116 +251,17 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 15,
-   "id": "a15222c4",
+   "execution_count": null,
+   "id": "02b03ca7",
    "metadata": {},
-   "outputs": [
-    {
-     "data": {
-      "text/html": [
-       "<div>\n",
-       "<style scoped>\n",
-       "    .dataframe tbody tr th:only-of-type {\n",
-       "        vertical-align: middle;\n",
-       "    }\n",
-       "\n",
-       "    .dataframe tbody tr th {\n",
-       "        vertical-align: top;\n",
-       "    }\n",
-       "\n",
-       "    .dataframe thead th {\n",
-       "        text-align: right;\n",
-       "    }\n",
-       "</style>\n",
-       "<table border=\"1\" class=\"dataframe\">\n",
-       "  <thead>\n",
-       "    <tr style=\"text-align: right;\">\n",
-       "      <th></th>\n",
-       "      <th>query</th>\n",
-       "      <th>passage</th>\n",
-       "    </tr>\n",
-       "  </thead>\n",
-       "  <tbody>\n",
-       "    <tr>\n",
-       "      <th>0</th>\n",
-       "      <td>walgreens store sales average</td>\n",
-       "      <td>The average Walgreens salary ranges from approximately $15,000 per year for Customer Service Associate / Cashier to $179,900 per year for District Manager. Average Walgreens hourly pay ranges from approximately $7.35 per hour for Laboratory Technician to $68.90 per hour for Pharmacy Manager. Salary information comes from 7,810 data points collected directly from employees, users, and jobs on Indeed.</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>1</th>\n",
-       "      <td>how much do bartenders make</td>\n",
-       "      <td>According to the Bureau of Labor Statistics, the average hourly wage for a bartender is $10.36, and the average yearly take-home is $21,550. Bartending can be a lot of things. For some it is exciting, for others exhausting. At times there is a lot of fun to be had, at others it is rather dull. But for the most part, bartending is almost always rewarding in the financial sense, as long as you stick with it.</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>2</th>\n",
-       "      <td>what is a furuncle boil</td>\n",
-       "      <td>A boil, also called a furuncle, is a deep folliculitis, infection of the hair follicle. It is most commonly caused by infection by the bacterium Staphylococcus aureus, resulting in a painful swollen area on the skin caused by an accumulation of pus and dead tissue. Signs and symptoms [edit]. Boils are bumpy, red, pus-filled lumps around a hair follicle that are tender, warm, and very painful. They range from pea-sized to golf ball-sized. A yellow or white point at the center of the lump can be seen when the boil is ready to drain or discharge pus.</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>3</th>\n",
-       "      <td>what can urinalysis detect</td>\n",
-       "      <td>Urinalysis is a test that evaluates a sample of your urine. Urinalysis is used to detect and assess a wide range of disorders, such as urinary tract infection, kidney disease and diabetes. Urinalysis involves examining the appearance, concentration and content of urine. Abnormal urinalysis results may point to a disease or illness. For example, a urinary tract infection can make urine look cloudy instead of clear. Increased levels of protein in urine can be a sign of kidney disease.</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>4</th>\n",
-       "      <td>what is vitamin a used for</td>\n",
-       "      <td>Vitamin A is also used for shigellosis, diseases of the nervous system, nose infections, loss of sense of smell, asthma, persistent headaches, kidney stones, overactive thyroid, iron-poor blood (anemia), deafness, ringing in the ears, and precancerous mouth sores (leukoplakia). It can also be made in a laboratory. Vitamin A is used for treating vitamin A deficiency. It is also used to reduce complications of diseases such as malaria, HIV, measles, and diarrhea in children with</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>5</th>\n",
-       "      <td>what causes genetic alterations in normal cells</td>\n",
-       "      <td>The initiation of cell transformation is generally associated with genetic alterations in normal cells that lead to the loss of intercellular-and/or extracellular-matrix- (ECM-) mediated cell adhesion. Cancer afflicts an organ or a tissue by inducing abnormal and uncontrolled division of cells that either constitute it or migrate to it. At the cellular level, this is caused by genetic alterations in networks that regulate cell division and cell death.</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>6</th>\n",
-       "      <td>cost to frame basement</td>\n",
-       "      <td>Our free calculator uses recent, trusted data to estimate costs for your Basement Wall Framing project. For a basic 125 square feet project in zip code 47474, the benchmark cost to Frame Basement Walls ranges between $2.51 - $3.17 per square foot* . To estimate costs for your project:</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>7</th>\n",
-       "      <td>erudite divergent definition</td>\n",
-       "      <td>The smart ones, the ones value knowledge and logic are Erudite. They know everything. . Erudite is one of the five factions in the world of Divergent, the one and only faction dedicated to knowledge, intelligence, curiosity, and astuteness. It was formed by those who blamed ignorance for the war that had occurred in the past, causing them to split into factions in the first place. They also use Dauntless as their soldiers near the end of Divergent. They have a close relationship with Amity, but Amity are not involved in the war because they are the peace faction. No relationship is stated between Erudite and Candor.</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>8</th>\n",
-       "      <td>why is albumin normally absent in urine</td>\n",
-       "      <td>Share. Albumin is a protein present in the blood. Proteins are normally absent in urine because the kidney cells generally prevent large molecules including proteins, from being excreted. Some proteins may appear in the urine in normal individuals also if blood levels are very high. In kidney diseases, albumin will appear in the urine even with normal blood levels.</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>9</th>\n",
-       "      <td>where was movie the birds filmed</td>\n",
-       "      <td>The Birds filming location: the Schoolhouse: Bodega Lane, Bodega, Northern California. Alfred Hitchcock ’s film of the Daphne du Maurier short story (originally set in Cornwall, England) uses lots of process (special effects) shots but, as usual, the director plays fair with the geography. The Birds filming location: the restaurant: Tides Wharf and Restaurant, Bodega Bay, Northern California. The Tides Wharf &amp; Restaurant, in which the assorted locals shelter from the bird attacks, has expanded into an unrecognisable hotel complex since the film was made. The big surprise is that there is no town.</td>\n",
-       "    </tr>\n",
-       "  </tbody>\n",
-       "</table>\n",
-       "</div>"
-      ],
-      "text/plain": [
-       "                                             query                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          passage\n",
-       "0                    walgreens store sales average                                                                                                                                                                                                                               The average Walgreens salary ranges from approximately $15,000 per year for Customer Service Associate / Cashier to $179,900 per year for District Manager. Average Walgreens hourly pay ranges from approximately $7.35 per hour for Laboratory Technician to $68.90 per hour for Pharmacy Manager. Salary information comes from 7,810 data points collected directly from employees, users, and jobs on Indeed.\n",
-       "1                      how much do bartenders make                                                                                                                                                                                                                        According to the Bureau of Labor Statistics, the average hourly wage for a bartender is $10.36, and the average yearly take-home is $21,550. Bartending can be a lot of things. For some it is exciting, for others exhausting. At times there is a lot of fun to be had, at others it is rather dull. But for the most part, bartending is almost always rewarding in the financial sense, as long as you stick with it.\n",
-       "2                          what is a furuncle boil                                                                        A boil, also called a furuncle, is a deep folliculitis, infection of the hair follicle. It is most commonly caused by infection by the bacterium Staphylococcus aureus, resulting in a painful swollen area on the skin caused by an accumulation of pus and dead tissue. Signs and symptoms [edit]. Boils are bumpy, red, pus-filled lumps around a hair follicle that are tender, warm, and very painful. They range from pea-sized to golf ball-sized. A yellow or white point at the center of the lump can be seen when the boil is ready to drain or discharge pus.\n",
-       "3                       what can urinalysis detect                                                                                                                                          Urinalysis is a test that evaluates a sample of your urine. Urinalysis is used to detect and assess a wide range of disorders, such as urinary tract infection, kidney disease and diabetes. Urinalysis involves examining the appearance, concentration and content of urine. Abnormal urinalysis results may point to a disease or illness. For example, a urinary tract infection can make urine look cloudy instead of clear. Increased levels of protein in urine can be a sign of kidney disease.\n",
-       "4                       what is vitamin a used for                                                                                                                                                Vitamin A is also used for shigellosis, diseases of the nervous system, nose infections, loss of sense of smell, asthma, persistent headaches, kidney stones, overactive thyroid, iron-poor blood (anemia), deafness, ringing in the ears, and precancerous mouth sores (leukoplakia). It can also be made in a laboratory. Vitamin A is used for treating vitamin A deficiency. It is also used to reduce complications of diseases such as malaria, HIV, measles, and diarrhea in children with\n",
-       "5  what causes genetic alterations in normal cells                                                                                                                                                                          The initiation of cell transformation is generally associated with genetic alterations in normal cells that lead to the loss of intercellular-and/or extracellular-matrix- (ECM-) mediated cell adhesion. Cancer afflicts an organ or a tissue by inducing abnormal and uncontrolled division of cells that either constitute it or migrate to it. At the cellular level, this is caused by genetic alterations in networks that regulate cell division and cell death.\n",
-       "6                           cost to frame basement                                                                                                                                                                                                                                                                                                                                                    Our free calculator uses recent, trusted data to estimate costs for your Basement Wall Framing project. For a basic 125 square feet project in zip code 47474, the benchmark cost to Frame Basement Walls ranges between $2.51 - $3.17 per square foot* . To estimate costs for your project:\n",
-       "7                     erudite divergent definition  The smart ones, the ones value knowledge and logic are Erudite. They know everything. . Erudite is one of the five factions in the world of Divergent, the one and only faction dedicated to knowledge, intelligence, curiosity, and astuteness. It was formed by those who blamed ignorance for the war that had occurred in the past, causing them to split into factions in the first place. They also use Dauntless as their soldiers near the end of Divergent. They have a close relationship with Amity, but Amity are not involved in the war because they are the peace faction. No relationship is stated between Erudite and Candor.\n",
-       "8          why is albumin normally absent in urine                                                                                                                                                                                                                                                                  Share. Albumin is a protein present in the blood. Proteins are normally absent in urine because the kidney cells generally prevent large molecules including proteins, from being excreted. Some proteins may appear in the urine in normal individuals also if blood levels are very high. In kidney diseases, albumin will appear in the urine even with normal blood levels.\n",
-       "9                 where was movie the birds filmed                      The Birds filming location: the Schoolhouse: Bodega Lane, Bodega, Northern California. Alfred Hitchcock ’s film of the Daphne du Maurier short story (originally set in Cornwall, England) uses lots of process (special effects) shots but, as usual, the director plays fair with the geography. The Birds filming location: the restaurant: Tides Wharf and Restaurant, Bodega Bay, Northern California. The Tides Wharf & Restaurant, in which the assorted locals shelter from the bird attacks, has expanded into an unrecognisable hotel complex since the film was made. The big surprise is that there is no town."
-      ]
-     },
-     "execution_count": 15,
-     "metadata": {},
-     "output_type": "execute_result"
-    }
-   ],
+   "outputs": [],
    "source": [
     "df[0:10]"
    ]
   },
   {
    "cell_type": "markdown",
-   "id": "6f1f4478",
+   "id": "d1ee32b5",
    "metadata": {},
    "source": [
     "The MS Marco dataset has real queries for passages but we will pretend that it does not and generate synthetic queries for each passage"
@@ -396,7 +269,7 @@
   },
   {
    "cell_type": "markdown",
-   "id": "855a4780",
+   "id": "42e61085",
    "metadata": {},
    "source": [
     "### 2.2) Convert the data into a list of strings and instantiate an object of the class Synthetic_Query_Generation"
@@ -404,8 +277,8 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 18,
-   "id": "61f8a59e",
+   "execution_count": null,
+   "id": "1100cf65",
    "metadata": {},
    "outputs": [],
    "source": [
@@ -414,25 +287,17 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 19,
-   "id": "ce39fd98",
+   "execution_count": null,
+   "id": "c05e2e85",
    "metadata": {},
-   "outputs": [
-    {
-     "name": "stderr",
-     "output_type": "stream",
-     "text": [
-      "Special tokens have been added in the vocabulary, make sure the associated word embeddings are fine-tuned or trained.\n"
-     ]
-    }
-   ],
+   "outputs": [],
    "source": [
     "ss = Synthetic_Query_Generation(sentences = sample_passages[:8]) "
    ]
   },
   {
    "cell_type": "markdown",
-   "id": "b9eff0a3",
+   "id": "394b9e05",
    "metadata": {},
    "source": [
     "## Step 3: Generate synthetic queries"
@@ -440,65 +305,10 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 20,
-   "id": "a7b424e7",
+   "execution_count": null,
+   "id": "76f3c2d6",
    "metadata": {},
-   "outputs": [
-    {
-     "name": "stdout",
-     "output_type": "stream",
-     "text": [
-      "Tokenizing corpus...\n",
-      "Preparing input_ids and attention_mask... \n"
-     ]
-    },
-    {
-     "name": "stderr",
-     "output_type": "stream",
-     "text": [
-      "100%|██████████| 8/8 [00:00<00:00, 424.24it/s]"
-     ]
-    },
-    {
-     "name": "stdout",
-     "output_type": "stream",
-     "text": [
-      "0 number of documents out of 8 are longer than 512 tokens and were discarded\n"
-     ]
-    },
-    {
-     "name": "stderr",
-     "output_type": "stream",
-     "text": [
-      "\n"
-     ]
-    },
-    {
-     "name": "stdout",
-     "output_type": "stream",
-     "text": [
-      "The number of steps for creating queries:  8\n",
-      "Running on CPU...\n"
-     ]
-    },
-    {
-     "name": "stderr",
-     "output_type": "stream",
-     "text": [
-      "100%|██████████| 8/8 [03:25<00:00, 25.68s/it]\n"
-     ]
-    },
-    {
-     "name": "stdout",
-     "output_type": "stream",
-     "text": [
-      "The total number of synthetic queries before detoxify is 80\n",
-      "68good queries are kept after detoxify.\n",
-      "File is saved to /Volumes/workplace/opensearch-py-ml/src/opensearch-py-ml/queries_after_detoxify/synthetic_queries_batch_.p file.\n",
-      "Zip file is saved to/Volumes/workplace/opensearch-py-ml/src/opensearch-py-ml/clean_synthetic_queries.zip\n"
-     ]
-    }
-   ],
+   "outputs": [],
    "source": [
     "three_step_query = ss.generate_synthetic_queries(num_machines = 1,\n",
     "                                                 overwrite = True,\n",
@@ -510,7 +320,7 @@
   },
   {
    "cell_type": "markdown",
-   "id": "9796396e",
+   "id": "f519d080",
    "metadata": {},
    "source": [
     "A lot of actions are being executed in the above cell. We elaborate them step by step, \n",
@@ -534,7 +344,7 @@
   },
   {
    "cell_type": "markdown",
-   "id": "76c49e24",
+   "id": "43c09364",
    "metadata": {},
    "source": [
     "### This is how the sample queries look like, "
@@ -542,107 +352,10 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 24,
-   "id": "594020c4",
+   "execution_count": null,
+   "id": "d1a7c690",
    "metadata": {},
-   "outputs": [
-    {
-     "name": "stdout",
-     "output_type": "stream",
-     "text": [
-      "Reading synthetic query file: /Volumes/workplace/upload_content/model_files/synthetic_queries/synthetic_queries_batch.p\n",
-      "\n"
-     ]
-    },
-    {
-     "data": {
-      "text/html": [
-       "<div>\n",
-       "<style scoped>\n",
-       "    .dataframe tbody tr th:only-of-type {\n",
-       "        vertical-align: middle;\n",
-       "    }\n",
-       "\n",
-       "    .dataframe tbody tr th {\n",
-       "        vertical-align: top;\n",
-       "    }\n",
-       "\n",
-       "    .dataframe thead th {\n",
-       "        text-align: right;\n",
-       "    }\n",
-       "</style>\n",
-       "<table border=\"1\" class=\"dataframe\">\n",
-       "  <thead>\n",
-       "    <tr style=\"text-align: right;\">\n",
-       "      <th></th>\n",
-       "      <th>prob</th>\n",
-       "      <th>query</th>\n",
-       "      <th>passages</th>\n",
-       "    </tr>\n",
-       "  </thead>\n",
-       "  <tbody>\n",
-       "    <tr>\n",
-       "      <th>11</th>\n",
-       "      <td>0.000058</td>\n",
-       "      <td>what is the salary range for a bb bar</td>\n",
-       "      <td>According to the Bureau of Labor Statistics, the average hourly wage for a bartender is $10.36, and the average yearly take-home is $21,550. Bartending can be a lot of things. For some it is exciting, for others exhausting. At times there is a lot of fun to be had, at others it is rather dull. But for the most part, bartending is almost always rewarding in the financial sense, as long as you stick with it.</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>67</th>\n",
-       "      <td>0.000027</td>\n",
-       "      <td>are divergent known for their science</td>\n",
-       "      <td>The smart ones, the ones value knowledge and logic are Erudite. They know everything.. Erudite is one of the five factions in the world of Divergent, the one and only faction dedicated to knowledge, intelligence, curiosity, and astuteness. It was formed by those who blamed ignorance for the war that had occurred in the past, causing them to split into factions in the first place. They also use Dauntless as their soldiers near the end of Divergent. They have a close relationship with Amity, but Amity are not involved in the war because they are the peace faction. No relationship is stated between Erudite and Candor.</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>33</th>\n",
-       "      <td>0.000088</td>\n",
-       "      <td>what diseases do urinalis tests show</td>\n",
-       "      <td>Urinalysis is a test that evaluates a sample of your urine. Urinalysis is used to detect and assess a wide range of disorders, such as urinary tract infection, kidney disease and diabetes. Urinalysis involves examining the appearance, concentration and content of urine. Abnormal urinalysis results may point to a disease or illness. For example, a urinary tract infection can make urine look cloudy instead of clear. Increased levels of protein in urine can be a sign of kidney disease.</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>46</th>\n",
-       "      <td>0.000001</td>\n",
-       "      <td>what is a primary role for growth factors?</td>\n",
-       "      <td>The initiation of cell transformation is generally associated with genetic alterations in normal cells that lead to the loss of intercellular-and/or extracellular-matrix- (ECM-) mediated cell adhesion. Cancer afflicts an organ or a tissue by inducing abnormal and uncontrolled division of cells that either constitute it or migrate to it. At the cellular level, this is caused by genetic alterations in networks that regulate cell division and cell death.</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>49</th>\n",
-       "      <td>0.000610</td>\n",
-       "      <td>definition of initiation of gene expression</td>\n",
-       "      <td>The initiation of cell transformation is generally associated with genetic alterations in normal cells that lead to the loss of intercellular-and/or extracellular-matrix- (ECM-) mediated cell adhesion. Cancer afflicts an organ or a tissue by inducing abnormal and uncontrolled division of cells that either constitute it or migrate to it. At the cellular level, this is caused by genetic alterations in networks that regulate cell division and cell death.</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>0</th>\n",
-       "      <td>5.286169</td>\n",
-       "      <td>how much does walgreen assistant manager make</td>\n",
-       "      <td>The average Walgreens salary ranges from approximately $15,000 per year for Customer Service Associate / Cashier to $179,900 per year for District Manager. Average Walgreens hourly pay ranges from approximately $7.35 per hour for Laboratory Technician to $68.90 per hour for Pharmacy Manager. Salary information comes from 7,810 data points collected directly from employees, users, and jobs on Indeed.</td>\n",
-       "    </tr>\n",
-       "    <tr>\n",
-       "      <th>65</th>\n",
-       "      <td>0.100414</td>\n",
-       "      <td>what kind of people make up divergent</td>\n",
-       "      <td>The smart ones, the ones value knowledge and logic are Erudite. They know everything.. Erudite is one of the five factions in the world of Divergent, the one and only faction dedicated to knowledge, intelligence, curiosity, and astuteness. It was formed by those who blamed ignorance for the war that had occurred in the past, causing them to split into factions in the first place. They also use Dauntless as their soldiers near the end of Divergent. They have a close relationship with Amity, but Amity are not involved in the war because they are the peace faction. No relationship is stated between Erudite and Candor.</td>\n",
-       "    </tr>\n",
-       "  </tbody>\n",
-       "</table>\n",
-       "</div>"
-      ],
-      "text/plain": [
-       "        prob                                          query                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         passages\n",
-       "11  0.000058          what is the salary range for a bb bar                                                                                                                                                                                                                        According to the Bureau of Labor Statistics, the average hourly wage for a bartender is $10.36, and the average yearly take-home is $21,550. Bartending can be a lot of things. For some it is exciting, for others exhausting. At times there is a lot of fun to be had, at others it is rather dull. But for the most part, bartending is almost always rewarding in the financial sense, as long as you stick with it.\n",
-       "67  0.000027          are divergent known for their science   The smart ones, the ones value knowledge and logic are Erudite. They know everything.. Erudite is one of the five factions in the world of Divergent, the one and only faction dedicated to knowledge, intelligence, curiosity, and astuteness. It was formed by those who blamed ignorance for the war that had occurred in the past, causing them to split into factions in the first place. They also use Dauntless as their soldiers near the end of Divergent. They have a close relationship with Amity, but Amity are not involved in the war because they are the peace faction. No relationship is stated between Erudite and Candor.\n",
-       "33  0.000088           what diseases do urinalis tests show                                                                                                                                          Urinalysis is a test that evaluates a sample of your urine. Urinalysis is used to detect and assess a wide range of disorders, such as urinary tract infection, kidney disease and diabetes. Urinalysis involves examining the appearance, concentration and content of urine. Abnormal urinalysis results may point to a disease or illness. For example, a urinary tract infection can make urine look cloudy instead of clear. Increased levels of protein in urine can be a sign of kidney disease.\n",
-       "46  0.000001     what is a primary role for growth factors?                                                                                                                                                                          The initiation of cell transformation is generally associated with genetic alterations in normal cells that lead to the loss of intercellular-and/or extracellular-matrix- (ECM-) mediated cell adhesion. Cancer afflicts an organ or a tissue by inducing abnormal and uncontrolled division of cells that either constitute it or migrate to it. At the cellular level, this is caused by genetic alterations in networks that regulate cell division and cell death.\n",
-       "49  0.000610    definition of initiation of gene expression                                                                                                                                                                          The initiation of cell transformation is generally associated with genetic alterations in normal cells that lead to the loss of intercellular-and/or extracellular-matrix- (ECM-) mediated cell adhesion. Cancer afflicts an organ or a tissue by inducing abnormal and uncontrolled division of cells that either constitute it or migrate to it. At the cellular level, this is caused by genetic alterations in networks that regulate cell division and cell death.\n",
-       "0   5.286169  how much does walgreen assistant manager make                                                                                                                                                                                                                               The average Walgreens salary ranges from approximately $15,000 per year for Customer Service Associate / Cashier to $179,900 per year for District Manager. Average Walgreens hourly pay ranges from approximately $7.35 per hour for Laboratory Technician to $68.90 per hour for Pharmacy Manager. Salary information comes from 7,810 data points collected directly from employees, users, and jobs on Indeed.\n",
-       "65  0.100414          what kind of people make up divergent   The smart ones, the ones value knowledge and logic are Erudite. They know everything.. Erudite is one of the five factions in the world of Divergent, the one and only faction dedicated to knowledge, intelligence, curiosity, and astuteness. It was formed by those who blamed ignorance for the war that had occurred in the past, causing them to split into factions in the first place. They also use Dauntless as their soldiers near the end of Divergent. They have a close relationship with Amity, but Amity are not involved in the war because they are the peace faction. No relationship is stated between Erudite and Candor."
-      ]
-     },
-     "execution_count": 24,
-     "metadata": {},
-     "output_type": "execute_result"
-    }
-   ],
+   "outputs": [],
    "source": [
     "# initiate SentenceTransformerModel object\n",
     "\n",
@@ -671,7 +384,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 7,
+   "execution_count": null,
    "id": "f1a337ac",
    "metadata": {},
    "outputs": [],
@@ -686,62 +399,10 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 25,
+   "execution_count": null,
    "id": "4b37e9ac",
    "metadata": {},
-   "outputs": [
-    {
-     "name": "stdout",
-     "output_type": "stream",
-     "text": [
-      "Reading synthetic query file: /Volumes/workplace/upload_content/model_files/synthetic_queries/synthetic_queries_batch.p\n",
-      "\n",
-      "Loading training examples... \n",
-      "\n"
-     ]
-    },
-    {
-     "name": "stderr",
-     "output_type": "stream",
-     "text": [
-      "100%|██████████| 66/66 [00:00<00:00, 244544.23it/s]\n"
-     ]
-    },
-    {
-     "name": "stdout",
-     "output_type": "stream",
-     "text": [
-      "Start training without accelerator...\n",
-      "\n",
-      "The number of training epoch are 1\n",
-      "\n",
-      "The total number of steps per training epoch are 2\n",
-      "\n",
-      "Training epoch 0...\n",
-      "\n"
-     ]
-    },
-    {
-     "name": "stderr",
-     "output_type": "stream",
-     "text": [
-      "100%|██████████| 2/2 [00:10<00:00,  5.44s/it]\n"
-     ]
-    },
-    {
-     "name": "stdout",
-     "output_type": "stream",
-     "text": [
-      "Total training time: 11.379661083221436\n",
-      "\n",
-      "Model saved to path: /Volumes/workplace/upload_content/model_files/\n",
-      "\n",
-      "tokenizer_json_path:  /Volumes/workplace/upload_content/model_files/tokenizer.json\n",
-      "zip file is saved to /Volumes/workplace/upload_content/model_files/test2_model.zip\n",
-      "\n"
-     ]
-    }
-   ],
+   "outputs": [],
    "source": [
     "\n",
     "training = custom_model.train(read_path = '/Volumes/workplace/upload_content/clean_synthetic_queries.zip',\n",
@@ -767,162 +428,28 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 9,
+   "execution_count": 10,
    "id": "503f8136",
-   "metadata": {},
+   "metadata": {
+    "scrolled": true
+   },
    "outputs": [
     {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "model file is saved to  /Volumes/workplace/upload_content/export_huggingface/msmarco-distilbert-base-tas-b.pt\n",
-      "zip file is saved to  /Volumes/workplace/upload_content/export_huggingface/msmarco-distilbert-base-tas-b.zip \n",
+      "model file is saved to  /Volumes/workplace/upload_content/all-MiniLM-L6-v2.pt\n",
+      "zip file is saved to  /Volumes/workplace/upload_content/all-MiniLM-L6-v2.zip \n",
       "\n"
      ]
     },
     {
      "data": {
       "text/plain": [
-       "SentenceTransformer(\n",
-       "  original_name=SentenceTransformer\n",
-       "  (0): Transformer(\n",
-       "    original_name=Transformer\n",
-       "    (auto_model): DistilBertModel(\n",
-       "      original_name=DistilBertModel\n",
-       "      (embeddings): Embeddings(\n",
-       "        original_name=Embeddings\n",
-       "        (word_embeddings): Embedding(original_name=Embedding)\n",
-       "        (position_embeddings): Embedding(original_name=Embedding)\n",
-       "        (LayerNorm): LayerNorm(original_name=LayerNorm)\n",
-       "        (dropout): Dropout(original_name=Dropout)\n",
-       "      )\n",
-       "      (transformer): Transformer(\n",
-       "        original_name=Transformer\n",
-       "        (layer): ModuleList(\n",
-       "          original_name=ModuleList\n",
-       "          (0): TransformerBlock(\n",
-       "            original_name=TransformerBlock\n",
-       "            (attention): MultiHeadSelfAttention(\n",
-       "              original_name=MultiHeadSelfAttention\n",
-       "              (dropout): Dropout(original_name=Dropout)\n",
-       "              (q_lin): Linear(original_name=Linear)\n",
-       "              (k_lin): Linear(original_name=Linear)\n",
-       "              (v_lin): Linear(original_name=Linear)\n",
-       "              (out_lin): Linear(original_name=Linear)\n",
-       "            )\n",
-       "            (sa_layer_norm): LayerNorm(original_name=LayerNorm)\n",
-       "            (ffn): FFN(\n",
-       "              original_name=FFN\n",
-       "              (dropout): Dropout(original_name=Dropout)\n",
-       "              (lin1): Linear(original_name=Linear)\n",
-       "              (lin2): Linear(original_name=Linear)\n",
-       "            )\n",
-       "            (output_layer_norm): LayerNorm(original_name=LayerNorm)\n",
-       "          )\n",
-       "          (1): TransformerBlock(\n",
-       "            original_name=TransformerBlock\n",
-       "            (attention): MultiHeadSelfAttention(\n",
-       "              original_name=MultiHeadSelfAttention\n",
-       "              (dropout): Dropout(original_name=Dropout)\n",
-       "              (q_lin): Linear(original_name=Linear)\n",
-       "              (k_lin): Linear(original_name=Linear)\n",
-       "              (v_lin): Linear(original_name=Linear)\n",
-       "              (out_lin): Linear(original_name=Linear)\n",
-       "            )\n",
-       "            (sa_layer_norm): LayerNorm(original_name=LayerNorm)\n",
-       "            (ffn): FFN(\n",
-       "              original_name=FFN\n",
-       "              (dropout): Dropout(original_name=Dropout)\n",
-       "              (lin1): Linear(original_name=Linear)\n",
-       "              (lin2): Linear(original_name=Linear)\n",
-       "            )\n",
-       "            (output_layer_norm): LayerNorm(original_name=LayerNorm)\n",
-       "          )\n",
-       "          (2): TransformerBlock(\n",
-       "            original_name=TransformerBlock\n",
-       "            (attention): MultiHeadSelfAttention(\n",
-       "              original_name=MultiHeadSelfAttention\n",
-       "              (dropout): Dropout(original_name=Dropout)\n",
-       "              (q_lin): Linear(original_name=Linear)\n",
-       "              (k_lin): Linear(original_name=Linear)\n",
-       "              (v_lin): Linear(original_name=Linear)\n",
-       "              (out_lin): Linear(original_name=Linear)\n",
-       "            )\n",
-       "            (sa_layer_norm): LayerNorm(original_name=LayerNorm)\n",
-       "            (ffn): FFN(\n",
-       "              original_name=FFN\n",
-       "              (dropout): Dropout(original_name=Dropout)\n",
-       "              (lin1): Linear(original_name=Linear)\n",
-       "              (lin2): Linear(original_name=Linear)\n",
-       "            )\n",
-       "            (output_layer_norm): LayerNorm(original_name=LayerNorm)\n",
-       "          )\n",
-       "          (3): TransformerBlock(\n",
-       "            original_name=TransformerBlock\n",
-       "            (attention): MultiHeadSelfAttention(\n",
-       "              original_name=MultiHeadSelfAttention\n",
-       "              (dropout): Dropout(original_name=Dropout)\n",
-       "              (q_lin): Linear(original_name=Linear)\n",
-       "              (k_lin): Linear(original_name=Linear)\n",
-       "              (v_lin): Linear(original_name=Linear)\n",
-       "              (out_lin): Linear(original_name=Linear)\n",
-       "            )\n",
-       "            (sa_layer_norm): LayerNorm(original_name=LayerNorm)\n",
-       "            (ffn): FFN(\n",
-       "              original_name=FFN\n",
-       "              (dropout): Dropout(original_name=Dropout)\n",
-       "              (lin1): Linear(original_name=Linear)\n",
-       "              (lin2): Linear(original_name=Linear)\n",
-       "            )\n",
-       "            (output_layer_norm): LayerNorm(original_name=LayerNorm)\n",
-       "          )\n",
-       "          (4): TransformerBlock(\n",
-       "            original_name=TransformerBlock\n",
-       "            (attention): MultiHeadSelfAttention(\n",
-       "              original_name=MultiHeadSelfAttention\n",
-       "              (dropout): Dropout(original_name=Dropout)\n",
-       "              (q_lin): Linear(original_name=Linear)\n",
-       "              (k_lin): Linear(original_name=Linear)\n",
-       "              (v_lin): Linear(original_name=Linear)\n",
-       "              (out_lin): Linear(original_name=Linear)\n",
-       "            )\n",
-       "            (sa_layer_norm): LayerNorm(original_name=LayerNorm)\n",
-       "            (ffn): FFN(\n",
-       "              original_name=FFN\n",
-       "              (dropout): Dropout(original_name=Dropout)\n",
-       "              (lin1): Linear(original_name=Linear)\n",
-       "              (lin2): Linear(original_name=Linear)\n",
-       "            )\n",
-       "            (output_layer_norm): LayerNorm(original_name=LayerNorm)\n",
-       "          )\n",
-       "          (5): TransformerBlock(\n",
-       "            original_name=TransformerBlock\n",
-       "            (attention): MultiHeadSelfAttention(\n",
-       "              original_name=MultiHeadSelfAttention\n",
-       "              (dropout): Dropout(original_name=Dropout)\n",
-       "              (q_lin): Linear(original_name=Linear)\n",
-       "              (k_lin): Linear(original_name=Linear)\n",
-       "              (v_lin): Linear(original_name=Linear)\n",
-       "              (out_lin): Linear(original_name=Linear)\n",
-       "            )\n",
-       "            (sa_layer_norm): LayerNorm(original_name=LayerNorm)\n",
-       "            (ffn): FFN(\n",
-       "              original_name=FFN\n",
-       "              (dropout): Dropout(original_name=Dropout)\n",
-       "              (lin1): Linear(original_name=Linear)\n",
-       "              (lin2): Linear(original_name=Linear)\n",
-       "            )\n",
-       "            (output_layer_norm): LayerNorm(original_name=LayerNorm)\n",
-       "          )\n",
-       "        )\n",
-       "      )\n",
-       "    )\n",
-       "  )\n",
-       "  (1): Pooling(original_name=Pooling)\n",
-       ")"
+       "'/Volumes/workplace/upload_content/all-MiniLM-L6-v2.zip'"
       ]
      },
-     "execution_count": 9,
+     "execution_count": 10,
      "metadata": {},
      "output_type": "execute_result"
     }
@@ -930,8 +457,8 @@
    "source": [
     "# default to download model id, \"sentence-transformers/msmarco-distilbert-base-tas-b\" from hugging face \n",
     "# and output a model in a zip file containing model.pt file and tokenizers.json file. \n",
-    "pre_trained_model = SentenceTransformerModel(folder_path = '/Volumes/workplace/upload_content/export_huggingface/', overwrite = True)\n",
-    "pre_trained_model.save_as_pt(sentences = ['today is sunny'])"
+    "pre_trained_model = SentenceTransformerModel(folder_path = '/Volumes/workplace/upload_content/', overwrite = True)\n",
+    "pre_trained_model.save_as_pt(model_id = \"sentence-transformers/all-MiniLM-L6-v2\", sentences=[\"Sentences needs to be bigger\"])"
    ]
   },
   {
@@ -947,18 +474,10 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 10,
+   "execution_count": null,
    "id": "dbe84425",
    "metadata": {},
-   "outputs": [
-    {
-     "name": "stdout",
-     "output_type": "stream",
-     "text": [
-      "ml-commons_model_config.json file is saved at :  /Volumes/workplace/upload_content/model_files/ml-commons_model_config.json\n"
-     ]
-    }
-   ],
+   "outputs": [],
    "source": [
     "#users will need to prepare a ml-commons_model_config.json file to config the model, including model name ..\n",
     "#this is a helpful function in py-ml.sentence_transformer_model to generate ml-commons_model_config.json file\n",
@@ -980,7 +499,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 12,
+   "execution_count": 15,
    "id": "c7b0ff7e",
    "metadata": {},
    "outputs": [
@@ -988,73 +507,39 @@
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "Total number of chunks 27\n",
-      "Sha1 value of the model file:  1a198957ec8a759e83f1e862ad46bb120c6c1b5a031e75c415c1a893c87a3da7\n",
-      "Model meta data was created successfully. Model Id:  cz2RloUB6UQeRtfO8Jph\n",
-      "uploading chunk 1 of 27\n",
-      "{'status': 'Uploaded'}\n",
-      "uploading chunk 2 of 27\n",
-      "{'status': 'Uploaded'}\n",
-      "uploading chunk 3 of 27\n",
-      "{'status': 'Uploaded'}\n",
-      "uploading chunk 4 of 27\n",
-      "{'status': 'Uploaded'}\n",
-      "uploading chunk 5 of 27\n",
-      "{'status': 'Uploaded'}\n",
-      "uploading chunk 6 of 27\n",
-      "{'status': 'Uploaded'}\n",
-      "uploading chunk 7 of 27\n",
-      "{'status': 'Uploaded'}\n",
-      "uploading chunk 8 of 27\n",
-      "{'status': 'Uploaded'}\n",
-      "uploading chunk 9 of 27\n",
-      "{'status': 'Uploaded'}\n",
-      "uploading chunk 10 of 27\n",
-      "{'status': 'Uploaded'}\n",
-      "uploading chunk 11 of 27\n",
-      "{'status': 'Uploaded'}\n",
-      "uploading chunk 12 of 27\n",
-      "{'status': 'Uploaded'}\n",
-      "uploading chunk 13 of 27\n",
-      "{'status': 'Uploaded'}\n",
-      "uploading chunk 14 of 27\n",
-      "{'status': 'Uploaded'}\n",
-      "uploading chunk 15 of 27\n",
-      "{'status': 'Uploaded'}\n",
-      "uploading chunk 16 of 27\n",
-      "{'status': 'Uploaded'}\n",
-      "uploading chunk 17 of 27\n",
-      "{'status': 'Uploaded'}\n",
-      "uploading chunk 18 of 27\n",
-      "{'status': 'Uploaded'}\n",
-      "uploading chunk 19 of 27\n",
-      "{'status': 'Uploaded'}\n",
-      "uploading chunk 20 of 27\n",
-      "{'status': 'Uploaded'}\n",
-      "uploading chunk 21 of 27\n",
-      "{'status': 'Uploaded'}\n",
-      "uploading chunk 22 of 27\n",
-      "{'status': 'Uploaded'}\n",
-      "uploading chunk 23 of 27\n",
-      "{'status': 'Uploaded'}\n",
-      "uploading chunk 24 of 27\n",
-      "{'status': 'Uploaded'}\n",
-      "uploading chunk 25 of 27\n",
-      "{'status': 'Uploaded'}\n",
-      "uploading chunk 26 of 27\n",
-      "{'status': 'Uploaded'}\n",
-      "uploading chunk 27 of 27\n",
-      "{'status': 'Uploaded'}\n",
+      "Total number of chunks 10\n",
+      "Sha1 value of the model file:  61fd5a1425960681da49d084dca0e52fd0fabcc0f2e1c4d57c4e20e193bde483\n",
+      "Model meta data was created successfully. Model Id:  lGFG9IUBTo3f8n5R8nM6\n",
+      "uploading chunk 1 of 10\n",
+      "Model id: {'status': 'Uploaded'}\n",
+      "uploading chunk 2 of 10\n",
+      "Model id: {'status': 'Uploaded'}\n",
+      "uploading chunk 3 of 10\n",
+      "Model id: {'status': 'Uploaded'}\n",
+      "uploading chunk 4 of 10\n",
+      "Model id: {'status': 'Uploaded'}\n",
+      "uploading chunk 5 of 10\n",
+      "Model id: {'status': 'Uploaded'}\n",
+      "uploading chunk 6 of 10\n",
+      "Model id: {'status': 'Uploaded'}\n",
+      "uploading chunk 7 of 10\n",
+      "Model id: {'status': 'Uploaded'}\n",
+      "uploading chunk 8 of 10\n",
+      "Model id: {'status': 'Uploaded'}\n",
+      "uploading chunk 9 of 10\n",
+      "Model id: {'status': 'Uploaded'}\n",
+      "uploading chunk 10 of 10\n",
+      "Model id: {'status': 'Uploaded'}\n",
       "Model uploaded successfully\n"
      ]
     },
     {
      "data": {
       "text/plain": [
-       "'cz2RloUB6UQeRtfO8Jph'"
+       "'lGFG9IUBTo3f8n5R8nM6'"
       ]
      },
-     "execution_count": 12,
+     "execution_count": 15,
      "metadata": {},
      "output_type": "execute_result"
     }
@@ -1062,10 +547,18 @@
    "source": [
     "# upload model to OpenSearch cluster, using model zip file path and ml-commons_model_config.json file generated above\n",
     "\n",
-    "model_path = '/Volumes/workplace/upload_content/model_files/test2_model.zip'\n",
-    "model_config_path = '/Volumes/workplace/upload_content/model_files/ml-commons_model_config.json'\n",
+    "model_path = '/Volumes/workplace/upload_content/all-MiniLM-L6-v2.zip'\n",
+    "model_config_path = '/Volumes/workplace/upload_content/model_config.json'\n",
     "ml_client.upload_model( model_path, model_config_path, isVerbose=True)"
    ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "5a605df2",
+   "metadata": {},
+   "outputs": [],
+   "source": []
   }
  ],
  "metadata": {

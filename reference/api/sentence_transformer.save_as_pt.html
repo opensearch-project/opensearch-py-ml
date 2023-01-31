@@ -43,7 +43,7 @@
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="SentenceTransformerModel.make_model_config_json" href="sentence_transformer.make_model_config_json.html" />
+    <link rel="next" title="SentenceTransformerModel.save_as_onnx" href="sentence_transformer.save_as_onnx.html" />
     <link rel="prev" title="SentenceTransformerModel.zip_model" href="sentence_transformer.zip_model.html" /> 
 </head>
 
@@ -106,6 +106,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../sentencetransformer.html#optional-step-by-step-train-model">(Optional) Step by Step Train Model</a></li>
 <li class="toctree-l3 current"><a class="reference internal" href="../sentencetransformer.html#export-model">Export Model</a><ul class="current">
 <li class="toctree-l4 current"><a class="current reference internal" href="#">SentenceTransformerModel.save_as_pt</a></li>
+<li class="toctree-l4"><a class="reference internal" href="sentence_transformer.save_as_onnx.html">SentenceTransformerModel.save_as_onnx</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../sentencetransformer.html#config-model">Config Model</a></li>
@@ -213,16 +214,15 @@
 <h1>SentenceTransformerModel.save_as_pt<a class="headerlink" href="#sentencetransformermodel-save-as-pt" title="Permalink to this heading">¶</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="opensearch_py_ml.ml_models.SentenceTransformerModel.save_as_pt">
-<span class="sig-prename descclassname"><span class="pre">opensearch_py_ml.ml_models.SentenceTransformerModel.</span></span><span class="sig-name descname"><span class="pre">save_as_pt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self,</span> <span class="pre">sentences:</span> <span class="pre">[&lt;class</span> <span class="pre">'str'&gt;],</span> <span class="pre">model=None,</span> <span class="pre">model_name:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">save_json_folder_path:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">zip_file_name:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#opensearch_py_ml.ml_models.SentenceTransformerModel.save_as_pt" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">opensearch_py_ml.ml_models.SentenceTransformerModel.</span></span><span class="sig-name descname"><span class="pre">save_as_pt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self,</span> <span class="pre">sentences:</span> <span class="pre">[&lt;class</span> <span class="pre">'str'&gt;],</span> <span class="pre">model_id='sentence-transformers/msmarco-distilbert-base-tas-b',</span> <span class="pre">model_name:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">save_json_folder_path:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">zip_file_name:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#opensearch_py_ml.ml_models.SentenceTransformerModel.save_as_pt" title="Permalink to this definition">¶</a></dt>
 <dd><p>download sentence transformer model directly from huggingface, convert model to torch script format,
 zip the model file and its tokenizer.json file to prepare to upload to the Open Search cluster</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>sentences</strong> (<em>List</em><em> of </em><em>string</em><em> [</em><em>str</em><em>]</em>) – Required, for example  sentences = [‘today is sunny’]</p></li>
-<li><p><strong>model</strong> (<em>string</em>) – Optional, if provide model in parameters, will convert model to torch script format,
-else, not provided model then it will download sentence transformer model from huggingface.
-If None, default takes model_id = “sentence-transformers/msmarco-distilbert-base-tas-b”</p></li>
+<li><p><strong>model_id</strong> (<em>string</em>) – sentence transformer model id to download model from sentence transformers.
+default model_id = “sentence-transformers/msmarco-distilbert-base-tas-b”</p></li>
 <li><p><strong>model_name</strong> (<em>string</em>) – Optional, model name to name the model file, e.g, “sample_model.pt”. If None, default takes the
 model_id and add the extension with “.pt”</p></li>
 <li><p><strong>save_json_folder_path</strong> (<em>string</em>) – Optional, path to save model json file, e.g, “home/save_pre_trained_model_json/”). If None, default as
@@ -232,10 +232,10 @@ and add the extension with “.zip”</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>the torch script format model</p>
+<dd class="field-even"><p>model zip file path. The file path where the zip file is being saved</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>.pt model</p>
+<dd class="field-odd"><p>string</p>
 </dd>
 </dl>
 </dd></dl>
@@ -248,7 +248,7 @@ and add the extension with “.zip”</p></li>
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="sentence_transformer.make_model_config_json.html" class="btn btn-neutral float-right" title="SentenceTransformerModel.make_model_config_json" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="sentence_transformer.save_as_onnx.html" class="btn btn-neutral float-right" title="SentenceTransformerModel.save_as_onnx" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
         <a href="sentence_transformer.zip_model.html" class="btn btn-neutral float-left" title="SentenceTransformerModel.zip_model" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 

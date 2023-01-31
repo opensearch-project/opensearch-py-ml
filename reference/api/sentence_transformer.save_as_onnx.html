@@ -8,7 +8,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>SentenceTransformerModel.make_model_config_json &mdash; Opensearch-py-ml 1.0.0b1 documentation</title>
+  <title>SentenceTransformerModel.save_as_onnx &mdash; Opensearch-py-ml 1.0.0b1 documentation</title>
   
 
   
@@ -43,8 +43,8 @@
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Examples" href="../../examples/index.html" />
-    <link rel="prev" title="SentenceTransformerModel.save_as_onnx" href="sentence_transformer.save_as_onnx.html" /> 
+    <link rel="next" title="SentenceTransformerModel.make_model_config_json" href="sentence_transformer.make_model_config_json.html" />
+    <link rel="prev" title="SentenceTransformerModel.save_as_pt" href="sentence_transformer.save_as_pt.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -104,11 +104,12 @@
 <li class="toctree-l3"><a class="reference internal" href="../sentencetransformer.html#constructor">Constructor</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../sentencetransformer.html#train-model">Train Model</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../sentencetransformer.html#optional-step-by-step-train-model">(Optional) Step by Step Train Model</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../sentencetransformer.html#export-model">Export Model</a></li>
-<li class="toctree-l3 current"><a class="reference internal" href="../sentencetransformer.html#config-model">Config Model</a><ul class="current">
-<li class="toctree-l4 current"><a class="current reference internal" href="#">SentenceTransformerModel.make_model_config_json</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="../sentencetransformer.html#export-model">Export Model</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="sentence_transformer.save_as_pt.html">SentenceTransformerModel.save_as_pt</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">SentenceTransformerModel.save_as_onnx</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="../sentencetransformer.html#config-model">Config Model</a></li>
 </ul>
 </li>
 </ul>
@@ -166,13 +167,13 @@
         
           <li><a href="../sentencetransformer.html">Sentence Transformer</a> &raquo;</li>
         
-      <li>SentenceTransformerModel.make_model_config_json</li>
+      <li>SentenceTransformerModel.save_as_onnx</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
           
-            <a href="../../_sources/reference/api/sentence_transformer.make_model_config_json.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../../_sources/reference/api/sentence_transformer.save_as_onnx.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -209,33 +210,31 @@
     text-align: unset;
 }
 </style>
-<section id="sentencetransformermodel-make-model-config-json">
-<h1>SentenceTransformerModel.make_model_config_json<a class="headerlink" href="#sentencetransformermodel-make-model-config-json" title="Permalink to this heading">¶</a></h1>
+<section id="sentencetransformermodel-save-as-onnx">
+<h1>SentenceTransformerModel.save_as_onnx<a class="headerlink" href="#sentencetransformermodel-save-as-onnx" title="Permalink to this heading">¶</a></h1>
 <dl class="py function">
-<dt class="sig sig-object py" id="opensearch_py_ml.ml_models.SentenceTransformerModel.make_model_config_json">
-<span class="sig-prename descclassname"><span class="pre">opensearch_py_ml.ml_models.SentenceTransformerModel.</span></span><span class="sig-name descname"><span class="pre">make_model_config_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embedding_dimension</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#opensearch_py_ml.ml_models.SentenceTransformerModel.make_model_config_json" title="Permalink to this definition">¶</a></dt>
-<dd><p>parse from config.json file of pre-trained hugging-face model to generate a ml-commons_model_config.json file. If all required
-fields are given by users, use the given parameters and will skip reading the config.json</p>
+<dt class="sig sig-object py" id="opensearch_py_ml.ml_models.SentenceTransformerModel.save_as_onnx">
+<span class="sig-prename descclassname"><span class="pre">opensearch_py_ml.ml_models.SentenceTransformerModel.</span></span><span class="sig-name descname"><span class="pre">save_as_onnx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'sentence-transformers/msmarco-distilbert-base-tas-b'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zip_file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#opensearch_py_ml.ml_models.SentenceTransformerModel.save_as_onnx" title="Permalink to this definition">¶</a></dt>
+<dd><p>download sentence transformer model directly from huggingface, convert model to onnx format,
+zip the model file and its tokenizer.json file to prepare to upload to the Open Search cluster</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>model_name</strong> (<em>string</em>) – Optional, The name of the model. If None, default to parse from model id, for example,
-‘msmarco-distilbert-base-tas-b’</p></li>
-<li><p><strong>version_number</strong> (<em>string</em>) – Optional, The version number of the model. default is 1</p></li>
-<li><p><strong>embedding_dimension</strong> (<em>int</em>) – Optional, the embedding_dimension of the model. If None, parse embedding_dimension
-from the config file of pre-trained hugging-face model, if not found, default to be 768</p></li>
-<li><p><strong>all_config</strong> (<em>dict</em>) – Optional, the all_config of the model. If None, parse all contents from the config file of pre-trained
-hugging-face model</p></li>
-<li><p><strong>model_type</strong> (<em>string</em>) – Optional, the model_type of the model. If None, parse model_type from the config file of pre-trained
-hugging-face model</p></li>
-<li><p><strong>verbose</strong> (<em>bool</em>) – optional, use printing more logs. Default as false</p></li>
+<li><p><strong>model_id</strong> (<em>string</em>) – sentence transformer model id to download model from sentence transformers.
+default model_id = “sentence-transformers/msmarco-distilbert-base-tas-b”</p></li>
+<li><p><strong>model_name</strong> (<em>string</em>) – Optional, model name to name the model file, e.g, “sample_model.pt”. If None, default takes the
+model_id and add the extension with “.pt”</p></li>
+<li><p><strong>output_path</strong> (<em>string</em>) – Optional, path to save model json file, e.g, “home/save_pre_trained_model_json/”). If None, default as
+default_folder_path from the constructor</p></li>
+<li><p><strong>zip_file_name</strong> (<em>string</em>) – Optional, file name for zip file. e.g, “sample_model.zip”. If None, default takes the model_id
+and add the extension with “.zip”</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>no return value expected</p>
+<dd class="field-even"><p>model zip file path. The file path where the zip file is being saved</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>None</p>
+<dd class="field-odd"><p>string</p>
 </dd>
 </dl>
 </dd></dl>
@@ -248,8 +247,8 @@ hugging-face model</p></li>
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="../../examples/index.html" class="btn btn-neutral float-right" title="Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-        <a href="sentence_transformer.save_as_onnx.html" class="btn btn-neutral float-left" title="SentenceTransformerModel.save_as_onnx" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="sentence_transformer.make_model_config_json.html" class="btn btn-neutral float-right" title="SentenceTransformerModel.make_model_config_json" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="sentence_transformer.save_as_pt.html" class="btn btn-neutral float-left" title="SentenceTransformerModel.save_as_pt" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>
