@@ -6,11 +6,11 @@
 # GitHub history for details.
 
 
+import time
 from typing import List
 
 from opensearchpy import OpenSearch
 
-import time
 from opensearch_py_ml.ml_commons.ml_common_utils import ML_BASE_URI
 from opensearch_py_ml.ml_commons.model_uploader import ModelUploader
 
