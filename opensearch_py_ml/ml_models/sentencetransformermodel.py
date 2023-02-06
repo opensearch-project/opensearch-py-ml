@@ -159,7 +159,6 @@ class SentenceTransformerModel:
         train_examples = self.load_training_data(query_df)
 
         if num_gpu > 1:
-
             self.set_up_accelerate_config(
                 compute_environment=compute_environment,
                 num_machines=num_machines,
@@ -505,7 +504,6 @@ class SentenceTransformerModel:
                 for step, batch in tqdm(
                     enumerate(train_dataloader), total=len(train_dataloader)
                 ):
-
                     batch_q = batch[0]
                     batch_p = batch[1]
 

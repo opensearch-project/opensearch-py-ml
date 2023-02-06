@@ -183,7 +183,6 @@ class MLCommonClient:
             )
 
     def delete_model(self, model_id: str) -> object:
-
         """
         This method deletes a model from opensearch cluster (using ml commons api)
 
