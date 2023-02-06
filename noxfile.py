@@ -58,7 +58,7 @@ TYPED_FILES = (
 )
 
 
-@nox.session(python=["3.8", "3.9", "3.10"])
+@nox.session(reuse_venv=True)
 def format(session):
     session.install("black", "isort", "flynt")
     session.run("python", "utils/license-headers.py", "fix", *SOURCE_FILES)
@@ -68,7 +68,7 @@ def format(session):
     lint(session)
 
 
-@nox.session(python=["3.8", "3.9", "3.10"])
+@nox.session(reuse_venv=True)
 def lint(session):
     # Install numpy to use its mypy plugin
     # https://numpy.org/devdocs/reference/typing.html#mypy-plugin
