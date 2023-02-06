@@ -45,7 +45,8 @@
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="prev" title="Demo Notebook for MLCommons Integration" href="demo_ml_commons_integration.html" /> 
+    <link rel="next" title="Demo Notebook for MLCommons Integration" href="demo_ml_commons_integration.html" />
+    <link rel="prev" title="Demo Notebook for Sentence Transformer Model Training, Saving and Uploading to OpenSearch" href="demo_transformer_model_train_save_upload_to_openSearch.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -97,19 +98,16 @@
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../reference/index.html">API Reference</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="demo_notebook.html">Demo Notebook for Dataframe</a></li>
-<li class="toctree-l2"><a class="reference internal" href="online_retail_analysis.html">Online Retail analysis</a></li>
-<li class="toctree-l2"><a class="reference internal" href="demo_transformer_model_train_save_upload_to_openSearch.html">Demo Notebook for Sentence Transformer Model Training, Saving and Uploading to OpenSearch</a></li>
-<li class="toctree-l2"><a class="reference internal" href="demo_ml_commons_integration.html">Demo Notebook for MLCommons Integration</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Demo Notebook to trace Sentence Transformers model</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#Step-0:-Import-packages-and-set-up-client">Step 0: Import packages and set up client</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#Step-1:-Save-model-in-torchScript-format">Step 1: Save model in torchScript format</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#Step-2:-Upload-the-saved-torchScript-model-in-Opensearch">Step 2: Upload the saved torchScript model in Opensearch</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#Step-3:Save-model-in-Onnx-format">Step 3:Save model in Onnx format</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#Step-4:-Upload-the-saved-Onnx-model-in-Opensearch">Step 4: Upload the saved Onnx model in Opensearch</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#Step-5:-Generate-Sentence-Embedding">Step 5: Generate Sentence Embedding</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#demo-notebooks-for-data-exploration-panda-like-dataframe">Demo notebooks for Data Exploration Panda like DataFrame</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#demo-notebooks-for-model-training-and-tracing">Demo notebooks for Model Training and Tracing</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="demo_transformer_model_train_save_upload_to_openSearch.html">Demo Notebook for Sentence Transformer Model Training, Saving and Uploading to OpenSearch</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Demo Notebook to trace Sentence Transformers model</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#download-notebook">download notebook</a></li>
 </ul>
 </li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#demo-notebooks-for-ml-commons-plugin-integration">Demo notebooks for ML Commons plugin integration</a></li>
 </ul>
 </li>
 </ul>
@@ -462,6 +460,8 @@ div.rendered_html tbody tr:hover {
 </style>
 <section id="Demo-Notebook-to-trace-Sentence-Transformers-model">
 <h1>Demo Notebook to trace Sentence Transformers model<a class="headerlink" href="#Demo-Notebook-to-trace-Sentence-Transformers-model" title="Permalink to this heading">¶</a></h1>
+<section id="download-notebook">
+<h2><a class="reference external" href="https://github.com/opensearch-project/opensearch-py-ml/blob/main/docs/source/examples/demo_tracing_model_torchscript_onnx.ipynb">download notebook</a><a class="headerlink" href="#download-notebook" title="Permalink to this heading">¶</a></h2>
 <p>This notebook provides a walkthrough guidance for users to trace models from Sentence Transformers in torchScript and onnx format. After tracing the model customer can upload the model to opensearch and generate embeddings.</p>
 <p>Remember, tracing model in torchScript or Onnx format at just two different options. We don’t need to trace model in both ways. Here in our notebook we just want to show both ways.</p>
 <p>Step 0: Import packages and set up client</p>
@@ -472,7 +472,7 @@ div.rendered_html tbody tr:hover {
 <p>Step 4: Upload the saved Onnx model in Opensearch</p>
 <p>Step 5: Generate Sentence Embedding with uploaded models</p>
 <section id="Step-0:-Import-packages-and-set-up-client">
-<h2>Step 0: Import packages and set up client<a class="headerlink" href="#Step-0:-Import-packages-and-set-up-client" title="Permalink to this heading">¶</a></h2>
+<h3>Step 0: Import packages and set up client<a class="headerlink" href="#Step-0:-Import-packages-and-set-up-client" title="Permalink to this heading">¶</a></h3>
 <p>Install required packages for opensearch_py_ml.sentence_transformer_model Install <code class="docutils literal notranslate"><span class="pre">opensearchpy</span></code> and <code class="docutils literal notranslate"><span class="pre">opensearch-py-ml</span></code> through pypi</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
@@ -483,12 +483,16 @@ div.rendered_html tbody tr:hover {
 </div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">warnings</span>
 <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">DeprecationWarning</span><span class="p">)</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">FutureWarning</span><span class="p">)</span>
 <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Unverified HTTPS request&quot;</span><span class="p">)</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;TracerWarning: torch.tensor&quot;</span><span class="p">)</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;using SSL with verify_certs=False is insecure.&quot;</span><span class="p">)</span>
+
 <span class="kn">import</span> <span class="nn">opensearch_py_ml</span> <span class="k">as</span> <span class="nn">oml</span>
 <span class="kn">from</span> <span class="nn">opensearchpy</span> <span class="kn">import</span> <span class="n">OpenSearch</span>
 <span class="kn">from</span> <span class="nn">opensearch_py_ml.ml_models</span> <span class="kn">import</span> <span class="n">SentenceTransformerModel</span>
@@ -527,7 +531,7 @@ div.rendered_html tbody tr:hover {
 </div>
 </div>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">client</span> <span class="o">=</span> <span class="n">get_os_client</span><span class="p">()</span>
@@ -541,20 +545,20 @@ div.rendered_html tbody tr:hover {
 </div>
 </section>
 <section id="Step-1:-Save-model-in-torchScript-format">
-<h2>Step 1: Save model in torchScript format<a class="headerlink" href="#Step-1:-Save-model-in-torchScript-format" title="Permalink to this heading">¶</a></h2>
+<h3>Step 1: Save model in torchScript format<a class="headerlink" href="#Step-1:-Save-model-in-torchScript-format" title="Permalink to this heading">¶</a></h3>
 <p><code class="docutils literal notranslate"><span class="pre">Opensearch-py-ml</span></code> plugin provides method <code class="docutils literal notranslate"><span class="pre">save_as_pt</span></code> which will trace a model in torchScript format and save the model in a zip file in your filesystem.</p>
 <p>Detailed documentation: <a class="reference external" href="https://opensearch-project.github.io/opensearch-py-ml/reference/api/sentence_transformer.save_as_pt.html#opensearch_py_ml.ml_models.SentenceTransformerModel.save_as_pt">https://opensearch-project.github.io/opensearch-py-ml/reference/api/sentence_transformer.save_as_pt.html#opensearch_py_ml.ml_models.SentenceTransformerModel.save_as_pt</a></p>
-<p>Users need to provide a model id from sentence transformers (an example: <code class="docutils literal notranslate"><span class="pre">sentence-transformers/all-MiniLM-L6-v2</span></code>). This model id is a huggingface model id. Exaample: <a class="reference external" href="https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2">https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2</a></p>
+<p>Users need to provide a model id from sentence transformers (an example: <code class="docutils literal notranslate"><span class="pre">sentence-transformers/msmarco-distilbert-base-tas-b</span></code>). This model id is a huggingface model id. Exaample: <a class="reference external" href="https://huggingface.co/sentence-transformers/msmarco-distilbert-base-tas-b">https://huggingface.co/sentence-transformers/msmarco-distilbert-base-tas-b</a></p>
 <p><code class="docutils literal notranslate"><span class="pre">save_as_pt</span></code> will download the model in filesystem and then trace the model with the given input strings.</p>
 <p>To get more direction about dummy input string please check this url: <a class="reference external" href="https://huggingface.co/docs/transformers/torchscript#dummy-inputs-and-standard-lengths">https://huggingface.co/docs/transformers/torchscript#dummy-inputs-and-standard-lengths</a></p>
 <p>after tracing the model (a .pt file will be generated), <code class="docutils literal notranslate"><span class="pre">save_as_pt</span></code> method zips <code class="docutils literal notranslate"><span class="pre">tokenizers.json</span></code> and torchScript (<code class="docutils literal notranslate"><span class="pre">.pt</span></code>) file and saves in the file system.</p>
 <p>User can upload that model to opensearch to generate embedding.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pre_trained_model</span> <span class="o">=</span> <span class="n">SentenceTransformerModel</span><span class="p">(</span><span class="n">folder_path</span> <span class="o">=</span> <span class="s1">&#39;/Volumes/workplace/upload_content/&#39;</span><span class="p">,</span> <span class="n">overwrite</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
-<span class="n">model_path</span> <span class="o">=</span> <span class="n">pre_trained_model</span><span class="o">.</span><span class="n">save_as_pt</span><span class="p">(</span><span class="n">model_id</span> <span class="o">=</span> <span class="s2">&quot;sentence-transformers/all-MiniLM-L6-v2&quot;</span><span class="p">,</span> <span class="n">sentences</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;for example providing a small sentence&quot;</span><span class="p">,</span> <span class="s2">&quot;we can add multiple sentences&quot;</span><span class="p">])</span>
+<span class="n">model_path</span> <span class="o">=</span> <span class="n">pre_trained_model</span><span class="o">.</span><span class="n">save_as_pt</span><span class="p">(</span><span class="n">model_id</span> <span class="o">=</span> <span class="s2">&quot;sentence-transformers/msmarco-distilbert-base-tas-b&quot;</span><span class="p">,</span> <span class="n">sentences</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;for example providing a small sentence&quot;</span><span class="p">,</span> <span class="s2">&quot;we can add multiple sentences&quot;</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -563,27 +567,27 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-model file is saved to  /Volumes/workplace/upload_content/all-MiniLM-L6-v2.pt
-zip file is saved to  /Volumes/workplace/upload_content/all-MiniLM-L6-v2.zip
+model file is saved to  /Volumes/workplace/upload_content/msmarco-distilbert-base-tas-b.pt
+zip file is saved to  /Volumes/workplace/upload_content/msmarco-distilbert-base-tas-b.zip
 
 </pre></div></div>
 </div>
 </section>
 <section id="Step-2:-Upload-the-saved-torchScript-model-in-Opensearch">
-<h2>Step 2: Upload the saved torchScript model in Opensearch<a class="headerlink" href="#Step-2:-Upload-the-saved-torchScript-model-in-Opensearch" title="Permalink to this heading">¶</a></h2>
+<h3>Step 2: Upload the saved torchScript model in Opensearch<a class="headerlink" href="#Step-2:-Upload-the-saved-torchScript-model-in-Opensearch" title="Permalink to this heading">¶</a></h3>
 <p>In the last step we saved a sentence transformer model in torchScript format. Now we will upload that model in opensearch cluster. To do that we can take help of <code class="docutils literal notranslate"><span class="pre">upload_model</span></code> method in <code class="docutils literal notranslate"><span class="pre">opensearch-py-ml</span></code> plugin.</p>
 <p>To upload model, we need the zip file we just saved in the last step and a model config file. Example of Model config file content can be:</p>
-<p>{ “name”: “all-MiniLM-L6-v2”, “version”: “1.0.0”, “description”: “test model”, “model_format”: “TORCH_SCRIPT”, “model_config”: { “model_type”: “bert”, “embedding_dimension”: 384, “framework_type”: “sentence_transformers” } }</p>
+<p>{ “name”: “sentence-transformers/msmarco-distilbert-base-tas-b”, “version”: “1.0.0”, “description”: “This is a port of the DistilBert TAS-B Model to sentence-transformers model: It maps sentences &amp; paragraphs to a 768 dimensional dense vector space and is optimized for the task of semantic search.”, “model_format”: “TORCH_SCRIPT”, “model_config”: { “model_type”: “distilbert”, “embedding_dimension”: 768, “framework_type”: “sentence_transformers” } }</p>
 <p><code class="docutils literal notranslate"><span class="pre">model_format</span></code> needs to be <code class="docutils literal notranslate"><span class="pre">TORCH_SCRIPT</span></code> so that internal system will look for the corresponding <code class="docutils literal notranslate"><span class="pre">.pt</span></code> file from the zip folder.</p>
 <p>Please refer to this doc: <a class="reference external" href="https://github.com/opensearch-project/ml-commons/blob/2.x/docs/model_serving_framework/text_embedding_model_examples.md">https://github.com/opensearch-project/ml-commons/blob/2.x/docs/model_serving_framework/text_embedding_model_examples.md</a></p>
 <p>Documentation for the method: <a class="reference external" href="https://opensearch-project.github.io/opensearch-py-ml/reference/api/ml_commons_upload_api.html#opensearch_py_ml.ml_commons.MLCommonClient.upload_model">https://opensearch-project.github.io/opensearch-py-ml/reference/api/ml_commons_upload_api.html#opensearch_py_ml.ml_commons.MLCommonClient.upload_model</a></p>
 <p>Related demo notebook about ml-commons plugin integration: <a class="reference external" href="https://opensearch-project.github.io/opensearch-py-ml/examples/demo_ml_commons_integration.html">https://opensearch-project.github.io/opensearch-py-ml/examples/demo_ml_commons_integration.html</a></p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><br/><span></span><span class="n">model_config_path</span> <span class="o">=</span> <span class="s1">&#39;/Volumes/workplace/upload_content/model_config_torchscript.json&#39;</span>
-<span class="n">ml_client</span><span class="o">.</span><span class="n">upload_model</span><span class="p">(</span> <span class="n">model_path</span><span class="p">,</span> <span class="n">model_config_path</span><span class="p">,</span> <span class="n">isVerbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><br/><span></span><span class="n">model_config_path_torch</span> <span class="o">=</span> <span class="s1">&#39;/Volumes/workplace/upload_content/model_config_torchscript.json&#39;</span>
+<span class="n">ml_client</span><span class="o">.</span><span class="n">upload_model</span><span class="p">(</span> <span class="n">model_path</span><span class="p">,</span> <span class="n">model_config_path_torch</span><span class="p">,</span> <span class="n">isVerbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <br/></pre></div>
 </div>
 </div>
@@ -592,47 +596,81 @@ zip file is saved to  /Volumes/workplace/upload_content/all-MiniLM-L6-v2.zip
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Total number of chunks 10
-Sha1 value of the model file:  0a8eabed8c09b09b588e9d4c3d42e61c90e524d014be5547b73db75e77185576
-Model meta data was created successfully. Model Id:  SGHQ9IUBTo3f8n5RC3ZH
-uploading chunk 1 of 10
+Total number of chunks 27
+Sha1 value of the model file:  9614778c36d4c64c5dd77cdedde86e219086dbecb5ace7877f697b1af28d642a
+Model meta data was created successfully. Model Id:  X-LeKIYB7pteJtrc9XHu
+uploading chunk 1 of 27
 Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
-uploading chunk 2 of 10
+uploading chunk 2 of 27
 Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
-uploading chunk 3 of 10
+uploading chunk 3 of 27
 Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
-uploading chunk 4 of 10
+uploading chunk 4 of 27
 Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
-uploading chunk 5 of 10
+uploading chunk 5 of 27
 Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
-uploading chunk 6 of 10
+uploading chunk 6 of 27
 Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
-uploading chunk 7 of 10
+uploading chunk 7 of 27
 Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
-uploading chunk 8 of 10
+uploading chunk 8 of 27
 Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
-uploading chunk 9 of 10
+uploading chunk 9 of 27
 Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
-uploading chunk 10 of 10
+uploading chunk 10 of 27
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 11 of 27
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 12 of 27
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 13 of 27
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 14 of 27
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 15 of 27
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 16 of 27
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 17 of 27
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 18 of 27
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 19 of 27
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 20 of 27
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 21 of 27
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 22 of 27
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 23 of 27
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 24 of 27
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 25 of 27
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 26 of 27
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 27 of 27
 Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
 Model uploaded successfully
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-&#39;SGHQ9IUBTo3f8n5RC3ZH&#39;
+&#39;X-LeKIYB7pteJtrc9XHu&#39;
 </pre></div></div>
 </div>
 </section>
 <section id="Step-3:Save-model-in-Onnx-format">
-<h2>Step 3:Save model in Onnx format<a class="headerlink" href="#Step-3:Save-model-in-Onnx-format" title="Permalink to this heading">¶</a></h2>
+<h3>Step 3:Save model in Onnx format<a class="headerlink" href="#Step-3:Save-model-in-Onnx-format" title="Permalink to this heading">¶</a></h3>
 <p><code class="docutils literal notranslate"><span class="pre">Opensearch-py-ml</span></code> plugin provides method <code class="docutils literal notranslate"><span class="pre">save_as_onnx</span></code> which will trace a model in ONNX format and save the model in a zip file in your filesystem.</p>
 <p>Detailed documentation: <a class="reference external" href="https://opensearch-project.github.io/opensearch-py-ml/reference/api/sentence_transformer.save_as_onnx.html#opensearch_py_ml.ml_models.SentenceTransformerModel.save_as_onnx">https://opensearch-project.github.io/opensearch-py-ml/reference/api/sentence_transformer.save_as_onnx.html#opensearch_py_ml.ml_models.SentenceTransformerModel.save_as_onnx</a></p>
-<p>Users need to provide a model id from sentence transformers (an example: <code class="docutils literal notranslate"><span class="pre">sentence-transformers/all-MiniLM-L6-v2</span></code>). <code class="docutils literal notranslate"><span class="pre">save_as_onnx</span></code> will download the model in filesystem and then trace the model.</p>
+<p>Users need to provide a model id from sentence transformers (an example: <code class="docutils literal notranslate"><span class="pre">sentence-transformers/msmarco-distilbert-base-tas-b</span></code>). <code class="docutils literal notranslate"><span class="pre">save_as_onnx</span></code> will download the model in filesystem and then trace the model.</p>
 <p>after tracing the model (a .onnx file will be generated), <code class="docutils literal notranslate"><span class="pre">save_as_onnx</span></code> method zips <code class="docutils literal notranslate"><span class="pre">tokenizers.json</span></code> and torchScript (<code class="docutils literal notranslate"><span class="pre">.onnx</span></code>) file and saves in the file system.</p>
 <p>User can upload that model to opensearch to generate embedding.</p>
 <div class="nbinput docutils container">
@@ -640,7 +678,7 @@ Model uploaded successfully
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pre_trained_model</span> <span class="o">=</span> <span class="n">SentenceTransformerModel</span><span class="p">(</span><span class="n">folder_path</span> <span class="o">=</span> <span class="s1">&#39;/Volumes/workplace/upload_content/&#39;</span><span class="p">,</span> <span class="n">overwrite</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
-<span class="n">model_path_onnx</span> <span class="o">=</span> <span class="n">pre_trained_model</span><span class="o">.</span><span class="n">save_as_onnx</span><span class="p">(</span><span class="n">model_id</span> <span class="o">=</span> <span class="s2">&quot;sentence-transformers/all-MiniLM-L6-v2&quot;</span><span class="p">)</span>
+<span class="n">model_path_onnx</span> <span class="o">=</span> <span class="n">pre_trained_model</span><span class="o">.</span><span class="n">save_as_onnx</span><span class="p">(</span><span class="n">model_id</span> <span class="o">=</span> <span class="s2">&quot;sentence-transformers/msmarco-distilbert-base-tas-b&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -649,28 +687,26 @@ Model uploaded successfully
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-ONNX opset version set to: 16
-Loading pipeline (model: sentence-transformers/all-MiniLM-L6-v2, tokenizer: sentence-transformers/all-MiniLM-L6-v2)
+ONNX opset version set to: 15
+Loading pipeline (model: sentence-transformers/msmarco-distilbert-base-tas-b, tokenizer: sentence-transformers/msmarco-distilbert-base-tas-b)
 Creating folder /Volumes/workplace/upload_content/onnx
 Using framework PyTorch: 1.13.1
 Found input input_ids with shape: {0: &#39;batch&#39;, 1: &#39;sequence&#39;}
-Found input token_type_ids with shape: {0: &#39;batch&#39;, 1: &#39;sequence&#39;}
 Found input attention_mask with shape: {0: &#39;batch&#39;, 1: &#39;sequence&#39;}
 Found output output_0 with shape: {0: &#39;batch&#39;, 1: &#39;sequence&#39;}
-Found output output_1 with shape: {0: &#39;batch&#39;}
 Ensuring inputs are in correct order
-position_ids is not present in the generated input list.
-Generated inputs order: [&#39;input_ids&#39;, &#39;attention_mask&#39;, &#39;token_type_ids&#39;]
-zip file is saved to  /Volumes/workplace/upload_content/all-MiniLM-L6-v2.zip
+head_mask is not present in the generated input list.
+Generated inputs order: [&#39;input_ids&#39;, &#39;attention_mask&#39;]
+zip file is saved to  /Volumes/workplace/upload_content/msmarco-distilbert-base-tas-b.zip
 
 </pre></div></div>
 </div>
 </section>
 <section id="Step-4:-Upload-the-saved-Onnx-model-in-Opensearch">
-<h2>Step 4: Upload the saved Onnx model in Opensearch<a class="headerlink" href="#Step-4:-Upload-the-saved-Onnx-model-in-Opensearch" title="Permalink to this heading">¶</a></h2>
+<h3>Step 4: Upload the saved Onnx model in Opensearch<a class="headerlink" href="#Step-4:-Upload-the-saved-Onnx-model-in-Opensearch" title="Permalink to this heading">¶</a></h3>
 <p>In the last step we saved a sentence transformer model in ONNX format. Now we will upload that model in opensearch cluster. To do that we can take help of <code class="docutils literal notranslate"><span class="pre">upload_model</span></code> method in <code class="docutils literal notranslate"><span class="pre">opensearch-py-ml</span></code> plugin.</p>
 <p>To upload model, we need the zip file we just saved in the last step and a model config file. Example of Model config file content can be:</p>
-<p>{ “name”: “all-MiniLM-L6-v2”, “version”: “1.0.0”, “description”: “test model”, “model_format”: “ONNX”, “model_config”: { “model_type”: “bert”, “embedding_dimension”: 384, “framework_type”: “sentence_transformers”, “pooling_mode”:“mean”, “normalize_result”:“true” } }</p>
+<p>{ “name”: “sentence-transformers/msmarco-distilbert-base-tas-b”, “version”: “1.0.0”, “description”: “This is a port of the DistilBert TAS-B Model to sentence-transformers model: It maps sentences &amp; paragraphs to a 768 dimensional dense vector space and is optimized for the task of semantic search.”, “model_format”: “ONNX”, “model_config”: { “model_type”: “distilbert”, “embedding_dimension”: 768, “framework_type”: “sentence_transformers”, “pooling_mode”:“cls”, “normalize_result”:“false” } }</p>
 <p><code class="docutils literal notranslate"><span class="pre">model_format</span></code> needs to be <code class="docutils literal notranslate"><span class="pre">ONNX</span></code> so that internal system will look for the corresponding <code class="docutils literal notranslate"><span class="pre">.onnx</span></code> file from the zip folder.</p>
 <p>Please refer to this doc: <a class="reference external" href="https://github.com/opensearch-project/ml-commons/blob/2.x/docs/model_serving_framework/text_embedding_model_examples.md">https://github.com/opensearch-project/ml-commons/blob/2.x/docs/model_serving_framework/text_embedding_model_examples.md</a></p>
 <p>Documentation for the method: <a class="reference external" href="https://opensearch-project.github.io/opensearch-py-ml/reference/api/ml_commons_upload_api.html#opensearch_py_ml.ml_commons.MLCommonClient.upload_model">https://opensearch-project.github.io/opensearch-py-ml/reference/api/ml_commons_upload_api.html#opensearch_py_ml.ml_commons.MLCommonClient.upload_model</a></p>
@@ -679,8 +715,8 @@ zip file is saved to  /Volumes/workplace/upload_content/all-MiniLM-L6-v2.zip
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><br/><span></span><span class="n">model_config_path</span> <span class="o">=</span> <span class="s1">&#39;/Volumes/workplace/upload_content/model_config.json&#39;</span>
-<span class="n">ml_client</span><span class="o">.</span><span class="n">upload_model</span><span class="p">(</span> <span class="n">model_path_onnx</span><span class="p">,</span> <span class="n">model_config_path</span><span class="p">,</span> <span class="n">isVerbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><br/><span></span><span class="n">model_config_path_onnx</span> <span class="o">=</span> <span class="s1">&#39;/Volumes/workplace/upload_content/model_config.json&#39;</span>
+<span class="n">ml_client</span><span class="o">.</span><span class="n">upload_model</span><span class="p">(</span> <span class="n">model_path_onnx</span><span class="p">,</span> <span class="n">model_config_path_onnx</span><span class="p">,</span> <span class="n">isVerbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -689,28 +725,62 @@ zip file is saved to  /Volumes/workplace/upload_content/all-MiniLM-L6-v2.zip
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Total number of chunks 10
-Sha1 value of the model file:  8faa075a1693f3734f956a8c8e0de755ad4142b59df6d605298879b0dab31308
-Model meta data was created successfully. Model Id:  YWHS9IUBTo3f8n5ReXas
-uploading chunk 1 of 10
+Total number of chunks 27
+Sha1 value of the model file:  f0935b34243937fc129165fc189bb29b226f5dac9cfde3cb1150eae35c4622e2
+Model meta data was created successfully. Model Id:  YeLhKIYB7pteJtrcHXFV
+uploading chunk 1 of 27
 Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
-uploading chunk 2 of 10
+uploading chunk 2 of 27
 Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
-uploading chunk 3 of 10
+uploading chunk 3 of 27
 Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
-uploading chunk 4 of 10
+uploading chunk 4 of 27
 Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
-uploading chunk 5 of 10
+uploading chunk 5 of 27
 Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
-uploading chunk 6 of 10
+uploading chunk 6 of 27
 Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
-uploading chunk 7 of 10
+uploading chunk 7 of 27
 Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
-uploading chunk 8 of 10
+uploading chunk 8 of 27
 Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
-uploading chunk 9 of 10
+uploading chunk 9 of 27
 Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
-uploading chunk 10 of 10
+uploading chunk 10 of 27
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 11 of 27
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 12 of 27
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 13 of 27
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 14 of 27
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 15 of 27
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 16 of 27
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 17 of 27
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 18 of 27
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 19 of 27
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 20 of 27
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 21 of 27
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 22 of 27
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 23 of 27
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 24 of 27
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 25 of 27
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 26 of 27
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 27 of 27
 Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
 Model uploaded successfully
 </pre></div></div>
@@ -721,12 +791,12 @@ Model uploaded successfully
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-&#39;YWHS9IUBTo3f8n5ReXas&#39;
+&#39;YeLhKIYB7pteJtrcHXFV&#39;
 </pre></div></div>
 </div>
 </section>
 <section id="Step-5:-Generate-Sentence-Embedding">
-<h2>Step 5: Generate Sentence Embedding<a class="headerlink" href="#Step-5:-Generate-Sentence-Embedding" title="Permalink to this heading">¶</a></h2>
+<h3>Step 5: Generate Sentence Embedding<a class="headerlink" href="#Step-5:-Generate-Sentence-Embedding" title="Permalink to this heading">¶</a></h3>
 <p>Now after loading these models in memory, we can generate embedding for sentences. We can provide a list of sentences to get a list of embedding for the sentences.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
@@ -740,14 +810,14 @@ Model uploaded successfully
 
 <span class="c1"># generated embedding from torchScript</span>
 
-<span class="n">embedding_output_torch</span> <span class="o">=</span> <span class="n">ml_client</span><span class="o">.</span><span class="n">generate_embedding</span><span class="p">(</span><span class="s2">&quot;SGHQ9IUBTo3f8n5RC3ZH&quot;</span><span class="p">,</span> <span class="n">input_sentences</span><span class="p">)</span>
+<span class="n">embedding_output_torch</span> <span class="o">=</span> <span class="n">ml_client</span><span class="o">.</span><span class="n">generate_embedding</span><span class="p">(</span><span class="s2">&quot;X-LeKIYB7pteJtrc9XHu&quot;</span><span class="p">,</span> <span class="n">input_sentences</span><span class="p">)</span>
 
 <span class="c1">#just taking embedding for the first sentence</span>
 <span class="n">data_torch</span> <span class="o">=</span> <span class="n">embedding_output_torch</span><span class="p">[</span><span class="s2">&quot;inference_results&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;output&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">]</span>
 
 <span class="c1"># generated embedding from onnx</span>
 
-<span class="n">embedding_output_onnx</span> <span class="o">=</span> <span class="n">ml_client</span><span class="o">.</span><span class="n">generate_embedding</span><span class="p">(</span><span class="s2">&quot;YWHS9IUBTo3f8n5ReXas&quot;</span><span class="p">,</span> <span class="n">input_sentences</span><span class="p">)</span>
+<span class="n">embedding_output_onnx</span> <span class="o">=</span> <span class="n">ml_client</span><span class="o">.</span><span class="n">generate_embedding</span><span class="p">(</span><span class="s2">&quot;YeLhKIYB7pteJtrcHXFV&quot;</span><span class="p">,</span> <span class="n">input_sentences</span><span class="p">)</span>
 
 <span class="c1">#just taking embedding for the first sentence</span>
 <span class="n">data_onnx</span> <span class="o">=</span> <span class="n">embedding_output_onnx</span><span class="p">[</span><span class="s2">&quot;inference_results&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;output&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">]</span>
@@ -755,7 +825,7 @@ Model uploaded successfully
 <span class="c1">## Now we can check if there&#39;s any significant difference between two outputs</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span><span class="n">data_torch</span><span class="p">,</span> <span class="n">data_onnx</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">1e-03</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-05</span><span class="p">))</span>
-<br/></pre></div>
+</pre></div>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -766,6 +836,15 @@ Model uploaded successfully
 None
 </pre></div></div>
 </div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</div>
+</section>
 </section>
 </section>
 
@@ -775,7 +854,8 @@ None
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="demo_ml_commons_integration.html" class="btn btn-neutral float-left" title="Demo Notebook for MLCommons Integration" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="demo_ml_commons_integration.html" class="btn btn-neutral float-right" title="Demo Notebook for MLCommons Integration" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="demo_transformer_model_train_save_upload_to_openSearch.html" class="btn btn-neutral float-left" title="Demo Notebook for Sentence Transformer Model Training, Saving and Uploading to OpenSearch" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>
