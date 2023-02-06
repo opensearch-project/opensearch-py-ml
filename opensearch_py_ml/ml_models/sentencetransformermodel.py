@@ -159,7 +159,6 @@ class SentenceTransformerModel:
         train_examples = self.load_training_data(query_df)
 
         if num_gpu > 1:
-
             self.set_up_accelerate_config(
                 compute_environment=compute_environment,
                 num_machines=num_machines,
@@ -505,7 +504,6 @@ class SentenceTransformerModel:
                 for step, batch in tqdm(
                     enumerate(train_dataloader), total=len(train_dataloader)
                 ):
-
                     batch_q = batch[0]
                     batch_p = batch[1]
 
@@ -714,6 +712,7 @@ class SentenceTransformerModel:
         model_id="sentence-transformers/msmarco-distilbert-base-tas-b",
         model_name: str = None,
         save_json_folder_path: str = None,
+        model_output_path: str = None,
         zip_file_name: str = None,
     ) -> str:
         """
@@ -735,6 +734,10 @@ class SentenceTransformerModel:
              Optional, path to save model json file, e.g, "home/save_pre_trained_model_json/"). If None, default as
              default_folder_path from the constructor
         :type save_json_folder_path: string
+        :param model_output_path:
+             Optional, path to save traced model zip file. If None, default as
+             default_folder_path from the constructor
+        :type model_output_path: string
         :param zip_file_name:
             Optional, file name for zip file. e.g, "sample_model.zip". If None, default takes the model_id
             and add the extension with ".zip"
@@ -753,9 +756,12 @@ class SentenceTransformerModel:
         if save_json_folder_path is None:
             save_json_folder_path = self.folder_path
 
+        if model_output_path is None:
+            model_output_path = self.folder_path
+
         if zip_file_name is None:
             zip_file_name = str(model_id.split("/")[-1] + ".zip")
-        zip_file_path = os.path.join(self.folder_path, zip_file_name)
+        zip_file_path = os.path.join(model_output_path, zip_file_name)
 
         # save tokenizer.json in save_json_folder_name
         model.save(save_json_folder_path)
@@ -767,6 +773,7 @@ class SentenceTransformerModel:
         features = cpu_model.tokenizer(
             sentences, return_tensors="pt", padding=True, truncation=True
         ).to(device)
+
         compiled_model = torch.jit.trace(
             cpu_model,
             (
@@ -797,7 +804,8 @@ class SentenceTransformerModel:
         self,
         model_id="sentence-transformers/msmarco-distilbert-base-tas-b",
         model_name: str = None,
-        output_path: str = None,
+        save_json_folder_path: str = None,
+        model_output_path: str = None,
         zip_file_name: str = None,
     ) -> str:
         """
@@ -812,10 +820,14 @@ class SentenceTransformerModel:
             Optional, model name to name the model file, e.g, "sample_model.pt". If None, default takes the
             model_id and add the extension with ".pt"
         :type model_name: string
-        :param output_path:
+        :param save_json_folder_path:
              Optional, path to save model json file, e.g, "home/save_pre_trained_model_json/"). If None, default as
              default_folder_path from the constructor
-        :type output_path: string
+        :type save_json_folder_path: string
+        :param model_output_path:
+             Optional, path to save traced model zip file. If None, default as
+             default_folder_path from the constructor
+        :type model_output_path: string
         :param zip_file_name:
             Optional, file name for zip file. e.g, "sample_model.zip". If None, default takes the model_id
             and add the extension with ".zip"
@@ -831,22 +843,25 @@ class SentenceTransformerModel:
 
         model_path = os.path.join(self.folder_path, "onnx", model_name)
 
-        if output_path is None:
-            output_path = self.folder_path
+        if save_json_folder_path is None:
+            save_json_folder_path = self.folder_path
+
+        if model_output_path is None:
+            model_output_path = self.folder_path
 
         if zip_file_name is None:
             zip_file_name = str(model_id.split("/")[-1] + ".zip")
 
-        zip_file_path = os.path.join(self.folder_path, zip_file_name)
+        zip_file_path = os.path.join(model_output_path, zip_file_name)
 
         # save tokenizer.json in output_path
-        model.save(output_path)
+        model.save(save_json_folder_path)
 
         convert(
             framework="pt",
             model=model_id,
             output=Path(model_path),
-            opset=16,
+            opset=15,
         )
 
         # zip model file along with tokenizer.json as output
@@ -856,7 +871,7 @@ class SentenceTransformerModel:
                 arcname=str(model_name),
             )
             zipObj.write(
-                os.path.join(output_path, "tokenizer.json"),
+                os.path.join(save_json_folder_path, "tokenizer.json"),
                 arcname="tokenizer.json",
             )
         print("zip file is saved to ", zip_file_path, "\n")

@@ -43,7 +43,6 @@ class ModelUploader:
     def _upload_model(
         self, model_path: str, model_meta_path: str, isVerbose: bool
     ) -> str:
-
         """
         This method uploads model into opensearch cluster using ml-common plugin's api.
         first this method creates a model id to store model metadata and then breaks the model zip file into

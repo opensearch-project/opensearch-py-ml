@@ -249,7 +249,6 @@ class QueryCompiler:
 
         i = 0
         for i, hit in enumerate(results, 1):
-
             if "_source" in hit:
                 row = hit["_source"]
             else:
