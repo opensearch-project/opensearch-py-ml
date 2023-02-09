@@ -25,7 +25,7 @@ Train Model
    :maxdepth: 2
 
    api/sentence_transformer.read_queries
-   api/sentence_transformer.load_sentence_transformer_example
+   api/sentence_transformer.load_training_data
    api/sentence_transformer.set_up_accelerate_config
    api/sentence_transformer.train_model
    api/sentence_transformer.zip_model

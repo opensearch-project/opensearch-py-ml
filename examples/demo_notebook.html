@@ -1,100 +1,53 @@
-
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
-  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
-  <title>Demo Notebook for Dataframe &mdash; Opensearch-py-ml 1.0.0b1 documentation</title>
-  
-
-  
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/plot_directive.css" type="text/css" />
-
-  
-  
-
-  
-  
-
-  
-
-  
+  <title>Demo Notebook for Dataframe &mdash; Opensearch-py-ml 1.0.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/plot_directive.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/doctools.js"></script>
         <script src="../_static/sphinx_highlight.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
         <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
-
-    
+    <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Step 0: Imports" href="online_retail_analysis.html" />
+    <link rel="next" title="Demo Notebook for Online Retail Analysis" href="online_retail_analysis.html" />
     <link rel="prev" title="Examples" href="index.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
 
           
-            <a href="../index.html" class="icon icon-home"> Opensearch-py-ml
           
-
-          
+          <a href="../index.html" class="icon icon-home">
+            Opensearch-py-ml
           </a>
-
-          
-            
-            
               <div class="version">
-                1.0.0b1
+                1.0.0
               </div>
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../reference/index.html">API Reference</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
@@ -108,12 +61,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#sum">sum</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="online_retail_analysis.html">Step 0: Imports</a></li>
-<li class="toctree-l3"><a class="reference internal" href="online_retail_analysis.html#Step-1:-Setup-clients">Step 1: Setup clients</a></li>
-<li class="toctree-l3"><a class="reference internal" href="online_retail_analysis.html#Getting-Started">Getting Started</a></li>
-<li class="toctree-l3"><a class="reference internal" href="online_retail_analysis.html#Selecting-and-Indexing-Data">Selecting and Indexing Data</a></li>
-<li class="toctree-l3"><a class="reference internal" href="online_retail_analysis.html#Aggregation-and-Descriptive-Statistics">Aggregation and Descriptive Statistics</a></li>
-<li class="toctree-l3"><a class="reference internal" href="online_retail_analysis.html#Arithmetic-Operations">Arithmetic Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="online_retail_analysis.html">Demo Notebook for Online Retail Analysis</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="index.html#demo-notebooks-for-model-training-and-tracing">Demo notebooks for Model Training and Tracing</a></li>
@@ -122,73 +70,31 @@
 </li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">Opensearch-py-ml</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-        
-          <li><a href="index.html">Examples</a> &raquo;</li>
-        
-      <li>Demo Notebook for Dataframe</li>
-    
-    
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Examples</a></li>
+      <li class="breadcrumb-item active">Demo Notebook for Dataframe</li>
       <li class="wy-breadcrumbs-aside">
-        
-          
             <a href="../_sources/examples/demo_notebook.ipynb.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
+             
   
 <style>
 /* CSS for nbsphinx extension */
@@ -469,11 +375,11 @@ div.rendered_html tbody tr:hover {
 }
 </style>
 <section id="Demo-Notebook-for-Dataframe">
-<h1>Demo Notebook for Dataframe<a class="headerlink" href="#Demo-Notebook-for-Dataframe" title="Permalink to this heading">¶</a></h1>
+<h1>Demo Notebook for Dataframe<a class="headerlink" href="#Demo-Notebook-for-Dataframe" title="Permalink to this heading"></a></h1>
 <section id="download-notebook">
-<h2><a class="reference external" href="https://github.com/opensearch-project/opensearch-py-ml/blob/main/docs/source/examples/demo_notebook.ipynb">download notebook</a><a class="headerlink" href="#download-notebook" title="Permalink to this heading">¶</a></h2>
+<h2><a class="reference external" href="https://github.com/opensearch-project/opensearch-py-ml/blob/main/docs/source/examples/demo_notebook.ipynb">download notebook</a><a class="headerlink" href="#download-notebook" title="Permalink to this heading"></a></h2>
 <section id="Step-0:-Imports">
-<h3>Step 0: Imports<a class="headerlink" href="#Step-0:-Imports" title="Permalink to this heading">¶</a></h3>
+<h3>Step 0: Imports<a class="headerlink" href="#Step-0:-Imports" title="Permalink to this heading"></a></h3>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
@@ -511,7 +417,7 @@ div.rendered_html tbody tr:hover {
 </div>
 </section>
 <section id="Step-1:-Setup-clients">
-<h3>Step 1: Setup clients<a class="headerlink" href="#Step-1:-Setup-clients" title="Permalink to this heading">¶</a></h3>
+<h3>Step 1: Setup clients<a class="headerlink" href="#Step-1:-Setup-clients" title="Permalink to this heading"></a></h3>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
@@ -545,7 +451,7 @@ div.rendered_html tbody tr:hover {
 </div>
 </section>
 <section id="Comparing-similarities-and-differences-between-panda-dataframe-vs-opensearch_py_ml-dataframe">
-<h3>Comparing similarities and differences between panda dataframe vs opensearch_py_ml dataframe<a class="headerlink" href="#Comparing-similarities-and-differences-between-panda-dataframe-vs-opensearch_py_ml-dataframe" title="Permalink to this heading">¶</a></h3>
+<h3>Comparing similarities and differences between panda dataframe vs opensearch_py_ml dataframe<a class="headerlink" href="#Comparing-similarities-and-differences-between-panda-dataframe-vs-opensearch_py_ml-dataframe" title="Permalink to this heading"></a></h3>
 <p>Create an opensearch_py_ml.DataFrame from a <code class="docutils literal notranslate"><span class="pre">flights</span></code> index</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
@@ -600,9 +506,9 @@ pandas.core.frame.DataFrame
 </div>
 </section>
 <section id="Attributes-and-underlying-data">
-<h3>Attributes and underlying data<a class="headerlink" href="#Attributes-and-underlying-data" title="Permalink to this heading">¶</a></h3>
+<h3>Attributes and underlying data<a class="headerlink" href="#Attributes-and-underlying-data" title="Permalink to this heading"></a></h3>
 <section id="DataFrame.columns">
-<h4>DataFrame.columns<a class="headerlink" href="#DataFrame.columns" title="Permalink to this heading">¶</a></h4>
+<h4>DataFrame.columns<a class="headerlink" href="#DataFrame.columns" title="Permalink to this heading"></a></h4>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
@@ -651,7 +557,7 @@ Index([&#39;AvgTicketPrice&#39;, &#39;Cancelled&#39;, &#39;Carrier&#39;, &#39;De
 </div>
 </section>
 <section id="DataFrame.dtypes">
-<h4>DataFrame.dtypes<a class="headerlink" href="#DataFrame.dtypes" title="Permalink to this heading">¶</a></h4>
+<h4>DataFrame.dtypes<a class="headerlink" href="#DataFrame.dtypes" title="Permalink to this heading"></a></h4>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
@@ -710,7 +616,7 @@ Length: 27, dtype: object
 </div>
 </section>
 <section id="DataFrame.select_dtypes">
-<h4>DataFrame.select_dtypes<a class="headerlink" href="#DataFrame.select_dtypes" title="Permalink to this heading">¶</a></h4>
+<h4>DataFrame.select_dtypes<a class="headerlink" href="#DataFrame.select_dtypes" title="Permalink to this heading"></a></h4>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
 </pre></div>
@@ -977,7 +883,7 @@ Length: 27, dtype: object
 </div>
 </section>
 <section id="DataFrame.empty">
-<h4>DataFrame.empty<a class="headerlink" href="#DataFrame.empty" title="Permalink to this heading">¶</a></h4>
+<h4>DataFrame.empty<a class="headerlink" href="#DataFrame.empty" title="Permalink to this heading"></a></h4>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
 </pre></div>
@@ -1014,7 +920,7 @@ False
 </div>
 </section>
 <section id="DataFrame.shape">
-<h4>DataFrame.shape<a class="headerlink" href="#DataFrame.shape" title="Permalink to this heading">¶</a></h4>
+<h4>DataFrame.shape<a class="headerlink" href="#DataFrame.shape" title="Permalink to this heading"></a></h4>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
 </pre></div>
@@ -1051,7 +957,7 @@ False
 </div>
 </section>
 <section id="DataFrame.index">
-<h4>DataFrame.index<a class="headerlink" href="#DataFrame.index" title="Permalink to this heading">¶</a></h4>
+<h4>DataFrame.index<a class="headerlink" href="#DataFrame.index" title="Permalink to this heading"></a></h4>
 <p>Note, <code class="docutils literal notranslate"><span class="pre">opensearch_py_ml.DataFrame.index</span></code> does not mirror <code class="docutils literal notranslate"><span class="pre">pandas.DataFrame.index</span></code>.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
@@ -1110,7 +1016,7 @@ Index([&#39;0&#39;, &#39;1&#39;, &#39;2&#39;, &#39;3&#39;, &#39;4&#39;, &#39;5&#
 </div>
 </section>
 <section id="DataFrame.values">
-<h4>DataFrame.values<a class="headerlink" href="#DataFrame.values" title="Permalink to this heading">¶</a></h4>
+<h4>DataFrame.values<a class="headerlink" href="#DataFrame.values" title="Permalink to this heading"></a></h4>
 <p>Note, <code class="docutils literal notranslate"><span class="pre">opensearch_py_ml.DataFrame.values</span></code> is not supported.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
@@ -1163,9 +1069,9 @@ This method would scan/scroll the entire OpenSearch index(s) into memory. If thi
 </section>
 </section>
 <section id="Indexing,-iteration">
-<h3>Indexing, iteration<a class="headerlink" href="#Indexing,-iteration" title="Permalink to this heading">¶</a></h3>
+<h3>Indexing, iteration<a class="headerlink" href="#Indexing,-iteration" title="Permalink to this heading"></a></h3>
 <section id="DataFrame.head">
-<h4>DataFrame.head<a class="headerlink" href="#DataFrame.head" title="Permalink to this heading">¶</a></h4>
+<h4>DataFrame.head<a class="headerlink" href="#DataFrame.head" title="Permalink to this heading"></a></h4>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
 </pre></div>
@@ -1336,7 +1242,7 @@ This method would scan/scroll the entire OpenSearch index(s) into memory. If thi
 </div>
 </section>
 <section id="DataFrame.tail">
-<h4>DataFrame.tail<a class="headerlink" href="#DataFrame.tail" title="Permalink to this heading">¶</a></h4>
+<h4>DataFrame.tail<a class="headerlink" href="#DataFrame.tail" title="Permalink to this heading"></a></h4>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
 </pre></div>
@@ -1507,7 +1413,7 @@ This method would scan/scroll the entire OpenSearch index(s) into memory. If thi
 </div>
 </section>
 <section id="DataFrame.keys">
-<h4>DataFrame.keys<a class="headerlink" href="#DataFrame.keys" title="Permalink to this heading">¶</a></h4>
+<h4>DataFrame.keys<a class="headerlink" href="#DataFrame.keys" title="Permalink to this heading"></a></h4>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[31]:
 </pre></div>
@@ -1556,7 +1462,7 @@ Index([&#39;AvgTicketPrice&#39;, &#39;Cancelled&#39;, &#39;Carrier&#39;, &#39;De
 </div>
 </section>
 <section id="DataFrame.get">
-<h4>DataFrame.get<a class="headerlink" href="#DataFrame.get" title="Permalink to this heading">¶</a></h4>
+<h4>DataFrame.get<a class="headerlink" href="#DataFrame.get" title="Permalink to this heading"></a></h4>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[33]:
 </pre></div>
@@ -1731,7 +1637,7 @@ unhashable type: &#39;list&#39;
 </div>
 </section>
 <section id="DataFrame.query">
-<h4>DataFrame.query<a class="headerlink" href="#DataFrame.query" title="Permalink to this heading">¶</a></h4>
+<h4>DataFrame.query<a class="headerlink" href="#DataFrame.query" title="Permalink to this heading"></a></h4>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[37]:
 </pre></div>
@@ -2002,7 +1908,7 @@ unhashable type: &#39;list&#39;
 </section>
 </section>
 <section id="Boolean-indexing-query">
-<h2>Boolean indexing query<a class="headerlink" href="#Boolean-indexing-query" title="Permalink to this heading">¶</a></h2>
+<h2>Boolean indexing query<a class="headerlink" href="#Boolean-indexing-query" title="Permalink to this heading"></a></h2>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[39]:
 </pre></div>
@@ -2272,9 +2178,9 @@ unhashable type: &#39;list&#39;
 <p>68 rows × 27 columns</p></div>
 </div>
 <section id="Function-application,-GroupBy-&amp;-window">
-<h3>Function application, GroupBy &amp; window<a class="headerlink" href="#Function-application,-GroupBy-&-window" title="Permalink to this heading">¶</a></h3>
+<h3>Function application, GroupBy &amp; window<a class="headerlink" href="#Function-application,-GroupBy-&-window" title="Permalink to this heading"></a></h3>
 <section id="DataFrame.aggs">
-<h4>DataFrame.aggs<a class="headerlink" href="#DataFrame.aggs" title="Permalink to this heading">¶</a></h4>
+<h4>DataFrame.aggs<a class="headerlink" href="#DataFrame.aggs" title="Permalink to this heading"></a></h4>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[42]:
 </pre></div>
@@ -2389,9 +2295,9 @@ unhashable type: &#39;list&#39;
 </section>
 </section>
 <section id="Computations-/-descriptive-stats">
-<h3>Computations / descriptive stats<a class="headerlink" href="#Computations-/-descriptive-stats" title="Permalink to this heading">¶</a></h3>
+<h3>Computations / descriptive stats<a class="headerlink" href="#Computations-/-descriptive-stats" title="Permalink to this heading"></a></h3>
 <section id="DataFrame.count">
-<h4>DataFrame.count<a class="headerlink" href="#DataFrame.count" title="Permalink to this heading">¶</a></h4>
+<h4>DataFrame.count<a class="headerlink" href="#DataFrame.count" title="Permalink to this heading"></a></h4>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[44]:
 </pre></div>
@@ -2450,7 +2356,7 @@ Length: 27, dtype: int64
 </div>
 </section>
 <section id="DataFrame.describe">
-<h4>DataFrame.describe<a class="headerlink" href="#DataFrame.describe" title="Permalink to this heading">¶</a></h4>
+<h4>DataFrame.describe<a class="headerlink" href="#DataFrame.describe" title="Permalink to this heading"></a></h4>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[46]:
 </pre></div>
@@ -2671,7 +2577,7 @@ Length: 27, dtype: int64
 </div>
 </section>
 <section id="DataFrame.info">
-<h4>DataFrame.info<a class="headerlink" href="#DataFrame.info" title="Permalink to this heading">¶</a></h4>
+<h4>DataFrame.info<a class="headerlink" href="#DataFrame.info" title="Permalink to this heading"></a></h4>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[48]:
 </pre></div>
@@ -2773,12 +2679,12 @@ OpenSearch storage usage: 10.714 MB
 </div>
 </section>
 <section id="DataFrame.max,-DataFrame.min,-DataFrame.mean,-DataFrame.sum">
-<h4>DataFrame.max, DataFrame.min, DataFrame.mean, DataFrame.sum<a class="headerlink" href="#DataFrame.max,-DataFrame.min,-DataFrame.mean,-DataFrame.sum" title="Permalink to this heading">¶</a></h4>
+<h4>DataFrame.max, DataFrame.min, DataFrame.mean, DataFrame.sum<a class="headerlink" href="#DataFrame.max,-DataFrame.min,-DataFrame.mean,-DataFrame.sum" title="Permalink to this heading"></a></h4>
 </section>
 </section>
 </section>
 <section id="max">
-<h2>max<a class="headerlink" href="#max" title="Permalink to this heading">¶</a></h2>
+<h2>max<a class="headerlink" href="#max" title="Permalink to this heading"></a></h2>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[50]:
 </pre></div>
@@ -2834,7 +2740,7 @@ dtype: float64
 </div>
 </section>
 <section id="min">
-<h2>min<a class="headerlink" href="#min" title="Permalink to this heading">¶</a></h2>
+<h2>min<a class="headerlink" href="#min" title="Permalink to this heading"></a></h2>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[52]:
 </pre></div>
@@ -2889,7 +2795,7 @@ dtype: float64
 </div>
 </section>
 <section id="mean">
-<h2>mean<a class="headerlink" href="#mean" title="Permalink to this heading">¶</a></h2>
+<h2>mean<a class="headerlink" href="#mean" title="Permalink to this heading"></a></h2>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[54]:
 </pre></div>
@@ -2944,7 +2850,7 @@ dtype: float64
 </div>
 </section>
 <section id="sum">
-<h2>sum<a class="headerlink" href="#sum" title="Permalink to this heading">¶</a></h2>
+<h2>sum<a class="headerlink" href="#sum" title="Permalink to this heading"></a></h2>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[56]:
 </pre></div>
@@ -3402,50 +3308,33 @@ Operations:
 
 
            </div>
-           
           </div>
-          <footer>
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="online_retail_analysis.html" class="btn btn-neutral float-right" title="Step 0: Imports" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="index.html" class="btn btn-neutral float-left" title="Examples" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="online_retail_analysis.html" class="btn btn-neutral float-right" title="Demo Notebook for Online Retail Analysis" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &#169; Copyright 2023, Opensearch.
-
-    </p>
+    <p>&#169; Copyright 2023, Opensearch.</p>
   </div>
-    
-    
-    
-    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>

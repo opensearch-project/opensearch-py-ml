@@ -1,99 +1,52 @@
-
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
-  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
-  <title>Demo Notebook for MLCommons Integration &mdash; Opensearch-py-ml 1.0.0b1 documentation</title>
-  
-
-  
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/plot_directive.css" type="text/css" />
-
-  
-  
-
-  
-  
-
-  
-
-  
+  <title>Demo Notebook for MLCommons Integration &mdash; Opensearch-py-ml 1.0.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/plot_directive.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/doctools.js"></script>
         <script src="../_static/sphinx_highlight.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
         <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
-
-    
+    <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="prev" title="Demo Notebook to trace Sentence Transformers model" href="demo_tracing_model_torchscript_onnx.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
 
           
-            <a href="../index.html" class="icon icon-home"> Opensearch-py-ml
           
-
-          
+          <a href="../index.html" class="icon icon-home">
+            Opensearch-py-ml
           </a>
-
-          
-            
-            
               <div class="version">
-                1.0.0b1
+                1.0.0
               </div>
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../reference/index.html">API Reference</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
@@ -110,73 +63,31 @@
 </li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">Opensearch-py-ml</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-        
-          <li><a href="index.html">Examples</a> &raquo;</li>
-        
-      <li>Demo Notebook for MLCommons Integration</li>
-    
-    
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Examples</a></li>
+      <li class="breadcrumb-item active">Demo Notebook for MLCommons Integration</li>
       <li class="wy-breadcrumbs-aside">
-        
-          
             <a href="../_sources/examples/demo_ml_commons_integration.ipynb.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
+             
   
 <style>
 /* CSS for nbsphinx extension */
@@ -457,9 +368,9 @@ div.rendered_html tbody tr:hover {
 }
 </style>
 <section id="Demo-Notebook-for-MLCommons-Integration">
-<h1>Demo Notebook for MLCommons Integration<a class="headerlink" href="#Demo-Notebook-for-MLCommons-Integration" title="Permalink to this heading">¶</a></h1>
+<h1>Demo Notebook for MLCommons Integration<a class="headerlink" href="#Demo-Notebook-for-MLCommons-Integration" title="Permalink to this heading"></a></h1>
 <section id="download-notebook">
-<h2><a class="reference external" href="https://github.com/opensearch-project/opensearch-py-ml/blob/main/docs/source/examples/demo_ml_commons_integration.ipynb">download notebook</a><a class="headerlink" href="#download-notebook" title="Permalink to this heading">¶</a></h2>
+<h2><a class="reference external" href="https://github.com/opensearch-project/opensearch-py-ml/blob/main/docs/source/examples/demo_ml_commons_integration.ipynb">download notebook</a><a class="headerlink" href="#download-notebook" title="Permalink to this heading"></a></h2>
 <p>This notebook provides a walkthrough guidance for users to invoke MLCommons apis to upload ml models to opensearch cluster</p>
 <p>Step 0: Import packages and set up client</p>
 <p>Step 1: Upload NLP model from local file to Opensearch cluster</p>
@@ -470,7 +381,7 @@ div.rendered_html tbody tr:hover {
 <p>Step 6: Unload Model</p>
 <p>Step 7: Delete Model</p>
 <section id="Step-0:-Import-packages-and-set-up-client">
-<h3>Step 0: Import packages and set up client<a class="headerlink" href="#Step-0:-Import-packages-and-set-up-client" title="Permalink to this heading">¶</a></h3>
+<h3>Step 0: Import packages and set up client<a class="headerlink" href="#Step-0:-Import-packages-and-set-up-client" title="Permalink to this heading"></a></h3>
 <p>Install required packages for opensearch_py_ml.sentence_transformer_model Install <code class="docutils literal notranslate"><span class="pre">opensearchpy</span></code> and <code class="docutils literal notranslate"><span class="pre">opensearch-py-ml</span></code> through pypi</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
@@ -530,7 +441,7 @@ div.rendered_html tbody tr:hover {
 </div>
 </section>
 <section id="Step-1:-Upload-NLP-model-from-local-file-to-Opensearch-cluster">
-<h3>Step 1: Upload NLP model from local file to Opensearch cluster<a class="headerlink" href="#Step-1:-Upload-NLP-model-from-local-file-to-Opensearch-cluster" title="Permalink to this heading">¶</a></h3>
+<h3>Step 1: Upload NLP model from local file to Opensearch cluster<a class="headerlink" href="#Step-1:-Upload-NLP-model-from-local-file-to-Opensearch-cluster" title="Permalink to this heading"></a></h3>
 <p>We can upload machine learning models to Opensearch cluster using MLCommons upload_model api. In this demo we will show how can we upload model which is stored in our local files.</p>
 <p>To demonstrate, we download the model zip file from the url: <a class="reference external" href="https://github.com/opensearch-project/ml-commons/raw/2.x/ml-algorithms/src/test/resources/org/opensearch/ml/engine/algorithms/text_embedding/all-MiniLM-L6-v2_torchscript_sentence-transformer.zip?raw=true">https://github.com/opensearch-project/ml-commons/raw/2.x/ml-algorithms/src/test/resources/org/opensearch/ml/engine/algorithms/text_embedding/all-MiniLM-L6-v2_torchscript_sentence-transformer.zip?raw=true</a></p>
 <p>To upload model to the cluster, we need a zip file containing a torchScript file (.pt extension) and a tokenizer.json file. Please refer to the previous download. We also need a json file with defining the config information with following these request fields:</p>
@@ -607,7 +518,7 @@ Model uploaded successfully
 </div>
 </section>
 <section id="Step-2:-Load-Model">
-<h3>Step 2: Load Model<a class="headerlink" href="#Step-2:-Load-Model" title="Permalink to this heading">¶</a></h3>
+<h3>Step 2: Load Model<a class="headerlink" href="#Step-2:-Load-Model" title="Permalink to this heading"></a></h3>
 <p>In the last step we upload a model and the model id is: <code class="docutils literal notranslate"><span class="pre">jtuRoIUBqB81FWKil3qA</span></code>. Now we will load this model in opensearch memory.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[30]:
@@ -629,7 +540,7 @@ Model uploaded successfully
 </div>
 </section>
 <section id="Step-3:-Get-Task">
-<h3>Step 3: Get Task<a class="headerlink" href="#Step-3:-Get-Task" title="Permalink to this heading">¶</a></h3>
+<h3>Step 3: Get Task<a class="headerlink" href="#Step-3:-Get-Task" title="Permalink to this heading"></a></h3>
 <p>When we invoke load model api of mlcommons plugin, a task get created. We can see the task id (<code class="docutils literal notranslate"><span class="pre">j9uRoIUBqB81FWKi_Xqu</span></code>) from previous output. Now, we can get the detailed information of the task using this task id</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[31]:
@@ -651,7 +562,7 @@ Model uploaded successfully
 </div>
 </section>
 <section id="Step-4:-Get-Model">
-<h3>Step 4: Get Model<a class="headerlink" href="#Step-4:-Get-Model" title="Permalink to this heading">¶</a></h3>
+<h3>Step 4: Get Model<a class="headerlink" href="#Step-4:-Get-Model" title="Permalink to this heading"></a></h3>
 <p>With using the model id, we can also pull information about the model metadata from the opensearch cluster.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[32]:
@@ -673,7 +584,7 @@ Model uploaded successfully
 </div>
 </section>
 <section id="Step-5:-Generate-Sentence-Embedding">
-<h3>Step 5: Generate Sentence Embedding<a class="headerlink" href="#Step-5:-Generate-Sentence-Embedding" title="Permalink to this heading">¶</a></h3>
+<h3>Step 5: Generate Sentence Embedding<a class="headerlink" href="#Step-5:-Generate-Sentence-Embedding" title="Permalink to this heading"></a></h3>
 <p>Now using the loaded model in memory, we can generate embedding for sentences. We can provide a list of sentences to get a list of embedding for the sentences.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[33]:
@@ -699,7 +610,7 @@ Model uploaded successfully
 </div>
 </section>
 <section id="Step-6:-Unload-Model">
-<h3>Step 6: Unload Model<a class="headerlink" href="#Step-6:-Unload-Model" title="Permalink to this heading">¶</a></h3>
+<h3>Step 6: Unload Model<a class="headerlink" href="#Step-6:-Unload-Model" title="Permalink to this heading"></a></h3>
 <p>After generating the embedding if we want we can unload the model from memory. <code class="docutils literal notranslate"><span class="pre">unload_model</span></code> method takes two input.</p>
 <ol class="arabic simple">
 <li><p>model_id –&gt; Which model we want to unload</p></li>
@@ -726,7 +637,7 @@ Model uploaded successfully
 </div>
 </section>
 <section id="Step-7:-Delete-Model">
-<h3>Step 7: Delete Model<a class="headerlink" href="#Step-7:-Delete-Model" title="Permalink to this heading">¶</a></h3>
+<h3>Step 7: Delete Model<a class="headerlink" href="#Step-7:-Delete-Model" title="Permalink to this heading"></a></h3>
 <p>We can also delete the model from the index using the model id.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[35]:
@@ -752,49 +663,32 @@ Model uploaded successfully
 
 
            </div>
-           
           </div>
-          <footer>
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="demo_tracing_model_torchscript_onnx.html" class="btn btn-neutral float-left" title="Demo Notebook to trace Sentence Transformers model" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &#169; Copyright 2023, Opensearch.
-
-    </p>
+    <p>&#169; Copyright 2023, Opensearch.</p>
   </div>
-    
-    
-    
-    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>

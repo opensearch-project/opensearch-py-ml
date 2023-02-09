@@ -1,98 +1,51 @@
-
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
-  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
-  <title>Sentence Transformer &mdash; Opensearch-py-ml 1.0.0b1 documentation</title>
-  
-
-  
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/plot_directive.css" type="text/css" />
-
-  
-  
-
-  
-  
-
-  
-
-  
+  <title>Sentence Transformer &mdash; Opensearch-py-ml 1.0.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/plot_directive.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/doctools.js"></script>
         <script src="../_static/sphinx_highlight.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
-
-    
+    <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Sentence Transformer" href="api/sentence_transformer.html" />
     <link rel="prev" title="Delete Model" href="api/ml_commons_delete_model_api.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
 
           
-            <a href="../index.html" class="icon icon-home"> Opensearch-py-ml
           
-
-          
+          <a href="../index.html" class="icon icon-home">
+            Opensearch-py-ml
           </a>
-
-          
-            
-            
               <div class="version">
-                1.0.0b1
+                1.0.0
               </div>
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">API Reference</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="dataframe.html">DataFrame</a></li>
@@ -111,7 +64,7 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#optional-step-by-step-train-model">(Optional) Step by Step Train Model</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="api/sentence_transformer.read_queries.html">SentenceTransformerModel.read_queries</a></li>
-<li class="toctree-l4"><a class="reference internal" href="api/sentence_transformer.load_sentence_transformer_example.html">SentenceTransformerModel.load_sentence_transformer_example</a></li>
+<li class="toctree-l4"><a class="reference internal" href="api/sentence_transformer.load_training_data.html">SentenceTransformerModel.load_training_data</a></li>
 <li class="toctree-l4"><a class="reference internal" href="api/sentence_transformer.set_up_accelerate_config.html">SentenceTransformerModel.set_up_accelerate_config</a></li>
 <li class="toctree-l4"><a class="reference internal" href="api/sentence_transformer.train_model.html">SentenceTransformerModel.train_model</a></li>
 <li class="toctree-l4"><a class="reference internal" href="api/sentence_transformer.zip_model.html">SentenceTransformerModel.zip_model</a></li>
@@ -133,73 +86,31 @@
 <li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Examples</a></li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">Opensearch-py-ml</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-        
-          <li><a href="index.html">API Reference</a> &raquo;</li>
-        
-      <li>Sentence Transformer</li>
-    
-    
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">API Reference</a></li>
+      <li class="breadcrumb-item active">Sentence Transformer</li>
       <li class="wy-breadcrumbs-aside">
-        
-          
             <a href="../_sources/reference/sentencetransformer.rst.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
+             
   
 <style>
 /* CSS overrides for sphinx_rtd_theme */
@@ -225,9 +136,9 @@
 }
 </style>
 <section id="sentence-transformer">
-<span id="api-sentence-transformer"></span><h1>Sentence Transformer<a class="headerlink" href="#sentence-transformer" title="Permalink to this heading">¶</a></h1>
+<span id="api-sentence-transformer"></span><h1>Sentence Transformer<a class="headerlink" href="#sentence-transformer" title="Permalink to this heading"></a></h1>
 <section id="constructor">
-<h2>Constructor<a class="headerlink" href="#constructor" title="Permalink to this heading">¶</a></h2>
+<h2>Constructor<a class="headerlink" href="#constructor" title="Permalink to this heading"></a></h2>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="api/sentence_transformer.html">Sentence Transformer</a><ul>
@@ -238,7 +149,7 @@
 </div>
 </section>
 <section id="train-model">
-<h2>Train Model<a class="headerlink" href="#train-model" title="Permalink to this heading">¶</a></h2>
+<h2>Train Model<a class="headerlink" href="#train-model" title="Permalink to this heading"></a></h2>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="api/sentence_transformer.train.html">SentenceTransformerModel.train</a><ul>
@@ -249,14 +160,17 @@
 </div>
 </section>
 <section id="optional-step-by-step-train-model">
-<h2>(Optional) Step by Step Train Model<a class="headerlink" href="#optional-step-by-step-train-model" title="Permalink to this heading">¶</a></h2>
+<h2>(Optional) Step by Step Train Model<a class="headerlink" href="#optional-step-by-step-train-model" title="Permalink to this heading"></a></h2>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="api/sentence_transformer.read_queries.html">SentenceTransformerModel.read_queries</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="api/sentence_transformer.read_queries.html#opensearch_py_ml.ml_models.SentenceTransformerModel.read_queries"><code class="docutils literal notranslate"><span class="pre">read_queries()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="api/sentence_transformer.load_sentence_transformer_example.html">SentenceTransformerModel.load_sentence_transformer_example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/sentence_transformer.load_training_data.html">SentenceTransformerModel.load_training_data</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/sentence_transformer.load_training_data.html#opensearch_py_ml.ml_models.SentenceTransformerModel.load_training_data"><code class="docutils literal notranslate"><span class="pre">load_training_data()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="api/sentence_transformer.set_up_accelerate_config.html">SentenceTransformerModel.set_up_accelerate_config</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="api/sentence_transformer.set_up_accelerate_config.html#opensearch_py_ml.ml_models.SentenceTransformerModel.set_up_accelerate_config"><code class="docutils literal notranslate"><span class="pre">set_up_accelerate_config()</span></code></a></li>
 </ul>
@@ -273,7 +187,7 @@
 </div>
 </section>
 <section id="export-model">
-<h2>Export Model<a class="headerlink" href="#export-model" title="Permalink to this heading">¶</a></h2>
+<h2>Export Model<a class="headerlink" href="#export-model" title="Permalink to this heading"></a></h2>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="api/sentence_transformer.save_as_pt.html">SentenceTransformerModel.save_as_pt</a><ul>
@@ -288,7 +202,7 @@
 </div>
 </section>
 <section id="config-model">
-<h2>Config Model<a class="headerlink" href="#config-model" title="Permalink to this heading">¶</a></h2>
+<h2>Config Model<a class="headerlink" href="#config-model" title="Permalink to this heading"></a></h2>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="api/sentence_transformer.make_model_config_json.html">SentenceTransformerModel.make_model_config_json</a><ul>
@@ -302,50 +216,33 @@
 
 
            </div>
-           
           </div>
-          <footer>
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="api/sentence_transformer.html" class="btn btn-neutral float-right" title="Sentence Transformer" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="api/ml_commons_delete_model_api.html" class="btn btn-neutral float-left" title="Delete Model" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="api/sentence_transformer.html" class="btn btn-neutral float-right" title="Sentence Transformer" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &#169; Copyright 2023, Opensearch.
-
-    </p>
+    <p>&#169; Copyright 2023, Opensearch.</p>
   </div>
-    
-    
-    
-    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>
