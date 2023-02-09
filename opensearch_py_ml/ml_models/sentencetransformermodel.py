@@ -469,7 +469,7 @@ class SentenceTransformerModel:
                 num_training_steps=num_epochs * len(train_dataloader),
             )
 
-            accelerator = Accelerator(fp16=training_args.fp16)
+            accelerator = Accelerator()
             model, optimizer, train_dataloader, scheduler = accelerator.prepare(
                 model, optimizer, train_dataloader, scheduler
             )
