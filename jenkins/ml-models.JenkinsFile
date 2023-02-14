@@ -1,0 +1,87 @@
+lib = library(identifier: 'jenkins@2.0.0', retriever: modernSCM([
+    $class: 'GitSCMSource',
+    remote: 'https://github.com/opensearch-project/opensearch-build-libraries.git',
+]))
+
+pipeline {
+    agent
+    {
+        docker {
+            label 'Jenkins-Agent-AL2-X64-C54xlarge-Docker-Host'
+            image 'opensearchstaging/ci-runner:release-centos7-clients-v2'
+            alwaysPull true
+        }
+    }
+    options {
+        timeout(time: 1, unit: 'HOURS')
+    }
+    parameters {
+        string(
+            name: 'BASE_DOWNLOAD_PATH',
+            description: 'S3 base path to download artifacts from eg:ml-models/huggingface/sentence-transformers/all-distilroberta-v1. DO NOT include the trailing backlash at the end',
+            trim: true
+        )
+        string(
+            name: 'VERSION',
+            description: 'Version number of the model',
+            trim: true
+        )
+        }
+    environment {
+        ARTIFACT_PATH = "${BASE_DOWNLOAD_PATH}/${VERSION}/"
+        UPLOAD_PATH = "models/ml-models"
+        BUCKET_NAME = credentials('ml-models-bucket-name')
+    }
+    stages{
+        stage('Parameters Check') {
+            steps {
+                script {
+                    if(BASE_DOWNLOAD_PATH.isEmpty() || VERSION.isEmpty()) {
+                        currentBuild.result = 'ABORTED'
+                        error('Parameters cannot be empty! Please provide the correct values.')
+                    }
+                    if(BASE_DOWNLOAD_PATH.endsWith('/')) {
+                        currentBuild.result = 'ABORTED'
+                        error('"/" not allowed at the end of the BASE_DOWNLOAD_PATH') 
+                    }
+                }
+            }
+        }
+        stage('Download the artifacts') {
+            steps {
+                script {
+                    downloadFromS3(
+                        assumedRoleName: 'get_models',
+                        roleAccountNumberCred: 'ml-models-aws-account-number',
+                        downloadPath: "${ARTIFACT_PATH}",
+                        bucketName: "${BUCKET_NAME}",
+                        localPath: "${WORKSPACE}/artifacts",
+                        force: true,
+                        region: 'us-west-2'
+                    )
+                }
+            }
+        }
+        stage('Sign and Release the artifacts') {
+            steps {
+                script {
+                    publishToArtifactsProdBucket(
+                        assumedRoleName: 'ml-models-artifacts-upload-role',
+                        source: "${WORKSPACE}/artifacts/ml-models",
+                        destination: "${UPLOAD_PATH}",
+                        signingPlatform: 'linux',
+                        sigType: '.sig',
+                        sigOverwrite: true
+                    )
+                }
+            }
+        }
+    }
+    post {
+        always {
+            script {
+                postCleanup()
+                }
+            }
+        }
+    }
