@@ -54,7 +54,7 @@
 <li class="toctree-l2"><a class="reference internal" href="index.html#demo-notebooks-for-data-exploration-panda-like-dataframe">Demo notebooks for Data Exploration Panda like DataFrame</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="index.html#demo-notebooks-for-model-training-and-tracing">Demo notebooks for Model Training and Tracing</a><ul class="current">
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Demo Notebook for Sentence Transformer Model Training, Saving and Uploading to OpenSearch</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#download-notebook">download notebook</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Download-notebook">Download notebook</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="demo_tracing_model_torchscript_onnx.html">Demo Notebook to trace Sentence Transformers model</a></li>
@@ -371,8 +371,8 @@ div.rendered_html tbody tr:hover {
 </style>
 <section id="Demo-Notebook-for-Sentence-Transformer-Model-Training,-Saving-and-Uploading-to-OpenSearch">
 <h1>Demo Notebook for Sentence Transformer Model Training, Saving and Uploading to OpenSearch<a class="headerlink" href="#Demo-Notebook-for-Sentence-Transformer-Model-Training,-Saving-and-Uploading-to-OpenSearch" title="Permalink to this heading"></a></h1>
-<section id="download-notebook">
-<h2><a class="reference external" href="https://github.com/opensearch-project/opensearch-py-ml/blob/main/docs/source/examples/demo_transformer_model_train_save_upload_to_openSearch.ipynb">download notebook</a><a class="headerlink" href="#download-notebook" title="Permalink to this heading"></a></h2>
+<section id="Download-notebook">
+<h2><a class="reference external" href="https://github.com/opensearch-project/opensearch-py-ml/blob/main/docs/source/examples/demo_transformer_model_train_save_upload_to_openSearch.ipynb">Download notebook</a><a class="headerlink" href="#Download-notebook" title="Permalink to this heading"></a></h2>
 <section id="Introduction">
 <h3>Introduction<a class="headerlink" href="#Introduction" title="Permalink to this heading"></a></h3>
 <p>This notebook introduces the technique of synthetic data generation and how it can be used to obtain a deep learning model for Search that is custom built for a given set of documents.</p>
@@ -388,7 +388,7 @@ state-of-the-art models. Note that resulting BERT model is a customized model si
 <p>Step 3: Generate Synthetic Queries</p>
 <p>Step 4: Read synthetic queries and train/fine-tune model using a hugging face sentence transformer model</p>
 <p>Step 5: Upload the model to OpenSearch cluster</p>
-<p>Steps 3 and 4 are computed intensive step, and we recommend running it on a machine with 4 or more GPUS such as the EC2 <code class="docutils literal notranslate"><span class="pre">p3.8xlarge</span></code> or <code class="docutils literal notranslate"><span class="pre">p3.16xlarge</span></code>.</p>
+<p>Steps 3 and 4 are compute intensive step, and we recommend running it on a machine with 4 or more GPUS such as the EC2 <code class="docutils literal notranslate"><span class="pre">p3.8xlarge</span></code> or <code class="docutils literal notranslate"><span class="pre">p3.16xlarge</span></code>.</p>
 </section>
 </section>
 <section id="Step-1:-Import-packages,-set-up-client-and-define-helper-functions">
@@ -404,7 +404,7 @@ state-of-the-art models. Note that resulting BERT model is a customized model si
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Download generate.py for Generate Synthetic Queries</span>
 
 <span class="kn">import</span> <span class="nn">urllib.request</span>
-<span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlretrieve</span><span class="p">(</span><span class="s2">&quot;https://artifacts.opensearch.org/models/ml-models/huggingface/sentence-transformers/msmarco-distilbert-base-tas-b/1.0.0/onnx/config.json&quot;</span><span class="p">,</span> <span class="s2">&quot;generate.py&quot;</span><span class="p">)</span>
+<span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlretrieve</span><span class="p">(</span><span class="s2">&quot;https://artifacts.opensearch.org/models/ml-models/amazon/gpt/GPT2_xl_sqg/1.0.0/generate.py&quot;</span><span class="p">,</span> <span class="s2">&quot;generate.py&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -434,7 +434,7 @@ state-of-the-art models. Note that resulting BERT model is a customized model si
 <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Unverified HTTPS request&quot;</span><span class="p">)</span>
 <span class="kn">import</span> <span class="nn">opensearch_py_ml</span> <span class="k">as</span> <span class="nn">oml</span>
 <span class="kn">from</span> <span class="nn">opensearchpy</span> <span class="kn">import</span> <span class="n">OpenSearch</span>
-<span class="kn">import</span> <span class="nn">generate</span> <span class="c1"># generate.py script is release with the</span>
+<span class="kn">import</span> <span class="nn">generate</span>
 <span class="kn">from</span> <span class="nn">generate</span> <span class="kn">import</span> <span class="n">Synthetic_Query_Generation</span>
 <span class="kn">from</span> <span class="nn">opensearch_py_ml.ml_models</span> <span class="kn">import</span> <span class="n">SentenceTransformerModel</span>
 <span class="kn">import</span> <span class="nn">boto3</span><span class="o">,</span> <span class="nn">json</span>
@@ -585,10 +585,12 @@ state-of-the-art models. Note that resulting BERT model is a customized model si
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">three_step_query</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">generate_synthetic_queries</span><span class="p">(</span><span class="n">num_machines</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
                                                  <span class="n">tokenize_data</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                                                 <span class="n">tokenizer_max_length</span> <span class="o">=</span>  <span class="mi">300</span><span class="p">,</span>
                                                  <span class="n">total_queries</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
                                                  <span class="n">numseq</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
                                                  <span class="n">num_gpu</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
-                                                 <span class="n">toxic_cutoff</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">)</span>
+                                                 <span class="n">toxic_cutoff</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span>
+                                                 <span class="n">tokens_to_word_ratio</span> <span class="o">=</span> <span class="mf">0.6</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -597,19 +599,22 @@ state-of-the-art models. Note that resulting BERT model is a customized model si
 
 2) The tokenizer has a max input length of 512 tokens. Every passage is tokenized with the special tokens &lt;|startoftext|&gt; and QRY: appended to the beginning and the end of every passage respectively. Note that tokenization is a time intensive process and the script saves the tokenized data after the first pass. We recommend setting tokenize_data = False subsequently.
 
-3) Load the SQG model i.e. 1.5B parameter GPT2-XL model that has been trained to ask questions given passages. This model has been made publicly available and can be found here https://ci.opensearch.org/ci/dbc/models/ml-models/amazon/gpt/GPT2_xl_sqg/1.0.0/GPT2_xl_sqg.zip.
+3) Load the SQG model i.e. 1.5B parameter GPT2-XL model that has been trained to ask questions given passages. This model has been made publicly available and can be found here: https://artifacts.opensearch.org/models/ml-models/amazon/gpt/GPT2_xl_sqg/1.0.0/GPT2_xl_sqg.zip
 
 4) Once the model has been loaded and the data has been tokenized, the model starts the process of query generation. &quot;total_queries&quot; is number of synthetic queries generated for every passage and &quot;numseq&quot; is the number of queries that are generated by a model at a given time. Ideally total_queries = numseq, but this can lead to out of memory issues. So set numseq to an integer that is around 10 or less, and is a divisor of total_queries.
 
-5) The script also requires to know the number of GPUs and the number of machines/nodes that it can use. Since we are using a single node instance with no GPUs we pass 0 and 1 to the function respectively. Our recommended setting is to use 1 machine/node with at least 4 (ideally 8) GPUs.
+5) tokens_to_word_ratio is a float variable that is used to switch between length of a document in tokens vs. in words. It is used when truncating documents during the tokenization phase. Most words are split in to one or more tokens. A document that has a length of 300 tokens might only be 200 words long. This ratio of 200/300 = 2/3 = 0.667 is the tokens_to_word_ratio. For passages from a dataset such as Wikipedia this ratio is around 0.65 to 0.7, but for domain specific datasets this ratio could be as small as 0.5.
 
-6) The script now begins to generate queries and displays a progress bar. We create total_queries per passage. Empirically we find that generating more queries leads to better performance but there are diminishing returns since the total inference time increases with total_queries.
+6) The script also requires to know the number of GPUs and the number of machines/nodes that it can use. Since we are using a single node instance with no GPUs we pass 0 and 1 to the function respectively. Our recommended setting is to use 1 machine/node with at least 4 (ideally 8) GPUs.
 
-7) After generating the queries, the function uses a publicly available package called Detoxify to remove inappropriate queries from the dataset. &quot;toxic_cutoff&quot; is a float. The script rejects all queries that have a toxicity score greater than toxic_cutoff
+7) The script now begins to generate queries and displays a progress bar. We create total_queries per passage. Empirically we find that generating more queries leads to better performance but there are diminishing returns since the total inference time increases with total_queries.
 
-8) Finally, the synthetic queries along with their corresponding passages are saved in a zipped file in the current working directory.
+8) After generating the queries, the function uses a publicly available package called Detoxify to remove inappropriate queries from the dataset. &quot;toxic_cutoff&quot; is a float. The script rejects all queries that have a toxicity score greater than toxic_cutoff
+
+9) Finally, the synthetic queries along with their corresponding passages are saved in a zipped file in the current working directory.
 </pre></div>
 </div>
+<p>Note – Please restart the kernel and rerun it if the notebook gives CUDA related errors.</p>
 <section id="This-is-how-the-sample-queries-look-like,">
 <h4>This is how the sample queries look like,<a class="headerlink" href="#This-is-how-the-sample-queries-look-like," title="Permalink to this heading"></a></h4>
 <div class="nbinput nblast docutils container">

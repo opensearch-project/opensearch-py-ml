@@ -7,7 +7,7 @@
    "source": [
     "# Demo Notebook to trace Sentence Transformers model\n",
     "\n",
-    "#### [download notebook](https://github.com/opensearch-project/opensearch-py-ml/blob/main/docs/source/examples/demo_tracing_model_torchscript_onnx.ipynb)\n",
+    "#### [Download notebook](https://github.com/opensearch-project/opensearch-py-ml/blob/main/docs/source/examples/demo_tracing_model_torchscript_onnx.ipynb)\n",
     "\n",
     "This notebook provides a walkthrough guidance for users to trace models from Sentence Transformers in torchScript and onnx format. After tracing the model customer can upload the model to opensearch and generate embeddings.\n",
     "\n",
