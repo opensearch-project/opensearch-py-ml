@@ -75,7 +75,7 @@ def lint(session):
     session.install("black", "flake8", "mypy", "isort", "numpy")
     session.install("--pre", "opensearch-py==2.1.1")
     session.run("python", "utils/license-headers.py", "check", *SOURCE_FILES)
-    session.run("black", "--check", "--target-version=py37", *SOURCE_FILES)
+    session.run("black", "--check", "--target-version=py38", *SOURCE_FILES)
     session.run("isort", "--check", "--profile=black", *SOURCE_FILES)
     session.run("flake8", "--ignore=E501,W503,E402,E712,E203", *SOURCE_FILES)
 
