@@ -17,7 +17,6 @@ class NMF(torch.nn.Module):
     def step(
         self, V: torch.Tensor, W: torch.Tensor, H: torch.Tensor
     ) -> Tuple[torch.Tensor, torch.Tensor]:
-
         """
         Multiplicative update; see https://arxiv.org/pdf/1010.1763.pdf
         Variable definitions here are consistent with notation in this paper.
@@ -53,7 +52,6 @@ class NMF(torch.nn.Module):
         return W, H
 
     def initialize(self, V, k: int) -> Tuple[torch.Tensor, torch.Tensor]:
-
         """
         'NNDSVD-A' initialization, as in sklearn.
 
@@ -114,7 +112,6 @@ class NMF(torch.nn.Module):
     def forward(
         self, V: torch.Tensor, k: int, max_iter: int, tol: float
     ) -> Tuple[torch.Tensor, torch.Tensor]:
-
         """
 
         :param V:

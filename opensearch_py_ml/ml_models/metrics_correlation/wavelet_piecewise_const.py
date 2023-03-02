@@ -139,7 +139,6 @@ def block_wise_dp_segment(
 
 
 def lavielle_criterion(costs: torch.Tensor) -> Tuple[int, torch.Tensor]:
-
     """
     Criterion to automatically select number of segments in a piecewise constant approximation.
         Reference: https://hal.inria.fr/inria-00070662/document
@@ -172,7 +171,6 @@ def lavielle_criterion(costs: torch.Tensor) -> Tuple[int, torch.Tensor]:
 
 
 def block_wise_seg_to_approx(data: torch.Tensor, seg: List[int]) -> torch.Tensor:
-
     """
     Convert blockwise DP segmentation output to piecewise constant approximation.
     :param costs:
@@ -239,7 +237,6 @@ def sqerr_seg_list(
 
 
 def transform_piecewise_const(sig: torch.Tensor, bandwidth: float) -> torch.Tensor:
-
     """
     Convert piecewise constant approximation to activity score.
     :param sig: signal
@@ -287,7 +284,6 @@ def gconv(data: torch.Tensor, bandwidth: float) -> torch.Tensor:
 
 
 def gfilt(sigma: float, truncate: float = 4.0) -> torch.Tensor:
-
     """
     Pytorch Gaussian filter with truncation.
     :param sigma: sigma

@@ -15,7 +15,6 @@ from .dip import diptest
 def find_events(
     patterns: torch.Tensor, dt_pval: float
 ) -> Dict[int, Dict[str, torch.Tensor]]:
-
     """
     find events
 

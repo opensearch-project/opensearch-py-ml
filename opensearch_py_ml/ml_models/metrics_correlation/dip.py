@@ -195,7 +195,6 @@ def dip(x: torch.Tensor) -> float:
 
 
 def diptest(x: torch.Tensor) -> Tuple[float, float]:
-
     """
     Testing the dip
 
@@ -381,7 +380,6 @@ def diptest(x: torch.Tensor) -> Tuple[float, float]:
 
 
 def interp(x: torch.Tensor, xp: torch.Tensor, fp: torch.Tensor) -> float:
-
     """
     Intercept
 
