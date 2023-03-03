@@ -12,29 +12,24 @@ import torch
 
 def dip(x: torch.Tensor) -> float:
     """
-    Fast computation of the dip test statistic. See: https://www.jstor.org/stable/pdf/2241144.pdf (paper)
-    and https://www.jstor.org/stable/pdf/2347485.pdf (pseudocode)
-    Debugged and validated against the R package of Prof. Martin Maechler, ETH Zurich:
-    https://rdrr.io/cran/diptest/
+    Computes the Dip test statistic from a sequence of real-valued observations.
 
-    :param x:
+    :param x: 1-D sequence to be evaluated for unimodality.
     :type x: torch.Tensor
-    :return:
+    :return: The dip statistic $d$.
     :rtype: float
     """
 
-    x = torch.sort(x).values  # just assume unsorted
+    x = torch.sort(x).values  # ensure data is sorted
 
     if x[0] == x[-1]:
-        return (
-            0.0  # constant is technically unimodal, but we want to reject these events
-        )
+        return 0.0  # constant is technically unimodal, but we want to reject these events
 
     n = len(x)
     low = 0
     high = n - 1
 
-    # establish indices mn over which combination is req's for GCM fit
+    # establish indices mn over which combination is req'd for GCM fit
     mn = torch.zeros(n)
     for j in range(1, n):
         mn[j] = j - 1
@@ -196,11 +191,24 @@ def dip(x: torch.Tensor) -> float:
 
 def diptest(x: torch.Tensor) -> Tuple[float, float]:
     """
-    Testing the dip
+    Implements the dip test, a statistical test to determine whether
+    a 1-D sequence is unimodal.
 
-    :param x:
+    The test statistic is defined and analyzed in [1], and an efficient
+    algorithm for its computation is given in [2]. The implementation here
+    closely follows the pseudocode in [2].
+
+    Approximate p-values are obtained by interpolation of a precomputed table.
+    Table entries are the result of bootstrap simulations under the worst-case
+    distribution in the set of null hypotheses, namely the uniform distribution.
+
+    References:
+    [1] Hartigan, JA & Hartigan, PM. The dip test of unimodality. Annals of Statistics (1985).
+    [2] Hartigan, PM. Algorithm AS 217: Computation of the dip statistic for unimodality. JRSSC (1985).
+
+    :param x: 1-D sequence to be evaluated for unimodality.
     :type x: torch.Tensor
-    :return:
+    :return: Dip test statistic $d$ and approximate p-value $p$.
     :rtype: Tuple[float, float]
     """
 
@@ -381,19 +389,22 @@ def diptest(x: torch.Tensor) -> Tuple[float, float]:
 
 def interp(x: torch.Tensor, xp: torch.Tensor, fp: torch.Tensor) -> float:
     """
-    Intercept
+    Simple interpolation scheme to estimate the value at `x` of a function
+     with values `fp` at points `xp`. If `x` falls within the range of `xp`,
+    use linear interpolation. Otherwise use constant interpolation from the
+    nearest observed point.
 
-    :param x:
+    :param x: Point at which to approximate the function.
     :type x: torch.Tensor
-    :param xp:
+    :param xp: Observed input values.
     :type xp: torch.Tensor
-    :param fp:
+    :param fp: Observed function values corresponding to each input value.
     :type fp: torch.Tensor
-    :return:
+    :return: Estimated value of the function at `x`.
     :rtype: float
     """
 
-    if torch.all(x < xp):  # constant interpolation outside sD range
+    if torch.all(x < xp):  # constant interpolation outside observed range
         return float(fp[0])
     elif torch.all(x > xp):
         return float(fp[-1])

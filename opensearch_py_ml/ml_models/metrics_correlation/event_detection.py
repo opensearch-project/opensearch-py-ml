@@ -16,13 +16,15 @@ def find_events(
     patterns: torch.Tensor, dt_pval: float
 ) -> Dict[int, Dict[str, torch.Tensor]]:
     """
-    find events
+    Select events from the set of patterns obtained by decomposition
+    of the activity scores.
 
-    :param patterns:
+    :param patterns: Tensor of shape (p, T), with $p$ the number of patterns and $T$ the pattern length.
     :type patterns: torch.Tensor
-    :param dt_pval:
+    :param dt_pval: P-value threshold for event detection. Passed to the dip test.
     :type dt_pval: float
-    :return:
+    :return: Dictionary of detected events. Keys are event IDs. Values are dictionaries with keys 'range' and 'event';
+        'range' gives the interval over which the event occurred, and 'event' is a length-T array of the event intensity.
     :rtype: Dict[int, Dict[str, torch.Tensor]]
     """
 
@@ -31,15 +33,17 @@ def find_events(
     return events
 
 
-def find_unimodal_events(patterns: torch.Tensor, dt_pval: float) -> torch.Tensor:
+def find_unimodal_events(
+    patterns: torch.Tensor, dt_pval: float
+) -> torch.Tensor:
     """
-    find unimodal events
+    Given a set of patterns, return those that are unimodal. Unimodality is evaluated via the dip test.
 
-    :param patterns:
+    :param patterns: Tensor of shape (p, T), with $p$ the number of patterns and $T$ the pattern length.
     :type patterns: torch.Tensor
-    :param dt_pval:
+    :param dt_pval: P-value threshold for event detection. Passed to the dip test.
     :type dt_pval: float
-    :return:
+    :return: Tensor of shape (p_u, T), with $p_u$ the number of unimodal patterns detected.
     :rtype: torch.Tensor
     """
     E = patterns.shape[0]
@@ -56,11 +60,13 @@ def merge_events(
     candidates: torch.Tensor,
 ) -> Dict[int, Dict[str, torch.Tensor]]:
     """
-    merge events
+    Merge candidate events if they have sufficient overlap. Returns a structured object containing all final events,
+    with information on their duration and intensity.
 
-    :param candidates:
+    :param candidates: Tensor of shape (p, T), with $p$ the number of candidate (i.e. unimodal) patterns and $T$ the pattern length.
     :type candidates: torch.Tensor
-    :return:
+    :return: Dictionary of detected events. Keys are event IDs. Values are dictionaries with keys 'range' and 'event';
+        'range' gives the interval over which the event occurred, and 'event' is a length-T array of the event intensity.
     :rtype: Dict[int, Dict[str, torch.Tensor]]
     """
     E, T = candidates.shape
@@ -119,23 +125,34 @@ def assign_metrics_to_events(
     omp_tol: float,
 ) -> Dict[int, Dict[str, torch.Tensor]]:
     """
-    use an assignment scheme to map metrics to events.
+    Given a set of activity scores and the events detected, assign each
+    activity score (i.e. metric) to an event. Each metric can be assigned
+    to zero, one, or multiple events.
 
-    :param events:
+
+    :param events: Events detected in the activity score data.
     :type events: dict[int, dict[str, torch.Tensor]]
-    :param activity_scores:
+    :param activity_scores: The activiy scores from which the events were computed.
     :type activity_scores: torch.Tensor
-    :param omp_tol:
+    :param omp_tol: Threshold for event assignment via orthogonal matching pursuit.
+        Each next event is assigned to the metric if it explains a proportion of the
+        residual variance at least equal to `omp_tol`.
     :type omp_tol: float
-    :return:
+    :return: A dictionary with the same structure as the `events` parameter, where each
+        value (event) now also has a 'metrics' field listing the indices of the metrics
+        assigned to that event.
     :rtype: Dict[int, Dict[str, torch.Tensor]]
     """
     (
         M,
         T,
-    ) = activity_scores.shape  # loop over metrics, getting their event assignments
+    ) = (
+        activity_scores.shape
+    )  # loop over metrics, getting their event assignments
 
-    massign = {m: omp_assign(events, activity_scores[m, :], omp_tol) for m in range(M)}
+    massign = {
+        m: omp_assign(events, activity_scores[m, :], omp_tol) for m in range(M)
+    }
 
     # invert this to get list of metrics per event
     evs: List[int] = []
@@ -161,15 +178,22 @@ def omp_assign(
     omp_tol: float,
 ) -> List[int]:
     """
-    omp assign
+    Orthogonal matching pursuit for event assignment. Assignment is defined in
+    terms of explanation: a metric is assigned to an event if that event explains
+    a significant fraction of the metric's activity score. For each metric, the
+    set of explanatory events is determined by orthogonal matching pursuit regression
+    of the activity score against the set of event intensities.
 
-    :param events:
+    :param events: The events used to explain a metric's activity score. Assumed to have
+        the same structure as the output of `find_events()`.
     :type events: dict[int, dict[str, torch.Tensor]]
-    :param activity_score:
+    :param activity_score: 1-D activity score of the metric.
     :type activity_score: torch.Tensor
-    :param omp_tol:
+    :param omp_tol: Threshold for event assignment via orthogonal matching pursuit.
+        Each next event is assigned to the metric if it explains a proportion of the
+        residual variance at least equal to `omp_tol`.
     :type omp_tol: float
-    :return:
+    :return: List of events assigned to the metric.
     :rtype: List[int]
     """
 
@@ -188,7 +212,9 @@ def omp_assign(
 
     while not cvg:
         # get remaining event patterns
-        event_mat = torch.stack([events[i]["event"] for i in events_left], dim=1)
+        event_mat = torch.stack(
+            [events[i]["event"] for i in events_left], dim=1
+        )
         event_mat /= torch.linalg.norm(event_mat, dim=0)
 
         # find event that best explains activity score remainder
