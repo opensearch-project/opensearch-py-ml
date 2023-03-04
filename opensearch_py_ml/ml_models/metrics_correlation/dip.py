@@ -12,7 +12,8 @@ import torch
 
 def dip(x: torch.Tensor) -> float:
     """
-    Computes the Dip test statistic from a sequence of real-valued observations.
+    Computes the Dip test statistic from a sequence of real-valued
+    observations.
 
     :param x: 1-D sequence to be evaluated for unimodality.
     :type x: torch.Tensor
@@ -22,8 +23,9 @@ def dip(x: torch.Tensor) -> float:
 
     x = torch.sort(x).values  # ensure data is sorted
 
+    # constant is technically unimodal, but we want to reject these events
     if x[0] == x[-1]:
-        return 0.0  # constant is technically unimodal, but we want to reject these events
+        return 0.0
 
     n = len(x)
     low = 0
@@ -200,11 +202,14 @@ def diptest(x: torch.Tensor) -> Tuple[float, float]:
 
     Approximate p-values are obtained by interpolation of a precomputed table.
     Table entries are the result of bootstrap simulations under the worst-case
-    distribution in the set of null hypotheses, namely the uniform distribution.
+    distribution in the set of null hypotheses, namely the uniform
+    distribution.
 
     References:
-    [1] Hartigan, JA & Hartigan, PM. The dip test of unimodality. Annals of Statistics (1985).
-    [2] Hartigan, PM. Algorithm AS 217: Computation of the dip statistic for unimodality. JRSSC (1985).
+    [1] Hartigan, JA & Hartigan, PM. The dip test of unimodality. Annals of
+        Statistics (1985).
+    [2] Hartigan, PM. Algorithm AS 217: Computation of the dip statistic for
+        unimodality. JRSSC (1985).
 
     :param x: 1-D sequence to be evaluated for unimodality.
     :type x: torch.Tensor
@@ -212,8 +217,8 @@ def diptest(x: torch.Tensor) -> Tuple[float, float]:
     :rtype: Tuple[float, float]
     """
 
-    # torchScript doesn't support tensor values as global variable so we can't put these
-    # constant values in utils.py
+    # torchScript doesn't support tensor values as global variable so we can't
+    # put these constant values in utils.py
 
     N_VALS: torch.Tensor = torch.tensor(
         [100, 200, 500, 700, 1000, 2000, 5000, 7000, 10000, 20000, 50000]
@@ -390,7 +395,7 @@ def diptest(x: torch.Tensor) -> Tuple[float, float]:
 def interp(x: torch.Tensor, xp: torch.Tensor, fp: torch.Tensor) -> float:
     """
     Simple interpolation scheme to estimate the value at `x` of a function
-     with values `fp` at points `xp`. If `x` falls within the range of `xp`,
+    with values `fp` at points `xp`. If `x` falls within the range of `xp`,
     use linear interpolation. Otherwise use constant interpolation from the
     nearest observed point.
 
