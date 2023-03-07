@@ -662,11 +662,20 @@ state-of-the-art models. Note that resulting BERT model is a customized model si
                         <span class="n">output_model_name</span> <span class="o">=</span> <span class="s1">&#39;test2_model.pt&#39;</span><span class="p">,</span>
                         <span class="n">zip_file_name</span><span class="o">=</span> <span class="s1">&#39;test2_model.zip&#39;</span><span class="p">,</span>
                         <span class="n">overwrite</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-                        <span class="n">num_epochs</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+                        <span class="n">num_epochs</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
                         <span class="n">verbose</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
+<p>Following are some important points about the training cell executed above,</p>
+<ol class="arabic simple">
+<li><p>The input to the training script consists of (query, passage) pairs. The model is trained to maximize the dot product between relevant queries and passages while at the same time minimize the dot product between queries and irrelevant passages. This is also known as contrastive learning. We implement this using in-batch negatives and a symmetric loss as mentioned below.</p></li>
+<li><p>To utilize the power of GPUs we collect training samples into a batch before sending for model training. Each batch contains B number of randomly selected training samples (q, p). Thus within a batch each query has one relevant passage and B-1 irrelevant passages. Similarly for every passage there’s one relevant query and B-1 irrelevant queries. For every given relevant query and passage pair we minimize the following expression, called the loss,</p></li>
+<li><p>For a given batch B, the loss is defined as loss = C(q, p) + C(p, q) where <span class="math notranslate nohighlight">\(C(q, p) = - \sum_{i=1}^{i=B} \log \left( \frac{exp(q_i \cdot p_i)}{\sum_{j=1} ^{B} exp(q_i \cdot p_j)}\right)\)</span></p></li>
+<li><p>The model truncates documents beyond 512 tokens. If the corpus contains documents that are shorter than 512 tokens the model max length can be adjusted to that number. Shorter sequences take less memory and therefore allow for bigger batch sizes. The max length can be adjusted by the “percentile” argument.</p></li>
+<li><p>We use a batch size of 32 per device. Larger batch sizes lead to more in-batch negative samples and lead to better performance but unfortunately they also lead to out of memory issues. Shorter sequences use less memory, so if the document corpus is short feel free to experiment with larger batch sizes.</p></li>
+<li><p>The model is trained using the AdamW optimizer for 10 epochs with a learning rate of 2e-5 and a scheduler with linear schedule with warmup steps = 10,000</p></li>
+</ol>
 </section>
 <section id="Step-5:-Upload-the-model-to-OpenSearch-cluster">
 <h3>Step 5: Upload the model to OpenSearch cluster<a class="headerlink" href="#Step-5:-Upload-the-model-to-OpenSearch-cluster" title="Permalink to this heading"></a></h3>
