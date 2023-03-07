@@ -207,3 +207,13 @@ class RandomScoreFilter(QueryFilter):
             seed = {"seed": random_state, "field": "_seq_no"}
 
         super().__init__({"function_score": {"query": q.build(), "random_score": seed}})
+
+class Range(BooleanFilter):
+    def __init__(self, field: str, lower: Optional[Any] = None, upper: Optional[Any] = None) -> None:
+        super().__init__()
+        range_filter = {}
+        if lower is not None:
+            range_filter["gte"] = lower
+        if upper is not None:
+            range_filter["lte"] = upper
+        self._filter = {"range": {field: range_filter}}
