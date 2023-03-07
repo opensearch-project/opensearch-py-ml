@@ -10,31 +10,29 @@ from typing import Tuple
 import torch
 
 
-def dip(x: torch.Tensor) -> float:
+def dip(seq: torch.Tensor) -> float:
     """
-    Fast computation of the dip test statistic. See: https://www.jstor.org/stable/pdf/2241144.pdf (paper)
-    and https://www.jstor.org/stable/pdf/2347485.pdf (pseudocode)
-    Debugged and validated against the R package of Prof. Martin Maechler, ETH Zurich:
-    https://rdrr.io/cran/diptest/
+    Computes the Dip test statistic from a sequence of real-valued
+    observations.
 
-    :param x:
-    :type x: torch.Tensor
-    :return:
+    :param seq: 1-D sequence to be evaluated for unimodality.
+    :type seq: torch.Tensor
+    :return: The dip statistic $d$.
     :rtype: float
     """
 
-    x = torch.sort(x).values  # just assume unsorted
+    seq = torch.sort(seq).values  # ensure data is sorted
 
-    if x[0] == x[-1]:
-        return (
-            0.0  # constant is technically unimodal, but we want to reject these events
-        )
+    # constant is technically unimodal, but we want to reject these events
+    if seq[0] == seq[-1]:
+        return 0.0
 
-    n = len(x)
+    n = len(seq)
     low = 0
     high = n - 1
 
-    # establish indices mn over which combination is req's for GCM fit
+    # setup: find indices mn of candidate points for
+    # GCM (greatest convex minorant) fit
     mn = torch.zeros(n)
     for j in range(1, n):
         mn[j] = j - 1
@@ -43,11 +41,12 @@ def dip(x: torch.Tensor) -> float:
             mnmnj = int(mn[mnj].item())
             a = float(mnj - mnmnj)
             b = float(j - mnj)
-            if mnj == 0 or (x[j] - x[mnj]) * a < (x[mnj] - x[mnmnj]) * b:
+            if mnj == 0 or (seq[j] - seq[mnj]) * a < (seq[mnj] - seq[mnmnj]) * b:
                 break
             mn[j] = mnmnj
 
-    # establish indices mj over which combination is req's for LCM fit
+    # setup: find indices mj of candidate points for
+    # LCM (least concave minorant) fit
     mj = torch.zeros(n)
     mj[n - 1] = n - 1
     for k in range(n - 2, -1, -1):
@@ -57,12 +56,15 @@ def dip(x: torch.Tensor) -> float:
             mjmjk = int(mj[mjk].item())
             a = float(mjk - mjmjk)
             b = float(k - mjk)
-            if mjk == n - 1 or (x[k] - x[mjk]) * a < (x[mjk] - x[mjmjk]) * b:
+            if mjk == n - 1 or (seq[k] - seq[mjk]) * a < (seq[mjk] - seq[mjmjk]) * b:
                 break
             mj[k] = mjmjk
 
     #
-    # Start the cycling
+    # Main loop: step through candidate endpoints,
+    # finding maximum dip from both GCM and LCM.
+    # If this increases current estimate of dip, continue.
+    # Otherwise break and return dip statistic.
     #
     dstar = 1.0
     while True:
@@ -94,15 +96,14 @@ def dip(x: torch.Tensor) -> float:
         d = 0.0
         if l_lcm != 2 or l_gcm != 2:
             while True:
-                # compute dx
                 gcmix = gcm[ix]
                 lcmiv = lcm[iv]
 
                 if gcmix > lcmiv:
                     gcmi1 = gcm[ix + 1]
-                    dx = (lcmiv - gcmi1 + 1) - (x[lcmiv] - x[gcmi1]) * (
+                    dx = (lcmiv - gcmi1 + 1) - (seq[lcmiv] - seq[gcmi1]) * (
                         gcmix - gcmi1
-                    ) / (x[gcmix] - x[gcmi1])
+                    ) / (seq[gcmix] - seq[gcmi1])
                     iv += 1
                     if dx >= d:
                         d = dx
@@ -110,8 +111,8 @@ def dip(x: torch.Tensor) -> float:
                         ih = iv - 1
                 else:
                     lcmiv1 = lcm[iv - 1]
-                    dx = (x[gcmix] - x[lcmiv1]) * (lcmiv - lcmiv1) / (
-                        x[lcmiv] - x[lcmiv1]
+                    dx = (seq[gcmix] - seq[lcmiv1]) * (lcmiv - lcmiv1) / (
+                        seq[lcmiv] - seq[lcmiv1]
                     ) - (gcmix - lcmiv1 - 1)
                     ix -= 1
                     if dx >= d:
@@ -138,12 +139,12 @@ def dip(x: torch.Tensor) -> float:
             max_t = 1.0
             jb = gcm[j + 1]
             je = gcm[j]
-            if je - jb > 1 and x[je] != x[jb]:
+            if je - jb > 1 and seq[je] != seq[jb]:
                 C = torch.log(torch.tensor(je - jb)) - torch.log(
-                    x[je] - x[jb]
-                )  # log space for numeric stability
+                    seq[je] - seq[jb]
+                )  # compute in log space for numeric stability
                 for jjj in range(jb, je + 1):
-                    xx = torch.log(x[jjj] - x[jb])
+                    xx = torch.log(seq[jjj] - seq[jb])
                     t = (jjj - jb + 1) - torch.exp(xx + C)
                     if max_t < t:
                         max_t = t
@@ -157,12 +158,12 @@ def dip(x: torch.Tensor) -> float:
             max_t = 1.0
             jb = lcm[j]
             je = lcm[j + 1]
-            if je - jb > 1 and x[je] != x[jb]:
+            if je - jb > 1 and seq[je] != seq[jb]:
                 C = torch.log(torch.tensor(je - jb)) - torch.log(
-                    x[je] - x[jb]
-                )  # log space for numeric stability
+                    seq[je] - seq[jb]
+                )  # compute in log space for numeric stability
                 for jjj in range(jb, je + 1):
-                    xx = torch.log(x[jjj] - x[jb])
+                    xx = torch.log(seq[jjj] - seq[jb])
                     t = torch.exp(xx + C) - (jjj - jb - 1)
                     if max_t < t:
                         max_t = t
@@ -194,18 +195,34 @@ def dip(x: torch.Tensor) -> float:
     return dstar  # mn, mj, gcm, lcm, dstar
 
 
-def diptest(x: torch.Tensor) -> Tuple[float, float]:
+def diptest(seq: torch.Tensor) -> Tuple[float, float]:
     """
-    Testing the dip
+    Implements the dip test, a statistical test to determine whether
+    a 1-D sequence is unimodal.
 
-    :param x:
-    :type x: torch.Tensor
-    :return:
+    The test statistic is defined and analyzed in [1], and an efficient
+    algorithm for its computation is given in [2]. The implementation here
+    closely follows the pseudocode in [2].
+
+    Approximate p-values are obtained by interpolation of a precomputed table.
+    Table entries are the result of bootstrap simulations under the worst-case
+    distribution in the set of null hypotheses, namely the uniform
+    distribution.
+
+    References:
+    [1] Hartigan, JA & Hartigan, PM. The dip test of unimodality. Annals of
+        Statistics (1985).
+    [2] Hartigan, PM. Algorithm AS 217: Computation of the dip statistic for
+        unimodality. JRSSC (1985).
+
+    :param seq: 1-D sequence to be evaluated for unimodality.
+    :type seq: torch.Tensor
+    :return: Dip test statistic $d$ and approximate p-value $p$.
     :rtype: Tuple[float, float]
     """
 
-    # torchScript doesn't support tensor values as global variable so we can't put these
-    # constant values in utils.py
+    # torchScript doesn't support tensor values as global variable so we can't
+    # put these constant values in utils.py
 
     N_VALS: torch.Tensor = torch.tensor(
         [100, 200, 500, 700, 1000, 2000, 5000, 7000, 10000, 20000, 50000]
@@ -352,8 +369,8 @@ def diptest(x: torch.Tensor) -> Tuple[float, float]:
         ]
     )
 
-    n = len(x)
-    D = float(dip(x))
+    n = len(seq)
+    D = float(dip(seq))
 
     i1 = int(torch.searchsorted(N_VALS, n))
     i0 = int(i1 - 1)
@@ -379,29 +396,32 @@ def diptest(x: torch.Tensor) -> Tuple[float, float]:
     return D, p
 
 
-def interp(x: torch.Tensor, xp: torch.Tensor, fp: torch.Tensor) -> float:
+def interp(x_new: torch.Tensor, x_vals: torch.Tensor, f_vals: torch.Tensor) -> float:
     """
-    Intercept
+    Simple interpolation scheme to estimate the value at `x_new` of a function
+    with values `f_vals` at points `x_vals`. If `x_new` falls within the range of
+    `x_vals`, use linear interpolation. Otherwise use constant interpolation from the
+    nearest observed point.
 
-    :param x:
-    :type x: torch.Tensor
-    :param xp:
-    :type xp: torch.Tensor
-    :param fp:
-    :type fp: torch.Tensor
-    :return:
+    :param x_new: Point at which to approximate the function.
+    :type x_new: torch.Tensor
+    :param x_vals: Observed input values.
+    :type xx_valsp: torch.Tensor
+    :param f_vals: Observed function values corresponding to each input value.
+    :type f_vals: torch.Tensor
+    :return: Estimated value of the function at `x`.
     :rtype: float
     """
 
-    if torch.all(x < xp):  # constant interpolation outside sD range
-        return float(fp[0])
-    elif torch.all(x > xp):
-        return float(fp[-1])
+    if torch.all(x_new < x_vals):  # constant interp. outside observed range
+        return float(f_vals[0])
+    elif torch.all(x_new > x_vals):
+        return float(f_vals[-1])
     else:
-        m = (fp[1:] - fp[:-1]) / (xp[1:] - xp[:-1])
-        b = fp[:-1] - (m * xp[:-1])
+        m = (f_vals[1:] - f_vals[:-1]) / (x_vals[1:] - x_vals[:-1])
+        b = f_vals[:-1] - (m * x_vals[:-1])
 
-        i1 = torch.searchsorted(xp, x) - 1
+        i1 = torch.searchsorted(x_vals, x_new) - 1
         i1 = torch.clamp(i1, 0, len(m) - 1)
 
-        return float(m[i1] * x + b[i1])
+        return float(m[i1] * x_new + b[i1])
