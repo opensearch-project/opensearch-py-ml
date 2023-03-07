@@ -31,7 +31,7 @@ def dip(seq: torch.Tensor) -> float:
     low = 0
     high = n - 1
 
-    # setup: find indices mn of candidate points for 
+    # setup: find indices mn of candidate points for
     # GCM (greatest convex minorant) fit
     mn = torch.zeros(n)
     for j in range(1, n):
@@ -399,16 +399,16 @@ def diptest(seq: torch.Tensor) -> Tuple[float, float]:
 def interp(x_new: torch.Tensor, x_vals: torch.Tensor, f_vals: torch.Tensor) -> float:
     """
     Simple interpolation scheme to estimate the value at `x_new` of a function
-    with values `f_vals` at points `x_vals`. If `x_new` falls within the range of 
+    with values `f_vals` at points `x_vals`. If `x_new` falls within the range of
     `x_vals`, use linear interpolation. Otherwise use constant interpolation from the
     nearest observed point.
 
-    :param x: Point at which to approximate the function.
-    :type x: torch.Tensor
-    :param xp: Observed input values.
-    :type xp: torch.Tensor
-    :param fp: Observed function values corresponding to each input value.
-    :type fp: torch.Tensor
+    :param x_new: Point at which to approximate the function.
+    :type x_new: torch.Tensor
+    :param x_vals: Observed input values.
+    :type xx_valsp: torch.Tensor
+    :param f_vals: Observed function values corresponding to each input value.
+    :type f_vals: torch.Tensor
     :return: Estimated value of the function at `x`.
     :rtype: float
     """
