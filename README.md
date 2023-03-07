@@ -18,7 +18,7 @@ OpenSearch-py-ml
 ## Welcome!
 
 **opensearch-py-ml** is a Python client that provides a suite of data analytics and machine learning tools for OpenSearch.
-**Opensearch-py-ml is an experimental project**
+
 It is [a community-driven, open source fork](https://aws.amazon.com/blogs/opensource/introducing-opensearch/) a fork of [eland](https://github.com/elastic/eland), which provides data analysis and machine learning
 licensed under the [Apache v2.0 License](https://github.com/opensearch-project/opensearch-py/blob/main/LICENSE.txt). 
 
@@ -35,9 +35,9 @@ For more information, see [opensearch.org](https://opensearch.org/docs/latest/cl
 
 Opensearch-py-ml can be installed from [PyPI](https://pypi.org/project/opensearch-py-ml) via pip:
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     $ python -m pip install opensearch-py-ml
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ## Code of Conduct
 
