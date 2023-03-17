@@ -77,7 +77,23 @@ OpenSearch-py-ml requires a running version of OpenSearch (from opensearch 2.5) 
 You can install opensearch multiple ways:
 
 1. https://opensearch.org/downloads.html#docker-compose
-2. https://opensearch.org/docs/2.5/install-and-configure/install-opensearch/tar/
+
+After navigating to OpenSearch Dashboards you should update the persistent settings for the cluster. The settings will update the behavior of the machine learning plugin, specifically the ml_commons plugin. 
+
+You should paste this settings in the `Dev Tools` window and run it:
+
+```yml
+PUT /_cluster/settings
+{
+  "persistent" : {
+    "plugins.ml_commons.only_run_on_ml_node" : false, 
+    "plugins.ml_commons.native_memory_threshold" : 100, 
+    "plugins.ml_commons.max_model_on_node": 20
+  }
+}
+```
+
+3. https://opensearch.org/docs/2.5/install-and-configure/install-opensearch/tar/
 
 
 ### Next Steps
