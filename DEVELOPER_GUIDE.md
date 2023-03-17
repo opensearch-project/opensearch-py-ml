@@ -93,7 +93,7 @@ PUT /_cluster/settings
 }
 ```
 
-3. https://opensearch.org/docs/2.5/install-and-configure/install-opensearch/tar/
+2. https://opensearch.org/docs/2.5/install-and-configure/install-opensearch/tar/
 
 
 ### Next Steps
