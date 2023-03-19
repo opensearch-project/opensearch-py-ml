@@ -7,7 +7,7 @@
 
 
 import time
-from typing import List
+from typing import Any, List, Union
 
 from opensearchpy import OpenSearch
 
@@ -63,6 +63,71 @@ class MLCommonClient:
             model_path, model_config_path, isVerbose
         )
 
+    def upload_pretrained_model(self, name: str, version: str, model_format):
+        """
+        This method uploads a pretrained model into opensearch cluster using ml-common plugin's api.
+        First, this method creates a model id to store model metadata and then loads the model from Hugging Face.
+        The model has to be supported by ML Commons. Refer to https://opensearch.org/docs/latest/ml-commons-plugin/pretrained-models/.
+
+        :param name: Name of the pretrained model
+        :type name: string
+        :param version: Version of the pretrained model
+        :type version: string
+        :param model_format: Currently only supports "TORCH_SCRIPT"
+        :return: returns the model_id so that we can use this for further operation.
+        :rtype: string
+        """
+        # creating model meta doc
+        model_config_json = {
+            "name": name,
+            "version": version,
+            "model_format": model_format,
+        }
+        model_id = self._create_model_metadoc(model_config_json)
+
+        # loading the model chunks from model index
+        task = self.load_model(model_id)
+        output = self.get_task_info(task.get("task_id"), wait_until_task_done=True)
+
+        if output["state"] == "COMPLETED":
+            print("Model uploaded successfully")
+        elif output["state"] == "COMPLETED_WITH_ERROR":
+            print("Model uploaded with error")
+        else:
+            raise Exception(output["error"])
+
+        return model_id
+
+    def _create_model_metadoc(self, model_meta_json: dict):
+        """
+        This method creates a model meta doc in the opensearch cluster using ml-common plugin's upload model api
+
+        :param model_meta_json: a dictionary object with model configurations
+        :type model_meta_json: string
+        :return: returns a unique id of the model
+        :rtype: int
+        """
+        output: Union[bool, Any] = self._client.transport.perform_request(
+            method="POST",
+            url=f"{ML_BASE_URI}/models/_upload",
+            body=model_meta_json,
+        )
+        end = time.time() + 120  # timeout seconds
+        task_flag = False
+        while not task_flag or time.time() < end:
+            time.sleep(1)
+            status = self._get_task_info(output["task_id"])
+            if status["state"] != "CREATED":
+                task_flag = True
+        if not task_flag:
+            raise TimeoutError("Creation of model meta doc timed out")
+        if status["state"] == "FAILED":
+            raise Exception(status["error"])
+        print(
+            "Model meta data was created successfully. Model Id: ", status["model_id"]
+        )
+        return status["model_id"]
+
     def load_model(self, model_id: str) -> object:
         """
         This method loads model into opensearch cluster using ml-common plugin's load model api
@@ -89,7 +154,7 @@ class MLCommonClient:
         :type task_id: string
         :param wait_until_task_done: a boolean indicator if we want to wait until a task done before
             returning the task related information
-        :type task_id: bool
+        :type wait_until_task_done: bool
         :return: returns a json object, with detailed information about the task
         :rtype: object
         """
