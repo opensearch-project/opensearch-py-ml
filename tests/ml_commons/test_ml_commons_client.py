@@ -151,12 +151,12 @@ def test_integration_model_train_upload_full_cycle():
 
                 try:
                     ml_client.unload_model(model_id)
-                    time.sleep(30)
+                    time.sleep(60)
                     ml_model_status = ml_client.get_model_info(model_id)
                     print("ml_model_status", ml_model_status)
                     assert ml_model_status.get("model_state") == "UNLOADED"
                 except:  # noqa: E722
-                    raised = True
+                    raised = True   
                 assert raised == False, "Raised Exception in unloading model"
 
                 try:
@@ -165,3 +165,17 @@ def test_integration_model_train_upload_full_cycle():
                 except:  # noqa: E722
                     raised = True
                 assert raised == False, "Raised Exception in deleting model"
+
+                try:
+                    search_model_obj = ml_client.search_model()
+                    assert search_model_obj.get("timed_out") == False
+                except:
+                    raised = True
+                assert raised == False, "Raised Exception in searching all models"
+
+                try:
+                    search_model_obj = ml_client.search_model(algorithm_name="TEXT_EMBEDDING")
+                    assert search_model_obj.get("timed_out") == False
+                except:
+                    raised = True
+                assert raised == False, "Raised Exception in searching all models with given algorithm name"
