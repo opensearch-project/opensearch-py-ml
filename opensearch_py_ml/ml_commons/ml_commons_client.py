@@ -198,3 +198,21 @@ class MLCommonClient:
             method="DELETE",
             url=API_URL,
         )
+    
+    def search_model(self, algorithm_name: str = "") -> object:
+        API_URL = f"{ML_BASE_URI}/models/_search"
+
+        if len(algorithm_name) == 0:
+            API_BODY = {"query": {"match_all": {}}}
+        else:
+            API_BODY = {
+                "query": {
+                    "term": {"algorithm": {"value": algorithm_name}}
+                }
+            }
+
+        return self._client.transport.perform_request(
+            method="POST",
+            url=API_URL,
+            body=API_BODY,
+        )
