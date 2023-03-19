@@ -41,6 +41,9 @@ MODEL_CONFIG_FILE_PATH = os.path.join(TEST_FOLDER, MODEL_CONFIG_FILE_NAME)
 
 test_model = SentenceTransformerModel(folder_path=TEST_FOLDER, overwrite=True)
 
+PRETRAINED_MODEL_NAME = "huggingface/sentence-transformers/all-MiniLM-L12-v2"
+PRETRAINED_MODEL_VERSION = "1.0.1"
+PRETRAINED_MODEL_FORMAT = "TORCH_SCRIPT"
 
 def clean_test_folder(TEST_FOLDER):
     if os.path.exists(TEST_FOLDER):
@@ -68,6 +71,47 @@ clean_test_folder(TEST_FOLDER)
 def test_init():
     assert type(ml_client._client) == OpenSearch
     assert type(ml_client._model_uploader) == ModelUploader
+
+
+def test_integration_pretrained_model_upload_unload_delete():
+    raised = False
+    try:
+        model_id = ml_client.upload_pretrained_model(
+            name=PRETRAINED_MODEL_NAME,
+            version=PRETRAINED_MODEL_VERSION,
+            model_format=PRETRAINED_MODEL_FORMAT
+        )
+    except:
+        raised=True
+    assert raised == False, "Raised Exception during pretrained model upload"
+
+    if model_id:
+        raised = False
+        try:
+            ml_model_status = ml_client.get_model_info(model_id)
+            assert ml_model_status.get("model_format") == "TORCH_SCRIPT"
+            assert ml_model_status.get("algorithm") == "TEXT_EMBEDDING"
+        except:
+            raised = True
+        assert raised == False, "Raised Exception in getting pretrained model info"
+
+        raised = False
+        try:
+            ml_client.unload_model(model_id)
+            time.sleep(30)
+            ml_model_status = ml_client.get_model_info(model_id)
+            print("ml_model_status", ml_model_status)
+            assert ml_model_status.get("model_state") == "UNLOADED"
+        except:
+            raised = True
+        assert raised == False, "Raised Exception in unloading pretrained model"
+
+        try:
+            delete_model_obj = ml_client.delete_model(model_id)
+            assert delete_model_obj.get("result") == "deleted"
+        except:
+            raised = True
+        assert raised == False, "Raised Exception in deleting pretrained model"
 
 
 def test_integration_model_train_upload_full_cycle():
