@@ -84,11 +84,26 @@ You can install opensearch multiple ways:
 
 Now that you have a development environment to play with, there are a number of different paths you may take next.
 
+#### Update the settings for the cluster
+After navigating to OpenSearch Dashboards you should update the persistent settings for the cluster. The settings will update the behavior of the machine learning plugin, specifically the ml_commons plugin. ML Commons cluster settings: https://opensearch.org/docs/latest/ml-commons-plugin/cluster-settings/
+
+You should paste this settings in the `Dev Tools` window and run it:
+
+```yml
+ PUT /_cluster/settings
+ {
+   "persistent" : {
+     "plugins.ml_commons.only_run_on_ml_node" : false, 
+     "plugins.ml_commons.native_memory_threshold" : 100, 
+     "plugins.ml_commons.max_model_on_node": 20
+   }
+ }
+```
+
 #### Review user tutorials to understand the key features and workflows
 
 - These [Notebook Examples](https://opensearch-project.github.io/opensearch-py-ml/examples/index.html) will show you how to use opensearch-py-ml for data exploration and machine learning.
 - [API references](https://opensearch-project.github.io/opensearch-py-ml/reference/index.html) provides helpful guidance using different functionalities of opensearch-py-ml
-
 
 #### To test code formatting and linting issue we can run
 
