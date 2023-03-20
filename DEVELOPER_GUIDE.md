@@ -77,7 +77,14 @@ OpenSearch-py-ml requires a running version of OpenSearch (from opensearch 2.5) 
 You can install opensearch multiple ways:
 
 1. https://opensearch.org/downloads.html#docker-compose
+2. https://opensearch.org/docs/2.5/install-and-configure/install-opensearch/tar/
 
+
+### Next Steps
+
+Now that you have a development environment to play with, there are a number of different paths you may take next.
+
+#### Update the settings for the cluster
 After navigating to OpenSearch Dashboards you should update the persistent settings for the cluster. The settings will update the behavior of the machine learning plugin, specifically the ml_commons plugin. ML Commons cluster settings: https://opensearch.org/docs/latest/ml-commons-plugin/cluster-settings/
 
 You should paste this settings in the `Dev Tools` window and run it:
@@ -93,18 +100,10 @@ You should paste this settings in the `Dev Tools` window and run it:
  }
 ```
 
-2. https://opensearch.org/docs/2.5/install-and-configure/install-opensearch/tar/
-
-
-### Next Steps
-
-Now that you have a development environment to play with, there are a number of different paths you may take next.
-
 #### Review user tutorials to understand the key features and workflows
 
 - These [Notebook Examples](https://opensearch-project.github.io/opensearch-py-ml/examples/index.html) will show you how to use opensearch-py-ml for data exploration and machine learning.
 - [API references](https://opensearch-project.github.io/opensearch-py-ml/reference/index.html) provides helpful guidance using different functionalities of opensearch-py-ml
-
 
 #### To test code formatting and linting issue we can run
 
