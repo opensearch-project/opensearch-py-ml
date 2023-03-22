@@ -63,10 +63,11 @@ class MLCommonClient:
             model_path, model_config_path, isVerbose
         )
 
-    def upload_pretrained_model(self, name: str, version: str, model_format):
+    def upload_pretrained_model(self, name: str, version: str, model_format: str, load_model: bool = True):
         """
         This method uploads a pretrained model into opensearch cluster using ml-common plugin's api.
-        First, this method creates a model id to store model metadata and then loads the model from Hugging Face.
+        First, this method creates a model id to store model info
+        and then loads the model from Hugging Face if load_model is True.
         The model has to be supported by ML Commons. Refer to https://opensearch.org/docs/latest/ml-commons-plugin/pretrained-models/.
 
         :param name: Name of the pretrained model
@@ -74,6 +75,9 @@ class MLCommonClient:
         :param version: Version of the pretrained model
         :type version: string
         :param model_format: Currently only supports "TORCH_SCRIPT"
+        :type model_format: string
+        :param load_model: Whether to load the model chunks from Hugging Face
+        :type load_model: bool
         :return: returns the model_id so that we can use this for further operation.
         :rtype: string
         """
@@ -83,24 +87,25 @@ class MLCommonClient:
             "version": version,
             "model_format": model_format,
         }
-        model_id = self._create_model_metadoc(model_config_json)
+        model_id = self._send_model_info(model_config_json)
 
         # loading the model chunks from model index
-        task = self.load_model(model_id)
-        output = self.get_task_info(task.get("task_id"), wait_until_task_done=True)
+        if load_model:
+            task = self.load_model(model_id)
+            output = self.get_task_info(task.get("task_id"), wait_until_task_done=True)
 
-        if output["state"] == "COMPLETED":
-            print("Model uploaded successfully")
-        elif output["state"] == "COMPLETED_WITH_ERROR":
-            print("Model uploaded with error")
-        else:
-            raise Exception(output["error"])
+            if output["state"] == "COMPLETED":
+                print("Model loaded into memory successfully")
+            elif output["state"] == "COMPLETED_WITH_ERROR":
+                print("Model loaded into memory with error")
+            else:
+                raise Exception(output["error"])
 
         return model_id
 
-    def _create_model_metadoc(self, model_meta_json: dict):
+    def _send_model_info(self, model_meta_json: dict):
         """
-        This method creates a model meta doc in the opensearch cluster using ml-common plugin's upload model api
+        This method sends the pretrained model info to ML Commons' upload api
 
         :param model_meta_json: a dictionary object with model configurations
         :type model_meta_json: string
@@ -120,11 +125,11 @@ class MLCommonClient:
             if status["state"] != "CREATED":
                 task_flag = True
         if not task_flag:
-            raise TimeoutError("Creation of model meta doc timed out")
+            raise TimeoutError("Uploading model timed out")
         if status["state"] == "FAILED":
             raise Exception(status["error"])
         print(
-            "Model meta data was created successfully. Model Id: ", status["model_id"]
+            "Model was uploaded successfully. Model Id: ", status["model_id"]
         )
         return status["model_id"]
 
