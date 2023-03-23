@@ -63,7 +63,9 @@ class MLCommonClient:
             model_path, model_config_path, isVerbose
         )
 
-    def upload_pretrained_model(self, name: str, version: str, model_format: str, load_model: bool = True):
+    def upload_pretrained_model(
+        self, name: str, version: str, model_format: str, load_model: bool = True
+    ):
         """
         This method uploads a pretrained model into opensearch cluster using ml-common plugin's api.
         First, this method creates a model id to store model info
@@ -128,9 +130,7 @@ class MLCommonClient:
             raise TimeoutError("Uploading model timed out")
         if status["state"] == "FAILED":
             raise Exception(status["error"])
-        print(
-            "Model was uploaded successfully. Model Id: ", status["model_id"]
-        )
+        print("Model was uploaded successfully. Model Id: ", status["model_id"])
         return status["model_id"]
 
     def load_model(self, model_id: str) -> object:

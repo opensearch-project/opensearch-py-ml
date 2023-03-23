@@ -45,6 +45,7 @@ PRETRAINED_MODEL_NAME = "huggingface/sentence-transformers/all-MiniLM-L12-v2"
 PRETRAINED_MODEL_VERSION = "1.0.1"
 PRETRAINED_MODEL_FORMAT = "TORCH_SCRIPT"
 
+
 def clean_test_folder(TEST_FOLDER):
     if os.path.exists(TEST_FOLDER):
         for files in os.listdir(TEST_FOLDER):
@@ -79,10 +80,10 @@ def test_integration_pretrained_model_upload_unload_delete():
         model_id = ml_client.upload_pretrained_model(
             name=PRETRAINED_MODEL_NAME,
             version=PRETRAINED_MODEL_VERSION,
-            model_format=PRETRAINED_MODEL_FORMAT
+            model_format=PRETRAINED_MODEL_FORMAT,
         )
     except:
-        raised=True
+        raised = True
     assert raised == False, "Raised Exception during pretrained model upload"
 
     if model_id:
