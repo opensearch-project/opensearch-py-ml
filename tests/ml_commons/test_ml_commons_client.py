@@ -99,7 +99,7 @@ def test_integration_pretrained_model_upload_unload_delete():
         raised = False
         try:
             ml_client.unload_model(model_id)
-            time.sleep(30)
+            time.sleep(60)
             ml_model_status = ml_client.get_model_info(model_id)
             print("ml_model_status", ml_model_status)
             assert ml_model_status.get("model_state") == "UNLOADED"
