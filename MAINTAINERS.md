@@ -6,7 +6,13 @@ This document contains a list of maintainers in this repo. See [opensearch-proje
 
 | Maintainer  | GitHub ID                                                 | Affiliation |
 | ----------- | --------------------------------------------------------- | ----------- |
-| Yaliang Wu  | [ylwu-amzn](https://github.com/ylwu-amzn)                 | Amazon      |
-| Sean Zheng  | [sean-zheng-amazon](https://github.com/sean-zheng-amazon) | Amazon      |
 | Dhrubo Saha | [dhrubo-os](https://github.com/dhrubo-os)                 | Amazon      |
-| Mingshi Liu | [mingshl](https://github.com/mingshl)                     | Amazon      |
+| Yaliang Wu  | [ylwu-amzn](https://github.com/ylwu-amzn)                 | Amazon      |
+
+
+
+## Emeritus
+
+| Maintainer             | GitHub ID                                   | Affiliation |
+|----------------------|---------------------------------------------|-------------|
+| Mingshi Liu       | [mingshl](https://github.com/mingshl)           | Amazon      |
