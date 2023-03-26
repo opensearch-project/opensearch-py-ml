@@ -64,29 +64,33 @@ class MLCommonClient:
         )
 
     def upload_pretrained_model(
-        self, name: str, version: str, model_format: str, load_model: bool = True
+        self,
+        model_name: str,
+        model_version: str,
+        model_format: str,
+        load_model: bool = True,
     ):
         """
         This method uploads a pretrained model into opensearch cluster using ml-common plugin's api.
         First, this method creates a model id to store model info
-        and then loads the model from Hugging Face if load_model is True.
+        and then loads the model in memory if load_model is True.
         The model has to be supported by ML Commons. Refer to https://opensearch.org/docs/latest/ml-commons-plugin/pretrained-models/.
 
-        :param name: Name of the pretrained model
-        :type name: string
-        :param version: Version of the pretrained model
-        :type version: string
-        :param model_format: Currently only supports "TORCH_SCRIPT"
+        :param model_name: Name of the pretrained model
+        :type model_name: string
+        :param model_version: Version of the pretrained model
+        :type model_version: string
+        :param model_format: "TORCH_SCRIPT" or "ONNX"
         :type model_format: string
-        :param load_model: Whether to load the model chunks from Hugging Face
+        :param load_model: Whether to load the model in memory using uploaded model chunks
         :type load_model: bool
-        :return: returns the model_id so that we can use this for further operation.
+        :return: returns the model_id so that we can use this for further operation
         :rtype: string
         """
         # creating model meta doc
         model_config_json = {
-            "name": name,
-            "version": version,
+            "name": model_name,
+            "version": model_version,
             "model_format": model_format,
         }
         model_id = self._send_model_info(model_config_json)
@@ -110,9 +114,9 @@ class MLCommonClient:
         This method sends the pretrained model info to ML Commons' upload api
 
         :param model_meta_json: a dictionary object with model configurations
-        :type model_meta_json: string
+        :type model_meta_json: dict
         :return: returns a unique id of the model
-        :rtype: int
+        :rtype: string
         """
         output: Union[bool, Any] = self._client.transport.perform_request(
             method="POST",
