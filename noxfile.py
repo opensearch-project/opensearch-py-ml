@@ -27,9 +27,12 @@ from pathlib import Path
 
 import nox
 
+from os.path import abspath, dirname, exists, join, pardir
+
 BASE_DIR = Path(__file__).parent
 # SOURCE_FILES = ("setup.py", "noxfile.py", "eland/", "docs/", "utils/", "tests/", "bin/")
-SOURCE_FILES = ("setup.py", "noxfile.py", "opensearch_py_ml/", "utils/", "tests/")
+SOURCE_FILES = ("setup.py", "noxfile.py",
+                "opensearch_py_ml/", "utils/", "tests/")
 
 # Whenever type-hints are completed on a file it should
 # be added here so that this file will continue to be checked
@@ -115,6 +118,14 @@ def test(session, pandas_version: str):
     session.run("python", "-m", "pip", "install", f"pandas~={pandas_version}")
     session.run("python", "-m", "setup_tests")
 
+    junit_xml = join(
+        abspath(dirname(__file__)), "junit", "opensearch-py-junit.xml"
+    )
+    codecov_xml = join(
+        abspath(dirname(__file__)
+                ), "junit", "opensearch-py-codecov.xml"
+    )
+
     pytest_args = (
         "python",
         "-m",
@@ -124,6 +135,8 @@ def test(session, pandas_version: str):
         "--cov-config=setup.cfg",
         "--doctest-modules",
         "--nbval",
+        "--junitxml=%s" % junit_xml,
+        "--cov-report=xml:%s" % codecov_xml,
     )
 
     session.run(
