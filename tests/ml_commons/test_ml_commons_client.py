@@ -82,7 +82,7 @@ def test_integration_pretrained_model_upload_unload_delete():
             model_version=PRETRAINED_MODEL_VERSION,
             model_format=PRETRAINED_MODEL_FORMAT,
         )
-    except:
+    except:  # noqa: E722
         raised = True
     assert raised == False, "Raised Exception during pretrained model upload"
 
@@ -92,7 +92,7 @@ def test_integration_pretrained_model_upload_unload_delete():
             ml_model_status = ml_client.get_model_info(model_id)
             assert ml_model_status.get("model_format") == "TORCH_SCRIPT"
             assert ml_model_status.get("algorithm") == "TEXT_EMBEDDING"
-        except:
+        except:  # noqa: E722
             raised = True
         assert raised == False, "Raised Exception in getting pretrained model info"
 
@@ -103,14 +103,14 @@ def test_integration_pretrained_model_upload_unload_delete():
             ml_model_status = ml_client.get_model_info(model_id)
             print("ml_model_status", ml_model_status)
             assert ml_model_status.get("model_state") == "UNLOADED"
-        except:
+        except:  # noqa: E722
             raised = True
         assert raised == False, "Raised Exception in unloading pretrained model"
 
         try:
             delete_model_obj = ml_client.delete_model(model_id)
             assert delete_model_obj.get("result") == "deleted"
-        except:
+        except:  # noqa: E722
             raised = True
         assert raised == False, "Raised Exception in deleting pretrained model"
 
