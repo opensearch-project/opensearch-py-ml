@@ -97,15 +97,20 @@ class MLCommonClient:
 
         # loading the model chunks from model index
         if load_model:
-            task = self.load_model(model_id)
-            output = self.get_task_info(task.get("task_id"), wait_until_task_done=True)
+            self.load_model(model_id)
+            for i in range(120):  # timeout is 120 seconds
+                time.sleep(1)
+                ml_model_status = self.get_model_info(model_id)
+                model_state = ml_model_status.get("model_state")
+                if model_state != "LOADING":
+                    break
 
-            if output["state"] == "COMPLETED":
+            if model_state == "LOADED":
                 print("Model loaded into memory successfully")
-            elif output["state"] == "COMPLETED_WITH_ERROR":
-                print("Model loaded into memory with error")
+            elif model_state == "PARTIALLY_LOADED":
+                print("Model was loaded into memory only partially")
             else:
-                raise Exception(output["error"])
+                raise Exception("Model load failed")
 
         return model_id
 

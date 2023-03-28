@@ -45,6 +45,8 @@ PRETRAINED_MODEL_NAME = "huggingface/sentence-transformers/all-MiniLM-L12-v2"
 PRETRAINED_MODEL_VERSION = "1.0.1"
 PRETRAINED_MODEL_FORMAT = "TORCH_SCRIPT"
 
+UNLOAD_TIMEOUT = 300  # in seconds
+
 
 def clean_test_folder(TEST_FOLDER):
     if os.path.exists(TEST_FOLDER):
@@ -81,10 +83,13 @@ def test_integration_pretrained_model_upload_unload_delete():
             model_name=PRETRAINED_MODEL_NAME,
             model_version=PRETRAINED_MODEL_VERSION,
             model_format=PRETRAINED_MODEL_FORMAT,
+            load_model=True,
         )
+        ml_model_status = ml_client.get_model_info(model_id)
+        assert ml_model_status.get("model_state") == "LOADED"
     except:  # noqa: E722
         raised = True
-    assert raised == False, "Raised Exception during pretrained model upload"
+    assert raised == False, "Raised Exception during pretrained model upload and load"
 
     if model_id:
         raised = False
@@ -99,14 +104,18 @@ def test_integration_pretrained_model_upload_unload_delete():
         raised = False
         try:
             ml_client.unload_model(model_id)
-            time.sleep(60)
+            for i in range(int(UNLOAD_TIMEOUT / 10)):
+                ml_model_status = ml_client.get_model_info(model_id)
+                if ml_model_status.get("model_state") == "UNLOADED":
+                    break
+                time.sleep(10)
             ml_model_status = ml_client.get_model_info(model_id)
-            print("ml_model_status", ml_model_status)
             assert ml_model_status.get("model_state") == "UNLOADED"
         except:  # noqa: E722
             raised = True
         assert raised == False, "Raised Exception in unloading pretrained model"
 
+        raised = False
         try:
             delete_model_obj = ml_client.delete_model(model_id)
             assert delete_model_obj.get("result") == "deleted"
@@ -196,14 +205,18 @@ def test_integration_model_train_upload_full_cycle():
 
                 try:
                     ml_client.unload_model(model_id)
-                    time.sleep(60)
+                    for i in range(int(UNLOAD_TIMEOUT / 10)):
+                        ml_model_status = ml_client.get_model_info(model_id)
+                        if ml_model_status.get("model_state") == "UNLOADED":
+                            break
+                        time.sleep(10)
                     ml_model_status = ml_client.get_model_info(model_id)
-                    print("ml_model_status", ml_model_status)
                     assert ml_model_status.get("model_state") == "UNLOADED"
                 except:  # noqa: E722
                     raised = True
                 assert raised == False, "Raised Exception in unloading model"
 
+                raised = False
                 try:
                     delete_model_obj = ml_client.delete_model(model_id)
                     assert delete_model_obj.get("result") == "deleted"
