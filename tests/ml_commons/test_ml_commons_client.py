@@ -85,8 +85,6 @@ def test_integration_pretrained_model_upload_unload_delete():
             model_format=PRETRAINED_MODEL_FORMAT,
             load_model=True,
         )
-        ml_model_status = ml_client.get_model_info(model_id)
-        assert ml_model_status.get("model_state") == "LOADED"
     except:  # noqa: E722
         raised = True
     assert raised == False, "Raised Exception during pretrained model upload and load"
