@@ -18,6 +18,8 @@ pytest>=7.1.2
 pytest-mock
 pytest-cov
 nbval
+pywavelets
+scikit-learn
 
 #
 # Docs

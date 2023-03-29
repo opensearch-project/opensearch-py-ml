@@ -4,7 +4,7 @@
 # compatible open source license.
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
-from typing import Dict
+from typing import Dict, List
 
 import torch
 
@@ -27,7 +27,7 @@ class MCorr(torch.nn.Module):
 
     def forward(
         self, metrics: torch.Tensor, max_events: int = 3, wavelet_approx: bool = True
-    ) -> Dict[int, Dict[str, torch.Tensor]]:
+    ) -> List[Dict[str, torch.Tensor]]:
         """
         Main entry point of the Metrics Correlation algorithm.
 
@@ -38,7 +38,7 @@ class MCorr(torch.nn.Module):
         :param wavelet_approx
         :type wavelet_approx: int
         :return:
-        :rtype: Dict[int, Dict[str, torch.Tensor]]
+        :rtype: List[int, Dict[str, torch.Tensor]]
         """
 
         #
