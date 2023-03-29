@@ -14,7 +14,7 @@ from .dip import diptest
 
 def find_events(
     patterns: torch.Tensor, dt_pval: float
-) -> Dict[int, Dict[str, torch.Tensor]]:
+) -> List[Dict[str, torch.Tensor]]:
     """
     Select events from the set of patterns obtained by decomposition
     of the activity scores.
@@ -25,11 +25,11 @@ def find_events(
     :param dt_pval: P-value threshold for event detection. Passed to the dip
         test.
     :type dt_pval: float
-    :return: Dictionary of detected events. Keys are event IDs. Values are
+    :return: List of detected events. Elements of the list are
         dictionaries with keys 'range' and 'event'; 'range' gives the interval
         over which the event occurred, and 'event' is a length-T array of the
         event intensity.
-    :rtype: Dict[int, Dict[str, torch.Tensor]]
+    :rtype: List[int, Dict[str, torch.Tensor]]
     """
 
     candidates = find_unimodal_events(patterns, dt_pval)
@@ -64,7 +64,7 @@ def find_unimodal_events(patterns: torch.Tensor, dt_pval: float) -> torch.Tensor
 
 def merge_events(
     candidates: torch.Tensor,
-) -> Dict[int, Dict[str, torch.Tensor]]:
+) -> List[Dict[str, torch.Tensor]]:
     """
     Merge candidate events if they have sufficient overlap. Returns a
     structured object containing all final events, with information on
@@ -73,11 +73,11 @@ def merge_events(
     :param candidates: Tensor of shape (p, T), with $p$ the number of
         candidate (i.e. unimodal) patterns and $T$ the pattern length.
     :type candidates: torch.Tensor
-    :return: Dictionary of detected events. Keys are event IDs. Values are
+    :return: List of detected events. Elements of the list are
         dictionaries with keys 'range' and 'event'; 'range' gives the interval
         over which the event occurred, and 'event' is a length-T array of the
         event intensity.
-    :rtype: Dict[int, Dict[str, torch.Tensor]]
+    :rtype: List[int, Dict[str, torch.Tensor]]
     """
     E, T = candidates.shape
 
@@ -94,13 +94,12 @@ def merge_events(
     send = ends[ix]
     sevents = candidates[ix, :]
 
-    merged: Dict[
-        int, Dict[str, torch.Tensor]
-    ] = {}  # merge in linear pass over time dimension
+    merged: List[
+        Dict[str, torch.Tensor]
+    ] = []  # merge in linear pass over time dimension
     currstart = torch.tensor([-1])
     currend = torch.tensor([-1])
     currevent = torch.ones(T) * -1.0
-    eventnum = 1
 
     for i, s in enumerate(sstart):
         if i == 0:  # first event
@@ -108,11 +107,10 @@ def merge_events(
             currend = send[i]
             currevent = sevents[i, :]
         elif s > currend:  # start of new event; record previous one
-            merged[eventnum] = {
+            merged.append({
                 "range": torch.stack([currstart, currend]),
                 "event": currevent,
-            }
-            eventnum += 1
+            })
             currstart = s
             currend = send[i]
             currevent = sevents[i, :]
@@ -122,18 +120,18 @@ def merge_events(
 
     # record final event
     if currstart > 0:
-        merged[eventnum] = {
+        merged.append({
             "range": torch.stack([currstart, currend]),
             "event": currevent,
-        }
+        })
     return merged
 
 
 def assign_metrics_to_events(
-    events: Dict[int, Dict[str, torch.Tensor]],
+    events: List[Dict[str, torch.Tensor]],
     activity_scores: torch.Tensor,
     omp_tol: float,
-) -> Dict[int, Dict[str, torch.Tensor]]:
+) -> List[Dict[str, torch.Tensor]]:
     """
     Given a set of activity scores and the events detected, assign each
     activity score (i.e. metric) to an event. Each metric can be assigned
@@ -141,7 +139,7 @@ def assign_metrics_to_events(
 
 
     :param events: Events detected in the activity score data.
-    :type events: dict[int, dict[str, torch.Tensor]]
+    :type events: List[int, Dict[str, torch.Tensor]]
     :param activity_scores: The activiy scores from which the events were
         computed.
     :type activity_scores: torch.Tensor
@@ -149,10 +147,10 @@ def assign_metrics_to_events(
         pursuit. Each next event is assigned to the metric if it explains a
         proportion of the residual variance at least equal to `omp_tol`.
     :type omp_tol: float
-    :return: A dictionary with the same structure as the `events` parameter,
-        where each value (event) now also has a 'metrics' field listing the
+    :return: A list with the same structure as the `events` parameter,
+        where each element (event) now also has a 'metrics' field listing the
         indices of the metrics assigned to that event.
-    :rtype: Dict[int, Dict[str, torch.Tensor]]
+    :rtype: List[int, Dict[str, torch.Tensor]]
     """
     (
         M,
@@ -180,7 +178,7 @@ def assign_metrics_to_events(
 
 
 def omp_assign(
-    events: Dict[int, Dict[str, torch.Tensor]],
+    events: List[Dict[str, torch.Tensor]],
     activity_score: torch.Tensor,
     omp_tol: float,
 ) -> List[int]:
@@ -212,7 +210,7 @@ def omp_assign(
     assign: List[int] = []
     assigned_events = torch.empty((len(activity_score), 0))
     cvg = False
-    events_left = list(events.keys())
+    events_left: List[int] = torch.arange(len(events)).tolist()
     r = activity_score
 
     if len(events_left) == 0:  # case where no events were found upstream
