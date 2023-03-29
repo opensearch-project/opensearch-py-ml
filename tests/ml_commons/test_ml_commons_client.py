@@ -165,3 +165,21 @@ def test_integration_model_train_upload_full_cycle():
                 except:  # noqa: E722
                     raised = True
                 assert raised == False, "Raised Exception in deleting model"
+
+                try:
+                    search_model_obj = ml_client.search_model()
+                    assert search_model_obj.get("timed_out") == False
+                except:  # noqa: E722
+                    raised = True
+                assert raised == False, "Raised Exception in searching all models"
+
+                try:
+                    search_model_obj = ml_client.search_model(
+                        algorithm_name="TEXT_EMBEDDING"
+                    )
+                    assert search_model_obj.get("timed_out") == False
+                except:  # noqa: E722
+                    raised = True
+                assert (
+                    raised == False
+                ), "Raised Exception in searching all models with given algorithm name"
