@@ -107,10 +107,12 @@ def merge_events(
             currend = send[i]
             currevent = sevents[i, :]
         elif s > currend:  # start of new event; record previous one
-            merged.append({
-                "range": torch.stack([currstart, currend]),
-                "event": currevent,
-            })
+            merged.append(
+                {
+                    "range": torch.stack([currstart, currend]),
+                    "event": currevent,
+                }
+            )
             currstart = s
             currend = send[i]
             currevent = sevents[i, :]
@@ -120,10 +122,12 @@ def merge_events(
 
     # record final event
     if currstart > 0:
-        merged.append({
-            "range": torch.stack([currstart, currend]),
-            "event": currevent,
-        })
+        merged.append(
+            {
+                "range": torch.stack([currstart, currend]),
+                "event": currevent,
+            }
+        )
     return merged
 
 
