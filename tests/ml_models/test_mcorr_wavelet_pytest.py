@@ -25,7 +25,7 @@ def test_haar_approx():
     T = 32
     for _ in range(5):
         sig = torch.normal(mean=0, std=1, size=[T])
-        assert torch.allclose(wavtools.haar_approx(sig, T), sig, atol=1e-6)
+        torch.testing.assert_close(wavtools.haar_approx(sig, T), sig)
 
 
 def test_haar_truncate():
@@ -45,7 +45,7 @@ def test_haar_truncate():
 
         ptapx = wavtools.haar_approx(sig, truncate=trunc)
 
-        assert torch.allclose(ptapx, torch.FloatTensor(rec), atol=1e-6)
+        torch.testing.assert_close(ptapx, torch.FloatTensor(rec))
 
 
 def test_haar_padding():
@@ -59,7 +59,7 @@ def test_haar_padding():
 
         ptapx = wavtools.haar_approx(sig, truncate=T)
 
-        assert torch.allclose(ptapx, torch.FloatTensor(rec), atol=1e-6)
+        torch.testing.assert_close(ptapx, torch.FloatTensor(rec))
 
 
 def test_lavielle_criterion():
@@ -131,7 +131,7 @@ def test_transform_piecewise_constant():
     sig = torch.zeros(T)
     for bw in [0.1, 1.0, 10.0]:
         scores = wavpc.transform_piecewise_const(sig, bw)
-        assert torch.allclose(sig[:-1], scores)
+        torch.testing.assert_close(sig[:-1], scores)
 
     # scores should always be non-negative
     sig[: T // 2] -= 10.0
@@ -186,7 +186,7 @@ def test_torchscript_output():
 
     tsscores = loaded_model.forward(sig, 5, 2.0)
 
-    assert torch.allclose(ptscores, tsscores, atol=1e-6)
+    torch.testing.assert_close(ptscores, tsscores, rtol=0, atol=0)
 
     os.remove("wavtest.pt")
 

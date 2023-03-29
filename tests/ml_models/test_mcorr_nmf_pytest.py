@@ -36,6 +36,9 @@ def test_nmf_init():
         W_rel_err = np.linalg.norm(Wpt.numpy() - Wsk) / np.linalg.norm(Wsk)
         H_rel_err = np.linalg.norm(Hpt.numpy() - Hsk) / np.linalg.norm(Hsk)
 
+        # check relative errors for matrix-level similarity
+        # and to avoid failing due to ignorable elementwise
+        # numerical differences
         assert W_rel_err <= 1e-4
         assert H_rel_err <= 1e-4
 
@@ -65,6 +68,9 @@ def test_nmf_forward():
             W_rel_err = np.linalg.norm(Wpt.numpy() - Wsk) / np.linalg.norm(Wsk)
             H_rel_err = np.linalg.norm(Hpt.numpy() - Hsk) / np.linalg.norm(Hsk)
 
+            # check relative errors for matrix-level similarity
+            # and to avoid failing due to ignorable elementwise
+            # numerical differences
             assert W_rel_err <= 0.01
             assert H_rel_err <= 0.01
 
@@ -105,7 +111,7 @@ def test_torchscript_output():
 
     tsW, tsH = loaded_model.forward(X, 3, 200, 1e-6)
 
-    assert torch.allclose(ptW, tsW)
-    assert torch.allclose(ptH, tsH)
+    torch.testing.assert_close(ptW, tsW, rtol=0, atol=0)
+    torch.testing.assert_close(ptH, tsH, rtol=0, atol=0)
 
     os.remove("nmftest.pt")

@@ -22,6 +22,13 @@ import opensearch_py_ml.ml_models.metrics_correlation.dip as dip
 
 
 def test_dip_statistic():
+    '''
+    test correctness by computing the dip statistic on 
+    various input sequences. comparisons are made to the
+    equivalent output from the R package 'diptest', the 
+    canonical implementation of this method.
+    '''
+
     T = 128
 
     # uniform eCDF
@@ -54,6 +61,11 @@ def test_dip_statistic():
 
 
 def test_dip_pval():
+    '''
+    as above, reference values (this time for p-values)
+    are obtained from R package 'diptest'
+    '''
+
     # bimodal : p near zero
     T = 256
     xa = torch.arange(T + 1) / (T / 10)
@@ -148,8 +160,8 @@ def test_torchscript_output():
 
     tsD, tsP = loaded_model.forward(sig)
 
-    assert np.allclose(ptD, tsD)
-    assert np.allclose(ptP, tsP)
+    assert np.allclose(ptD, tsD, rtol=0, atol=0)
+    assert np.allclose(ptP, tsP, rtol=0, atol=0)
 
     os.remove("diptest.pt")
 
