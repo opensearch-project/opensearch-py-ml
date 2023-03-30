@@ -202,6 +202,13 @@ def test_integration_model_train_upload_full_cycle():
                     ), "Raised Exception in generating sentence embedding"
 
                 try:
+                    delete_task_obj = ml_client.delete_task(task_id)
+                    assert delete_task_obj.get("result") == "deleted"
+                except:  # noqa: E722
+                    raised = True
+                assert raised == False, "Raised Exception in deleting task"
+
+                try:
                     ml_client.unload_model(model_id)
                     for i in range(int(UNLOAD_TIMEOUT / 10)):
                         ml_model_status = ml_client.get_model_info(model_id)
