@@ -277,3 +277,20 @@ class MLCommonClient:
             method="DELETE",
             url=API_URL,
         )
+
+    def delete_task(self, task_id: str) -> object:
+        """
+        This method deletes a task from opensearch cluster (using ml commons api)
+
+        :param task_id: unique id of the task
+        :type task_id: string
+        :return: returns a json object, with detailed information about the deleted task
+        :rtype: object
+        """
+
+        API_URL = f"{ML_BASE_URI}/tasks/{task_id}"
+
+        return self._client.transport.perform_request(
+            method="DELETE",
+            url=API_URL,
+        )
