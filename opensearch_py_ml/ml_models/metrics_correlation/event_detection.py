@@ -74,9 +74,9 @@ def merge_events(
         candidate (i.e. unimodal) patterns and $T$ the pattern length.
     :type candidates: torch.Tensor
     :return: List of detected events. Elements of the list are
-        dictionaries with keys 'range' and 'event'; 'range' gives the interval
-        over which the event occurred, and 'event' is a length-T array of the
-        event intensity.
+        dictionaries with keys 'event_window' and 'event_pattern';
+        'event_window' gives the interval over which the event occurred,
+        and 'event_pattern' is a length-T array of the event intensity.
     :rtype: List[int, Dict[str, torch.Tensor]]
     """
     E, T = candidates.shape
@@ -109,8 +109,8 @@ def merge_events(
         elif s > currend:  # start of new event; record previous one
             merged.append(
                 {
-                    "range": torch.stack([currstart, currend]),
-                    "event": currevent,
+                    "event_window": torch.stack([currstart, currend]),
+                    "event_pattern": currevent,
                 }
             )
             currstart = s
@@ -124,8 +124,8 @@ def merge_events(
     if currstart > 0:
         merged.append(
             {
-                "range": torch.stack([currstart, currend]),
-                "event": currevent,
+                "event_window": torch.stack([currstart, currend]),
+                "event_pattern": currevent,
             }
         )
     return merged
@@ -176,7 +176,7 @@ def assign_metrics_to_events(
             if int(e) in v:
                 mlist += [k]
 
-        events[int(e)]["metrics"] = torch.tensor(mlist)
+        events[int(e)]["suspected_metrics"] = torch.tensor(mlist)
 
     return events
 
@@ -222,7 +222,7 @@ def omp_assign(
 
     while not cvg:
         # get remaining event patterns
-        event_mat = torch.stack([events[i]["event"] for i in events_left], dim=1)
+        event_mat = torch.stack([events[i]["event_pattern"] for i in events_left], dim=1)
         event_mat /= torch.linalg.norm(event_mat, dim=0)
 
         # find event that best explains activity score remainder
