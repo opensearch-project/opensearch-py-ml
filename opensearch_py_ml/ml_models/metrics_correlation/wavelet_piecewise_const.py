@@ -55,7 +55,9 @@ def wavelet_piecewise_const(
     :rtype: torch.Tensor
     """
     seq = data[m, :]
-    if is_haar_approx:  # compute Haar piecewise constant approx
+    if (torch.abs(torch.diff(seq)) > 0).sum() == 0:
+        return seq  # avoid cost and numerical errors from needless approx
+    elif is_haar_approx:  # compute Haar piecewise constant approx
         N = len(seq)
         J = math.ceil(math.log(N) / math.log(2))
         wav_approx = haar_approx(seq, truncate=J * max_dp_levels)
