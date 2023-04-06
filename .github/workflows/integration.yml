@@ -9,10 +9,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        cluster: ["opensearch"]
-        secured: ["true"]
-        entry:
-          - { opensearch_version: 2.6.0 }
+      opensearch_version: [ '2.4.0' , '2.5.0' , '2.6.0']
+      secured: [ "true", "false" ]
 
     steps:
       - name: Checkout
