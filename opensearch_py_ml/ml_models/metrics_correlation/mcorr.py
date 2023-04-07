@@ -26,7 +26,7 @@ class MCorr(torch.nn.Module):
         self.omp_tol = OMP_TOL
 
     def forward(
-        self, metrics: torch.Tensor, max_events: int = 3, wavelet_approx: bool = True
+        self, metrics: torch.Tensor, max_events: int = 5, wavelet_approx: bool = True
     ) -> List[Dict[str, torch.Tensor]]:
         """
         Main entry point of the Metrics Correlation algorithm.

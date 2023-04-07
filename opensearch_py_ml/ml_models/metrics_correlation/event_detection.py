@@ -222,7 +222,9 @@ def omp_assign(
 
     while not cvg:
         # get remaining event patterns
-        event_mat = torch.stack([events[i]["event_pattern"] for i in events_left], dim=1)
+        event_mat = torch.stack(
+            [events[i]["event_pattern"] for i in events_left], dim=1
+        )
         event_mat /= torch.linalg.norm(event_mat, dim=0)
 
         # find event that best explains activity score remainder

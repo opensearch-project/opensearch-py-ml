@@ -18,7 +18,11 @@ from sklearn.metrics import precision_score, recall_score
 import opensearch_py_ml.ml_models.metrics_correlation.mcorr as mcorr
 
 TESTDATA_FILENAME = os.path.join(
-    os.path.dirname(os.path.abspath("__file__")), "tests", "mcorr_data.pt"
+    os.path.dirname(os.path.abspath("__file__")),
+    "tests",
+    "ml_models",
+    "metrics_correlation",
+    "mcorr_data.pt",
 )
 
 
@@ -57,14 +61,14 @@ def test_const_metrics():
     model = mcorr.MCorr()
 
     # add constant metrics to normal data, check results same
-    events_before = model.forward(test_data)
+    events_before = model.forward(test_data, max_events=3)
 
     M_const = 5
     const_dat = torch.ones((M_const, T)) * torch.normal(0, 20, size=[M_const, 1])
     const_ix = list(range(M, M + M_const))
     full_data = torch.cat((test_data, const_dat), dim=0)
 
-    events_with_const = model.forward(full_data)
+    events_with_const = model.forward(full_data, max_events=3)
 
     assert len(events_before) == len(events_with_const)
     for e_b, e_wc in zip(events_before, events_with_const):
