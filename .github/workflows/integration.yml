@@ -23,4 +23,4 @@ jobs:
         uses: codecov/codecov-action@v2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./junit/opensearch-py-codecov.xml
+          files: ./junit/opensearch-py-ml-codecov.xml
