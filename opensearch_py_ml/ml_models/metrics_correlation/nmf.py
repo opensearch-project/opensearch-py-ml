@@ -136,11 +136,6 @@ class NMF(torch.nn.Module):
                     break
                 prev_err = err
 
-            if i == max_iter:
-                print(
-                    "WARNING: Failed to converge with tolerance {} after {} iterations".format(
-                        tol, max_iter
-                    )
-                )
+            # TODO: convergence warning for case i == max_iter:
 
         return W, H

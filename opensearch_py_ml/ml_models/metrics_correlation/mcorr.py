@@ -40,6 +40,16 @@ class MCorr(torch.nn.Module):
         :return:
         :rtype: List[int, Dict[str, torch.Tensor]]
         """
+        # Validate inputs
+        M, T = metrics.shape
+        if M >= T:
+            raise ValueError(
+                "The number of metrics to correlate must be smaller than the length of each time series."
+            )
+        if max_events > M:
+            raise ValueError(
+                "The number of events must be smaller than the number of metrics. Please reduce max_events."
+            )
 
         #
         # Step 1: piecewise constant approx. and activity scoring for input metrics
