@@ -56,6 +56,8 @@ venv.bak/
 # Coverage
 .coverage
 .coverage.*
+*-junit.xml
+*-codecov.xml
 
 #model file
 all-MiniLM-L6-v2_torchscript_sentence-transformer.zip
