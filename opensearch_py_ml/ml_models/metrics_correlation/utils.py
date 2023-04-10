@@ -6,7 +6,7 @@
 # GitHub history for details.
 
 BANDWIDTH = 16.0
-NMF_MAX_ITER = 200
+NMF_MAX_ITER = 300
 NMF_TOL = 1e-4
 DT_PVAL = 0.5
 OMP_TOL = 0.8

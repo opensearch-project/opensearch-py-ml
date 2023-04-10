@@ -28,10 +28,6 @@ import math
 import torch
 import torch.nn.functional as F
 
-# hardcode haar wavelet and scale filters
-# HAAR_HI = torch.FloatTensor([-1/math.sqrt(2), 1/math.sqrt(2)])
-# HAAR_LO = torch.FloatTensor([1/math.sqrt(2), 1/math.sqrt(2)])
-
 
 def haar_approx(signal: torch.Tensor, truncate: int) -> torch.Tensor:
     """

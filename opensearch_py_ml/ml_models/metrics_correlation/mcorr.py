@@ -26,7 +26,7 @@ class MCorr(torch.nn.Module):
         self.omp_tol = OMP_TOL
 
     def forward(
-        self, metrics: torch.Tensor, max_events: int = 3, wavelet_approx: bool = True
+        self, metrics: torch.Tensor, max_events: int = 5, wavelet_approx: bool = True
     ) -> List[Dict[str, torch.Tensor]]:
         """
         Main entry point of the Metrics Correlation algorithm.
@@ -40,6 +40,12 @@ class MCorr(torch.nn.Module):
         :return:
         :rtype: List[int, Dict[str, torch.Tensor]]
         """
+        # Validate inputs
+        M, T = metrics.shape
+        if M >= T:
+            raise ValueError(
+                "The number of metrics to correlate must be smaller than the length of each time series."
+            )
 
         #
         # Step 1: piecewise constant approx. and activity scoring for input metrics
