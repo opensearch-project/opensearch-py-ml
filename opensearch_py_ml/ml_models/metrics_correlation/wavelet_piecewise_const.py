@@ -153,9 +153,6 @@ def lavielle_criterion(costs: torch.Tensor) -> Tuple[int, torch.Tensor]:
     kmax = len(costs)
     normcosts = (costs[-1] - costs) / (costs[-1] - costs[0]) * (kmax - 1) + 1
 
-    # this line causes problems in torchscript - remove it
-    # normcosts = torch.FloatTensor(normcosts)
-
     # catch NaNs arising from div-by-zero above
     # only happens when cost[1] = cost[kmax], so correct choice is 1 segment
     normcosts[normcosts.isnan()] = -1
@@ -207,7 +204,6 @@ def piecewise_const_to_segs(signal: torch.Tensor) -> Tuple[torch.Tensor, torch.T
         represents the number of occurrences for each unique value or tensor.
     :rtype: torch.Tensor, torch.Tensor
     """
-    # unique_consecutive -> Eliminates all but the first element from every consecutive group of equivalent elements.
     vals, counts = torch.unique_consecutive(signal, return_counts=True)
     return vals, counts
 

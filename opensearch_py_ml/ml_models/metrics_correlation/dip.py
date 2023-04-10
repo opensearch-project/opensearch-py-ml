@@ -171,8 +171,6 @@ def dip(seq: torch.Tensor) -> float:
             if dip_u < max_t:
                 dip_u = max_t
 
-        # print('dip_l, dip_u = ({},{})'.format(dip_l, dip_u))
-
         # update current max dip
         if dip_u > dip_l:
             dipnew = dip_u
@@ -183,8 +181,7 @@ def dip(seq: torch.Tensor) -> float:
             dstar = dipnew
 
         if low == gcm[ig] and high == lcm[ih]:
-            # print('no improvement in low / high -> end')
-            break
+            break  # no improvement in low / high -> end
         else:
             low = gcm[ig]
             high = lcm[ih]
@@ -192,7 +189,7 @@ def dip(seq: torch.Tensor) -> float:
     # end logic
     dstar = dstar / (2 * n)
 
-    return dstar  # mn, mj, gcm, lcm, dstar
+    return dstar
 
 
 def diptest(seq: torch.Tensor) -> Tuple[float, float]:

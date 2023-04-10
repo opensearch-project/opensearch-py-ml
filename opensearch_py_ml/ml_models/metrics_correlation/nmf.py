@@ -38,14 +38,12 @@ class NMF(torch.nn.Module):
         # W update
         VHt = torch.mm(V, H.t())
         WHHt = torch.mm(W, torch.mm(H, H.t()))
-        # WHHt[WHHt==0] = torch.finfo(WHHt.dtype).eps # for safe division
         WHHt[WHHt == 0] = 1.2e-7
         W = torch.mul(W, torch.div(VHt, WHHt))  # note these ops are element-wise
 
         # H update
         WtV = torch.mm(W.t(), V)
         WtWH = torch.mm(torch.mm(W.t(), W), H)
-        # WtWH[WtWH==0] = torch.finfo(WtWH.dtype).eps
         WtWH[WtWH == 0] = 1.2e-7
         H = torch.mul(H, torch.div(WtV, WtWH))
 
@@ -74,7 +72,7 @@ class NMF(torch.nn.Module):
                 U[:, dd] *= -1
                 Vh[dd, :] *= -1
 
-        k = int(k)  # not sure why this is needed but torchscript breaks without it
+        k = int(k)
 
         f, n = V.shape
 
