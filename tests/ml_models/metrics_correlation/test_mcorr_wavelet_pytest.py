@@ -78,7 +78,7 @@ def test_blockwise_DP_seg():
     T = 32
     max_lvls = 5
     for _ in range(5):
-        sig = torch.normal(mean=0, std=1, size=[T])
+        sig = torch.normal(mean=0, std=1, size=[T], dtype=torch.double)
         segs, costs = wavpc.block_wise_dp_segment(sig, max_lvls=max_lvls)
 
         for m in range(max_lvls):
