@@ -23,12 +23,12 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
+from os.path import abspath, dirname, join
 from pathlib import Path
 
 import nox
 
 BASE_DIR = Path(__file__).parent
-# SOURCE_FILES = ("setup.py", "noxfile.py", "eland/", "docs/", "utils/", "tests/", "bin/")
 SOURCE_FILES = ("setup.py", "noxfile.py", "opensearch_py_ml/", "utils/", "tests/")
 
 # Whenever type-hints are completed on a file it should
@@ -73,7 +73,6 @@ def lint(session):
     # Install numpy to use its mypy plugin
     # https://numpy.org/devdocs/reference/typing.html#mypy-plugin
     session.install("black", "flake8", "mypy", "isort", "numpy")
-    session.install("--pre", "opensearch-py==2.1.1")
     session.run("python", "utils/license-headers.py", "check", *SOURCE_FILES)
     session.run("black", "--check", "--target-version=py38", *SOURCE_FILES)
     session.run("isort", "--check", "--profile=black", *SOURCE_FILES)
@@ -116,6 +115,11 @@ def test(session, pandas_version: str):
     session.run("python", "-m", "pip", "install", f"pandas~={pandas_version}")
     session.run("python", "-m", "setup_tests")
 
+    junit_xml = join(abspath(dirname(__file__)), "junit", "opensearch-py-ml-junit.xml")
+    codecov_xml = join(
+        abspath(dirname(__file__)), "junit", "opensearch-py-ml-codecov.xml"
+    )
+
     pytest_args = (
         "python",
         "-m",
@@ -125,6 +129,8 @@ def test(session, pandas_version: str):
         "--cov-config=setup.cfg",
         "--doctest-modules",
         "--nbval",
+        f"--junitxml={junit_xml}",
+        f"--cov-report=xml:{codecov_xml}",
     )
 
     session.run(
