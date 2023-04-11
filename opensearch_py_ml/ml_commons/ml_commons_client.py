@@ -7,7 +7,7 @@
 
 
 import time
-from typing import List
+from typing import Any, List, Union
 
 from opensearchpy import OpenSearch
 
@@ -63,6 +63,85 @@ class MLCommonClient:
             model_path, model_config_path, isVerbose
         )
 
+    def upload_pretrained_model(
+        self,
+        model_name: str,
+        model_version: str,
+        model_format: str,
+        load_model: bool = True,
+    ):
+        """
+        This method uploads a pretrained model into opensearch cluster using ml-common plugin's api.
+        First, this method creates a model id to store model info
+        and then loads the model in memory if load_model is True.
+        The model has to be supported by ML Commons. Refer to https://opensearch.org/docs/latest/ml-commons-plugin/pretrained-models/.
+
+        :param model_name: Name of the pretrained model
+        :type model_name: string
+        :param model_version: Version of the pretrained model
+        :type model_version: string
+        :param model_format: "TORCH_SCRIPT" or "ONNX"
+        :type model_format: string
+        :param load_model: Whether to load the model in memory using uploaded model chunks
+        :type load_model: bool
+        :return: returns the model_id so that we can use this for further operation
+        :rtype: string
+        """
+        # creating model meta doc
+        model_config_json = {
+            "name": model_name,
+            "version": model_version,
+            "model_format": model_format,
+        }
+        model_id = self._send_model_info(model_config_json)
+
+        # loading the model chunks from model index
+        if load_model:
+            self.load_model(model_id)
+            for i in range(120):  # timeout is 120 seconds
+                time.sleep(1)
+                ml_model_status = self.get_model_info(model_id)
+                model_state = ml_model_status.get("model_state")
+                if model_state != "LOADING":
+                    break
+
+            if model_state == "LOADED":
+                print("Model loaded into memory successfully")
+            elif model_state == "PARTIALLY_LOADED":
+                print("Model was loaded into memory only partially")
+            else:
+                raise Exception("Model load failed")
+
+        return model_id
+
+    def _send_model_info(self, model_meta_json: dict):
+        """
+        This method sends the pretrained model info to ML Commons' upload api
+
+        :param model_meta_json: a dictionary object with model configurations
+        :type model_meta_json: dict
+        :return: returns a unique id of the model
+        :rtype: string
+        """
+        output: Union[bool, Any] = self._client.transport.perform_request(
+            method="POST",
+            url=f"{ML_BASE_URI}/models/_upload",
+            body=model_meta_json,
+        )
+        end = time.time() + 120  # timeout seconds
+        task_flag = False
+        while not task_flag or time.time() < end:
+            time.sleep(1)
+            status = self._get_task_info(output["task_id"])
+            if status["state"] != "CREATED":
+                task_flag = True
+        if not task_flag:
+            raise TimeoutError("Uploading model timed out")
+        if status["state"] == "FAILED":
+            raise Exception(status["error"])
+        print("Model was uploaded successfully. Model Id: ", status["model_id"])
+        return status["model_id"]
+
     def load_model(self, model_id: str) -> object:
         """
         This method loads model into opensearch cluster using ml-common plugin's load model api
@@ -89,7 +168,7 @@ class MLCommonClient:
         :type task_id: string
         :param wait_until_task_done: a boolean indicator if we want to wait until a task done before
             returning the task related information
-        :type task_id: bool
+        :type wait_until_task_done: bool
         :return: returns a json object, with detailed information about the task
         :rtype: object
         """
@@ -193,6 +272,23 @@ class MLCommonClient:
         """
 
         API_URL = f"{ML_BASE_URI}/models/{model_id}"
+
+        return self._client.transport.perform_request(
+            method="DELETE",
+            url=API_URL,
+        )
+
+    def delete_task(self, task_id: str) -> object:
+        """
+        This method deletes a task from opensearch cluster (using ml commons api)
+
+        :param task_id: unique id of the task
+        :type task_id: string
+        :return: returns a json object, with detailed information about the deleted task
+        :rtype: object
+        """
+
+        API_URL = f"{ML_BASE_URI}/tasks/{task_id}"
 
         return self._client.transport.perform_request(
             method="DELETE",

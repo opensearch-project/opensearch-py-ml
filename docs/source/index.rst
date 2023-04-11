@@ -15,8 +15,6 @@ Opensearch-py-ml: DataFrames and Machine Learning backed by Opensearch
 Opensearch-py-ml is a Python Opensearch client for exploring and analyzing data
 in Opensearch with a familiar Pandas-compatible API.
 
-**Opensearch-py-ml is an experimental project**
-
 Where possible the package uses existing Python APIs and data structures to make it easy to switch between numpy,
 pandas, scikit-learn to their Opensearch powered equivalents. In general, the data resides in Opensearch and
 not in memory, which allows Opensearch-py-ml to access large datasets stored in Opensearch.

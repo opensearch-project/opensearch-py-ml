@@ -43,9 +43,11 @@ if [[ "$IS_DOC" == "false" ]]; then
   --env "PYTHON_CONNECTION_CLASS=${PYTHON_CONNECTION_CLASS}" \
   --env "TEST_TYPE=server" \
   --name opensearch-py-ml-test-runner \
-  --rm \
   opensearch-project/opensearch-py-ml \
   nox -s "test-${PYTHON_VERSION}(pandas_version='${PANDAS_VERSION}')"
+  docker cp opensearch-py-ml-test-runner:/code/opensearch-py-ml/junit/ ./junit/
+
+  docker rm opensearch-py-ml-test-runner
 else
   docker run \
   --network=${network_name} \
