@@ -6,6 +6,7 @@
 # GitHub history for details.
 
 
+import json
 import time
 from typing import Any, List, Union
 
@@ -293,4 +294,35 @@ class MLCommonClient:
         return self._client.transport.perform_request(
             method="DELETE",
             url=API_URL,
+        )
+
+    def search_model(self, **kwargs) -> object:
+        """
+        This method searches a model from opensearch cluster (using ml commons api)
+        :param kwargs: key value pairs of search model parameters
+        :type kwargs: dict
+        :return: returns a json object, with detailed information about the searched model
+        :rtype: object
+        """
+
+        API_URL = f"{ML_BASE_URI}/models/_search"
+
+        API_BODY = {"query": {"bool": {"filter": []}}}
+
+        for key, value in kwargs.items():
+            try:
+                if key == "json":
+                    API_BODY = value
+                    API_BODY = json.dumps(API_BODY)
+                else:
+                    term_query = {"term": {key: value}}
+                    API_BODY["query"]["bool"]["filter"].append(term_query)
+                    API_BODY = json.dumps(API_BODY)
+            except json.JSONDecodeError:
+                raise Exception("Invalid request body")
+
+        return self._client.transport.perform_request(
+            method="POST",
+            url=API_URL,
+            body=API_BODY,
         )
