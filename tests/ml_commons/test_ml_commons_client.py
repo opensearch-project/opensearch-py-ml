@@ -147,7 +147,7 @@ def test_integration_model_train_upload_full_cycle():
         if model_id:
             raised = False
             try:
-                ml_load_status = ml_client.load_model(model_id, wait_until_loaded=True)
+                ml_load_status = ml_client.load_model(model_id, wait_until_loaded=False)
                 task_id = ml_load_status.get("task_id")
                 assert task_id != "" or task_id is not None
 
@@ -195,30 +195,25 @@ def test_integration_model_train_upload_full_cycle():
                     raised == False
                 ), "Raised Exception in generating sentence embedding"
 
-            try:
-                delete_task_obj = ml_client.delete_task(task_id)
-                assert delete_task_obj.get("result") == "deleted"
-            except:  # noqa: E722
-                raised = True
-            assert raised == False, "Raised Exception in deleting task"
+                try:
+                    delete_task_obj = ml_client.delete_task(task_id)
+                    assert delete_task_obj.get("result") == "deleted"
+                except:  # noqa: E722
+                    raised = True
+                assert raised == False, "Raised Exception in deleting task"
 
-            try:
-                ml_client.unload_model(model_id)
-                # for i in range(int(UNLOAD_TIMEOUT / 10)):
-                #     ml_model_status = ml_client.get_model_info(model_id)
-                #     if ml_model_status.get("model_state") == "UNLOADED":
-                #         break
-                #     time.sleep(10)
-                ml_model_status = ml_client.get_model_info(model_id)
-                assert ml_model_status.get("model_state") == "UNLOADED"
-            except:  # noqa: E722
-                raised = True
-            assert raised == False, "Raised Exception in unloading model"
+                try:
+                    ml_client.unload_model(model_id)
+                    ml_model_status = ml_client.get_model_info(model_id)
+                    assert ml_model_status.get("model_state") == "UNLOADED"
+                except:  # noqa: E722
+                    raised = True
+                assert raised == False, "Raised Exception in unloading model"
 
-            raised = False
-            try:
-                delete_model_obj = ml_client.delete_model(model_id)
-                assert delete_model_obj.get("result") == "deleted"
-            except:  # noqa: E722
-                raised = True
-            assert raised == False, "Raised Exception in deleting model"
+                raised = False
+                try:
+                    delete_model_obj = ml_client.delete_model(model_id)
+                    assert delete_model_obj.get("result") == "deleted"
+                except:  # noqa: E722
+                    raised = True
+                assert raised == False, "Raised Exception in deleting model"
