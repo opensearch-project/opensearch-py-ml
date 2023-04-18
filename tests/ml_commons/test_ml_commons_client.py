@@ -137,7 +137,7 @@ def test_integration_model_train_upload_full_cycle():
         task_id = ""
         try:
             model_id = ml_client.upload_model(
-                MODEL_PATH, MODEL_CONFIG_FILE_PATH, isVerbose=True
+                MODEL_PATH, MODEL_CONFIG_FILE_PATH, load_model=False, isVerbose=True
             )
             print("Model_id:", model_id)
         except:  # noqa: E722
