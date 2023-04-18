@@ -30,6 +30,8 @@ class MLCommonClient:
         model_path: str,
         model_config_path: str,
         isVerbose: bool = False,
+        load_model: bool = True,
+        wait_until_loaded: bool = True,
     ) -> str:
         """
         This method uploads model into opensearch cluster using ml-common plugin's api.
@@ -56,12 +58,22 @@ class MLCommonClient:
         :type model_config_path: string
         :param isVerbose: if isVerbose is true method will print more messages. default False
         :type isVerbose: boolean
+        :param load_model: Whether to load the model in memory using uploaded model chunks
+        :type load_model: bool
+        :param wait_until_loaded: If load_model is true, whether to wait until the model is loaded into memory
+        :type wait_until_loaded: bool
         :return: returns the model_id so that we can use this for further operation.
         :rtype: string
         """
-        return self._model_uploader._upload_model(
+        model_id = self._model_uploader._upload_model(
             model_path, model_config_path, isVerbose
         )
+
+        # loading the model chunks from model index
+        if load_model:
+            self.load_model(model_id, wait_until_loaded=wait_until_loaded)
+
+        return model_id
 
     def upload_pretrained_model(
         self,
@@ -183,7 +195,7 @@ class MLCommonClient:
         :rtype: object
         """
         if wait_until_task_done:
-            end = time.time() + 120  # timeout seconds
+            end = time.time() + TIMEOUT  # timeout seconds
             task_flag = False
             while not task_flag or time.time() < end:
                 time.sleep(1)
