@@ -295,6 +295,7 @@ class MLCommonClient:
             url=API_URL,
         )
     
+
     def train(self, algorithm_name: str, is_async: bool = False) -> object:
         if is_async:
             API_URL = f"{ML_BASE_URI}/_train/{algorithm_name}/?async=true"
