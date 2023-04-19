@@ -294,23 +294,3 @@ class MLCommonClient:
             method="DELETE",
             url=API_URL,
         )
-    
-    def train(self, algorithm_name: str, is_async: bool = False) -> object:
-        
-        if is_async:
-            API_URL = f"{ML_BASE_URI}/_train/{algorithm_name}/?async=true"
-        else:
-            API_URL = f"{ML_BASE_URI}/_train/{algorithm_name}"
-
-        return self._client.transport.perform_request(
-            method="POST",
-            url=API_URL,
-        )
-
-    def predict(self, algorithm_name: str, model_id: str) -> object:
-        API_URL = f"{ML_BASE_URI}/_predict/{algorithm_name}/{model_id}"
-
-        return self._client.transport.perform_request(
-            method="POST",
-            url=API_URL,
-        )
