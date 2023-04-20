@@ -6,6 +6,7 @@
 # GitHub history for details.
 
 
+import json
 import time
 from typing import Any, List, Union
 
@@ -327,8 +328,8 @@ class MLCommonClient:
                 url=API_URL,
             )
 
-        if task_ids and len(task_ids) == 1:
-            API_URL = f"{ML_BASE_URI}/profile/tasks/{task_ids[0]}"
+        if task_ids and len(model_ids) == 1:
+            API_URL = f"{ML_BASE_URI}/profile/models/{model_ids[0]}"
             return self._client.transport.perform_request(
                 method="GET",
                 url=API_URL,
@@ -337,12 +338,21 @@ class MLCommonClient:
         API_URL = f"{ML_BASE_URI}/profile"
 
         API_BODY = {
-            "node_ids": node_ids,
-            "model_ids": model_ids,
-            "task_ids": task_ids,
             "return_all_tasks": return_all_tasks,
             "return_all_models": return_all_models,
         }
+
+        if len(node_ids) > 0:
+            API_BODY["node_ids"] = node_ids
+        if len(model_ids) > 0:
+            API_BODY["model_ids"] = model_ids
+        if len(task_ids) > 0:
+            API_BODY["task_ids"] = task_ids
+
+        try:
+            API_BODY = json.dumps(API_BODY)
+        except json.JSONDecodeError:
+            raise Exception("Invalid request body")
 
         return self._client.transport.perform_request(
             method="GET",
