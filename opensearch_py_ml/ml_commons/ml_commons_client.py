@@ -29,8 +29,8 @@ class MLCommonClient:
         self,
         model_path: str,
         model_config_path: str,
-        load_model: bool,
         isVerbose: bool = False,
+        load_model: bool = True,
         wait_until_loaded: bool = True,
     ) -> str:
         """
@@ -80,7 +80,7 @@ class MLCommonClient:
         model_name: str,
         model_version: str,
         model_format: str,
-        load_model: bool,
+        load_model: bool = True,
         wait_until_loaded: bool = True,
     ):
         """
