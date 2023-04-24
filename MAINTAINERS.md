@@ -7,6 +7,7 @@ This document contains a list of maintainers in this repo. See [opensearch-proje
 | Maintainer  | GitHub ID                                                 | Affiliation |
 | ----------- | --------------------------------------------------------- | ----------- |
 | Dhrubo Saha | [dhrubo-os](https://github.com/dhrubo-os)                 | Amazon      |
+| Alec Greaves-Tunnell | [greaa-aws](https://github.com/greaa-aws)        | Amazon      |
 | Yaliang Wu  | [ylwu-amzn](https://github.com/ylwu-amzn)                 | Amazon      |
 
 
