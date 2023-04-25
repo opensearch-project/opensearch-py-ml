@@ -4,8 +4,3 @@
 # compatible open source license.
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
-
-from .metrics_correlation.mcorr import MCorr
-from .sentencetransformermodel import SentenceTransformerModel
-
-__all__ = ["SentenceTransformerModel", "MCorr"]
