@@ -102,11 +102,14 @@
 <h1>Load Model<a class="headerlink" href="#load-model" title="Permalink to this heading"></a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="opensearch_py_ml.ml_commons.MLCommonClient.load_model">
-<span class="sig-prename descclassname"><span class="pre">opensearch_py_ml.ml_commons.MLCommonClient.</span></span><span class="sig-name descname"><span class="pre">load_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">object</span></span></span><a class="headerlink" href="#opensearch_py_ml.ml_commons.MLCommonClient.load_model" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">opensearch_py_ml.ml_commons.MLCommonClient.</span></span><span class="sig-name descname"><span class="pre">load_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wait_until_loaded</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">object</span></span></span><a class="headerlink" href="#opensearch_py_ml.ml_commons.MLCommonClient.load_model" title="Permalink to this definition"></a></dt>
 <dd><p>This method loads model into opensearch cluster using ml-common plugin’s load model api</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>model_id</strong> (<em>string</em>) – unique id of the model</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_id</strong> (<em>string</em>) – unique id of the model</p></li>
+<li><p><strong>wait_until_loaded</strong> (<em>bool</em>) – Whether to wait until the model is loaded into memory</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>returns a json object, with task_id and status key.</p>
