@@ -5,7 +5,8 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
-from .metrics_correlation.mcorr import MCorr
-from .sentencetransformermodel import SentenceTransformerModel
-
-__all__ = ["SentenceTransformerModel", "MCorr"]
+BANDWIDTH = 16.0
+NMF_MAX_ITER = 300
+NMF_TOL = 1e-4
+DT_PVAL = 0.5
+OMP_TOL = 0.8
