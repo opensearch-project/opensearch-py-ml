@@ -73,7 +73,7 @@ def test_init():
     assert type(ml_client._model_uploader) == ModelUploader
 
 
-def test_integration_pretrained_model_upload_unload_delete():
+def test_integration_pretrained_model_register_undeploy_delete():
     raised = False
     try:
         model_id = ml_client.upload_pretrained_model(
@@ -84,10 +84,10 @@ def test_integration_pretrained_model_upload_unload_delete():
             wait_until_loaded=True,
         )
         ml_model_status = ml_client.get_model_info(model_id)
-        assert ml_model_status.get("model_state") != "LOAD_FAILED"
+        assert ml_model_status.get("model_state") != "DEPLOY_FAILED"
     except:  # noqa: E722
         raised = True
-    assert raised == False, "Raised Exception during pretrained model upload and load"
+    assert raised == False, "Raised Exception during pretrained model registration and deployment"
 
     if model_id:
         raised = False
@@ -103,10 +103,10 @@ def test_integration_pretrained_model_upload_unload_delete():
         try:
             ml_client.unload_model(model_id)
             ml_model_status = ml_client.get_model_info(model_id)
-            assert ml_model_status.get("model_state") == "UNLOADED"
+            assert ml_model_status.get("model_state") == "UNDEPLOYED"
         except:  # noqa: E722
             raised = True
-        assert raised == False, "Raised Exception in unloading pretrained model"
+        assert raised == False, "Raised Exception in pretrained model undeployment"
 
         raised = False
         try:
@@ -117,7 +117,7 @@ def test_integration_pretrained_model_upload_unload_delete():
         assert raised == False, "Raised Exception in deleting pretrained model"
 
 
-def test_integration_model_train_upload_full_cycle():
+def test_integration_model_train_register_full_cycle():
     # first training the model with small epoch
     test_model.train(
         read_path=TESTDATA_SYNTHETIC_QUERY_ZIP,
@@ -142,7 +142,7 @@ def test_integration_model_train_upload_full_cycle():
             print("Model_id:", model_id)
         except:  # noqa: E722
             raised = True
-        assert raised == False, "Raised Exception during model upload"
+        assert raised == False, "Raised Exception during model registration"
 
         if model_id:
             raised = False
@@ -152,10 +152,10 @@ def test_integration_model_train_upload_full_cycle():
                 assert task_id != "" or task_id is not None
 
                 ml_model_status = ml_client.get_model_info(model_id)
-                assert ml_model_status.get("model_state") != "LOAD_FAILED"
+                assert ml_model_status.get("model_state") != "DEPLOY_FAILED"
             except:  # noqa: E722
                 raised = True
-            assert raised == False, "Raised Exception in loading model"
+            assert raised == False, "Raised Exception in model deployment"
 
             raised = False
             try:
@@ -173,7 +173,7 @@ def test_integration_model_train_upload_full_cycle():
                     ml_task_status = ml_client.get_task_info(
                         task_id, wait_until_task_done=True
                     )
-                    assert ml_task_status.get("task_type") == "LOAD_MODEL"
+                    assert ml_task_status.get("task_type") == "DEPLOY_MODEL"
                     print("State:", ml_task_status.get("state"))
                     assert ml_task_status.get("state") != "FAILED"
                 except:  # noqa: E722
@@ -205,10 +205,10 @@ def test_integration_model_train_upload_full_cycle():
                 try:
                     ml_client.unload_model(model_id)
                     ml_model_status = ml_client.get_model_info(model_id)
-                    assert ml_model_status.get("model_state") == "UNLOADED"
+                    assert ml_model_status.get("model_state") == "UNDEPLOYED"
                 except:  # noqa: E722
                     raised = True
-                assert raised == False, "Raised Exception in unloading model"
+                assert raised == False, "Raised Exception in model undeployment"
 
                 raised = False
                 try:
