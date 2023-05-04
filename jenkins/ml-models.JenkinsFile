@@ -28,7 +28,7 @@ pipeline {
         )
         }
     environment {
-        ARTIFACT_PATH = "${BASE_DOWNLOAD_PATH}/${VERSION}/"
+        ARTIFACT_PATH = "${env.BASE_DOWNLOAD_PATH == "ml-models/model_listing/pre_trained_models.json" ? "${env.BASE_DOWNLOAD_PATH}" : "${env.BASE_DOWNLOAD_PATH}/${env.VERSION}/"}"
         UPLOAD_PATH = "models/ml-models"
         BUCKET_NAME = credentials('ml-models-bucket-name')
     }
@@ -36,11 +36,19 @@ pipeline {
         stage('Parameters Check') {
             steps {
                 script {
-                    if(BASE_DOWNLOAD_PATH.isEmpty() || VERSION.isEmpty()) {
+                    if(env.BASE_DOWNLOAD_PATH == "ml-models/model_listing/pre_trained_models.json" && env.VERSION.isEmpty()) {
+                        echo "Proceeding to download the ml-models/model_listing."
+                    }                  
+                    else if (env.BASE_DOWNLOAD_PATH.isEmpty()) {
                         currentBuild.result = 'ABORTED'
                         error('Parameters cannot be empty! Please provide the correct values.')
+                    } else if (env.VERSION.isEmpty()) {
+                        currentBuild.result = 'ABORTED'
+                        error('Parameters cannot be empty! Please provide the correct values.')
+                    } else {
+                        echo "Proceeding to download the ml-models."
                     }
-                    if(BASE_DOWNLOAD_PATH.endsWith('/')) {
+                    if(env.BASE_DOWNLOAD_PATH.endsWith('/')) {
                         currentBuild.result = 'ABORTED'
                         error('"/" not allowed at the end of the BASE_DOWNLOAD_PATH') 
                     }
@@ -53,9 +61,9 @@ pipeline {
                     downloadFromS3(
                         assumedRoleName: 'get_models',
                         roleAccountNumberCred: 'ml-models-aws-account-number',
-                        downloadPath: "${ARTIFACT_PATH}",
-                        bucketName: "${BUCKET_NAME}",
-                        localPath: "${WORKSPACE}/artifacts",
+                        downloadPath: "${env.ARTIFACT_PATH}",
+                        bucketName: "${env.BUCKET_NAME}",
+                        localPath: "${env.WORKSPACE}/artifacts",
                         force: true,
                         region: 'us-west-2'
                     )
@@ -67,8 +75,8 @@ pipeline {
                 script {
                     publishToArtifactsProdBucket(
                         assumedRoleName: 'ml-models-artifacts-upload-role',
-                        source: "${WORKSPACE}/artifacts/ml-models",
-                        destination: "${UPLOAD_PATH}",
+                        source: "${env.WORKSPACE}/artifacts/ml-models",
+                        destination: "${env.UPLOAD_PATH}",
                         signingPlatform: 'linux',
                         sigType: '.sig',
                         sigOverwrite: true
