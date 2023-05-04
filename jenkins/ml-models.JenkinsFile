@@ -28,7 +28,7 @@ pipeline {
         )
         }
     environment {
-        ARTIFACT_PATH = "${env.BASE_DOWNLOAD_PATH == "ml-models/model_listing/pre_trained_models.json" ? "${env.BASE_DOWNLOAD_PATH}" : "${env.BASE_DOWNLOAD_PATH}/${env.VERSION}/"}"
+        ARTIFACT_PATH = "${env.BASE_DOWNLOAD_PATH == "ml-models/model_listing" ? "${env.BASE_DOWNLOAD_PATH}/" : "${env.BASE_DOWNLOAD_PATH}/${env.VERSION}/"}"
         UPLOAD_PATH = "models/ml-models"
         BUCKET_NAME = credentials('ml-models-bucket-name')
     }
@@ -36,7 +36,7 @@ pipeline {
         stage('Parameters Check') {
             steps {
                 script {
-                    if(env.BASE_DOWNLOAD_PATH == "ml-models/model_listing/pre_trained_models.json" && env.VERSION.isEmpty()) {
+                    if(env.BASE_DOWNLOAD_PATH == "ml-models/model_listing" && env.VERSION.isEmpty()) {
                         echo "Proceeding to download the ml-models/model_listing."
                     }                  
                     else if (env.BASE_DOWNLOAD_PATH.isEmpty()) {
