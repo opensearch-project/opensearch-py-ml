@@ -87,7 +87,9 @@ def test_integration_pretrained_model_register_undeploy_delete():
         assert ml_model_status.get("model_state") != "DEPLOY_FAILED"
     except:  # noqa: E722
         raised = True
-    assert raised == False, "Raised Exception during pretrained model registration and deployment"
+    assert (
+        raised == False
+    ), "Raised Exception during pretrained model registration and deployment"
 
     if model_id:
         raised = False
