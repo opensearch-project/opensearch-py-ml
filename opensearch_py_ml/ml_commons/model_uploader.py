@@ -17,13 +17,13 @@ from opensearch_py_ml.ml_commons.ml_common_utils import (
     BUF_SIZE,
     ML_BASE_URI,
     MODEL_MAX_SIZE,
-    MODEL_UPLOAD_CHUNK_SIZE,
+    MODEL_REGISTER_CHUNK_SIZE,
 )
 
 
 class ModelUploader:
     """
-    Class for uploading model using ml-commons apis in opensearch cluster.
+    Class for registering a model using ml-commons apis in opensearch cluster.
     """
 
     META_API_ENDPOINT = "models/meta"
@@ -44,7 +44,7 @@ class ModelUploader:
         self, model_path: str, model_meta_path: str, isVerbose: bool
     ) -> str:
         """
-        This method uploads model into opensearch cluster using ml-common plugin's api.
+        This method registers model in the opensearch cluster using ml-common plugin's api.
         first this method creates a model id to store model metadata and then breaks the model zip file into
         multiple chunks and then upload chunks into cluster.
 
@@ -76,7 +76,7 @@ class ModelUploader:
             raise Exception("Model file size exceeds the limit of 4GB")
 
         total_num_chunks: int = ceil(
-            os.stat(model_path).st_size / MODEL_UPLOAD_CHUNK_SIZE
+            os.stat(model_path).st_size / MODEL_REGISTER_CHUNK_SIZE
         )
 
         # we are generating the sha1 hash for the model zip file
@@ -112,7 +112,7 @@ class ModelUploader:
                 def model_file_chunk_generator() -> Iterable[str]:
                     with open(model_path, "rb") as f:
                         while True:
-                            data = f.read(MODEL_UPLOAD_CHUNK_SIZE)
+                            data = f.read(MODEL_REGISTER_CHUNK_SIZE)
                             if not data:
                                 break
                             yield data  # type: ignore # check if we actually need to do base64 encoding
@@ -130,7 +130,7 @@ class ModelUploader:
                     if isVerbose:
                         print("Model id:", output)
 
-                print("Model uploaded successfully")
+                print("Model registered successfully")
                 return model_id
             else:
                 raise Exception(
