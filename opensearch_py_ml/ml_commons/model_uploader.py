@@ -40,12 +40,12 @@ class ModelUploader:
     def __init__(self, os_client: OpenSearch):
         self._client = os_client
 
-    def _upload_model(
+    def _register_model(
         self, model_path: str, model_meta_path: str, isVerbose: bool
     ) -> str:
         """
-        This method registers model in the opensearch cluster using ml-common plugin's api.
-        first this method creates a model id to store model metadata and then breaks the model zip file into
+        This method registers the model in the opensearch cluster using ml-common plugin's register model api.
+        First, this method creates a model id to store model metadata and then breaks the model zip file into
         multiple chunks and then upload chunks into cluster.
 
         :param model_path: path of the zip file of the model

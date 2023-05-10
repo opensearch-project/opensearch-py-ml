@@ -9,6 +9,7 @@
 import time
 from typing import Any, List, Union
 
+import deprecation
 from opensearchpy import OpenSearch
 
 from opensearch_py_ml.ml_commons.ml_common_utils import ML_BASE_URI, TIMEOUT
@@ -25,6 +26,11 @@ class MLCommonClient:
         self._client = os_client
         self._model_uploader = ModelUploader(os_client)
 
+    @deprecation.deprecated(
+        deprecated_in="2.7",
+        removed_in="2.8",
+        details="Use the register_model method instead",
+    )
     def upload_model(
         self,
         model_path: str,
@@ -34,7 +40,7 @@ class MLCommonClient:
         wait_until_loaded: bool = True,
     ) -> str:
         """
-        This method registers models into opensearch cluster using ml-common plugin's api.
+        This method registers the model in the opensearch cluster using ml-common plugin's api.
         First, this method creates a model id to store model metadata and then breaks the model zip file into
         multiple chunks and then upload chunks into opensearch cluster
 
@@ -65,7 +71,7 @@ class MLCommonClient:
         :return: returns the model_id so that we can use this for further operation.
         :rtype: string
         """
-        model_id = self._model_uploader._upload_model(
+        model_id = self._model_uploader._register_model(
             model_path, model_config_path, isVerbose
         )
 
@@ -75,6 +81,61 @@ class MLCommonClient:
 
         return model_id
 
+    def register_model(
+        self,
+        model_path: str,
+        model_config_path: str,
+        isVerbose: bool = False,
+        deploy_model: bool = True,
+        wait_until_deployed: bool = True,
+    ) -> str:
+        """
+        This method registers the model in the opensearch cluster using ml-common plugin's api.
+        First, this method creates a model id to store model metadata and then breaks the model zip file into
+        multiple chunks and then upload chunks into opensearch cluster
+
+        :param model_path: path of the zip file of the model
+        :type model_path: string
+        :param model_config_path: filepath of the model metadata. A json file of model metadata is expected
+            Model metadata format example:
+            {
+                "name": "all-MiniLM-L6-v2",
+                "version": 1,
+                "model_format": "TORCH_SCRIPT",
+                "model_config": {
+                    "model_type": "bert",
+                    "embedding_dimension": 384,
+                    "framework_type": "sentence_transformers",
+                },
+            }
+
+            refer to:
+            https://opensearch.org/docs/latest/ml-commons-plugin/model-serving-framework/#upload-model-to-opensearch
+        :type model_config_path: string
+        :param isVerbose: if isVerbose is true method will print more messages. default False
+        :type isVerbose: boolean
+        :param deploy_model: Whether to deploy the model using uploaded model chunks
+        :type deploy_model: bool
+        :param wait_until_deployed: If deploy_model is true, whether to wait until the model is deployed
+        :type wait_until_deployed: bool
+        :return: returns the model_id so that we can use this for further operation.
+        :rtype: string
+        """
+        model_id = self._model_uploader._register_model(
+            model_path, model_config_path, isVerbose
+        )
+
+        # loading the model chunks from model index
+        if deploy_model:
+            self.deploy_model(model_id, wait_until_deployed=wait_until_deployed)
+
+        return model_id
+
+    @deprecation.deprecated(
+        deprecated_in="2.7",
+        removed_in="2.8",
+        details="Use the register_pretrained_model method instead",
+    )
     def upload_pretrained_model(
         self,
         model_name: str,
@@ -84,7 +145,7 @@ class MLCommonClient:
         wait_until_loaded: bool = True,
     ):
         """
-        This method registers pretrained models in the opensearch cluster using ml-common plugin's api.
+        This method registers the pretrained model in the opensearch cluster using ml-common plugin's api.
         First, this method creates a model id to store model info and then deploys the model if load_model is True.
         The model has to be supported by ML Commons. Refer to https://opensearch.org/docs/latest/ml-commons-plugin/pretrained-models/.
 
@@ -112,6 +173,46 @@ class MLCommonClient:
         # loading the model chunks from model index
         if load_model:
             self.load_model(model_id, wait_until_loaded=wait_until_loaded)
+
+        return model_id
+
+    def register_pretrained_model(
+        self,
+        model_name: str,
+        model_version: str,
+        model_format: str,
+        deploy_model: bool = True,
+        wait_until_deployed: bool = True,
+    ):
+        """
+        This method registers the pretrained model in the opensearch cluster using ml-common plugin's api.
+        First, this method creates a model id to store model info and then deploys the model if deploy_model is True.
+        The model has to be supported by ML Commons. Refer to https://opensearch.org/docs/latest/ml-commons-plugin/pretrained-models/.
+
+        :param model_name: Name of the pretrained model
+        :type model_name: string
+        :param model_version: Version of the pretrained model
+        :type model_version: string
+        :param model_format: "TORCH_SCRIPT" or "ONNX"
+        :type model_format: string
+        :param deploy_model: Whether to deploy the model using uploaded model chunks
+        :type deploy_model: bool
+        :param wait_until_deployed: If deploy_model is true, whether to wait until the model is deployed
+        :type wait_until_deployed: bool
+        :return: returns the model_id so that we can use this for further operation
+        :rtype: string
+        """
+        # creating model meta doc
+        model_config_json = {
+            "name": model_name,
+            "version": model_version,
+            "model_format": model_format,
+        }
+        model_id = self._send_model_info(model_config_json)
+
+        # loading the model chunks from model index
+        if deploy_model:
+            self.deploy_model(model_id, wait_until_deployed=wait_until_deployed)
 
         return model_id
 
@@ -143,6 +244,11 @@ class MLCommonClient:
         print("Model was registered successfully. Model Id: ", status["model_id"])
         return status["model_id"]
 
+    @deprecation.deprecated(
+        deprecated_in="2.7",
+        removed_in="2.8",
+        details="Use the deploy_model method instead",
+    )
     def load_model(self, model_id: str, wait_until_loaded: bool = True) -> object:
         """
         This method deploys a model in the opensearch cluster using ml-common plugin's deploy model api
@@ -162,6 +268,43 @@ class MLCommonClient:
         ]
 
         if wait_until_loaded:
+            # Wait until deployed
+            for i in range(TIMEOUT):
+                ml_model_status = self.get_model_info(model_id)
+                model_state = ml_model_status.get("model_state")
+                if model_state in ["DEPLOYED", "PARTIALLY_DEPLOYED"]:
+                    break
+                time.sleep(1)
+
+            # Check the model status
+            if model_state == "DEPLOYED":
+                print("Model deployed successfully")
+            elif model_state == "PARTIALLY_DEPLOYED":
+                print("Model deployed only partially")
+            else:
+                raise Exception("Model deployment failed")
+
+        return self._get_task_info(task_id)
+
+    def deploy_model(self, model_id: str, wait_until_deployed: bool = True) -> object:
+        """
+        This method deploys a model in the opensearch cluster using ml-common plugin's deploy model api
+
+        :param model_id: unique id of the model
+        :type model_id: string
+        :param wait_until_deployed: Whether to wait until the model is deployed
+        :type wait_until_deployed: bool
+        :return: returns a json object, with task_id and status key.
+        :rtype: object
+        """
+
+        API_URL = f"{ML_BASE_URI}/models/{model_id}/_deploy"
+
+        task_id = self._client.transport.perform_request(method="POST", url=API_URL)[
+            "task_id"
+        ]
+
+        if wait_until_deployed:
             # Wait until deployed
             for i in range(TIMEOUT):
                 ml_model_status = self.get_model_info(model_id)
@@ -255,7 +398,36 @@ class MLCommonClient:
             body=API_BODY,
         )
 
+    @deprecation.deprecated(
+        deprecated_in="2.7",
+        removed_in="2.8",
+        details="Use the undeploy_model method instead",
+    )
     def unload_model(self, model_id: str, node_ids: List[str] = []) -> object:
+        """
+        This method undeploys a model from all the nodes or from the given list of nodes (using ml commons _undeploy api)
+
+        :param model_id: unique id of the nlp model
+        :type model_id: string
+        :param node_ids: List of nodes
+        :type node_ids: list of string
+        :return: returns a json object with defining from which nodes the model was undeployed.
+        :rtype: object
+        """
+
+        API_URL = f"{ML_BASE_URI}/models/{model_id}/_undeploy"
+
+        API_BODY = {}
+        if len(node_ids) > 0:
+            API_BODY["node_ids"] = node_ids
+
+        return self._client.transport.perform_request(
+            method="POST",
+            url=API_URL,
+            body=API_BODY,
+        )
+
+    def undeploy_model(self, model_id: str, node_ids: List[str] = []) -> object:
         """
         This method undeploys a model from all the nodes or from the given list of nodes (using ml commons _undeploy api)
 
