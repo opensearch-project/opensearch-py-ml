@@ -12,6 +12,13 @@ Upload Model
 
    api/ml_commons_upload_api
 
+Register Model
+~~~~~~~~~~~~~~
+.. toctree::
+   :maxdepth: 2
+
+   api/ml_commons_register_api
+
 Upload Pretrained Model
 ~~~~~~~~~~~~~~~~~~~~~~~
 .. toctree::
@@ -19,12 +26,26 @@ Upload Pretrained Model
 
    api/ml_commons_upload_pretrained_api
 
+Register Pretrained Model
+~~~~~~~~~~~~~~~~~~~~~~~~~
+.. toctree::
+   :maxdepth: 2
+
+   api/ml_commons_register_pretrained_api
+
 Load Model
 ~~~~~~~~~~
 .. toctree::
    :maxdepth: 2
 
    api/ml_commons_load_api
+
+Deploy Model
+~~~~~~~~~~
+.. toctree::
+   :maxdepth: 2
+
+   api/ml_commons_deploy_api
 
 Get Task Info
 ~~~~~~~~~~~~~
@@ -53,6 +74,13 @@ Unload Model
    :maxdepth: 2
 
    api/ml_commons_unload_model_api
+
+Undeploy Model
+~~~~~~~~~~~~
+.. toctree::
+   :maxdepth: 2
+
+   api/ml_commons_undeploy_model_api
 
 Delete Model
 ~~~~~~~~~~~~

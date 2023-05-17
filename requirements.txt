@@ -10,4 +10,4 @@ accelerate
 sentence_transformers
 tqdm
 transformers
-deprecation
+deprecated

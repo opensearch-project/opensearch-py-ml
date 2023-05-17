@@ -9,7 +9,7 @@
 import time
 from typing import Any, List, Union
 
-import deprecation
+from deprecated.sphinx import deprecated
 from opensearchpy import OpenSearch
 
 from opensearch_py_ml.ml_commons.ml_common_utils import ML_BASE_URI, TIMEOUT
@@ -26,10 +26,9 @@ class MLCommonClient:
         self._client = os_client
         self._model_uploader = ModelUploader(os_client)
 
-    @deprecation.deprecated(
-        deprecated_in="2.7",
-        removed_in="2.8",
-        details="Use the register_model method instead",
+    @deprecated(
+        reason="Since OpenSearch 2.7.0, you can use register_model instead",
+        version="2.7.0",
     )
     def upload_model(
         self,
@@ -131,10 +130,9 @@ class MLCommonClient:
 
         return model_id
 
-    @deprecation.deprecated(
-        deprecated_in="2.7",
-        removed_in="2.8",
-        details="Use the register_pretrained_model method instead",
+    @deprecated(
+        reason="Since OpenSearch 2.7.0, you can use register_pretrained_model instead",
+        version="2.7.0",
     )
     def upload_pretrained_model(
         self,
@@ -244,10 +242,9 @@ class MLCommonClient:
         print("Model was registered successfully. Model Id: ", status["model_id"])
         return status["model_id"]
 
-    @deprecation.deprecated(
-        deprecated_in="2.7",
-        removed_in="2.8",
-        details="Use the deploy_model method instead",
+    @deprecated(
+        reason="Since OpenSearch 2.7.0, you can use deploy_model instead",
+        version="2.7.0",
     )
     def load_model(self, model_id: str, wait_until_loaded: bool = True) -> object:
         """
@@ -398,10 +395,9 @@ class MLCommonClient:
             body=API_BODY,
         )
 
-    @deprecation.deprecated(
-        deprecated_in="2.7",
-        removed_in="2.8",
-        details="Use the undeploy_model method instead",
+    @deprecated(
+        reason="Since OpenSearch 2.7.0, you can use undeploy_model instead",
+        version="2.7.0",
     )
     def unload_model(self, model_id: str, node_ids: List[str] = []) -> object:
         """
