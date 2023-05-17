@@ -95,7 +95,9 @@ You should paste this settings in the `Dev Tools` window and run it:
    "persistent" : {
      "plugins.ml_commons.only_run_on_ml_node" : false, 
      "plugins.ml_commons.native_memory_threshold" : 100, 
-     "plugins.ml_commons.max_model_on_node": 20
+     "plugins.ml_commons.max_model_on_node": 20,
+     # for using metrics correlation model
+     "plugins.ml_commons.enable_inhouse_python_model": true
    }
  }
 ```
