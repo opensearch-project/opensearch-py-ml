@@ -28,7 +28,6 @@ TESTDATA_UNZIP_FOLDER = os.path.join(
     os.path.dirname(os.path.abspath("__file__")), "tests", "sample_zip"
 )
 
-
 MODEL_FILE_ZIP_NAME = "test_model.zip"
 MODEL_FILE_PT_NAME = "test_model.pt"
 MODEL_CONFIG_FILE_NAME = "ml-commons_model_config.json"
@@ -284,9 +283,20 @@ def test_integration_model_train_register_full_cycle():
     assert model_file_exists == True
     assert model_config_file_exists == True
     if model_file_exists and model_config_file_exists:
-        raised = False
         model_id = ""
         task_id = ""
+
+        # Testing deploy_model = True for codecov/patch
+        raised = False
+        try:
+            ml_client.register_model(
+                MODEL_PATH, MODEL_CONFIG_FILE_PATH, deploy_model=True, isVerbose=True
+            )
+        except:  # noqa: E722
+            raised = True
+        assert raised == False, "Raised Exception during first model registration"
+
+        raised = False
         try:
             model_id = ml_client.register_model(
                 MODEL_PATH, MODEL_CONFIG_FILE_PATH, deploy_model=False, isVerbose=True
@@ -294,7 +304,7 @@ def test_integration_model_train_register_full_cycle():
             print("Model_id:", model_id)
         except:  # noqa: E722
             raised = True
-        assert raised == False, "Raised Exception during model registration"
+        assert raised == False, "Raised Exception during second model registration"
 
         if model_id:
             raised = False
