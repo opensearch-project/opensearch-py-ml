@@ -235,6 +235,7 @@ class MLCommonClient:
             status = self._get_task_info(output["task_id"])
             if status["state"] != "CREATED":
                 task_flag = True
+        # TODO: need to add the test case later for this line
         if not task_flag:
             raise TimeoutError("Model registration timed out")
         if status["state"] == "FAILED":
@@ -273,11 +274,13 @@ class MLCommonClient:
                     break
                 time.sleep(1)
 
+            # TODO: need to add the test case later for this line
             # Check the model status
             if model_state == "DEPLOYED":
                 print("Model deployed successfully")
             elif model_state == "PARTIALLY_DEPLOYED":
                 print("Model deployed only partially")
+            # TODO: need to add the test case later for this line
             else:
                 raise Exception("Model deployment failed")
 
@@ -310,6 +313,7 @@ class MLCommonClient:
                     break
                 time.sleep(1)
 
+            # TODO: need to add the test case later for this line
             # Check the model status
             if model_state == "DEPLOYED":
                 print("Model deployed successfully")
@@ -413,6 +417,7 @@ class MLCommonClient:
 
         API_URL = f"{ML_BASE_URI}/models/{model_id}/_undeploy"
 
+        # TODO: need to add the test case later for this line
         API_BODY = {}
         if len(node_ids) > 0:
             API_BODY["node_ids"] = node_ids
