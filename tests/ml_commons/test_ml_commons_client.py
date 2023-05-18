@@ -34,7 +34,9 @@ MODEL_FILE_PT_NAME = "test_model.pt"
 MODEL_CONFIG_FILE_NAME = "ml-commons_model_config.json"
 
 TEST_FOLDER = os.path.join(PROJECT_DIR, "test_model_files")
-TESTDATA_SYNTHETIC_QUERY_ZIP = os.path.join(PROJECT_DIR, "..", "synthetic_queries.zip")
+TESTDATA_SYNTHETIC_QUERY_ZIP = os.path.join(
+    PROJECT_DIR, "../../../../..", "synthetic_queries.zip"
+)
 MODEL_PATH = os.path.join(TEST_FOLDER, MODEL_FILE_ZIP_NAME)
 MODEL_CONFIG_FILE_PATH = os.path.join(TEST_FOLDER, MODEL_CONFIG_FILE_NAME)
 
@@ -71,6 +73,33 @@ clean_test_folder(TEST_FOLDER)
 def test_init():
     assert type(ml_client._client) == OpenSearch
     assert type(ml_client._model_uploader) == ModelUploader
+
+
+def test_execute():
+    raised = False
+    try:
+        input_json = {
+            "index_name": "rca-index",
+            "attribute_field_names": ["attribute"],
+            "aggregations": [{"sum": {"sum": {"field": "value"}}}],
+            "time_field_name": "timestamp",
+            "start_time": 1620630000000,
+            "end_time": 1621234800000,
+            "min_time_interval": 86400000,
+            "num_outputs": 10,
+        }
+        ml_client.execute(algorithm_name="anomaly_localization", input_json=input_json)
+    except:  # noqa: E722
+        raised = True
+    assert raised == False, "Raised Exception during anomaly localization execution"
+
+    raised = False
+    try:
+        input_json = {"metrics": [[0, 1, 2, 3], [4, 5, 6, 7], [8, 9, 10, 11]]}
+        ml_client.execute(algorithm_name="METRICS_CORRELATION", input_json=input_json)
+    except:  # noqa: E722
+        raised = True
+    assert raised == False, "Raised Exception during metrics correlation execution"
 
 
 def test_integration_pretrained_model_upload_unload_delete():

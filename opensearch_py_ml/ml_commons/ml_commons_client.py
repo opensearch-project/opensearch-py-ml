@@ -12,6 +12,7 @@ from typing import Any, List, Union
 from opensearchpy import OpenSearch
 
 from opensearch_py_ml.ml_commons.ml_common_utils import ML_BASE_URI, TIMEOUT
+from opensearch_py_ml.ml_commons.model_execute import ModelExecute
 from opensearch_py_ml.ml_commons.model_uploader import ModelUploader
 
 
@@ -24,6 +25,22 @@ class MLCommonClient:
     def __init__(self, os_client: OpenSearch):
         self._client = os_client
         self._model_uploader = ModelUploader(os_client)
+        self._model_execute = ModelExecute(os_client)
+
+    def execute(self, algorithm_name: str, input_json: dict) -> dict:
+        """
+        This method executes ML algorithms that can be only executed directly (i.e. do not support train and
+        predict APIs), like anomaly localization and metrics correlation. The algorithm has to be supported by ML Commons.
+        Refer to https://opensearch.org/docs/2.7/ml-commons-plugin/api/#execute
+
+        :param algorithm_name: Name of the algorithm
+        :type algorithm_name: string
+        :param input_json: Dictionary of parameters
+        :type input_json: dict
+        :return: returns the API response
+        :rtype: dict
+        """
+        return self._model_execute._execute(algorithm_name, input_json)
 
     def upload_model(
         self,
