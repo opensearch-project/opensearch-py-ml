@@ -16,8 +16,8 @@ from opensearchpy import OpenSearch
 from opensearch_py_ml.ml_commons.ml_common_utils import (
     BUF_SIZE,
     ML_BASE_URI,
-    MODEL_MAX_SIZE,
     MODEL_CHUNK_MAX_SIZE,
+    MODEL_MAX_SIZE,
 )
 
 
@@ -75,9 +75,7 @@ class ModelUploader:
         if os.stat(model_path).st_size > MODEL_MAX_SIZE:
             raise Exception("Model file size exceeds the limit of 4GB")
 
-        total_num_chunks: int = ceil(
-            os.stat(model_path).st_size / MODEL_CHUNK_MAX_SIZE
-        )
+        total_num_chunks: int = ceil(os.stat(model_path).st_size / MODEL_CHUNK_MAX_SIZE)
 
         # we are generating the sha1 hash for the model zip file
         hash_val_model_file = self._generate_hash(model_path)
