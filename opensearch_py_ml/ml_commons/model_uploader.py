@@ -17,7 +17,7 @@ from opensearch_py_ml.ml_commons.ml_common_utils import (
     BUF_SIZE,
     ML_BASE_URI,
     MODEL_MAX_SIZE,
-    MODEL_REGISTER_CHUNK_SIZE,
+    MODEL_CHUNK_MAX_SIZE,
 )
 
 
@@ -76,7 +76,7 @@ class ModelUploader:
             raise Exception("Model file size exceeds the limit of 4GB")
 
         total_num_chunks: int = ceil(
-            os.stat(model_path).st_size / MODEL_REGISTER_CHUNK_SIZE
+            os.stat(model_path).st_size / MODEL_CHUNK_MAX_SIZE
         )
 
         # we are generating the sha1 hash for the model zip file
@@ -112,7 +112,7 @@ class ModelUploader:
                 def model_file_chunk_generator() -> Iterable[str]:
                     with open(model_path, "rb") as f:
                         while True:
-                            data = f.read(MODEL_REGISTER_CHUNK_SIZE)
+                            data = f.read(MODEL_CHUNK_MAX_SIZE)
                             if not data:
                                 break
                             yield data  # type: ignore # check if we actually need to do base64 encoding
