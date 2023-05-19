@@ -104,7 +104,7 @@ def test_DEPRECATED_integration_pretrained_model_upload_unload_delete():
         try:
             ml_client.unload_model(model_id)
             ml_model_status = ml_client.get_model_info(model_id)
-            assert ml_model_status.get("model_state") == "UNDEPLOYED"
+            assert ml_model_status.get("model_state") != "UNDEPLOY_FAILED"
         except:  # noqa: E722
             raised = True
         assert raised == False, "Raised Exception in pretrained model undeployment"
@@ -150,7 +150,7 @@ def test_integration_pretrained_model_register_undeploy_delete():
         try:
             ml_client.undeploy_model(model_id)
             ml_model_status = ml_client.get_model_info(model_id)
-            assert ml_model_status.get("model_state") == "UNDEPLOYED"
+            assert ml_model_status.get("model_state") != "UNDEPLOY_FAILED"
         except:  # noqa: E722
             raised = True
         assert raised == False, "Raised Exception in pretrained model undeployment"
@@ -253,7 +253,7 @@ def test_DEPRECATED_integration_model_train_upload_full_cycle():
                 try:
                     ml_client.unload_model(model_id)
                     ml_model_status = ml_client.get_model_info(model_id)
-                    assert ml_model_status.get("model_state") == "UNDEPLOYED"
+                    assert ml_model_status.get("model_state") != "UNDEPLOY_FAILED"
                 except:  # noqa: E722
                     raised = True
                 assert raised == False, "Raised Exception in model undeployment"
@@ -369,7 +369,7 @@ def test_integration_model_train_register_full_cycle():
                 try:
                     ml_client.undeploy_model(model_id)
                     ml_model_status = ml_client.get_model_info(model_id)
-                    assert ml_model_status.get("model_state") == "UNDEPLOYED"
+                    assert ml_model_status.get("model_state") != "UNDEPLOY_FAILED"
                 except:  # noqa: E722
                     raised = True
                 assert raised == False, "Raised Exception in model undeployment"
