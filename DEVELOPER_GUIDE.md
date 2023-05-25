@@ -123,6 +123,17 @@ $ nox -s format
 $ nox -s test
 ```
 
+#### To test documentation
+
+```bash
+# New HTML pages will be created in build/html
+$ cd docs
+$ pip install -r requirements-docs.txt
+$ make clean
+$ make html
+```
+
+
 #### Default setup for opensearch
 
 ```yml

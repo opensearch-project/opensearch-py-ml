@@ -7,7 +7,6 @@
 
 import os
 import shutil
-import time
 from os.path import exists
 
 from opensearchpy import OpenSearch
@@ -44,8 +43,6 @@ test_model = SentenceTransformerModel(folder_path=TEST_FOLDER, overwrite=True)
 PRETRAINED_MODEL_NAME = "huggingface/sentence-transformers/all-MiniLM-L12-v2"
 PRETRAINED_MODEL_VERSION = "1.0.1"
 PRETRAINED_MODEL_FORMAT = "TORCH_SCRIPT"
-
-UNLOAD_TIMEOUT = 300  # in seconds
 
 
 def clean_test_folder(TEST_FOLDER):
@@ -84,7 +81,10 @@ def test_integration_pretrained_model_upload_unload_delete():
             model_version=PRETRAINED_MODEL_VERSION,
             model_format=PRETRAINED_MODEL_FORMAT,
             load_model=True,
+            wait_until_loaded=True,
         )
+        ml_model_status = ml_client.get_model_info(model_id)
+        assert ml_model_status.get("model_state") != "LOAD_FAILED"
     except:  # noqa: E722
         raised = True
     assert raised == False, "Raised Exception during pretrained model upload and load"
@@ -102,11 +102,6 @@ def test_integration_pretrained_model_upload_unload_delete():
         raised = False
         try:
             ml_client.unload_model(model_id)
-            for i in range(int(UNLOAD_TIMEOUT / 10)):
-                ml_model_status = ml_client.get_model_info(model_id)
-                if ml_model_status.get("model_state") == "UNLOADED":
-                    break
-                time.sleep(10)
             ml_model_status = ml_client.get_model_info(model_id)
             assert ml_model_status.get("model_state") == "UNLOADED"
         except:  # noqa: E722
@@ -142,7 +137,7 @@ def test_integration_model_train_upload_full_cycle():
         task_id = ""
         try:
             model_id = ml_client.upload_model(
-                MODEL_PATH, MODEL_CONFIG_FILE_PATH, isVerbose=True
+                MODEL_PATH, MODEL_CONFIG_FILE_PATH, load_model=False, isVerbose=True
             )
             print("Model_id:", model_id)
         except:  # noqa: E722
@@ -152,10 +147,12 @@ def test_integration_model_train_upload_full_cycle():
         if model_id:
             raised = False
             try:
-                ml_load_status = ml_client.load_model(model_id)
-                # assert ml_load_status.get("status") == "CREATED"
+                ml_load_status = ml_client.load_model(model_id, wait_until_loaded=False)
                 task_id = ml_load_status.get("task_id")
                 assert task_id != "" or task_id is not None
+
+                ml_model_status = ml_client.get_model_info(model_id)
+                assert ml_model_status.get("model_state") != "LOAD_FAILED"
             except:  # noqa: E722
                 raised = True
             assert raised == False, "Raised Exception in loading model"
@@ -196,20 +193,17 @@ def test_integration_model_train_upload_full_cycle():
                 # This is test is being flaky. Sometimes the test is passing and sometimes showing 500 error
                 # due to memory circuit breaker.
                 # Todo: We need to revisit this test.
-                if ml_task_status.get("state") == "LOADED":
-                    try:
-                        raised = False
-                        sentences = ["First test sentence", "Second test sentence"]
-                        embedding_result = ml_client.generate_embedding(
-                            model_id, sentences
-                        )
-                        print(embedding_result)
-                        assert len(embedding_result.get("inference_results")) == 2
-                    except:  # noqa: E722
-                        raised = True
-                    assert (
-                        raised == False
-                    ), "Raised Exception in generating sentence embedding"
+                try:
+                    raised = False
+                    sentences = ["First test sentence", "Second test sentence"]
+                    embedding_result = ml_client.generate_embedding(model_id, sentences)
+                    print(embedding_result)
+                    assert len(embedding_result.get("inference_results")) == 2
+                except:  # noqa: E722
+                    raised = True
+                assert (
+                    raised == False
+                ), "Raised Exception in generating sentence embedding"
 
                 try:
                     delete_task_obj = ml_client.delete_task(task_id)
@@ -220,11 +214,6 @@ def test_integration_model_train_upload_full_cycle():
 
                 try:
                     ml_client.unload_model(model_id)
-                    for i in range(int(UNLOAD_TIMEOUT / 10)):
-                        ml_model_status = ml_client.get_model_info(model_id)
-                        if ml_model_status.get("model_state") == "UNLOADED":
-                            break
-                        time.sleep(10)
                     ml_model_status = ml_client.get_model_info(model_id)
                     assert ml_model_status.get("model_state") == "UNLOADED"
                 except:  # noqa: E722
