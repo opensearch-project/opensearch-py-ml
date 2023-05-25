@@ -12,7 +12,7 @@ from typing import Any, List, Union
 
 from opensearchpy import OpenSearch
 
-from opensearch_py_ml.ml_commons.ml_common_utils import ML_BASE_URI
+from opensearch_py_ml.ml_commons.ml_common_utils import ML_BASE_URI, TIMEOUT
 from opensearch_py_ml.ml_commons.model_uploader import ModelUploader
 
 
@@ -31,6 +31,8 @@ class MLCommonClient:
         model_path: str,
         model_config_path: str,
         isVerbose: bool = False,
+        load_model: bool = True,
+        wait_until_loaded: bool = True,
     ) -> str:
         """
         This method uploads model into opensearch cluster using ml-common plugin's api.
@@ -57,12 +59,22 @@ class MLCommonClient:
         :type model_config_path: string
         :param isVerbose: if isVerbose is true method will print more messages. default False
         :type isVerbose: boolean
+        :param load_model: Whether to load the model in memory using uploaded model chunks
+        :type load_model: bool
+        :param wait_until_loaded: If load_model is true, whether to wait until the model is loaded into memory
+        :type wait_until_loaded: bool
         :return: returns the model_id so that we can use this for further operation.
         :rtype: string
         """
-        return self._model_uploader._upload_model(
+        model_id = self._model_uploader._upload_model(
             model_path, model_config_path, isVerbose
         )
+
+        # loading the model chunks from model index
+        if load_model:
+            self.load_model(model_id, wait_until_loaded=wait_until_loaded)
+
+        return model_id
 
     def upload_pretrained_model(
         self,
@@ -70,6 +82,7 @@ class MLCommonClient:
         model_version: str,
         model_format: str,
         load_model: bool = True,
+        wait_until_loaded: bool = True,
     ):
         """
         This method uploads a pretrained model into opensearch cluster using ml-common plugin's api.
@@ -85,6 +98,8 @@ class MLCommonClient:
         :type model_format: string
         :param load_model: Whether to load the model in memory using uploaded model chunks
         :type load_model: bool
+        :param wait_until_loaded: If load_model is true, whether to wait until the model is loaded into memory
+        :type wait_until_loaded: bool
         :return: returns the model_id so that we can use this for further operation
         :rtype: string
         """
@@ -98,20 +113,7 @@ class MLCommonClient:
 
         # loading the model chunks from model index
         if load_model:
-            self.load_model(model_id)
-            for i in range(120):  # timeout is 120 seconds
-                time.sleep(1)
-                ml_model_status = self.get_model_info(model_id)
-                model_state = ml_model_status.get("model_state")
-                if model_state != "LOADING":
-                    break
-
-            if model_state == "LOADED":
-                print("Model loaded into memory successfully")
-            elif model_state == "PARTIALLY_LOADED":
-                print("Model was loaded into memory only partially")
-            else:
-                raise Exception("Model load failed")
+            self.load_model(model_id, wait_until_loaded=wait_until_loaded)
 
         return model_id
 
@@ -129,7 +131,7 @@ class MLCommonClient:
             url=f"{ML_BASE_URI}/models/_upload",
             body=model_meta_json,
         )
-        end = time.time() + 120  # timeout seconds
+        end = time.time() + TIMEOUT  # timeout seconds
         task_flag = False
         while not task_flag or time.time() < end:
             time.sleep(1)
@@ -143,22 +145,42 @@ class MLCommonClient:
         print("Model was uploaded successfully. Model Id: ", status["model_id"])
         return status["model_id"]
 
-    def load_model(self, model_id: str) -> object:
+    def load_model(self, model_id: str, wait_until_loaded: bool = True) -> object:
         """
         This method loads model into opensearch cluster using ml-common plugin's load model api
 
         :param model_id: unique id of the model
         :type model_id: string
+        :param wait_until_loaded: Whether to wait until the model is loaded into memory
+        :type wait_until_loaded: bool
         :return: returns a json object, with task_id and status key.
         :rtype: object
         """
 
         API_URL = f"{ML_BASE_URI}/models/{model_id}/_load"
 
-        return self._client.transport.perform_request(
-            method="POST",
-            url=API_URL,
-        )
+        task_id = self._client.transport.perform_request(method="POST", url=API_URL)[
+            "task_id"
+        ]
+
+        if wait_until_loaded:
+            # Wait until loaded
+            for i in range(TIMEOUT):
+                ml_model_status = self.get_model_info(model_id)
+                model_state = ml_model_status.get("model_state")
+                if model_state in ["LOADED", "PARTIALLY_LOADED"]:
+                    break
+                time.sleep(1)
+
+            # Check the model status
+            if model_state == "LOADED":
+                print("Model loaded into memory successfully")
+            elif model_state == "PARTIALLY_LOADED":
+                print("Model was loaded into memory only partially")
+            else:
+                raise Exception("Model load failed")
+
+        return self._get_task_info(task_id)
 
     def get_task_info(self, task_id: str, wait_until_task_done: bool = False) -> object:
         """
@@ -174,7 +196,7 @@ class MLCommonClient:
         :rtype: object
         """
         if wait_until_task_done:
-            end = time.time() + 120  # timeout seconds
+            end = time.time() + TIMEOUT  # timeout seconds
             task_flag = False
             while not task_flag or time.time() < end:
                 time.sleep(1)
@@ -249,18 +271,15 @@ class MLCommonClient:
 
         API_URL = f"{ML_BASE_URI}/models/{model_id}/_unload"
 
-        API_BODY = {"node_ids": node_ids}
+        API_BODY = {}
         if len(node_ids) > 0:
-            return self._client.transport.perform_request(
-                method="POST",
-                url=API_URL,
-                body=API_BODY,
-            )
-        else:
-            return self._client.transport.perform_request(
-                method="POST",
-                url=API_URL,
-            )
+            API_BODY["node_ids"] = node_ids
+
+        return self._client.transport.perform_request(
+            method="POST",
+            url=API_URL,
+            body=API_BODY,
+        )
 
     def delete_model(self, model_id: str) -> object:
         """
