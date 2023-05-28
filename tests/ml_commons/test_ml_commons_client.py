@@ -78,28 +78,13 @@ def test_init():
 def test_execute():
     raised = False
     try:
-        input_json = {
-            "index_name": "rca-index",
-            "attribute_field_names": ["attribute"],
-            "aggregations": [{"sum": {"sum": {"field": "value"}}}],
-            "time_field_name": "timestamp",
-            "start_time": 1620630000000,
-            "end_time": 1621234800000,
-            "min_time_interval": 86400000,
-            "num_outputs": 10,
-        }
-        ml_client.execute(algorithm_name="anomaly_localization", input_json=input_json)
+        input_json = {"operation": "max", "input_data": [1.0, 2.0, 3.0]}
+        ml_client.execute(
+            algorithm_name="local_sample_calculator", input_json=input_json
+        )
     except:  # noqa: E722
         raised = True
-    assert raised == False, "Raised Exception during anomaly localization execution"
-
-    raised = False
-    try:
-        input_json = {"metrics": [[0, 1, 2, 3], [4, 5, 6, 7], [8, 9, 10, 11]]}
-        ml_client.execute(algorithm_name="METRICS_CORRELATION", input_json=input_json)
-    except:  # noqa: E722
-        raised = True
-    assert raised == False, "Raised Exception during metrics correlation execution"
+    assert raised == False, "Raised Exception during execute API testing"
 
 
 def test_integration_pretrained_model_upload_unload_delete():
