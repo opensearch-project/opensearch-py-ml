@@ -38,14 +38,11 @@ class ModelExecute:
         :rtype: dict
         """
 
-        if self._is_json(input_json):
-            return self._client.transport.perform_request(
-                method="POST",
-                url=f"{ML_BASE_URI}/_execute/{algorithm_name}",
-                body=input_json,
-            )
-
-    def _is_json(self, input_json: dict) -> bool:
         if not isinstance(input_json, dict):
-            json.loads(input_json)
-        return True
+            input_json = json.loads(input_json)
+
+        return self._client.transport.perform_request(
+            method="POST",
+            url=f"{ML_BASE_URI}/_execute/{algorithm_name}",
+            body=input_json,
+        )
