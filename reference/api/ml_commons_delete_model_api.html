@@ -22,7 +22,7 @@
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Delete Task" href="ml_commons_delete_task_api.html" />
-    <link rel="prev" title="Unload Model" href="ml_commons_unload_model_api.html" /> 
+    <link rel="prev" title="Undeploy Model" href="ml_commons_undeploy_model_api.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -55,12 +55,16 @@
 <li class="toctree-l2"><a class="reference internal" href="../io.html">Input/Output</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="../mlcommons.html">MLCommons Support</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="../mlcommons.html#upload-model">Upload Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../mlcommons.html#register-model">Register Model</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../mlcommons.html#upload-pretrained-model">Upload Pretrained Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../mlcommons.html#register-pretrained-model">Register Pretrained Model</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../mlcommons.html#load-model">Load Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../mlcommons.html#deploy-model">Deploy Model</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../mlcommons.html#get-task-info">Get Task Info</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../mlcommons.html#get-model-info">Get Model Info</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../mlcommons.html#generate-embedding">Generate Embedding</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../mlcommons.html#unload-model">Unload Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../mlcommons.html#undeploy-model">Undeploy Model</a></li>
 <li class="toctree-l3 current"><a class="reference internal" href="../mlcommons.html#delete-model">Delete Model</a><ul class="current">
 <li class="toctree-l4 current"><a class="current reference internal" href="#">Delete Model</a></li>
 </ul>
@@ -103,30 +107,13 @@
              
   <section id="delete-model">
 <h1>Delete Model<a class="headerlink" href="#delete-model" title="Permalink to this heading"></a></h1>
-<dl class="py function">
-<dt class="sig sig-object py" id="opensearch_py_ml.ml_commons.MLCommonClient.delete_model">
-<span class="sig-prename descclassname"><span class="pre">opensearch_py_ml.ml_commons.MLCommonClient.</span></span><span class="sig-name descname"><span class="pre">delete_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">object</span></span></span><a class="headerlink" href="#opensearch_py_ml.ml_commons.MLCommonClient.delete_model" title="Permalink to this definition"></a></dt>
-<dd><p>This method deletes a model from opensearch cluster (using ml commons api)</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>model_id</strong> (<em>string</em>) – unique id of the model</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>returns a json object, with detailed information about the deleted model</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>object</p>
-</dd>
-</dl>
-</dd></dl>
-
 </section>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="ml_commons_unload_model_api.html" class="btn btn-neutral float-left" title="Unload Model" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ml_commons_undeploy_model_api.html" class="btn btn-neutral float-left" title="Undeploy Model" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="ml_commons_delete_task_api.html" class="btn btn-neutral float-right" title="Delete Task" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
