@@ -1,5 +1,5 @@
 Upload Pretrained Model
-==================
+===========================
 
 .. currentmodule:: opensearch_py_ml
 
