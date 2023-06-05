@@ -33,9 +33,7 @@ MODEL_FILE_PT_NAME = "test_model.pt"
 MODEL_CONFIG_FILE_NAME = "ml-commons_model_config.json"
 
 TEST_FOLDER = os.path.join(PROJECT_DIR, "test_model_files")
-TESTDATA_SYNTHETIC_QUERY_ZIP = os.path.join(
-    PROJECT_DIR, "../../../../..", "synthetic_queries.zip"
-)
+TESTDATA_SYNTHETIC_QUERY_ZIP = os.path.join(PROJECT_DIR, "..", "synthetic_queries.zip")
 MODEL_PATH = os.path.join(TEST_FOLDER, MODEL_FILE_ZIP_NAME)
 MODEL_CONFIG_FILE_PATH = os.path.join(TEST_FOLDER, MODEL_CONFIG_FILE_NAME)
 
@@ -395,3 +393,6 @@ def test_integration_model_train_register_full_cycle():
                 except:  # noqa: E722
                     raised = True
                 assert raised == False, "Raised Exception in deleting model"
+
+
+test_integration_model_train_register_full_cycle()
