@@ -230,7 +230,14 @@ def test_DEPRECATED_integration_model_train_upload_full_cycle():
                 assert raised == False, "Raised Exception in pulling task info"
 
                 try:
-                    search_task_obj = ml_client.search_task(_id=task_id)
+                    search_task_obj = ml_client.search_task(json="{'_id':'{task_id}'}")
+                    assert search_task_obj["hits"]["hits"][0]["_id"] == task_id
+                except:  # noqa: E722
+                    raised = True
+                assert raised == False, "Raised Exception in searching task"
+
+                try:
+                    search_task_obj = ml_client.search_task(json={"_id": task_id})
                     assert search_task_obj["hits"]["hits"][0]["_id"] == task_id
                 except:  # noqa: E722
                     raised = True

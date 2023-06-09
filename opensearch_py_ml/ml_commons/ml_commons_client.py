@@ -360,29 +360,27 @@ class MLCommonClient:
             url=API_URL,
         )
 
-    def search_task(self, **kwargs) -> object:
+    def search_task(self, json_input) -> object:
         """
         This method searches a task from opensearch cluster (using ml commons api)
-        :param kwargs: key value pairs of search task parameters
-        :type kwargs: dict
+        :param json: json input for the search request
+        :type json: string or dict
         :return: returns a json object, with detailed information about the searched task
         :rtype: object
         """
 
         API_URL = f"{ML_BASE_URI}/tasks/_search"
 
-        API_BODY = {"query": {"bool": {"filter": []}}}
-
-        for key, value in kwargs.items():
+        if isinstance(json_input, str):
             try:
-                if key == "json":
-                    API_BODY = value
-                else:
-                    term_query = {"term": {key: value}}
-                    API_BODY["query"]["bool"]["filter"].append(term_query)
-                    API_BODY = json.dumps(API_BODY)
+                json_obj = json.loads(json_input)
+                API_BODY = json.dumps(json_obj)
             except json.JSONDecodeError:
-                raise Exception("Invalid request body")
+                return "Invalid JSON string passed as argument."
+        elif isinstance(json_input, dict):
+            API_BODY = json.dumps(json_input)
+        else:
+            return "Invalid JSON object passed as argument."
 
         return self._client.transport.perform_request(
             method="POST",
