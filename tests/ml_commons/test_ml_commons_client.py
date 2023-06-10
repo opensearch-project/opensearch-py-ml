@@ -81,7 +81,21 @@ def test_execute():
         )
     except:  # noqa: E722
         raised = True
-    assert raised == False, "Raised Exception during execute API testing"
+    assert (
+        raised == False
+    ), "Raised Exception during execute API testing with dictionary"
+
+    raised = False
+    try:
+        input_json = '{"operation": "max", "input_data": [1.0, 2.0, 3.0]}'
+        ml_client.execute(
+            algorithm_name="local_sample_calculator", input_json=input_json
+        )
+    except:  # noqa: E722
+        raised = True
+    assert (
+        raised == False
+    ), "Raised Exception during execute API testing with JSON string"
 
 
 def test_DEPRECATED_integration_pretrained_model_upload_unload_delete():
