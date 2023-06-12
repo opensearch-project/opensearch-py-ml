@@ -7,6 +7,7 @@ sphinx-rtd-theme
 sphinx_rtd_theme
 nbsphinx
 pandoc
+deprecated
 # using in SentenceTransformerModel
 torch
 pyyaml

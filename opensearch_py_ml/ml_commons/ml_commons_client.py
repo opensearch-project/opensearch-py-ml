@@ -12,8 +12,14 @@ from typing import Any, List, Union
 from deprecated.sphinx import deprecated
 from opensearchpy import OpenSearch
 
-from opensearch_py_ml.ml_commons.ml_common_utils import ML_BASE_URI, TIMEOUT
-from opensearch_py_ml.ml_commons.model_execute import ModelExecute
+from opensearch_py_ml.ml_commons.ml_common_utils import (
+    ML_BASE_URI,
+    MODEL_FORMAT_FIELD,
+    MODEL_GROUP_ID,
+    MODEL_NAME_FIELD,
+    MODEL_VERSION_FIELD,
+    TIMEOUT,
+)
 from opensearch_py_ml.ml_commons.model_uploader import ModelUploader
 
 
@@ -101,6 +107,7 @@ class MLCommonClient:
         self,
         model_path: str,
         model_config_path: str,
+        model_group_id: str = "",
         isVerbose: bool = False,
         deploy_model: bool = True,
         wait_until_deployed: bool = True,
@@ -128,6 +135,8 @@ class MLCommonClient:
             refer to:
             https://opensearch.org/docs/latest/ml-commons-plugin/model-serving-framework/#upload-model-to-opensearch
         :type model_config_path: string
+        :param model_group_id: Model group id
+        :type model_group_id: string
         :param isVerbose: if isVerbose is true method will print more messages. default False
         :type isVerbose: boolean
         :param deploy_model: Whether to deploy the model using uploaded model chunks
@@ -138,7 +147,7 @@ class MLCommonClient:
         :rtype: string
         """
         model_id = self._model_uploader._register_model(
-            model_path, model_config_path, isVerbose
+            model_path, model_config_path, model_group_id, isVerbose
         )
 
         # loading the model chunks from model index
@@ -179,7 +188,7 @@ class MLCommonClient:
         """
         # creating model meta doc
         model_config_json = {
-            "name": model_name,
+            MODEL_NAME_FIELD: model_name,
             "version": model_version,
             "model_format": model_format,
         }
@@ -196,6 +205,7 @@ class MLCommonClient:
         model_name: str,
         model_version: str,
         model_format: str,
+        model_group_id: str = "",
         deploy_model: bool = True,
         wait_until_deployed: bool = True,
     ):
@@ -210,6 +220,8 @@ class MLCommonClient:
         :type model_version: string
         :param model_format: "TORCH_SCRIPT" or "ONNX"
         :type model_format: string
+        :param model_group_id: Model group id
+        :type model_group_id: string
         :param deploy_model: Whether to deploy the model using uploaded model chunks
         :type deploy_model: bool
         :param wait_until_deployed: If deploy_model is true, whether to wait until the model is deployed
@@ -219,11 +231,14 @@ class MLCommonClient:
         """
         # creating model meta doc
         model_config_json = {
-            "name": model_name,
-            "version": model_version,
-            "model_format": model_format,
+            MODEL_NAME_FIELD: model_name,
+            MODEL_VERSION_FIELD: model_version,
+            MODEL_FORMAT_FIELD: model_format,
+            MODEL_GROUP_ID: model_group_id,
         }
         model_id = self._send_model_info(model_config_json)
+
+        print(model_id)
 
         # loading the model chunks from model index
         if deploy_model:
