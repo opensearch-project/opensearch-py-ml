@@ -76,9 +76,10 @@ def test_execute():
     raised = False
     try:
         input_json = {"operation": "max", "input_data": [1.0, 2.0, 3.0]}
-        ml_client.execute(
+        result = ml_client.execute(
             algorithm_name="local_sample_calculator", input_json=input_json
         )
+        assert result["output"]["result"] == 3
     except:  # noqa: E722
         raised = True
     assert (
@@ -88,9 +89,10 @@ def test_execute():
     raised = False
     try:
         input_json = '{"operation": "max", "input_data": [1.0, 2.0, 3.0]}'
-        ml_client.execute(
+        result = ml_client.execute(
             algorithm_name="local_sample_calculator", input_json=input_json
         )
+        assert result["output"]["result"] == 3
     except:  # noqa: E722
         raised = True
     assert (
