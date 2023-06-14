@@ -96,3 +96,9 @@ Delete Task
 
    api/ml_commons_delete_task_api
 
+Execute
+~~~~~~~~~~~~~~~~~
+.. toctree::
+   :maxdepth: 2
+
+   api/ml_commons_execute_api
