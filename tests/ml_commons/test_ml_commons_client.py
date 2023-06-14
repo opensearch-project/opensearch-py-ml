@@ -372,6 +372,20 @@ def test_integration_model_train_register_full_cycle():
                     print("Model Task Status:", ml_task_status)
                     raised = True
                 assert raised == False, "Raised Exception in pulling task info"
+
+                try:
+                    search_task_obj = ml_client.search_task(json="{'_id':'{task_id}'}")
+                    assert search_task_obj["hits"]["hits"][0]["_id"] == task_id
+                except:  # noqa: E722
+                    raised = True
+                assert raised == False, "Raised Exception in searching task"
+
+                try:
+                    search_task_obj = ml_client.search_task(json={"_id": task_id})
+                    assert search_task_obj["hits"]["hits"][0]["_id"] == task_id
+                except:  # noqa: E722
+                    raised = True
+                assert raised == False, "Raised Exception in searching task"
                 # This is test is being flaky. Sometimes the test is passing and sometimes showing 500 error
                 # due to memory circuit breaker.
                 # Todo: We need to revisit this test.
