@@ -72,6 +72,34 @@ def test_init():
     assert type(ml_client._model_uploader) == ModelUploader
 
 
+def test_execute():
+    raised = False
+    try:
+        input_json = {"operation": "max", "input_data": [1.0, 2.0, 3.0]}
+        result = ml_client.execute(
+            algorithm_name="local_sample_calculator", input_json=input_json
+        )
+        assert result["output"]["result"] == 3
+    except:  # noqa: E722
+        raised = True
+    assert (
+        raised == False
+    ), "Raised Exception during execute API testing with dictionary"
+
+    raised = False
+    try:
+        input_json = '{"operation": "max", "input_data": [1.0, 2.0, 3.0]}'
+        result = ml_client.execute(
+            algorithm_name="local_sample_calculator", input_json=input_json
+        )
+        assert result["output"]["result"] == 3
+    except:  # noqa: E722
+        raised = True
+    assert (
+        raised == False
+    ), "Raised Exception during execute API testing with JSON string"
+
+
 def test_DEPRECATED_integration_pretrained_model_upload_unload_delete():
     raised = False
     try:
@@ -381,3 +409,6 @@ def test_integration_model_train_register_full_cycle():
                 except:  # noqa: E722
                     raised = True
                 assert raised == False, "Raised Exception in deleting model"
+
+
+test_integration_model_train_register_full_cycle()
