@@ -99,11 +99,14 @@ def test_execute():
         raised == False
     ), "Raised Exception during execute API testing with JSON string"
 
+
 def test_search():
-    #Search task cases
+    # Search task cases
     raised = False
     try:
-        search_task_obj = ml_client.search_task(input_json='{"query": {"match_all": {}},"size": 1}')
+        search_task_obj = ml_client.search_task(
+            input_json='{"query": {"match_all": {}},"size": 1}'
+        )
         assert search_task_obj["hits"]["hits"] != []
     except:  # noqa: E722
         raised = True
@@ -111,7 +114,9 @@ def test_search():
 
     raised = False
     try:
-        search_task_obj = ml_client.search_task(input_json={"query": {"match_all": {}},"size": 1})
+        search_task_obj = ml_client.search_task(
+            input_json={"query": {"match_all": {}}, "size": 1}
+        )
         assert search_task_obj["hits"]["hits"] != []
     except:  # noqa: E722
         raised = True
@@ -125,10 +130,12 @@ def test_search():
         raised = True
     assert raised == False, "Raised Exception in searching task"
 
-    #Search model cases
+    # Search model cases
     raised = False
     try:
-        search_model_obj = ml_client.search_model(input_json='{"query": {"match_all": {}},"size": 1}')
+        search_model_obj = ml_client.search_model(
+            input_json='{"query": {"match_all": {}},"size": 1}'
+        )
         assert search_model_obj["hits"]["hits"] != []
     except:  # noqa: E722
         raised = True
@@ -136,7 +143,9 @@ def test_search():
 
     raised = False
     try:
-        search_model_obj = ml_client.search_model(input_json={"query": {"match_all": {}},"size": 1})
+        search_model_obj = ml_client.search_model(
+            input_json={"query": {"match_all": {}}, "size": 1}
+        )
         assert search_model_obj["hits"]["hits"] != []
     except:  # noqa: E722
         raised = True

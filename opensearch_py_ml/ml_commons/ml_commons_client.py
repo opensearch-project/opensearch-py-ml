@@ -404,7 +404,7 @@ class MLCommonClient:
             url=API_URL,
             body=API_BODY,
         )
-    
+
     def search_model(self, input_json) -> object:
         """
         This method searches a task from opensearch cluster (using ml commons api)
@@ -432,7 +432,6 @@ class MLCommonClient:
             url=API_URL,
             body=API_BODY,
         )
-    
 
     def get_model_info(self, model_id: str) -> object:
         """
