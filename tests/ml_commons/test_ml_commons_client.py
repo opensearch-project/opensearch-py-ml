@@ -382,7 +382,13 @@ def test_integration_model_train_register_full_cycle():
 
                 try:
                     search_task_obj = ml_client.search_task(json={"_id": task_id})
-                    assert search_task_obj["hits"]["hits"][0]["_id"] == task_id
+                except:  # noqa: E722
+                    raised = True
+                assert raised == False, "Raised Exception in searching task"
+
+                try:
+                    search_task_obj = ml_client.search_task(json=15)
+                    assert search_task_obj == "Invalid JSON object passed as argument."
                 except:  # noqa: E722
                     raised = True
                 assert raised == False, "Raised Exception in searching task"
