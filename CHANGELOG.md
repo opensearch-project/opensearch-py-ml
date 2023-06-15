@@ -1,91 +1,71 @@
 # CHANGELOG
 Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
+## [1.0.0]    
 
-## [Unreleased]
 ### Added
-- Added async support for helpers that are merged from opensearch-dsl-py ([#329](https://github.com/opensearch-project/opensearch-py/pull/329))
-- Added search.md to guides ([#356](https://github.com/opensearch-project/opensearch-py/pull/356))
-- Added index lifecycle guide ([#362](https://github.com/opensearch-project/opensearch-py/pull/362))
-- Added 'point in time' APIs to the pyi files in sync and async client ([#378](https://github.com/opensearch-project/opensearch-py/pull/378))
-- Added MacOS and Windows CI workflows ([#390](https://github.com/opensearch-project/opensearch-py/pull/390))
-- Compatibility with OpenSearch 2.1.0 - 2.6.0 ([#381](https://github.com/opensearch-project/opensearch-py/pull/381))
-### Changed
-- Upgrading pytest-asyncio to latest version - 0.21.0 ([#339](https://github.com/opensearch-project/opensearch-py/pull/339))
-- Fixed flaky CI tests by replacing httpbin with a simple http_server ([#395](https://github.com/opensearch-project/opensearch-py/pull/395))
-### Deprecated
-### Removed
-### Fixed
-- Fixed import cycle when importing async helpers ([#311](https://github.com/opensearch-project/opensearch-py/pull/311))
-- Fixed userguide for async client ([#340](https://github.com/opensearch-project/opensearch-py/pull/340))
-- Include parsed error info in TransportError in async connections (fixes #225) ([#226](https://github.com/opensearch-project/opensearch-py/pull/226)
-### Security
-- Fixed CVE-2022-23491 reported in opensearch-dsl-py ([#295](https://github.com/opensearch-project/opensearch-py/pull/295))
-- Update ci workflows ([#318](https://github.com/opensearch-project/opensearch-py/pull/318))
-### Dependencies
-- Bumps `sphinx` from <1.7 to <6.3
+- Added multiple notebooks in documentation for better clarification
+- Added integration tests and more functionalities for MLCommons integration
+- Added support for tracing model in Onnx format
+- Add make_model_config function and add doc by @mingshl ([#46](https://github.com/opensearch-project/opensearch-py-ml/pull/46))
+- Unit test for SentenceTransformerModel by @mingshl in ([#52](https://github.com/opensearch-project/opensearch-py-ml/pull/52))
+- Notebook_documentation by @dhrubo-os in ([#66]https://github.com/opensearch-project/opensearch-py-ml/pull/66)
+- Added download link to the notebook by @dhrubo-os in ([#73](https://github.com/opensearch-project/opensearch-py-ml/pull/73))
 
-## [2.2.0]
-### Added
-- Merging opensearch-dsl-py into opensearch-py ([#287](https://github.com/opensearch-project/opensearch-py/pull/287))
-- Added upgrading.md file and updated it for opensearch-py 2.2.0 release ([#293](https://github.com/opensearch-project/opensearch-py/pull/293))
 ### Changed
-### Deprecated
-### Removed
-- Removed 'out/opensearchpy' folder which was produced while generating pyi files for plugins ([#288](https://github.com/opensearch-project/opensearch-py/pull/288))
-- Removed low-level and high-level client terminology from guides ([#298](https://github.com/opensearch-project/opensearch-py/pull/298))
-### Fixed
-- Fixed CVE - issue 86 mentioned in opensearch-dsl-py repo ([#295](https://github.com/opensearch-project/opensearch-py/pull/295))
-### Security
+- Updating installation instruction by @dhrubo-os in ([#41](https://github.com/opensearch-project/opensearch-py-ml/pull/41))
+- Refactoring upload_api + added integration test + added load model API by @dhrubo-os in ([#54](https://github.com/opensearch-project/opensearch-py-ml/pull/54))
+- Updated MAINTAINERS.md format. by @dblock in ([#64]https://github.com/opensearch-project/opensearch-py-ml/pull/64)
+- Merged generate.py demo notebook with training notebook by @dhrubo-os in ([#67](https://github.com/opensearch-project/opensearch-py-ml/pull/67))
+- Tracing model with onnx format + changed OpenSearch version to 2.5.0 ([#69](https://github.com/opensearch-project/opensearch-py-ml/pull/69))
+- Updating docs workflow to 2.5.0 also by @dhrubo-os([#71](https://github.com/opensearch-project/opensearch-py-ml/pull/71))
+- Update notebook + version update by @dhrubo-os in ([#76](https://github.com/opensearch-project/opensearch-py-ml/pull/76))
 
-## [2.1.1]
-### Added
-### Changed
-### Deprecated
-### Removed
-### Fixed
-- Fixed SigV4 Signing for Managed Service ([#279](https://github.com/opensearch-project/opensearch-py/pull/279))
-- Fixed SigV4 Signing for Async Requests with QueryStrings ([#272](https://github.com/opensearch-project/opensearch-py/pull/279))
-### Security
-
-## [2.1.0]
-### Added
-- Added Support for AOSS ([#268](https://github.com/opensearch-project/opensearch-py/pull/268))
-### Changed
-### Deprecated
-### Removed
-### Fixed
-### Security
-
-## [2.0.1]
-### Added
-- Added Point in time API rest API([#191](https://github.com/opensearch-project/opensearch-py/pull/191))
-- Added pool_maxsize for RequestsHttpConnection ([#216](https://github.com/opensearch-project/opensearch-py/pull/216))
-- Github workflow for changelog verification ([#218](https://github.com/opensearch-project/opensearch-py/pull/218))
-- Added overload decorators to helpers-actions.pyi-"bulk" ([#239](https://github.com/opensearch-project/opensearch-py/pull/239))
-- Document Keberos authenticaion ([214](https://github.com/opensearch-project/opensearch-py/pull/214))
-- Add release workflows ([#240](https://github.com/opensearch-project/opensearch-py/pull/240))
-- Added SigV4 support for Async Opensearch Client ([#254](https://github.com/opensearch-project/opensearch-py/pull/254))
-- Compatibility with OpenSearch 2.1.0 - 2.4.1 ([#257](https://github.com/opensearch-project/opensearch-py/pull/257))
-- Adding explicit parameters for AIOHttpConnection and AsyncTransport ([#276](https://github.com/opensearch-project/opensearch-py/pull/276))
-### Changed
-- Updated getting started to user guide ([#233](https://github.com/opensearch-project/opensearch-py/pull/233))
-- Updated CA certificate handling to check OpenSSL environment variables before defaulting to certifi ([#196](https://github.com/opensearch-project/opensearch-py/pull/196))
-- Updates `master` to `cluster_manager` to be inclusive ([#242](https://github.com/opensearch-project/opensearch-py/pull/242))
-- Support a custom signing service name for AWS SigV4 ([#268](https://github.com/opensearch-project/opensearch-py/pull/268))
-- Updated CI tests to make them work locally ([#275](https://github.com/opensearch-project/opensearch-py/pull/275))
-- Fix bug with validation of 'timeout' parameter ([#387](Do not escape the "timeout" parameter.))
 ### Deprecated
 
 ### Removed
-- Removed patch versions in integration tests for OpenSearch 1.0.0 - 2.3.0 to reduce Github Action jobs ([#262](https://github.com/opensearch-project/opensearch-py/pull/262))
+- Removing os_client dependency + added 2.4.0 version for integration test by @dhrubo-os in ([#45](https://github.com/opensearch-project/opensearch-py-ml/pull/45))
+
 ### Fixed
-- Fixed DeprecationWarning emitted from urllib3 1.26.13+ ([#246](https://github.com/opensearch-project/opensearch-py/pull/246))
+- Fixed bugs in Training Script
+- Fix file extension issue and add wait for multi-processes  by @mingshl in ([#42](https://github.com/opensearch-project/opensearch-py-ml/pull/42))
+- Fixing train documentation by @dhrubo-os in ([#44](https://github.com/opensearch-project/opensearch-py-ml/pull/44))
+- Upgrade package version to fix security issues and format code   by @mingshl in ([#51](https://github.com/opensearch-project/opensearch-py-ml/pull/51))
+- Bug fix of SentenceTransformerModel + add integration test from model by @dhrubo-os in ([#63](https://github.com/opensearch-project/opensearch-py-ml/pull/63))
+
+### Security
+- Bump opensearch-py from 2.0.1 to 2.1.1 by @dependabot ([#70](https://github.com/opensearch-project/opensearch-py-ml/pull/70))
+
+
+## [1.0.0b1]
+
+### Added
+- Merging all the codes of dev to main branch. by @dhrubo-os in ([#9](https://github.com/opensearch-project/opensearch-py-ml/pull/9))
+- Custom model upload + some documenation. by @dhrubo-os in ([#10]https://github.com/opensearch-project/opensearch-py-ml/pull/10)
+- Adding template files to make repo public by @dhrubo-os in ([#12]https://github.com/opensearch-project/opensearch-py-ml/pull/12)
+- Linting for windows and mac by @dhrubo-os in ([#14]https://github.com/opensearch-project/opensearch-py-ml/pull/14)
+- Add semantic search training script by @mingshl in ([#18]https://github.com/opensearch-project/opensearch-py-ml/pull/18)
+- Added documentation for ml_commons by @dhrubo-os in ([#23]https://github.com/opensearch-project/opensearch-py-ml/pull/23)
+- Add release workflows by @gaiksaya in ([#27]https://github.com/opensearch-project/opensearch-py-ml/pull/27)
+- Add demo notebook and return model by @mingshl in ([#34]https://github.com/opensearch-project/opensearch-py-ml/pull/34)
+
+### Changed
+- Added documentation + fixed ipynb files by @dhrubo-os in ([#19]https://github.com/opensearch-project/opensearch-py-ml/pull/19)
+- Changed naming + fixed ci workflow by @dhrubo-os in ([#21]https://github.com/opensearch-project/opensearch-py-ml/pull/21)
+- Updating version by @dhrubo-os in ([#33]https://github.com/opensearch-project/opensearch-py-ml/pull/33)
+- Change version + documentation by @dhrubo-os in ([#36]https://github.com/opensearch-project/opensearch-py-ml/pull/36)
+- Change version to 1.0.0b1 by @ylwu-amzn in ([#38]https://github.com/opensearch-project/opensearch-py-ml/pull/38)
+
+### Deprecated
+
+### Removed
+- Removing installation guide + adding more md files by @dhrubo-os in ([#26]https://github.com/opensearch-project/opensearch-py-ml/pull/26)
+
+### Fixed
+- Fixing documentation issue by @dhrubo-os in ([#20]https://github.com/opensearch-project/opensearch-py-ml/pull/20)
+- Increment jenkins lib version and fix GHA job name by @gaiksaya in ([#37]https://github.com/opensearch-project/opensearch-py-ml/pull/37)
+
 ### Security
 
 
-[Unreleased]: https://github.com/opensearch-project/opensearch-py/compare/v2.2.0...HEAD
-[2.0.1]: https://github.com/opensearch-project/opensearch-py/compare/v2.0.0...v2.0.1
-[2.1.0]: https://github.com/opensearch-project/opensearch-py/compare/v2.0.1...v2.1.0
-[2.1.1]: https://github.com/opensearch-project/opensearch-py/compare/v2.1.0...v2.1.1
-[2.2.0]: https://github.com/opensearch-project/opensearch-py/compare/v2.1.1...v2.2.0
-
+[1.0.0]: https://github.com/opensearch-project/opensearch-py-ml/compare/1.0.0b1...1.0.0
+[1.0.0b1]: https://github.com/opensearch-project/opensearch-py-ml/commits/1.0.0b1
