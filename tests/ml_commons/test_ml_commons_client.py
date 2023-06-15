@@ -100,10 +100,11 @@ def test_execute():
     ), "Raised Exception during execute API testing with JSON string"
 
 def test_search():
+    #Search task cases
     raised = False
     try:
         search_task_obj = ml_client.search_task(input_json='{"query": {"match_all": {}},"size": 1}')
-        assert search_task_obj["_shards"]["successful"] == 1
+        assert search_task_obj["hits"]["hits"] != []
     except:  # noqa: E722
         raised = True
     assert raised == False, "Raised Exception in searching task"
@@ -111,7 +112,7 @@ def test_search():
     raised = False
     try:
         search_task_obj = ml_client.search_task(input_json={"query": {"match_all": {}},"size": 1})
-        assert search_task_obj["_shards"]["successful"] == 1
+        assert search_task_obj["hits"]["hits"] != []
     except:  # noqa: E722
         raised = True
     assert raised == False, "Raised Exception in searching task"
@@ -123,6 +124,31 @@ def test_search():
     except:  # noqa: E722
         raised = True
     assert raised == False, "Raised Exception in searching task"
+
+    #Search model cases
+    raised = False
+    try:
+        search_model_obj = ml_client.search_model(input_json='{"query": {"match_all": {}},"size": 1}')
+        assert search_model_obj["hits"]["hits"] != []
+    except:  # noqa: E722
+        raised = True
+    assert raised == False, "Raised Exception in searching model"
+
+    raised = False
+    try:
+        search_model_obj = ml_client.search_model(input_json={"query": {"match_all": {}},"size": 1})
+        assert search_model_obj["hits"]["hits"] != []
+    except:  # noqa: E722
+        raised = True
+    assert raised == False, "Raised Exception in searching model"
+
+    raised = False
+    try:
+        search_model_obj = ml_client.search_model(input_json=15)
+        assert search_model_obj == "Invalid JSON object passed as argument."
+    except:  # noqa: E722
+        raised = True
+    assert raised == False, "Raised Exception in searching model"
 
 
 def test_DEPRECATED_integration_pretrained_model_upload_unload_delete():
