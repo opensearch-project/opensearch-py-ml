@@ -19,7 +19,7 @@ Demo notebooks for Model Training and Tracing
    :maxdepth: 1
 
    demo_transformer_model_train_save_upload_to_openSearch
-   demo_tracing_model_torchscript_onnx.ipynb
+   demo_tracing_model_torchscript_onnx
 
 Demo notebooks for ML Commons plugin integration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -28,3 +28,11 @@ Demo notebooks for ML Commons plugin integration
    :maxdepth: 1
 
    demo_ml_commons_integration
+
+Demo notebooks for ML Commons no-model-based algorithms
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. toctree::
+   :maxdepth: 1
+
+   demo_metrics_correlation
