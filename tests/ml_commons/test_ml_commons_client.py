@@ -130,6 +130,24 @@ def test_search():
         raised = True
     assert raised == False, "Raised Exception in searching task"
 
+    raised = False
+    try:
+        search_task_obj = ml_client.search_task(input_json="15")
+        assert search_task_obj == "Invalid JSON object passed as argument."
+    except:  # noqa: E722
+        raised = True
+    assert raised == False, "Raised Exception in searching task"
+
+    raised = False
+    try:
+        search_task_obj = ml_client.search_task(
+            input_json='{"query": {"match_all": {}},size: 1}'
+        )
+        assert search_task_obj == "Invalid JSON string passed as argument."
+    except:  # noqa: E722
+        raised = True
+    assert raised == False, "Raised Exception in searching task"
+
     # Search model cases
     raised = False
     try:
@@ -155,6 +173,24 @@ def test_search():
     try:
         search_model_obj = ml_client.search_model(input_json=15)
         assert search_model_obj == "Invalid JSON object passed as argument."
+    except:  # noqa: E722
+        raised = True
+    assert raised == False, "Raised Exception in searching model"
+
+    raised = False
+    try:
+        search_model_obj = ml_client.search_model(input_json="15")
+        assert search_model_obj == "Invalid JSON object passed as argument."
+    except:  # noqa: E722
+        raised = True
+    assert raised == False, "Raised Exception in searching model"
+
+    raised = False
+    try:
+        search_model_obj = ml_client.search_model(
+            input_json='{"query": {"match_all": {}},size: 1}'
+        )
+        assert search_model_obj == "Invalid JSON string passed as argument."
     except:  # noqa: E722
         raised = True
     assert raised == False, "Raised Exception in searching model"

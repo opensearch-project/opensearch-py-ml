@@ -391,6 +391,8 @@ class MLCommonClient:
         if isinstance(input_json, str):
             try:
                 json_obj = json.loads(input_json)
+                if not isinstance(json_obj, dict):
+                    return "Invalid JSON object passed as argument."
                 API_BODY = json.dumps(json_obj)
             except json.JSONDecodeError:
                 return "Invalid JSON string passed as argument."
@@ -419,6 +421,8 @@ class MLCommonClient:
         if isinstance(input_json, str):
             try:
                 json_obj = json.loads(input_json)
+                if not isinstance(json_obj, dict):
+                    return "Invalid JSON object passed as argument."
                 API_BODY = json.dumps(json_obj)
             except json.JSONDecodeError:
                 return "Invalid JSON string passed as argument."

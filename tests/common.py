@@ -57,7 +57,7 @@ _pd_ecommerce["products.created_on"] = _pd_ecommerce["products.created_on"].appl
 )
 _pd_ecommerce.insert(2, "customer_birth_date", None)
 _pd_ecommerce.index = _pd_ecommerce.index.map(str)  # make index 'object' not int
-_pd_ecommerce["customer_birth_date"].astype("datetime64[ns]")
+_pd_ecommerce["customer_birth_date"].astype("datetime64")
 _oml_ecommerce = oml.DataFrame(OPENSEARCH_TEST_CLIENT, ECOMMERCE_INDEX_NAME)
 
 
