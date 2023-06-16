@@ -12,6 +12,13 @@ tqdm
 transformers
 
 #
+# Model conversion
+#
+hummingbird-ml
+skl2onnx
+onnxruntime
+
+#
 # Testing
 #
 pytest>=7.1.2
