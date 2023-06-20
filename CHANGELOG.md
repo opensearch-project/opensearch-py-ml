@@ -1,5 +1,12 @@
 # CHANGELOG
 Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
+
+## [1.1.0]
+
+### Added
+
+- adding documentation for model group id @dhrubo-os ([#176](https://github.com/opensearch-project/opensearch-py-ml/pull/176))
+
 ## [1.0.0]    
 
 ### Added
