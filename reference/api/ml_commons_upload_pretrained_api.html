@@ -108,6 +108,35 @@
              
   <section id="upload-pretrained-model">
 <h1>Upload Pretrained Model<a class="headerlink" href="#upload-pretrained-model" title="Permalink to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="opensearch_py_ml.ml_commons.MLCommonClient.upload_pretrained_model">
+<span class="sig-prename descclassname"><span class="pre">opensearch_py_ml.ml_commons.MLCommonClient.</span></span><span class="sig-name descname"><span class="pre">upload_pretrained_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wait_until_loaded</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#opensearch_py_ml.ml_commons.MLCommonClient.upload_pretrained_model" title="Permalink to this definition"></a></dt>
+<dd><p>This method registers the pretrained model in the opensearch cluster using ml-common plugin’s api.
+First, this method creates a model id to store model info and then deploys the model if load_model is True.
+The model has to be supported by ML Commons. Refer to <a class="reference external" href="https://opensearch.org/docs/latest/ml-commons-plugin/pretrained-models/">https://opensearch.org/docs/latest/ml-commons-plugin/pretrained-models/</a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_name</strong> (<em>string</em>) – Name of the pretrained model</p></li>
+<li><p><strong>model_version</strong> (<em>string</em>) – Version of the pretrained model</p></li>
+<li><p><strong>model_format</strong> (<em>string</em>) – “TORCH_SCRIPT” or “ONNX”</p></li>
+<li><p><strong>load_model</strong> (<em>bool</em>) – Whether to deploy the model using uploaded model chunks</p></li>
+<li><p><strong>wait_until_loaded</strong> (<em>bool</em>) – If load_model is true, whether to wait until the model is deployed</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>returns the model_id so that we can use this for further operation</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>string</p>
+</dd>
+</dl>
+<div class="deprecated">
+<p><span class="versionmodified deprecated">Deprecated since version 2.7.0: </span>Since OpenSearch 2.7.0, you can use register_pretrained_model
+instead</p>
+</div>
+</dd></dl>
+
 </section>
 
 

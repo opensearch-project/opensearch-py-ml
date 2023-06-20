@@ -108,6 +108,28 @@
              
   <section id="get-task-info">
 <h1>Get Task Info<a class="headerlink" href="#get-task-info" title="Permalink to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="opensearch_py_ml.ml_commons.MLCommonClient.get_task_info">
+<span class="sig-prename descclassname"><span class="pre">opensearch_py_ml.ml_commons.MLCommonClient.</span></span><span class="sig-name descname"><span class="pre">get_task_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">task_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wait_until_task_done</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">object</span></span></span><a class="headerlink" href="#opensearch_py_ml.ml_commons.MLCommonClient.get_task_info" title="Permalink to this definition"></a></dt>
+<dd><p>This method return information about a task running into opensearch cluster (using ml commons api)
+when we deploy a model</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>task_id</strong> (<em>string</em>) – unique id of the task</p></li>
+<li><p><strong>wait_until_task_done</strong> (<em>bool</em>) – a boolean indicator if we want to wait until a task done before
+returning the task related information</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>returns a json object, with detailed information about the task</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>object</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
 

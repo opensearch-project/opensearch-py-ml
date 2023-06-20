@@ -108,6 +108,52 @@
              
   <section id="upload-model">
 <h1>Upload Model<a class="headerlink" href="#upload-model" title="Permalink to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="opensearch_py_ml.ml_commons.MLCommonClient.upload_model">
+<span class="sig-prename descclassname"><span class="pre">opensearch_py_ml.ml_commons.MLCommonClient.</span></span><span class="sig-name descname"><span class="pre">upload_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">isVerbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wait_until_loaded</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#opensearch_py_ml.ml_commons.MLCommonClient.upload_model" title="Permalink to this definition"></a></dt>
+<dd><p>This method registers the model in the opensearch cluster using ml-common plugin’s api.
+First, this method creates a model id to store model metadata and then breaks the model zip file into
+multiple chunks and then upload chunks into opensearch cluster</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_path</strong> (<em>string</em>) – path of the zip file of the model</p></li>
+<li><p><strong>model_config_path</strong> (<em>string</em>) – <p>filepath of the model metadata. A json file of model metadata is expected
+Model metadata format example:
+{</p>
+<blockquote>
+<div><p>”name”: “all-MiniLM-L6-v2”,
+“version”: 1,
+“model_format”: “TORCH_SCRIPT”,
+“model_config”: {</p>
+<blockquote>
+<div><p>”model_type”: “bert”,
+“embedding_dimension”: 384,
+“framework_type”: “sentence_transformers”,</p>
+</div></blockquote>
+<p>},</p>
+</div></blockquote>
+<p>}</p>
+<p>refer to:
+<a class="reference external" href="https://opensearch.org/docs/latest/ml-commons-plugin/model-serving-framework/#upload-model-to-opensearch">https://opensearch.org/docs/latest/ml-commons-plugin/model-serving-framework/#upload-model-to-opensearch</a></p>
+</p></li>
+<li><p><strong>isVerbose</strong> (<em>boolean</em>) – if isVerbose is true method will print more messages. default False</p></li>
+<li><p><strong>load_model</strong> (<em>bool</em>) – Whether to deploy the model using uploaded model chunks</p></li>
+<li><p><strong>wait_until_loaded</strong> (<em>bool</em>) – If load_model is true, whether to wait until the model is deployed</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>returns the model_id so that we can use this for further operation.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>string</p>
+</dd>
+</dl>
+<div class="deprecated">
+<p><span class="versionmodified deprecated">Deprecated since version 2.7.0: </span>Since OpenSearch 2.7.0, you can use register_model instead</p>
+</div>
+</dd></dl>
+
 </section>
 
 
