@@ -15,9 +15,20 @@ from opensearchpy import OpenSearch
 
 from opensearch_py_ml.ml_commons.ml_common_utils import (
     BUF_SIZE,
+    EMBEDDING_DIMENSION,
+    FRAMEWORK_TYPE,
+    META_API_ENDPOINT,
     ML_BASE_URI,
     MODEL_CHUNK_MAX_SIZE,
+    MODEL_CONFIG_FIELD,
+    MODEL_CONTENT_HASH_VALUE,
+    MODEL_FORMAT_FIELD,
+    MODEL_GROUP_ID,
     MODEL_MAX_SIZE,
+    MODEL_NAME_FIELD,
+    MODEL_TYPE,
+    MODEL_VERSION_FIELD,
+    TOTAL_CHUNKS_FIELD,
 )
 
 
@@ -26,22 +37,15 @@ class ModelUploader:
     Class for registering a model using ml-commons apis in opensearch cluster.
     """
 
-    META_API_ENDPOINT = "models/meta"
-    MODEL_NAME_FIELD = "name"
-    MODEL_VERSION_FIELD = "version"
-    MODEL_FORMAT_FIELD = "model_format"
-    TOTAL_CHUNKS_FIELD = "total_chunks"
-    MODEL_CONFIG_FIELD = "model_config"
-    MODEL_TYPE = "model_type"
-    EMBEDDING_DIMENSION = "embedding_dimension"
-    FRAMEWORK_TYPE = "framework_type"
-    MODEL_CONTENT_HASH_VALUE = "model_content_hash_value"
-
     def __init__(self, os_client: OpenSearch):
         self._client = os_client
 
     def _register_model(
-        self, model_path: str, model_meta_path: str, isVerbose: bool
+        self,
+        model_path: str,
+        model_meta_path: str,
+        model_group_id: str = "",
+        isVerbose: bool = False,
     ) -> str:
         """
         This method registers the model in the opensearch cluster using ml-common plugin's register model api.
@@ -67,6 +71,8 @@ class ModelUploader:
             refer to:
                 https://opensearch.org/docs/latest/ml-commons-plugin/model-serving-framework/#upload-model-to-opensearch
         :type model_meta_path: string
+        :param model_group_id: Model group id
+        :type model_group_id: string
         :param isVerbose: if isVerbose is true method will print more messages
         :type isVerbose: bool
         :return: returns model id which is created by the model metadata
@@ -89,13 +95,14 @@ class ModelUploader:
         model_meta_json: dict[str, Union[str, dict[str, str]]] = json.load(
             model_meta_json_file
         )
-        model_meta_json[self.TOTAL_CHUNKS_FIELD] = total_num_chunks
-        model_meta_json[self.MODEL_CONTENT_HASH_VALUE] = hash_val_model_file
+        model_meta_json[TOTAL_CHUNKS_FIELD] = total_num_chunks
+        model_meta_json[MODEL_CONTENT_HASH_VALUE] = hash_val_model_file
+        model_meta_json[MODEL_GROUP_ID] = model_group_id
 
         if self._check_mandatory_field(model_meta_json):
             meta_output: Union[bool, Any] = self._client.transport.perform_request(
                 method="POST",
-                url=f"{ML_BASE_URI}/{self.META_API_ENDPOINT}",
+                url=f"{ML_BASE_URI}/{META_API_ENDPOINT}",
                 body=model_meta_json,
             )
             print(
@@ -152,30 +159,30 @@ class ModelUploader:
         """
 
         if model_meta:
-            if not model_meta.get(self.MODEL_NAME_FIELD):
-                raise ValueError(f"{self.MODEL_NAME_FIELD} can not be empty")
-            if not model_meta.get(self.MODEL_VERSION_FIELD):
-                raise ValueError(f"{self.MODEL_VERSION_FIELD} can not be empty")
-            if not model_meta.get(self.MODEL_FORMAT_FIELD):
-                raise ValueError(f"{self.MODEL_FORMAT_FIELD} can not be empty")
-            if not model_meta.get(self.MODEL_CONTENT_HASH_VALUE):
-                raise ValueError(f"{self.MODEL_CONTENT_HASH_VALUE} can not be empty")
-            if not model_meta.get(self.TOTAL_CHUNKS_FIELD):
-                raise ValueError(f"{self.TOTAL_CHUNKS_FIELD} can not be empty")
-            if not model_meta.get(self.MODEL_CONFIG_FIELD):
-                raise ValueError(f"{self.MODEL_CONFIG_FIELD} can not be empty")
+            if not model_meta.get(MODEL_NAME_FIELD):
+                raise ValueError(f"{MODEL_NAME_FIELD} can not be empty")
+            if not model_meta.get(MODEL_VERSION_FIELD):
+                raise ValueError(f"{MODEL_VERSION_FIELD} can not be empty")
+            if not model_meta.get(MODEL_FORMAT_FIELD):
+                raise ValueError(f"{MODEL_FORMAT_FIELD} can not be empty")
+            if not model_meta.get(MODEL_CONTENT_HASH_VALUE):
+                raise ValueError(f"{MODEL_CONTENT_HASH_VALUE} can not be empty")
+            if not model_meta.get(TOTAL_CHUNKS_FIELD):
+                raise ValueError(f"{TOTAL_CHUNKS_FIELD} can not be empty")
+            if not model_meta.get(MODEL_CONFIG_FIELD):
+                raise ValueError(f"{MODEL_CONFIG_FIELD} can not be empty")
             else:
-                if not isinstance(model_meta.get(self.MODEL_CONFIG_FIELD), dict):
+                if not isinstance(model_meta.get(MODEL_CONFIG_FIELD), dict):
                     raise TypeError(
-                        f"{self.MODEL_CONFIG_FIELD} is expecting to be an object"
+                        f"{MODEL_CONFIG_FIELD} is expecting to be an object"
                     )
-                model_config = model_meta.get(self.MODEL_CONFIG_FIELD)
-                if not model_config.get(self.MODEL_TYPE):
-                    raise ValueError(f"{self.MODEL_TYPE} can not be empty")
-                if not model_config.get(self.EMBEDDING_DIMENSION):
-                    raise ValueError(f"{self.EMBEDDING_DIMENSION} can not be empty")
-                if not model_config.get(self.FRAMEWORK_TYPE):
-                    raise ValueError(f"{self.FRAMEWORK_TYPE} can not be empty")
+                model_config = model_meta.get(MODEL_CONFIG_FIELD)
+                if not model_config.get(MODEL_TYPE):
+                    raise ValueError(f"{MODEL_TYPE} can not be empty")
+                if not model_config.get(EMBEDDING_DIMENSION):
+                    raise ValueError(f"{EMBEDDING_DIMENSION} can not be empty")
+                if not model_config.get(FRAMEWORK_TYPE):
+                    raise ValueError(f"{FRAMEWORK_TYPE} can not be empty")
             return True
         else:
             raise ValueError("Model metadata can't be empty")
