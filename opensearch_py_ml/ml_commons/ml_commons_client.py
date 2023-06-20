@@ -20,6 +20,7 @@ from opensearch_py_ml.ml_commons.ml_common_utils import (
     MODEL_VERSION_FIELD,
     TIMEOUT,
 )
+from opensearch_py_ml.ml_commons.model_execute import ModelExecute
 from opensearch_py_ml.ml_commons.model_uploader import ModelUploader
 
 
