@@ -318,7 +318,10 @@ def test_integration_model_train_register_full_cycle():
         raised = False
         try:
             ml_client.register_model(
-                MODEL_PATH, MODEL_CONFIG_FILE_PATH, deploy_model=True, isVerbose=True
+                model_path=MODEL_PATH,
+                model_config_path=MODEL_CONFIG_FILE_PATH,
+                deploy_model=True,
+                isVerbose=True,
             )
         except:  # noqa: E722
             raised = True
@@ -327,7 +330,10 @@ def test_integration_model_train_register_full_cycle():
         raised = False
         try:
             model_id = ml_client.register_model(
-                MODEL_PATH, MODEL_CONFIG_FILE_PATH, deploy_model=False, isVerbose=True
+                model_path=MODEL_PATH,
+                model_config_path=MODEL_CONFIG_FILE_PATH,
+                deploy_model=False,
+                isVerbose=True,
             )
             print("Model_id:", model_id)
         except:  # noqa: E722
