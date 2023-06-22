@@ -760,6 +760,18 @@ class SentenceTransformerModel:
 
         # save tokenizer.json in save_json_folder_name
         model.save(save_json_folder_path)
+        with open(save_json_folder_path + "/tokenizer.json") as user_file:
+            file_contents = user_file.read()
+        parsed_json = json.loads(file_contents)
+        if not parsed_json["truncation"]:
+            parsed_json["truncation"] = {
+                "direction": "Right",
+                "max_length": 128,
+                "strategy": "LongestFirst",
+                "stride": 0,
+            }
+        with open(save_json_folder_path + "/tokenizer.json", "w") as file:
+            json.dump(parsed_json, file, indent=2)
 
         # convert to pt format will need to be in cpu,
         # set the device to cpu, convert its input_ids and attention_mask in cpu and save as .pt format
