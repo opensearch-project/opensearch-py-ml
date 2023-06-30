@@ -9,7 +9,7 @@
     "\n",
     "#### [Download notebook](https://github.com/opensearch-project/opensearch-py-ml/blob/main/docs/source/examples/demo_tracing_model_torchscript_onnx.ipynb)\n",
     "\n",
-    "This notebook provides a walkthrough guidance for users to trace models from Sentence Transformers in torchScript and onnx format. After tracing the model customer can upload the model to opensearch and generate embeddings.\n",
+    "This notebook provides a walkthrough guidance for users to trace models from Sentence Transformers in torchScript and onnx format. After tracing the model, customers can register the model to opensearch and generate embeddings.\n",
     "\n",
     "Remember, tracing model in torchScript or Onnx format at just two different options. We don't need to trace model in both ways. Here in our notebook we just want to show both ways. \n",
     "\n",
@@ -17,15 +17,15 @@
     "\n",
     "Step 1: Save model in torchScript format\n",
     "\n",
-    "Step 2: Upload the saved torchScript model in Opensearch\n",
+    "Step 2: Register the saved torchScript model in Opensearch\n",
     "\n",
-    "[The following steps are optional, just showing uploading model in both ways and comparing the both embedding output]\n",
+    "[The following steps are optional, just showing registering model in both ways and comparing the both embedding output]\n",
     "\n",
     "Step 3: Save model in Onnx format \n",
     "\n",
-    "Step 4: Upload the saved Onnx model in Opensearch\n",
+    "Step 4: Register the saved Onnx model in Opensearch\n",
     "\n",
-    "Step 5: Generate Sentence Embedding with uploaded models\n",
+    "Step 5: Generate Sentence Embedding with registered models\n",
     "\n",
     "\n"
    ]
@@ -49,19 +49,32 @@
    },
    "outputs": [],
    "source": [
-    "#!pip install opensearch-py opensearch-py-ml"
+    "#!pip install opensearch-py opensearch-py-ml\n",
+    "\n",
+    "# import os\n",
+    "# import sys\n",
+    "# sys.path.append(os.path.abspath(os.path.join('../../..')))"
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": 1,
+   "execution_count": 2,
    "id": "d0c711bf",
    "metadata": {
     "pycharm": {
      "name": "#%%\n"
     }
    },
-   "outputs": [],
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/home/linuxbrew/.linuxbrew/opt/python@3.8/lib/python3.8/site-packages/tqdm/auto.py:21: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html\n",
+      "  from .autonotebook import tqdm as notebook_tqdm\n"
+     ]
+    }
+   ],
    "source": [
     "import warnings\n",
     "warnings.filterwarnings('ignore', category=DeprecationWarning)\n",
@@ -73,13 +86,13 @@
     "import opensearch_py_ml as oml\n",
     "from opensearchpy import OpenSearch\n",
     "from opensearch_py_ml.ml_models import SentenceTransformerModel\n",
-    "# import mlcommon to later upload the model to OpenSearch Cluster\n",
+    "# import mlcommon to later register the model to OpenSearch Cluster\n",
     "from opensearch_py_ml.ml_commons import MLCommonClient"
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": 2,
+   "execution_count": 3,
    "id": "5c85ae17",
    "metadata": {},
    "outputs": [],
@@ -89,7 +102,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 3,
+   "execution_count": 4,
    "id": "77442abf",
    "metadata": {},
    "outputs": [],
@@ -112,16 +125,23 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 6,
+   "execution_count": 5,
    "id": "89e1cb2a",
    "metadata": {},
-   "outputs": [],
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/home/linuxbrew/.linuxbrew/opt/python@3.8/lib/python3.8/site-packages/opensearchpy/connection/http_urllib3.py:199: UserWarning: Connecting to https://localhost:9200 using SSL with verify_certs=False is insecure.\n",
+      "  warnings.warn(\n"
+     ]
+    }
+   ],
    "source": [
     "client = get_os_client()\n",
     "\n",
-    "#connect to ml_common client with OpenSearch client\n",
-    "import opensearch_py_ml as oml\n",
-    "from opensearch_py_ml.ml_commons import MLCommonClient\n",
+    "# Connect to ml_common client with OpenSearch client\n",
     "ml_client = MLCommonClient(client)"
    ]
   },
@@ -145,30 +165,38 @@
     "\n",
     "after tracing the model (a .pt file will be generated), `save_as_pt` method zips `tokenizers.json` and torchScript (`.pt`) file and saves in the file system. \n",
     "\n",
-    "User can upload that model to opensearch to generate embedding."
+    "User can register that model to opensearch to generate embedding."
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": 8,
+   "execution_count": 6,
    "id": "c7b0ff7e",
    "metadata": {
     "scrolled": true
    },
    "outputs": [
     {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "/home/linuxbrew/.linuxbrew/opt/python@3.8/lib/python3.8/site-packages/transformers/models/distilbert/modeling_distilbert.py:223: TracerWarning: torch.tensor results are registered as constants in the trace. You can safely ignore this warning if you use this function to create tensors out of constant variables that would be the same every time you call this function. In any other case, this might cause the trace to be incorrect.\n",
+      "  mask, torch.tensor(torch.finfo(scores.dtype).min)\n"
+     ]
+    },
+    {
      "name": "stdout",
      "output_type": "stream",
      "text": [
-      "model file is saved to  /Volumes/workplace/upload_content/msmarco-distilbert-base-tas-b.pt\n",
-      "zip file is saved to  /Volumes/workplace/upload_content/msmarco-distilbert-base-tas-b.zip \n",
+      "model file is saved to  sentence-transformers-torchscript/msmarco-distilbert-base-tas-b/msmarco-distilbert-base-tas-b.pt\n",
+      "zip file is saved to  sentence-transformers-torchscript/msmarco-distilbert-base-tas-b/msmarco-distilbert-base-tas-b.zip \n",
       "\n"
      ]
     }
    ],
    "source": [
-    "pre_trained_model = SentenceTransformerModel(folder_path = '/Volumes/workplace/upload_content/', overwrite = True)\n",
-    "model_path = pre_trained_model.save_as_pt(model_id = \"sentence-transformers/msmarco-distilbert-base-tas-b\", sentences=[\"for example providing a small sentence\", \"we can add multiple sentences\"])"
+    "pre_trained_model = SentenceTransformerModel(folder_path='sentence-transformers-torchscript/msmarco-distilbert-base-tas-b', overwrite=True)\n",
+    "model_path = pre_trained_model.save_as_pt(model_id=\"sentence-transformers/msmarco-distilbert-base-tas-b\", sentences=[\"for example providing a small sentence\", \"we can add multiple sentences\"])"
    ]
   },
   {
@@ -176,11 +204,11 @@
    "id": "9c3b7cbd",
    "metadata": {},
    "source": [
-    "## Step 2: Upload the saved torchScript model in Opensearch\n",
+    "## Step 2: Register the saved torchScript model in Opensearch\n",
     "\n",
-    "In the last step we saved a sentence transformer model in torchScript format. Now we will upload that model in opensearch cluster. To do that we can take help of `upload_model` method in `opensearch-py-ml` plugin.\n",
+    "In the last step we saved a sentence transformer model in torchScript format. Now we will register that model in opensearch cluster. To do that we can take help of `register_model` method in `opensearch-py-ml` plugin.\n",
     "\n",
-    "To upload model, we need the zip file we just saved in the last step and a model config file. Example of Model config file content can be:\n",
+    "To register model, we need the zip file we just saved in the last step and a model config file. Example of Model config file content can be:\n",
     "\n",
     "{\n",
     "  \"name\": \"sentence-transformers/msmarco-distilbert-base-tas-b\",\n",
@@ -200,7 +228,7 @@
     "Please refer to this doc: https://github.com/opensearch-project/ml-commons/blob/2.x/docs/model_serving_framework/text_embedding_model_examples.md\n",
     "\n",
     "\n",
-    "Documentation for the method: https://opensearch-project.github.io/opensearch-py-ml/reference/api/ml_commons_upload_api.html#opensearch_py_ml.ml_commons.MLCommonClient.upload_model\n",
+    "Documentation for the method: https://opensearch-project.github.io/opensearch-py-ml/reference/api/ml_commons_register_api.html#opensearch_py_ml.ml_commons.MLCommonClient.register_model\n",
     "\n",
     "Related demo notebook about ml-commons plugin integration: https://opensearch-project.github.io/opensearch-py-ml/examples/demo_ml_commons_integration.html\n",
     "\n"
@@ -208,7 +236,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 9,
+   "execution_count": 7,
    "id": "28e9310c",
    "metadata": {
     "scrolled": true
@@ -219,8 +247,8 @@
      "output_type": "stream",
      "text": [
       "Total number of chunks 27\n",
-      "Sha1 value of the model file:  9614778c36d4c64c5dd77cdedde86e219086dbecb5ace7877f697b1af28d642a\n",
-      "Model meta data was created successfully. Model Id:  X-LeKIYB7pteJtrc9XHu\n",
+      "Sha1 value of the model file:  8c178f990a03dd66921f48da40ed81d7d4d3fc170e1bb56e1f365209e9f25027\n",
+      "Model meta data was created successfully. Model Id:  entcCYkB1RB1pQNOffJP\n",
       "uploading chunk 1 of 27\n",
       "Model id: {'status': 'Uploaded'}\n",
       "uploading chunk 2 of 27\n",
@@ -275,24 +303,24 @@
       "Model id: {'status': 'Uploaded'}\n",
       "uploading chunk 27 of 27\n",
       "Model id: {'status': 'Uploaded'}\n",
-      "Model uploaded successfully\n"
+      "Model registered successfully\n",
+      "Model deployed successfully\n"
      ]
     },
     {
      "data": {
       "text/plain": [
-       "'X-LeKIYB7pteJtrc9XHu'"
+       "'entcCYkB1RB1pQNOffJP'"
       ]
      },
-     "execution_count": 9,
+     "execution_count": 7,
      "metadata": {},
      "output_type": "execute_result"
     }
    ],
    "source": [
-    "\n",
-    "model_config_path_torch = '/Volumes/workplace/upload_content/model_config_torchscript.json'\n",
-    "ml_client.upload_model( model_path, model_config_path_torch, isVerbose=True)\n"
+    "model_config_path_torch = 'sentence-transformers-config/torchscript-config/msmarco-distilbert-base-tas-b.json'\n",
+    "ml_client.register_model(model_path, model_config_path_torch, isVerbose=True)"
    ]
   },
   {
@@ -300,7 +328,7 @@
    "id": "34ee235b",
    "metadata": {},
    "source": [
-    "## Step 3:Save model in Onnx format\n",
+    "## Step 3: Save model in Onnx format\n",
     "\n",
     "`Opensearch-py-ml` plugin provides method `save_as_onnx` which will trace a model in ONNX format and save the model in a zip file in your filesystem. \n",
     "\n",
@@ -311,12 +339,12 @@
     "\n",
     "after tracing the model (a .onnx file will be generated), `save_as_onnx` method zips `tokenizers.json` and torchScript (`.onnx`) file and saves in the file system. \n",
     "\n",
-    "User can upload that model to opensearch to generate embedding.\n"
+    "User can register that model to opensearch to generate embedding.\n"
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": 10,
+   "execution_count": 8,
    "id": "44d6b1d2",
    "metadata": {},
    "outputs": [
@@ -326,22 +354,22 @@
      "text": [
       "ONNX opset version set to: 15\n",
       "Loading pipeline (model: sentence-transformers/msmarco-distilbert-base-tas-b, tokenizer: sentence-transformers/msmarco-distilbert-base-tas-b)\n",
-      "Creating folder /Volumes/workplace/upload_content/onnx\n",
-      "Using framework PyTorch: 1.13.1\n",
+      "Creating folder sentence-transformers-onxx/msmarco-distilbert-base-tas-b/onnx\n",
+      "Using framework PyTorch: 1.13.1+cu117\n",
       "Found input input_ids with shape: {0: 'batch', 1: 'sequence'}\n",
       "Found input attention_mask with shape: {0: 'batch', 1: 'sequence'}\n",
       "Found output output_0 with shape: {0: 'batch', 1: 'sequence'}\n",
       "Ensuring inputs are in correct order\n",
       "head_mask is not present in the generated input list.\n",
       "Generated inputs order: ['input_ids', 'attention_mask']\n",
-      "zip file is saved to  /Volumes/workplace/upload_content/msmarco-distilbert-base-tas-b.zip \n",
+      "zip file is saved to  sentence-transformers-onxx/msmarco-distilbert-base-tas-b/msmarco-distilbert-base-tas-b.zip \n",
       "\n"
      ]
     }
    ],
    "source": [
-    "pre_trained_model = SentenceTransformerModel(folder_path = '/Volumes/workplace/upload_content/', overwrite = True)\n",
-    "model_path_onnx = pre_trained_model.save_as_onnx(model_id = \"sentence-transformers/msmarco-distilbert-base-tas-b\")"
+    "pre_trained_model = SentenceTransformerModel(folder_path='sentence-transformers-onxx/msmarco-distilbert-base-tas-b', overwrite=True)\n",
+    "model_path_onnx = pre_trained_model.save_as_onnx(model_id=\"sentence-transformers/msmarco-distilbert-base-tas-b\")"
    ]
   },
   {
@@ -349,11 +377,11 @@
    "id": "97ed5665",
    "metadata": {},
    "source": [
-    "## Step 4: Upload the saved Onnx model in Opensearch\n",
+    "## Step 4: Register the saved Onnx model in Opensearch\n",
     "\n",
-    "In the last step we saved a sentence transformer model in ONNX format. Now we will upload that model in opensearch cluster. To do that we can take help of `upload_model` method in `opensearch-py-ml` plugin.\n",
+    "In the last step we saved a sentence transformer model in ONNX format. Now we will register that model in opensearch cluster. To do that we can take help of `register_model` method in `opensearch-py-ml` plugin.\n",
     "\n",
-    "To upload model, we need the zip file we just saved in the last step and a model config file. Example of Model config file content can be:\n",
+    "To register model, we need the zip file we just saved in the last step and a model config file. Example of Model config file content can be:\n",
     "\n",
     "{\n",
     "  \"name\": \"sentence-transformers/msmarco-distilbert-base-tas-b\",\n",
@@ -374,14 +402,14 @@
     "Please refer to this doc: https://github.com/opensearch-project/ml-commons/blob/2.x/docs/model_serving_framework/text_embedding_model_examples.md\n",
     "\n",
     "\n",
-    "Documentation for the method: https://opensearch-project.github.io/opensearch-py-ml/reference/api/ml_commons_upload_api.html#opensearch_py_ml.ml_commons.MLCommonClient.upload_model\n",
+    "Documentation for the method: https://opensearch-project.github.io/opensearch-py-ml/reference/api/ml_commons_register_api.html#opensearch_py_ml.ml_commons.MLCommonClient.register_model\n",
     "\n",
     "Related demo notebook about ml-commons plugin integration: https://opensearch-project.github.io/opensearch-py-ml/examples/demo_ml_commons_integration.html"
    ]
   },
   {
    "cell_type": "code",
-   "execution_count": 11,
+   "execution_count": 9,
    "id": "661c3f46",
    "metadata": {},
    "outputs": [
@@ -390,8 +418,8 @@
      "output_type": "stream",
      "text": [
       "Total number of chunks 27\n",
-      "Sha1 value of the model file:  f0935b34243937fc129165fc189bb29b226f5dac9cfde3cb1150eae35c4622e2\n",
-      "Model meta data was created successfully. Model Id:  YeLhKIYB7pteJtrcHXFV\n",
+      "Sha1 value of the model file:  311aea6defb713d46f692c18207aa7e993d19122d2331a8086445a74ac2ab031\n",
+      "Model meta data was created successfully. Model Id:  fHtdCYkB1RB1pQNOS_LY\n",
       "uploading chunk 1 of 27\n",
       "Model id: {'status': 'Uploaded'}\n",
       "uploading chunk 2 of 27\n",
@@ -446,24 +474,24 @@
       "Model id: {'status': 'Uploaded'}\n",
       "uploading chunk 27 of 27\n",
       "Model id: {'status': 'Uploaded'}\n",
-      "Model uploaded successfully\n"
+      "Model registered successfully\n",
+      "Model deployed successfully\n"
      ]
     },
     {
      "data": {
       "text/plain": [
-       "'YeLhKIYB7pteJtrcHXFV'"
+       "'fHtdCYkB1RB1pQNOS_LY'"
       ]
      },
-     "execution_count": 11,
+     "execution_count": 9,
      "metadata": {},
      "output_type": "execute_result"
     }
    ],
    "source": [
-    "\n",
-    "model_config_path_onnx = '/Volumes/workplace/upload_content/model_config.json'\n",
-    "ml_client.upload_model( model_path_onnx, model_config_path_onnx, isVerbose=True)"
+    "model_config_path_onnx = 'sentence-transformers-config/onxx-config/msmarco-distilbert-base-tas-b.json'\n",
+    "ml_client.register_model(model_path_onnx, model_config_path_onnx, isVerbose=True)"
    ]
   },
   {
@@ -478,7 +506,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 13,
+   "execution_count": 10,
    "id": "8cc5a796",
    "metadata": {},
    "outputs": [
@@ -497,32 +525,24 @@
     "\n",
     "input_sentences = [\"first sentence\", \"second sentence\"]\n",
     "\n",
-    "# generated embedding from torchScript\n",
+    "# Generated embedding from torchScript\n",
     "\n",
-    "embedding_output_torch = ml_client.generate_embedding(\"X-LeKIYB7pteJtrc9XHu\", input_sentences)\n",
+    "embedding_output_torch = ml_client.generate_embedding(\"entcCYkB1RB1pQNOffJP\", input_sentences)\n",
     "\n",
     "#just taking embedding for the first sentence\n",
     "data_torch = embedding_output_torch[\"inference_results\"][0][\"output\"][0][\"data\"]\n",
     "\n",
-    "# generated embedding from onnx\n",
+    "# Generated embedding from onnx\n",
     "\n",
-    "embedding_output_onnx = ml_client.generate_embedding(\"YeLhKIYB7pteJtrcHXFV\", input_sentences)\n",
+    "embedding_output_onnx = ml_client.generate_embedding(\"fHtdCYkB1RB1pQNOS_LY\", input_sentences)\n",
     "\n",
-    "#just taking embedding for the first sentence\n",
+    "# Just taking embedding for the first sentence\n",
     "data_onnx = embedding_output_onnx[\"inference_results\"][0][\"output\"][0][\"data\"]\n",
     "\n",
-    "## Now we can check if there's any significant difference between two outputs\n",
+    "# Now we can check if there's any significant difference between two outputs\n",
     "\n",
     "print(np.testing.assert_allclose(data_torch, data_onnx, rtol=1e-03, atol=1e-05))"
    ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "c61fcc42",
-   "metadata": {},
-   "outputs": [],
-   "source": []
   }
  ],
  "metadata": {
@@ -541,7 +561,7 @@
    "name": "python",
    "nbconvert_exporter": "python",
    "pygments_lexer": "ipython3",
-   "version": "3.9.15"
+   "version": "3.8.17"
   }
  },
  "nbformat": 4,
