@@ -29,8 +29,8 @@ Demo notebooks for ML Commons plugin integration
 
    demo_ml_commons_integration
 
-Demo notebooks for ML Commons no-model-based algorithms
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Demo Notebooks for In-house python based models
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. toctree::
    :maxdepth: 1
