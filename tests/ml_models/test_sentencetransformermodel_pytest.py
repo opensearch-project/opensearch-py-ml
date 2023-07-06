@@ -5,6 +5,7 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
+import json
 import os
 import shutil
 
@@ -199,14 +200,14 @@ def test_make_model_config_json_for_torch_script():
         "name" in model_config_data_torch
         and model_config_data_torch["name"]
         == "sentence-transformers/multi-qa-MiniLM-L6-cos-v1"
-    ), "Missing or Wrong model name in 'model_config'"
+    ), "Missing or Wrong model name in torch script model config file"
     assert (
         "model_format" in model_config_data_torch
         and model_config_data_torch["model_format"] == "TORCH_SCRIPT"
     )
     assert (
         "model_config" in model_config_data_torch
-    ), f"Missing 'model_config' in model config file"
+    ), "Missing 'model_config' in torch script model config file"
 
     for k, v in expected_model_config_data.items():
         assert (
@@ -217,7 +218,7 @@ def test_make_model_config_json_for_torch_script():
     clean_test_folder(TEST_FOLDER)
 
 
-def test_make_model_config_json_for_torch_script():
+def test_make_model_config_json_for_onnx():
     expected_model_config_data = {
         "embedding_dimension": 384,
         "pooling_mode": "MEAN",
@@ -244,14 +245,14 @@ def test_make_model_config_json_for_torch_script():
         "name" in model_config_data_onnx
         and model_config_data_onnx["name"]
         == "sentence-transformers/multi-qa-MiniLM-L6-cos-v1"
-    ), "Missing or Wrong model name in 'model_config'"
+    ), "Missing or Wrong model name in onnx model config file'"
     assert (
         "model_format" in model_config_data_onnx
         and model_config_data_onnx["model_format"] == "ONNX"
     )
     assert (
         "model_config" in model_config_data_onnx
-    ), f"Missing 'model_config' in model config file"
+    ), "Missing 'model_config' in onnx model config file"
 
     for k, v in expected_model_config_data.items():
         assert (
