@@ -174,59 +174,93 @@ def test_make_model_config_json_for_torch_script():
     expected_model_config_data = {
         "embedding_dimension": 384,
         "pooling_mode": "MEAN",
-        "normalize_result": True
+        "normalize_result": True,
     }
-    
+
     clean_test_folder(TEST_FOLDER)
     test_model5 = SentenceTransformerModel(
-        folder_path=TEST_FOLDER, model_id="sentence-transformers/multi-qa-MiniLM-L6-cos-v1"
+        folder_path=TEST_FOLDER,
+        model_id="sentence-transformers/multi-qa-MiniLM-L6-cos-v1",
     )
-   
+
     test_model5.save_as_pt(sentences=["today is sunny"])
-    model_config_path_torch =  test_model5.make_model_config_json(model_format='TORCH_SCRIPT')
+    model_config_path_torch = test_model5.make_model_config_json(
+        model_format="TORCH_SCRIPT"
+    )
     try:
         with open(model_config_path_torch) as json_file:
             model_config_data_torch = json.load(json_file)
     except Exception as exec:
-        assert False, f"Creating model config file for tracing in torch_script raised an exception {exec}"
-        
-    assert "name" in model_config_data_torch and model_config_data_torch['name'] == "sentence-transformers/multi-qa-MiniLM-L6-cos-v1", "Missing or Wrong model name in 'model_config'"
-    assert "model_format" in model_config_data_torch and model_config_data_torch['model_format'] == "TORCH_SCRIPT"
-    assert "model_config" in model_config_data_torch, f"Missing 'model_config' in model config file"
-    
+        assert (
+            False
+        ), f"Creating model config file for tracing in torch_script raised an exception {exec}"
+
+    assert (
+        "name" in model_config_data_torch
+        and model_config_data_torch["name"]
+        == "sentence-transformers/multi-qa-MiniLM-L6-cos-v1"
+    ), "Missing or Wrong model name in 'model_config'"
+    assert (
+        "model_format" in model_config_data_torch
+        and model_config_data_torch["model_format"] == "TORCH_SCRIPT"
+    )
+    assert (
+        "model_config" in model_config_data_torch
+    ), f"Missing 'model_config' in model config file"
+
     for k, v in expected_model_config_data.items():
-        assert k in model_config_data_torch["model_config"] and model_config_data_torch["model_config"][k] == v
-        
+        assert (
+            k in model_config_data_torch["model_config"]
+            and model_config_data_torch["model_config"][k] == v
+        )
+
     clean_test_folder(TEST_FOLDER)
-        
+
+
 def test_make_model_config_json_for_torch_script():
     expected_model_config_data = {
         "embedding_dimension": 384,
         "pooling_mode": "MEAN",
-        "normalize_result": True
+        "normalize_result": True,
     }
-    
+
     clean_test_folder(TEST_FOLDER)
     test_model6 = SentenceTransformerModel(
-        folder_path=TEST_FOLDER, model_id="sentence-transformers/multi-qa-MiniLM-L6-cos-v1"
+        folder_path=TEST_FOLDER,
+        model_id="sentence-transformers/multi-qa-MiniLM-L6-cos-v1",
     )
-    
+
     test_model6.save_as_onnx()
-    model_config_path_onnx =  test_model6.make_model_config_json(model_format='ONNX')
+    model_config_path_onnx = test_model6.make_model_config_json(model_format="ONNX")
     try:
         with open(model_config_path_onnx) as json_file:
             model_config_data_onnx = json.load(json_file)
     except Exception as exec:
-        assert False, f"Creating model config file for tracing in onnx raised an exception {exec}"
-        
-    assert "name" in model_config_data_onnx and model_config_data_onnx['name'] == "sentence-transformers/multi-qa-MiniLM-L6-cos-v1", "Missing or Wrong model name in 'model_config'"
-    assert "model_format" in model_config_data_onnx and model_config_data_onnx['model_format'] == "ONNX"
-    assert "model_config" in model_config_data_onnx, f"Missing 'model_config' in model config file"
-    
+        assert (
+            False
+        ), f"Creating model config file for tracing in onnx raised an exception {exec}"
+
+    assert (
+        "name" in model_config_data_onnx
+        and model_config_data_onnx["name"]
+        == "sentence-transformers/multi-qa-MiniLM-L6-cos-v1"
+    ), "Missing or Wrong model name in 'model_config'"
+    assert (
+        "model_format" in model_config_data_onnx
+        and model_config_data_onnx["model_format"] == "ONNX"
+    )
+    assert (
+        "model_config" in model_config_data_onnx
+    ), f"Missing 'model_config' in model config file"
+
     for k, v in expected_model_config_data.items():
-        assert k in model_config_data_onnx["model_config"] and model_config_data_onnx["model_config"][k] == v  
-        
+        assert (
+            k in model_config_data_onnx["model_config"]
+            and model_config_data_onnx["model_config"][k] == v
+        )
+
     clean_test_folder(TEST_FOLDER)
-        
+
+
 clean_test_folder(TEST_FOLDER)
 clean_test_folder(TESTDATA_UNZIP_FOLDER)
