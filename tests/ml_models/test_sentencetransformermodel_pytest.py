@@ -172,6 +172,7 @@ def test_save_as_onnx():
 
 
 def test_make_model_config_json_for_torch_script():
+    model_id = "sentence-transformers/multi-qa-MiniLM-L6-cos-v1"
     expected_model_config_data = {
         "embedding_dimension": 384,
         "pooling_mode": "MEAN",
@@ -181,10 +182,10 @@ def test_make_model_config_json_for_torch_script():
     clean_test_folder(TEST_FOLDER)
     test_model5 = SentenceTransformerModel(
         folder_path=TEST_FOLDER,
-        model_id="sentence-transformers/multi-qa-MiniLM-L6-cos-v1",
+        model_id=model_id,
     )
 
-    test_model5.save_as_pt(sentences=["today is sunny"])
+    test_model5.save_as_pt(model_id=model_id, sentences=["today is sunny"])
     model_config_path_torch = test_model5.make_model_config_json(
         model_format="TORCH_SCRIPT"
     )
@@ -219,6 +220,7 @@ def test_make_model_config_json_for_torch_script():
 
 
 def test_make_model_config_json_for_onnx():
+    model_id = "sentence-transformers/multi-qa-MiniLM-L6-cos-v1"
     expected_model_config_data = {
         "embedding_dimension": 384,
         "pooling_mode": "MEAN",
@@ -228,10 +230,10 @@ def test_make_model_config_json_for_onnx():
     clean_test_folder(TEST_FOLDER)
     test_model6 = SentenceTransformerModel(
         folder_path=TEST_FOLDER,
-        model_id="sentence-transformers/multi-qa-MiniLM-L6-cos-v1",
+        model_id=model_id,
     )
 
-    test_model6.save_as_onnx()
+    test_model6.save_as_onnx(model_id=model_id)
     model_config_path_onnx = test_model6.make_model_config_json(model_format="ONNX")
     try:
         with open(model_config_path_onnx) as json_file:
