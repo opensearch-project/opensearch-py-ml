@@ -1073,9 +1073,7 @@ class SentenceTransformerModel:
                             print(
                                 'Cannot find "dim" or "hidden_size" or "d_model" in config.json file at ',
                                 config_json_file_path,
-                            )
-                            print(
-                                "Please add in the config file or input in the argument for embedding_dimension."
+                                ". Please add in the config file or input in the argument for embedding_dimension.",
                             )
                             embedding_dimension = 768
             except IOError:
@@ -1134,9 +1132,7 @@ class SentenceTransformerModel:
                             print(
                                 'Cannot find "pooling_mode_[mode]_token(s)" with value true in config.json file at ',
                                 pooling_config_json_file_path,
-                            )
-                            print(
-                                "Please add in the pooling config file or input in the argument for pooling_mode."
+                                ". Please add in the pooling config file or input in the argument for pooling_mode.",
                             )
 
                 except IOError:
