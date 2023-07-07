@@ -326,8 +326,6 @@ def test_overwrite_fields_in_model_config():
         )
 
     clean_test_folder(TEST_FOLDER)
-
-    clean_test_folder(TEST_FOLDER)
     test_model8 = SentenceTransformerModel(
         folder_path=TEST_FOLDER,
         model_id=model_id,
