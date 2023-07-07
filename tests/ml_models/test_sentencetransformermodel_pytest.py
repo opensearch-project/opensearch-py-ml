@@ -389,8 +389,13 @@ def test_missing_fields_in_config_json():
 
     test_model9.save_as_pt(model_id=model_id, sentences=["today is sunny"])
 
-    test_pooling_folder = os.path.join(TEST_FOLDER, "1_Pooling")
-    clean_test_folder(test_pooling_folder)
+    pooling_json_file_path = os.path.join(TEST_FOLDER, "1_Pooling", "config.json")
+    try:
+        with open(pooling_json_file_path, "w") as f:
+            empty_dict = {}
+            json.dump(empty_dict, f)
+    except Exception as exec:
+        assert False, f"Modifying pooling json file raised an exception {exec}"
 
     config_json_file_path = os.path.join(TEST_FOLDER, "config.json")
     try:
@@ -407,7 +412,7 @@ def test_missing_fields_in_config_json():
         with open(config_json_file_path, "w") as f:
             json.dump(config_content, f)
     except Exception as exec:
-        assert False, f"Modifying config file raised an exception {exec}"
+        assert False, f"Modifying config json file raised an exception {exec}"
 
     model_config_path_torch = test_model9.make_model_config_json(
         model_format="TORCH_SCRIPT"
