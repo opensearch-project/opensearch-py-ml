@@ -220,11 +220,11 @@ def test_make_model_config_json_for_torch_script():
 
 
 def test_make_model_config_json_for_onnx():
-    model_id = "sentence-transformers/multi-qa-MiniLM-L6-cos-v1"
+    model_id = "sentence-transformers/paraphrase-MiniLM-L3-v2"
     expected_model_config_data = {
         "embedding_dimension": 384,
         "pooling_mode": "MEAN",
-        "normalize_result": True,
+        "normalize_result": False,
     }
 
     clean_test_folder(TEST_FOLDER)
@@ -246,7 +246,7 @@ def test_make_model_config_json_for_onnx():
     assert (
         "name" in model_config_data_onnx
         and model_config_data_onnx["name"]
-        == "sentence-transformers/multi-qa-MiniLM-L6-cos-v1"
+        == "sentence-transformers/paraphrase-MiniLM-L3-v2"
     ), "Missing or Wrong model name in onnx model config file'"
     assert (
         "model_format" in model_config_data_onnx
@@ -260,6 +260,104 @@ def test_make_model_config_json_for_onnx():
         assert (
             k in model_config_data_onnx["model_config"]
             and model_config_data_onnx["model_config"][k] == v
+        )
+
+    clean_test_folder(TEST_FOLDER)
+
+
+def test_overwrite_fields_in_model_config():
+    model_id = "sentence-transformers/all-distilroberta-v1"
+    expected_model_config_data = {
+        "embedding_dimension": 768,
+        "pooling_mode": "MEAN",
+        "normalize_result": True,
+    }
+
+    overwritten_model_config_data = {
+        "embedding_dimension": 128,
+        "pooling_mode": "MAX",
+        "normalize_result": False,
+    }
+
+    clean_test_folder(TEST_FOLDER)
+    test_model7 = SentenceTransformerModel(
+        folder_path=TEST_FOLDER,
+        model_id=model_id,
+    )
+
+    test_model7.save_as_pt(model_id=model_id, sentences=["today is sunny"])
+    model_config_path_torch = test_model7.make_model_config_json(
+        model_format="TORCH_SCRIPT"
+    )
+
+    try:
+        with open(model_config_path_torch) as json_file:
+            model_config_data_torch = json.load(json_file)
+    except Exception as exec:
+        assert (
+            False
+        ), f"Creating model config file for tracing in torch_script raised an exception {exec}"
+
+    assert (
+        "name" in model_config_data_torch
+        and model_config_data_torch["name"]
+        == "sentence-transformers/multi-qa-MiniLM-L6-cos-v1"
+    ), "Missing or Wrong model name in torch script model config file"
+    assert (
+        "model_format" in model_config_data_torch
+        and model_config_data_torch["model_format"] == "TORCH_SCRIPT"
+    )
+    assert (
+        "model_config" in model_config_data_torch
+    ), "Missing 'model_config' in torch script model config file"
+
+    for k, v in expected_model_config_data.items():
+        assert (
+            k in model_config_data_torch["model_config"]
+            and model_config_data_torch["model_config"][k] == v
+        )
+
+    clean_test_folder(TEST_FOLDER)
+
+    clean_test_folder(TEST_FOLDER)
+    test_model8 = SentenceTransformerModel(
+        folder_path=TEST_FOLDER,
+        model_id=model_id,
+    )
+
+    test_model8.save_as_pt(model_id=model_id, sentences=["today is sunny"])
+    model_config_path_torch = test_model8.make_model_config_json(
+        model_format="TORCH_SCRIPT",
+        embedding_dimension=overwritten_model_config_data["embedding_dimension"],
+        pooling_mode=overwritten_model_config_data["pooling_mode"],
+        normalize_result=overwritten_model_config_data["normalize_result"],
+    )
+
+    try:
+        with open(model_config_path_torch) as json_file:
+            model_config_data_torch = json.load(json_file)
+    except Exception as exec:
+        assert (
+            False
+        ), f"Creating model config file for tracing in torch_script raised an exception {exec}"
+
+    assert (
+        "name" in model_config_data_torch
+        and model_config_data_torch["name"]
+        == "sentence-transformers/multi-qa-MiniLM-L6-cos-v1"
+    ), "Missing or Wrong model name in torch script model config file"
+    assert (
+        "model_format" in model_config_data_torch
+        and model_config_data_torch["model_format"] == "TORCH_SCRIPT"
+    )
+    assert (
+        "model_config" in model_config_data_torch
+    ), "Missing 'model_config' in torch script model config file"
+
+    for k, v in overwritten_model_config_data.items():
+        assert (
+            k in model_config_data_torch["model_config"]
+            and model_config_data_torch["model_config"][k] == v
         )
 
     clean_test_folder(TEST_FOLDER)

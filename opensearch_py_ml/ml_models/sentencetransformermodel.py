@@ -1114,33 +1114,30 @@ class SentenceTransformerModel:
                                 + pooling_config_json_file_path
                             )
                         pooling_config_content = json.load(f)
-                        if pooling_mode is None:
-                            pooling_mode_mapping_dict = {
-                                "pooling_mode_cls_token": "CLS",
-                                "pooling_mode_mean_tokens": "MEAN",
-                                "pooling_mode_max_tokens": "MAX",
-                                "pooling_mode_mean_sqrt_len_tokens": "MEAN_SQRT_LEN",
-                            }
-                            for mapping_item in pooling_mode_mapping_dict:
-                                if (
-                                    mapping_item in pooling_config_content.keys()
-                                    and pooling_config_content[mapping_item]
-                                ):
-                                    pooling_mode = pooling_mode_mapping_dict[
-                                        mapping_item
-                                    ]
-                                    model_config_content["model_config"][
-                                        "pooling_mode"
-                                    ] = pooling_mode
-                                    break
-                            else:
-                                print(
-                                    'Cannot find "pooling_mode_[mode]_token(s)" with value true in config.json file at ',
-                                    pooling_config_json_file_path,
-                                )
-                                print(
-                                    "Please add in the pooling config file or input in the argument for pooling_mode."
-                                )
+                        pooling_mode_mapping_dict = {
+                            "pooling_mode_cls_token": "CLS",
+                            "pooling_mode_mean_tokens": "MEAN",
+                            "pooling_mode_max_tokens": "MAX",
+                            "pooling_mode_mean_sqrt_len_tokens": "MEAN_SQRT_LEN",
+                        }
+                        for mapping_item in pooling_mode_mapping_dict:
+                            if (
+                                mapping_item in pooling_config_content.keys()
+                                and pooling_config_content[mapping_item]
+                            ):
+                                pooling_mode = pooling_mode_mapping_dict[mapping_item]
+                                model_config_content["model_config"][
+                                    "pooling_mode"
+                                ] = pooling_mode
+                                break
+                        else:
+                            print(
+                                'Cannot find "pooling_mode_[mode]_token(s)" with value true in config.json file at ',
+                                pooling_config_json_file_path,
+                            )
+                            print(
+                                "Please add in the pooling config file or input in the argument for pooling_mode."
+                            )
 
                 except IOError:
                     print(
