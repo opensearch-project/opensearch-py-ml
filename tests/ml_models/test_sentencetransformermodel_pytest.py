@@ -5,6 +5,7 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
+import json
 import os
 import shutil
 
@@ -168,6 +169,287 @@ def test_save_as_onnx():
         test_model.save_as_onnx()
     except Exception as exec:
         assert False, f"Tracing model in ONNX raised an exception {exec}"
+
+
+def test_make_model_config_json_for_torch_script():
+    model_id = "sentence-transformers/multi-qa-MiniLM-L6-cos-v1"
+    expected_model_config_data = {
+        "embedding_dimension": 384,
+        "pooling_mode": "MEAN",
+        "normalize_result": True,
+    }
+
+    clean_test_folder(TEST_FOLDER)
+    test_model5 = SentenceTransformerModel(
+        folder_path=TEST_FOLDER,
+        model_id=model_id,
+    )
+
+    test_model5.save_as_pt(model_id=model_id, sentences=["today is sunny"])
+    model_config_path_torch = test_model5.make_model_config_json(
+        model_format="TORCH_SCRIPT"
+    )
+    try:
+        with open(model_config_path_torch) as json_file:
+            model_config_data_torch = json.load(json_file)
+    except Exception as exec:
+        assert (
+            False
+        ), f"Creating model config file for tracing in torch_script raised an exception {exec}"
+
+    assert (
+        "name" in model_config_data_torch
+        and model_config_data_torch["name"] == model_id
+    ), "Missing or Wrong model name in torch script model config file"
+    assert (
+        "model_format" in model_config_data_torch
+        and model_config_data_torch["model_format"] == "TORCH_SCRIPT"
+    )
+    assert (
+        "model_config" in model_config_data_torch
+    ), "Missing 'model_config' in torch script model config file"
+
+    for k, v in expected_model_config_data.items():
+        assert (
+            k in model_config_data_torch["model_config"]
+            and model_config_data_torch["model_config"][k] == v
+        ) or (
+            k not in model_config_data_torch["model_config"]
+            and k == "normalize_result"
+            and not v
+        )
+
+    clean_test_folder(TEST_FOLDER)
+
+
+def test_make_model_config_json_for_onnx():
+    model_id = "sentence-transformers/paraphrase-MiniLM-L3-v2"
+    expected_model_config_data = {
+        "embedding_dimension": 384,
+        "pooling_mode": "MEAN",
+        "normalize_result": False,
+    }
+
+    clean_test_folder(TEST_FOLDER)
+    test_model6 = SentenceTransformerModel(
+        folder_path=TEST_FOLDER,
+        model_id=model_id,
+    )
+
+    test_model6.save_as_onnx(model_id=model_id)
+    model_config_path_onnx = test_model6.make_model_config_json(model_format="ONNX")
+    try:
+        with open(model_config_path_onnx) as json_file:
+            model_config_data_onnx = json.load(json_file)
+    except Exception as exec:
+        assert (
+            False
+        ), f"Creating model config file for tracing in onnx raised an exception {exec}"
+
+    assert (
+        "name" in model_config_data_onnx and model_config_data_onnx["name"] == model_id
+    ), "Missing or Wrong model name in onnx model config file'"
+    assert (
+        "model_format" in model_config_data_onnx
+        and model_config_data_onnx["model_format"] == "ONNX"
+    )
+    assert (
+        "model_config" in model_config_data_onnx
+    ), "Missing 'model_config' in onnx model config file"
+
+    for k, v in expected_model_config_data.items():
+        assert (
+            k in model_config_data_onnx["model_config"]
+            and model_config_data_onnx["model_config"][k] == v
+        ) or (
+            k not in model_config_data_onnx["model_config"]
+            and k == "normalize_result"
+            and not v
+        )
+
+    clean_test_folder(TEST_FOLDER)
+
+
+def test_overwrite_fields_in_model_config():
+    model_id = "sentence-transformers/all-distilroberta-v1"
+    expected_model_config_data = {
+        "embedding_dimension": 768,
+        "pooling_mode": "MEAN",
+        "normalize_result": True,
+    }
+
+    overwritten_model_config_data = {
+        "embedding_dimension": 128,
+        "pooling_mode": "MAX",
+        "normalize_result": False,
+    }
+
+    clean_test_folder(TEST_FOLDER)
+    test_model7 = SentenceTransformerModel(
+        folder_path=TEST_FOLDER,
+        model_id=model_id,
+    )
+
+    test_model7.save_as_pt(model_id=model_id, sentences=["today is sunny"])
+    model_config_path_torch = test_model7.make_model_config_json(
+        model_format="TORCH_SCRIPT"
+    )
+
+    try:
+        with open(model_config_path_torch) as json_file:
+            model_config_data_torch = json.load(json_file)
+    except Exception as exec:
+        assert (
+            False
+        ), f"Creating model config file for tracing in torch_script raised an exception {exec}"
+
+    assert (
+        "name" in model_config_data_torch
+        and model_config_data_torch["name"] == model_id
+    ), "Missing or Wrong model name in torch script model config file"
+    assert (
+        "model_format" in model_config_data_torch
+        and model_config_data_torch["model_format"] == "TORCH_SCRIPT"
+    )
+    assert (
+        "model_config" in model_config_data_torch
+    ), "Missing 'model_config' in torch script model config file"
+
+    for k, v in expected_model_config_data.items():
+        assert (
+            k in model_config_data_torch["model_config"]
+            and model_config_data_torch["model_config"][k] == v
+        ) or (
+            k not in model_config_data_torch["model_config"]
+            and k == "normalize_result"
+            and not v
+        )
+
+    clean_test_folder(TEST_FOLDER)
+    test_model8 = SentenceTransformerModel(
+        folder_path=TEST_FOLDER,
+        model_id=model_id,
+    )
+
+    test_model8.save_as_pt(model_id=model_id, sentences=["today is sunny"])
+    model_config_path_torch = test_model8.make_model_config_json(
+        model_format="TORCH_SCRIPT",
+        embedding_dimension=overwritten_model_config_data["embedding_dimension"],
+        pooling_mode=overwritten_model_config_data["pooling_mode"],
+        normalize_result=overwritten_model_config_data["normalize_result"],
+    )
+
+    try:
+        with open(model_config_path_torch) as json_file:
+            model_config_data_torch = json.load(json_file)
+    except Exception as exec:
+        assert (
+            False
+        ), f"Creating model config file for tracing in torch_script raised an exception {exec}"
+
+    assert (
+        "name" in model_config_data_torch
+        and model_config_data_torch["name"] == model_id
+    ), "Missing or Wrong model name in torch script model config file"
+    assert (
+        "model_format" in model_config_data_torch
+        and model_config_data_torch["model_format"] == "TORCH_SCRIPT"
+    )
+    assert (
+        "model_config" in model_config_data_torch
+    ), "Missing 'model_config' in torch script model config file"
+
+    for k, v in overwritten_model_config_data.items():
+        assert (
+            k in model_config_data_torch["model_config"]
+            and model_config_data_torch["model_config"][k] == v
+        ) or (
+            k not in model_config_data_torch["model_config"]
+            and k == "normalize_result"
+            and not v
+        )
+
+    clean_test_folder(TEST_FOLDER)
+
+
+def test_missing_fields_in_config_json():
+    model_id = "sentence-transformers/msmarco-distilbert-base-tas-b"
+    expected_model_config_data = {
+        "embedding_dimension": 768,
+        "normalize_result": False,
+    }
+
+    clean_test_folder(TEST_FOLDER)
+    test_model9 = SentenceTransformerModel(
+        folder_path=TEST_FOLDER,
+        model_id=model_id,
+    )
+
+    test_model9.save_as_pt(model_id=model_id, sentences=["today is sunny"])
+
+    pooling_json_file_path = os.path.join(TEST_FOLDER, "1_Pooling", "config.json")
+    try:
+        with open(pooling_json_file_path, "w") as f:
+            empty_dict = {}
+            json.dump(empty_dict, f)
+    except Exception as exec:
+        assert False, f"Modifying pooling json file raised an exception {exec}"
+
+    config_json_file_path = os.path.join(TEST_FOLDER, "config.json")
+    try:
+        with open(config_json_file_path, "r") as f:
+            config_content = json.load(f)
+            embedding_dimension_mapping_list = [
+                "dim",
+                "hidden_size",
+                "d_model",
+            ]
+            for mapping_item in embedding_dimension_mapping_list:
+                config_content.pop(mapping_item, None)
+
+        with open(config_json_file_path, "w") as f:
+            json.dump(config_content, f)
+    except Exception as exec:
+        assert False, f"Modifying config json file raised an exception {exec}"
+
+    model_config_path_torch = test_model9.make_model_config_json(
+        model_format="TORCH_SCRIPT", verbose=True
+    )
+    try:
+        with open(model_config_path_torch) as json_file:
+            model_config_data_torch = json.load(json_file)
+    except Exception as exec:
+        assert (
+            False
+        ), f"Creating model config file for tracing in torch_script raised an exception {exec}"
+
+    assert (
+        "name" in model_config_data_torch
+        and model_config_data_torch["name"] == model_id
+    ), "Missing or Wrong model name in torch script model config file"
+    assert (
+        "model_format" in model_config_data_torch
+        and model_config_data_torch["model_format"] == "TORCH_SCRIPT"
+    )
+    assert (
+        "model_config" in model_config_data_torch
+    ), "Missing 'model_config' in torch script model config file"
+
+    for k, v in expected_model_config_data.items():
+        assert (
+            k in model_config_data_torch["model_config"]
+            and model_config_data_torch["model_config"][k] == v
+        ) or (
+            k not in model_config_data_torch["model_config"]
+            and k == "normalize_result"
+            and not v
+        ), "make_model_config_json() does not generate an expected model config"
+
+    assert (
+        "pooling_mode" not in model_config_data_torch
+    ), "make_model_config_json() does not generate an expected model config"
+
+    clean_test_folder(TEST_FOLDER)
 
 
 clean_test_folder(TEST_FOLDER)
