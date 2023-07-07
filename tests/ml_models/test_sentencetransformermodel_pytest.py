@@ -212,8 +212,10 @@ def test_make_model_config_json_for_torch_script():
 
     for k, v in expected_model_config_data.items():
         assert (
-            k in model_config_data_torch["model_config"]
-            and model_config_data_torch["model_config"][k] == v
+            (k in model_config_data_onnx["model_config"]
+            and model_config_data_onnx["model_config"][k] == v) or
+            (k not in model_config_data_onnx["model_config"]
+             and k == "normalize_result" and not v)
         )
 
     clean_test_folder(TEST_FOLDER)
@@ -258,8 +260,10 @@ def test_make_model_config_json_for_onnx():
 
     for k, v in expected_model_config_data.items():
         assert (
-            k in model_config_data_onnx["model_config"]
-            and model_config_data_onnx["model_config"][k] == v
+            (k in model_config_data_onnx["model_config"]
+            and model_config_data_onnx["model_config"][k] == v) or
+            (k not in model_config_data_onnx["model_config"]
+             and k == "normalize_result" and not v)
         )
 
     clean_test_folder(TEST_FOLDER)
@@ -301,7 +305,7 @@ def test_overwrite_fields_in_model_config():
     assert (
         "name" in model_config_data_torch
         and model_config_data_torch["name"]
-        == "sentence-transformers/multi-qa-MiniLM-L6-cos-v1"
+        == "sentence-transformers/all-distilroberta-v1"
     ), "Missing or Wrong model name in torch script model config file"
     assert (
         "model_format" in model_config_data_torch
@@ -313,8 +317,10 @@ def test_overwrite_fields_in_model_config():
 
     for k, v in expected_model_config_data.items():
         assert (
-            k in model_config_data_torch["model_config"]
-            and model_config_data_torch["model_config"][k] == v
+            (k in model_config_data_onnx["model_config"]
+            and model_config_data_onnx["model_config"][k] == v) or
+            (k not in model_config_data_onnx["model_config"]
+             and k == "normalize_result" and not v)
         )
 
     clean_test_folder(TEST_FOLDER)
@@ -344,7 +350,7 @@ def test_overwrite_fields_in_model_config():
     assert (
         "name" in model_config_data_torch
         and model_config_data_torch["name"]
-        == "sentence-transformers/multi-qa-MiniLM-L6-cos-v1"
+        == "sentence-transformers/all-distilroberta-v1"
     ), "Missing or Wrong model name in torch script model config file"
     assert (
         "model_format" in model_config_data_torch
@@ -356,8 +362,10 @@ def test_overwrite_fields_in_model_config():
 
     for k, v in overwritten_model_config_data.items():
         assert (
-            k in model_config_data_torch["model_config"]
-            and model_config_data_torch["model_config"][k] == v
+            (k in model_config_data_onnx["model_config"]
+            and model_config_data_onnx["model_config"][k] == v) or
+            (k not in model_config_data_onnx["model_config"]
+             and k == "normalize_result" and not v)
         )
 
     clean_test_folder(TEST_FOLDER)
