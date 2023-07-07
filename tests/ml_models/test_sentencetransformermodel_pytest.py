@@ -415,7 +415,7 @@ def test_missing_fields_in_config_json():
         assert False, f"Modifying config json file raised an exception {exec}"
 
     model_config_path_torch = test_model9.make_model_config_json(
-        model_format="TORCH_SCRIPT"
+        model_format="TORCH_SCRIPT", verbose=True
     )
     try:
         with open(model_config_path_torch) as json_file:
