@@ -61,7 +61,7 @@ TYPED_FILES = (
 @nox.session(reuse_venv=True)
 def format(session):
     session.install("black", "isort", "flynt")
-    session.run("python", "utils/license-headers.py", "fix", *SOURCE_FILES)
+    session.run("python", "utils/lint/license-headers.py", "fix", *SOURCE_FILES)
     session.run("flynt", *SOURCE_FILES)
     session.run("black", "--target-version=py38", *SOURCE_FILES)
     session.run("isort", "--profile=black", *SOURCE_FILES)
@@ -73,7 +73,7 @@ def lint(session):
     # Install numpy to use its mypy plugin
     # https://numpy.org/devdocs/reference/typing.html#mypy-plugin
     session.install("black", "flake8", "mypy", "isort", "numpy")
-    session.run("python", "utils/license-headers.py", "check", *SOURCE_FILES)
+    session.run("python", "utils/lint/license-headers.py", "check", *SOURCE_FILES)
     session.run("black", "--check", "--target-version=py38", *SOURCE_FILES)
     session.run("isort", "--check", "--profile=black", *SOURCE_FILES)
     session.run("flake8", "--ignore=E501,W503,E402,E712,E203", *SOURCE_FILES)
