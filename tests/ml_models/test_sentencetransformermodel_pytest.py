@@ -123,7 +123,7 @@ def test_missing_files():
 
     # test no tokenizer.json file
     with pytest.raises(Exception) as exc_info:
-        test_model.zip_model()
+        test_model.zip_model(verbose=True)
     assert "Cannot find tokenizer.json file" in str(exc_info.value)
 
     # test no model file
@@ -137,7 +137,7 @@ def test_missing_files():
         test_model3 = SentenceTransformerModel(folder_path=temp_path)
         test_model3.save_as_pt(sentences=["today is sunny"])
         os.remove(os.path.join(temp_path, "msmarco-distilbert-base-tas-b.pt"))
-        test_model3.zip_model()
+        test_model3.zip_model(verbose=True)
         clean_test_folder(temp_path)
     assert "Cannot find model in the model path" in str(exc_info.value)
 

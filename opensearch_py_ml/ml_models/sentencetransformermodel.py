@@ -1024,32 +1024,25 @@ class SentenceTransformerModel:
 
         # if user input model_type/embedding_dimension/pooling_mode, it will skip this step.
         model = SentenceTransformer(self.model_id)
-        if model_type is None:
-            if len(model._modules) >= 1 and isinstance(
-                model._modules["0"], Transformer
-            ):
-                try:
+        if model_type is None or embedding_dimension is None or pooling_mode is None or normalize_result is None:
+            try:
+                if model_type is None and len(model._modules) >= 1 and isinstance(
+                    model._modules["0"], Transformer
+                ):
                     model_type = model._modules["0"].auto_model.__class__.__name__
                     model_type = model_type.lower().rstrip("model")
-                except Exception as e:
-                    raise Exception(f"Raised exception while getting model_type: {e}")
-
-        if embedding_dimension is None:
-            try:
-                embedding_dimension = model.get_sentence_embedding_dimension()
-            except Exception as e:
-                raise Exception(
-                    f"Raised exception while calling get_sentence_embedding_dimension(): {e}"
-                )
-
-        if pooling_mode is None:
-            if len(model._modules) >= 2 and isinstance(model._modules["1"], Pooling):
-                try:
+                if embedding_dimension is None:
+                    embedding_dimension = model.get_sentence_embedding_dimension()
+                if pooling is None and len(model._modules) >= 2 and isinstance(model._modules["1"], Pooling):
                     pooling_mode = model._modules["1"].get_pooling_mode_str().upper()
-                except Exception as e:
-                    raise Exception(
-                        f"Raised exception while calling get_pooling_mode_str(): {e}"
-                    )
+                if normalize_result is None:
+                    if len(model._modules) >= 3 and isinstance(model._modules["2"], Normalize):
+                        normalize_result = True
+                    else:
+                        normalize_result = False
+            except Exception as e:
+                raise Exception(f"Raised exception while getting model data from pre-trained hugging-face model object: {e}")
+
 
         if all_config is None:
             if not os.path.exists(config_json_file_path):
@@ -1074,12 +1067,6 @@ class SentenceTransformerModel:
                     ". Please check the config.json ",
                     "file in the path.",
                 )
-
-        if normalize_result is None:
-            if len(model._modules) >= 3 and isinstance(model._modules["2"], Normalize):
-                normalize_result = True
-            else:
-                normalize_result = False
 
         model_config_content = {
             "name": model_name,
