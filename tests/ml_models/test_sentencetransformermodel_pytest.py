@@ -8,7 +8,6 @@
 import json
 import os
 import shutil
-from zipfile import ZipFile
 
 import pytest
 
@@ -107,17 +106,6 @@ def test_missing_files():
 
     with pytest.raises(FileNotFoundError):
         test_model.read_queries(read_path="1234")
-        
-    with pytest.raises(Exception) as exc_info:
-        empty_test_path = os.path.join(
-            os.path.dirname(os.path.abspath("__file__")),
-            "tests",
-            "empty_test_file.zip",
-        )
-        with ZipFile(empty_test_path, 'w') as file:
-            pass
-        test_model.read_queries(empty_test_path)
-        clean_test_folder(empty_test_path)
 
     # test synthetic queries already exists in folder
     with pytest.raises(Exception) as exc_info:

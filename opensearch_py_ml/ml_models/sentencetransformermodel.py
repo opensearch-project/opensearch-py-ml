@@ -1080,7 +1080,7 @@ class SentenceTransformerModel:
                 normalize_result = True
             else:
                 normalize_result = False
-                
+
         model_config_content = {
             "name": model_name,
             "version": version_number,
@@ -1091,7 +1091,7 @@ class SentenceTransformerModel:
                 "embedding_dimension": embedding_dimension,
                 "framework_type": "sentence_transformers",
                 "pooling_mode": pooling_mode,
-                "normalize_result": normalize_result
+                "normalize_result": normalize_result,
                 "all_config": json.dumps(all_config),
             },
         }
