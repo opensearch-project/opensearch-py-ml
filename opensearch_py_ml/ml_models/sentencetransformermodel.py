@@ -24,6 +24,7 @@ import torch
 import yaml
 from accelerate import Accelerator, notebook_launcher
 from sentence_transformers import SentenceTransformer
+from sentence_transformers.models import Pooling, Normalize, Transformer
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from transformers import TrainingArguments, get_linear_schedule_with_warmup
@@ -989,10 +990,9 @@ class SentenceTransformerModel:
         """
         parse from config.json file of pre-trained hugging-face model to generate a ml-commons_model_config.json file. If all required
         fields are given by users, use the given parameters and will skip reading the config.json
-
         :param model_name:
-            Optional, The name of the model. If None, default to parse from model id, for example,
-            'msmarco-distilbert-base-tas-b'
+            Optional, The name of the model. If None, default is model id, for example,
+            'sentence-transformers/msmarco-distilbert-base-tas-b'
         :type model_name: string
         :param model_format:
             Optional, The format of the model. Default is "TORCH_SCRIPT".
@@ -1000,14 +1000,14 @@ class SentenceTransformerModel:
         :param version_number:
             Optional, The version number of the model. Default is 1
         :type version_number: string
-        :param embedding_dimension: Optional, the embedding dimension of the model. If None, parse embedding_dimension
-            from the config file of pre-trained hugging-face model. If not found, default to be 768
+        :param embedding_dimension: Optional, the embedding dimension of the model. If None, get embedding_dimension
+            from the pre-trained hugging-face model object.
         :type embedding_dimension: int
-        :param pooling_mode: Optional, the pooling mode of the model. If None, parse pooling_mode
-            from the config file of pre-trained hugging-face model. If not found, do not include it.
+        :param pooling_mode: Optional, the pooling mode of the model. If None, get pooling_mode
+            from the pre-trained hugging-face model object.
         :type pooling_mode: string
-        :param normalize_result: Optional, whether to normalize the result of the model. If None, check if 2_Normalize folder
-            exists in the pre-trained hugging-face model folder. If not found, do not include it.
+        :param normalize_result: Optional, whether to normalize the result of the model. If None, check from the pre-trained 
+        hugging-face model object. If not found, do not include it.
         :type normalize_result: bool
         :param all_config:
             Optional, the all_config of the model. If None, parse all contents from the config file of pre-trained
@@ -1028,8 +1028,31 @@ class SentenceTransformerModel:
         if model_name is None:
             model_name = self.model_id
 
-        # if user input model_type and embedding_dimension, it will skip reading the config.json file
-        if model_type is None or embedding_dimension is None:
+        # if user input model_type/embedding_dimension/pooling_mode, it will skip this step.
+        
+        model = SentenceTransformer(self.model_id)
+        if model_type is None:
+            if len(model._modules) >= 1 and isinstance(model._modules['0'], Transformer):
+                try:
+                    model_type = model._modules['0'].auto_model.__class__.__name__
+                    model_type = model_type.lower().rstrip('model')
+                except:
+                    raise Exception("Raised exception while getting model_type")
+        
+        if embedding_dimension is None:
+            try:
+                embedding_dimension = model.get_sentence_embedding_dimension()
+            except:
+                raise Exception("Raised exception while calling get_sentence_embedding_dimension()")
+                
+        if pooling_mode is None:
+            if len(model._modules) >= 2 and isinstance(model._modules['1'], Pooling):
+                try:
+                    pooling_mode = model._modules['1'].get_pooling_mode_str().upper()
+                except:
+                    raise Exception("Raised exception while calling get_pooling_mode_str()")
+
+        if all_config is None:
             if not os.path.exists(config_json_file_path):
                 raise Exception(
                     str(
@@ -1039,43 +1062,12 @@ class SentenceTransformerModel:
                     )
                 )
             try:
-                with open(config_json_file_path) as f:
+                 with open(config_json_file_path) as f:
                     if verbose:
                         print("reading config file from: " + config_json_file_path)
                     config_content = json.load(f)
                     if all_config is None:
                         all_config = config_content
-                    if model_type is None:
-                        if "model_type" in config_content.keys():
-                            model_type = config_content["model_type"]
-                        else:
-                            print(
-                                "Please check file or input model_type and embedding_dimension in the argument"
-                            )
-                            raise Exception(
-                                str(
-                                    "Cannot find model_type in config.json file"
-                                    + config_json_file_path
-                                    + ". Please check the config.son file in the path."
-                                )
-                            )
-                    if embedding_dimension is None:
-                        embedding_dimension_mapping_list = [
-                            "dim",
-                            "hidden_size",
-                            "d_model",
-                        ]
-                        for mapping_item in embedding_dimension_mapping_list:
-                            if mapping_item in config_content.keys():
-                                embedding_dimension = config_content[mapping_item]
-                                break
-                        else:
-                            print(
-                                'Cannot find "dim" or "hidden_size" or "d_model" in config.json file at ',
-                                config_json_file_path,
-                                ". Please add in the config file or input in the argument for embedding_dimension.",
-                            )
-                            embedding_dimension = 768
             except IOError:
                 print(
                     "Cannot open in config.json file at ",
@@ -1083,7 +1075,8 @@ class SentenceTransformerModel:
                     ". Please check the config.json ",
                     "file in the path.",
                 )
-
+            
+        
         model_config_content = {
             "name": model_name,
             "version": version_number,
@@ -1093,61 +1086,15 @@ class SentenceTransformerModel:
                 "model_type": model_type,
                 "embedding_dimension": embedding_dimension,
                 "framework_type": "sentence_transformers",
+                "pooling_mode": pooling_mode,
                 "all_config": json.dumps(all_config),
             },
         }
 
-        if pooling_mode is not None:
-            model_config_content["model_config"]["pooling_mode"] = pooling_mode
-        else:
-            pooling_config_json_file_path = os.path.join(
-                folder_path, "1_Pooling", "config.json"
-            )
-            if os.path.exists(pooling_config_json_file_path):
-                try:
-                    with open(pooling_config_json_file_path) as f:
-                        if verbose:
-                            print(
-                                "reading pooling config file from: "
-                                + pooling_config_json_file_path
-                            )
-                        pooling_config_content = json.load(f)
-                        pooling_mode_mapping_dict = {
-                            "pooling_mode_cls_token": "CLS",
-                            "pooling_mode_mean_tokens": "MEAN",
-                            "pooling_mode_max_tokens": "MAX",
-                            "pooling_mode_mean_sqrt_len_tokens": "MEAN_SQRT_LEN",
-                        }
-                        for mapping_item in pooling_mode_mapping_dict:
-                            if (
-                                mapping_item in pooling_config_content.keys()
-                                and pooling_config_content[mapping_item]
-                            ):
-                                pooling_mode = pooling_mode_mapping_dict[mapping_item]
-                                model_config_content["model_config"][
-                                    "pooling_mode"
-                                ] = pooling_mode
-                                break
-                        else:
-                            print(
-                                'Cannot find "pooling_mode_[mode]_token(s)" with value true in config.json file at ',
-                                pooling_config_json_file_path,
-                                ". Please add in the pooling config file or input in the argument for pooling_mode.",
-                            )
-
-                except IOError:
-                    print(
-                        "Cannot open in config.json file at ",
-                        pooling_config_json_file_path,
-                        ". Please check the config.json ",
-                        "file in the path.",
-                    )
-
         if normalize_result is not None:
             model_config_content["model_config"]["normalize_result"] = normalize_result
         else:
-            normalize_result_json_file_path = os.path.join(folder_path, "2_Normalize")
-            if os.path.exists(normalize_result_json_file_path):
+            if len(model._modules) >= 3 and isinstance(model._modules['2'], Normalize):
                 model_config_content["model_config"]["normalize_result"] = True
 
         if verbose:
