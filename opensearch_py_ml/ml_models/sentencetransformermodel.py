@@ -24,7 +24,7 @@ import torch
 import yaml
 from accelerate import Accelerator, notebook_launcher
 from sentence_transformers import SentenceTransformer
-from sentence_transformers.models import Pooling, Normalize, Transformer
+from sentence_transformers.models import Normalize, Pooling, Transformer
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from transformers import TrainingArguments, get_linear_schedule_with_warmup
@@ -245,7 +245,7 @@ class SentenceTransformerModel:
         within synthetic_queries/ folder, output as a dataframe
 
         :param read_path:
-            required, path to the zipped file that contains generated queries, if None, raise exception
+            required, path to the zipped file that contains generated queries
         :type read_path: string
         :param overwrite:
             optional, synthetic_queries/ folder in current directory is to store unzip queries files.
@@ -255,12 +255,6 @@ class SentenceTransformerModel:
         :return: The dataframe of queries.
         :rtype: panda dataframe
         """
-
-        if read_path is None:
-            raise Exception(
-                "No file provided. Please provide the path to synthetic query zip file."
-            )
-
         # assign a local folder 'synthetic_queries/' to store the unzip file,
         # check if the folder contains sub-folders and files, remove and clean up the folder before unzip.
         # walk through the zip file and read the file paths into file_list
@@ -1006,8 +1000,8 @@ class SentenceTransformerModel:
         :param pooling_mode: Optional, the pooling mode of the model. If None, get pooling_mode
             from the pre-trained hugging-face model object.
         :type pooling_mode: string
-        :param normalize_result: Optional, whether to normalize the result of the model. If None, check from the pre-trained 
-        hugging-face model object. If not found, do not include it.
+        :param normalize_result: Optional, whether to normalize the result of the model. If None, check from the pre-trained
+        hugging-face model object.
         :type normalize_result: bool
         :param all_config:
             Optional, the all_config of the model. If None, parse all contents from the config file of pre-trained
@@ -1029,28 +1023,33 @@ class SentenceTransformerModel:
             model_name = self.model_id
 
         # if user input model_type/embedding_dimension/pooling_mode, it will skip this step.
-        
         model = SentenceTransformer(self.model_id)
         if model_type is None:
-            if len(model._modules) >= 1 and isinstance(model._modules['0'], Transformer):
+            if len(model._modules) >= 1 and isinstance(
+                model._modules["0"], Transformer
+            ):
                 try:
-                    model_type = model._modules['0'].auto_model.__class__.__name__
-                    model_type = model_type.lower().rstrip('model')
-                except:
-                    raise Exception("Raised exception while getting model_type")
-        
+                    model_type = model._modules["0"].auto_model.__class__.__name__
+                    model_type = model_type.lower().rstrip("model")
+                except Exception as e:
+                    raise Exception(f"Raised exception while getting model_type: {e}")
+
         if embedding_dimension is None:
             try:
                 embedding_dimension = model.get_sentence_embedding_dimension()
-            except:
-                raise Exception("Raised exception while calling get_sentence_embedding_dimension()")
-                
+            except Exception as e:
+                raise Exception(
+                    f"Raised exception while calling get_sentence_embedding_dimension(): {e}"
+                )
+
         if pooling_mode is None:
-            if len(model._modules) >= 2 and isinstance(model._modules['1'], Pooling):
+            if len(model._modules) >= 2 and isinstance(model._modules["1"], Pooling):
                 try:
-                    pooling_mode = model._modules['1'].get_pooling_mode_str().upper()
-                except:
-                    raise Exception("Raised exception while calling get_pooling_mode_str()")
+                    pooling_mode = model._modules["1"].get_pooling_mode_str().upper()
+                except Exception as e:
+                    raise Exception(
+                        f"Raised exception while calling get_pooling_mode_str(): {e}"
+                    )
 
         if all_config is None:
             if not os.path.exists(config_json_file_path):
@@ -1062,7 +1061,7 @@ class SentenceTransformerModel:
                     )
                 )
             try:
-                 with open(config_json_file_path) as f:
+                with open(config_json_file_path) as f:
                     if verbose:
                         print("reading config file from: " + config_json_file_path)
                     config_content = json.load(f)
@@ -1075,8 +1074,13 @@ class SentenceTransformerModel:
                     ". Please check the config.json ",
                     "file in the path.",
                 )
-            
-        
+
+        if normalize_result is None:
+            if len(model._modules) >= 3 and isinstance(model._modules["2"], Normalize):
+                normalize_result = True
+            else:
+                normalize_result = False
+                
         model_config_content = {
             "name": model_name,
             "version": version_number,
@@ -1087,15 +1091,10 @@ class SentenceTransformerModel:
                 "embedding_dimension": embedding_dimension,
                 "framework_type": "sentence_transformers",
                 "pooling_mode": pooling_mode,
+                "normalize_result": normalize_result
                 "all_config": json.dumps(all_config),
             },
         }
-
-        if normalize_result is not None:
-            model_config_content["model_config"]["normalize_result"] = normalize_result
-        else:
-            if len(model._modules) >= 3 and isinstance(model._modules['2'], Normalize):
-                model_config_content["model_config"]["normalize_result"] = True
 
         if verbose:
             print("generating ml-commons_model_config.json file...\n")
