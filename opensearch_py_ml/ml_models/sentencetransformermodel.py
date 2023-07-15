@@ -766,7 +766,7 @@ class SentenceTransformerModel:
         if not parsed_json["truncation"]:
             parsed_json["truncation"] = {
                 "direction": "Right",
-                "max_length": 128,
+                "max_length": model.tokenizer.model_max_length,
                 "strategy": "LongestFirst",
                 "stride": 0,
             }
