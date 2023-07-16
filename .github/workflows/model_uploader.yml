@@ -186,6 +186,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: upload
+          path: ./upload/
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
