@@ -108,6 +108,7 @@ jobs:
           name: upload
           path: ./upload/
           retention-days: 5
+          if-no-files-found: error
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -120,7 +121,7 @@ jobs:
           cd upload
           ls
           aws s3 sync . s3://opensearch-exp/ml-models/huggingface/sentence-transformers/ --dryrun
-          dryrun_output=$(aws s3 sync . s3://opensearch-exp/ml-models/huggingface/sentence-transformers/ --dryrun)"
+          dryrun_output=$(aws s3 sync . s3://opensearch-exp/ml-models/huggingface/sentence-transformers/ --dryrun)
           echo "dryrun_output<<EOF" >> $GITHUB_OUTPUT
           echo "${dryrun_output@E}" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
