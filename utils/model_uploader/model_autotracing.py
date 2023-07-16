@@ -318,7 +318,9 @@ def prepare_files_for_uploading(
         print()
         print(f"Copied {src_model_path} to {dst_model_path}")
 
-        dst_model_config_dir = f"{UPLOAD_FOLDER_PATH}{model_name}/{model_version}/{model_format}"
+        dst_model_config_dir = (
+            f"{UPLOAD_FOLDER_PATH}{model_name}/{model_version}/{model_format}"
+        )
         os.makedirs(dst_model_config_dir, exist_ok=True)
         dst_model_config_filename = "config.json"
         dst_model_config_path = dst_model_config_dir + "/" + dst_model_config_filename
