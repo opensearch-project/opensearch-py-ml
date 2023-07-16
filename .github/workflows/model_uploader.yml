@@ -53,7 +53,7 @@ jobs:
         with:
           aws-region: ${{ secrets.MODEL_UPLOADER_AWS_REGION }}
           role-to-assume: ${{ secrets.MODEL_UPLOADER_ROLE }}
-          role-session-name: GitHubActions
+          role-session-name: checking-out-model-hub
       - name: Check if TORCH_SCRIPT Model Exists
         if: github.event.inputs.tracing_format == 'TORCH_SCRIPT' || github.event.inputs.tracing_format == 'BOTH'
         run: |
@@ -105,10 +105,17 @@ jobs:
           name: upload
           path: ./upload/
           retention-days: 5
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: ${{ secrets.MODEL_UPLOADER_AWS_REGION }}
+          role-to-assume: ${{ secrets.MODEL_UPLOADER_ROLE }}
+          role-session-name: model-auto-tracing
       - name: Dryrun model uploading
         id: dryrun_model_uploading
         run: |
           cd upload
+          aws s3 sync . s3://opensearch-exp/ml-models/huggingface/sentence-transformers/ --dryrun
           echo "dryrun_output=$(aws s3 sync . s3://opensearch-exp/ml-models/huggingface/sentence-transformers/ --dryrun)" >> $GITHUB_OUTPUT
     outputs:
       dryrun_output: ${{ steps.dryrun_model_uploading.outputs.dryrun_output }}
@@ -179,7 +186,7 @@ jobs:
         with:
           aws-region: ${{ secrets.MODEL_UPLOADER_AWS_REGION }}
           role-to-assume: ${{ secrets.MODEL_UPLOADER_ROLE }}
-          role-session-name: GitHubActions
+          role-session-name: model-uploading
       - name: Copy Files to the Bucket
         run: |
           cd upload
