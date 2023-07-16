@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Called by entry point `run-test` use this script to add your repository specific test commands
+# Called by entry point `run-test` use this script to add your repository specific task commands
 # Once called opensearch is up and running and the following parameters are available to this script
 
 # OPENSEARCH_VERSION -- version e.g Major.Minor.Patch(-Prelease)
@@ -45,8 +45,8 @@ if [[ "$TASK_TYPE" == "test" ]]; then
   --name opensearch-py-ml-test-runner \
   opensearch-project/opensearch-py-ml \
   nox -s "test-${PYTHON_VERSION}(pandas_version='${PANDAS_VERSION}')"
+  
   docker cp opensearch-py-ml-test-runner:/code/opensearch-py-ml/junit/ ./junit/
-
   docker rm opensearch-py-ml-test-runner
 elif [[ "$TASK_TYPE" == "doc" ]]; then
   docker run \
@@ -60,15 +60,15 @@ elif [[ "$TASK_TYPE" == "doc" ]]; then
   --name opensearch-py-ml-doc-runner \
   opensearch-project/opensearch-py-ml \
   nox -s docs
+  
   docker cp opensearch-py-ml-doc-runner:/code/opensearch-py-ml/docs/build/ ./docs/
-
   docker rm opensearch-py-ml-doc-runner
 else
   echo -e "\033[34;1mINFO:\033[0m MODEL_ID: ${MODEL_ID}\033[0m"
   echo -e "\033[34;1mINFO:\033[0m MODEL_VERSION: ${MODEL_VERSION}\033[0m"
   echo -e "\033[34;1mINFO:\033[0m TRACING_FORMAT: ${TRACING_FORMAT}\033[0m"
   echo -e "\033[34;1mINFO:\033[0m EMBEDDING_DIMENSION: ${EMBEDDING_DIMENSION:-N/A}\033[0m"
-  echo -e "\033[34;1mINFO:\033[0m POOLING_MODE ${POOLING_MODE:-N/A}\033[0m"
+  echo -e "\033[34;1mINFO:\033[0m POOLING_MODE: ${POOLING_MODE:-N/A}\033[0m"
 
   docker run \
   --network=${network_name} \
@@ -86,6 +86,5 @@ else
   
   mkdir ./upload/
   docker cp opensearch-py-ml-trace-runner:/code/opensearch-py-ml/upload/ ./upload/
-
   docker rm opensearch-py-ml-trace-runner
 fi

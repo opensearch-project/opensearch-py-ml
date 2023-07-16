@@ -1,5 +1,6 @@
 name: Model Auto-tracing & Uploading
 on:
+  # Step 1: Initiate the workflow
   workflow_dispatch:
     inputs:
       model_id:
@@ -19,11 +20,11 @@ on:
         - "TORCH_SCRIPT"
         - "ONNX"
       embedding_dimension:
-        description: "(Optional) Embedding Dimension (Specify here if it does not exist in original config.json file. Else, it will use 768)"
+        description: "(Optional) Embedding Dimension (Specify here if it does not exist in original config.json file, or you want to overwrite it.)"
         required: false
         type: int
       pooling_mode:
-        description: "(Optional) Pooling Mode (Specify here if it does not exist in original config.json file)"
+        description: "(Optional) Pooling Mode (Specify here if it does not exist in original config.json file or you want to overwrite it.)"
         required: false
         type: choice
         options:
@@ -34,6 +35,7 @@ on:
         - "MEAN_SQRT_LEN"
 
 jobs:
+  # Step 2: Check if the model already exists in the model hub
   checking-out-model-hub:
     runs-on: 'ubuntu-latest'
     permissions:
@@ -73,6 +75,7 @@ jobs:
             exit 1;
           fi
   
+  # Step 3: Trace the model, Verify the embeddings & Upload the model files as artifacts
   model-auto-tracing:
     needs: checking-out-model-hub
     name: model-auto-tracing
@@ -84,7 +87,6 @@ jobs:
         secured: ["true"]
         entry:
           - { opensearch_version: 2.7.0 }
-
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -103,7 +105,15 @@ jobs:
           name: upload
           path: ./upload/
           retention-days: 5
+      - name: Dryrun model uploading
+        id: dryrun_model_uploading
+        run: |
+          cd upload
+          echo "dryrun_output=$(aws s3 sync . s3://opensearch-exp/ml-models/huggingface/sentence-transformers/ --dryrun)" >> $GITHUB_OUTPUT
+    outputs:
+      dryrun_output: ${{ steps.dryrun_model_uploading.outputs.dryrun_output }}
 
+  # Step 4: Ask for manual approval from the CODEOWNERS
   manual-approval:
     needs: model-auto-tracing
     runs-on: 'ubuntu-latest'
@@ -122,12 +132,21 @@ jobs:
           embedding_dimension=${{ github.event.inputs.embedding_dimension }}
           pooling_mode=${{ github.event.inputs.pooling_mode }}
           issue_body="Please approve or deny opensearch-py-ml model uploading:
+          
+          ===== Workflow Details =====
+          - Workflow Name: ${{ github.workflow }}
           - Workflow Initiator: @${{ github.actor }}
+          
+          ===== Model Information =====
           - Model ID: ${{ github.event.inputs.model_id }}
           - Model Version: ${{ github.event.inputs.model_version }}
           - Tracing Format: ${{ github.event.inputs.tracing_format }}
           - Embedding Dimension: ${embedding_dimension:-N/A}
-          - Pooling Mode: ${pooling_mode:-N/A}"
+          - Pooling Mode: ${pooling_mode:-N/A}
+          
+          ===== Dry Run of Model Uploading =====
+          ${{ needs.model-auto-tracing.outputs.dryrun_output }}"
+
           echo "issue_body<<EOF" >> $GITHUB_OUTPUT
           echo "${issue_body@E}" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
@@ -140,7 +159,9 @@ jobs:
           issue-title: "Upload opensearch-py-ml model to Amazon S3 Bucket (${{ github.event.inputs.model_id }})"
           issue-body: ${{ steps.create_issue_body.outputs.issue_body }}
           exclude-workflow-initiator-as-approver: false
-          
+    
+      
+  # Step 5: Download the artifacts & Upload it to the S3 bucket
   model-uploading:
     needs: manual-approval
     runs-on: 'ubuntu-latest'
@@ -161,4 +182,5 @@ jobs:
           role-session-name: GitHubActions
       - name: Copy Files to the Bucket
         run: |
-          aws s3 sync ./upload/ s3://opensearch-exp/sentence-transformers/
+          cd upload
+          aws s3 sync . s3://opensearch-exp/ml-models/huggingface/sentence-transformers/
