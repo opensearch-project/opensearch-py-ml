@@ -117,9 +117,14 @@ jobs:
       - name: Dryrun model uploading
         id: dryrun_model_uploading
         run: |
-          aws s3 sync ./upload/ s3://opensearch-exp/ml-models/huggingface/sentence-transformers/ --dryrun
-          echo "dryrun_output=$(aws s3 sync ./upload/ s3://opensearch-exp/ml-models/huggingface/sentence-transformers/ --dryrun)" >> $GITHUB_OUTPUT
-          echo $dryrun_output
+          cd upload
+          ls
+          aws s3 sync . s3://opensearch-exp/ml-models/huggingface/sentence-transformers/ --dryrun
+          dryrun_output=$(aws s3 sync . s3://opensearch-exp/ml-models/huggingface/sentence-transformers/ --dryrun)"
+          echo "dryrun_output<<EOF" >> $GITHUB_OUTPUT
+          echo "${dryrun_output@E}" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          echo "${dryrun_output@E}"
     outputs:
       dryrun_output: ${{ steps.dryrun_model_uploading.outputs.dryrun_output }}
 
@@ -191,4 +196,5 @@ jobs:
           role-session-name: model-uploading
       - name: Copy Files to the Bucket
         run: |
-          aws s3 sync ./upload/ s3://opensearch-exp/ml-models/huggingface/sentence-transformers/
+          cd upload
+          aws s3 sync . s3://opensearch-exp/ml-models/huggingface/sentence-transformers/
