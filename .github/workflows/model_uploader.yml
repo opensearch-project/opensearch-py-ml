@@ -80,6 +80,9 @@ jobs:
     needs: checking-out-model-hub
     name: model-auto-tracing
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -114,9 +117,9 @@ jobs:
       - name: Dryrun model uploading
         id: dryrun_model_uploading
         run: |
-          cd upload
-          aws s3 sync . s3://opensearch-exp/ml-models/huggingface/sentence-transformers/ --dryrun
-          echo "dryrun_output=$(aws s3 sync . s3://opensearch-exp/ml-models/huggingface/sentence-transformers/ --dryrun)" >> $GITHUB_OUTPUT
+          aws s3 sync ./upload/ s3://opensearch-exp/ml-models/huggingface/sentence-transformers/ --dryrun
+          echo "dryrun_output=$(aws s3 sync ./upload/ s3://opensearch-exp/ml-models/huggingface/sentence-transformers/ --dryrun)" >> $GITHUB_OUTPUT
+          echo $dryrun_output
     outputs:
       dryrun_output: ${{ steps.dryrun_model_uploading.outputs.dryrun_output }}
 
@@ -180,7 +183,6 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: upload
-          path: ./upload/
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -189,5 +191,4 @@ jobs:
           role-session-name: model-uploading
       - name: Copy Files to the Bucket
         run: |
-          cd upload
-          aws s3 sync . s3://opensearch-exp/ml-models/huggingface/sentence-transformers/
+          aws s3 sync ./upload/ s3://opensearch-exp/ml-models/huggingface/sentence-transformers/
