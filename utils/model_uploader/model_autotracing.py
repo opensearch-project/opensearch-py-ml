@@ -201,7 +201,7 @@ def register_and_deploy_sentence_transformer_model(
         assert len(embedding_output.get("inference_results")) == 2
         embedding_data = [
             embedding_output["inference_results"][i]["output"][0]["data"]
-            for i in range(TEST_SENTENCES)
+            for i in range(len(TEST_SENTENCES))
         ]
     except Exception as e:
         assert (
