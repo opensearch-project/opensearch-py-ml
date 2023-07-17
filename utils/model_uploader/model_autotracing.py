@@ -64,9 +64,9 @@ def trace_sentence_transformer_model(
     :type model_version: string
     :param model_format: Model format ("TORCH_SCRIPT" or "ONNX")
     :type model_format: string
-    :param embedding_dimension: Embedding dimension of the pretrained model
+    :param embedding_dimension: Embedding dimension input
     :type embedding_dimension: int
-    :param pooling_mode: Pooling mode of the pretrained model ("CLS", "MEAN", "MAX", "MEAN_SQRT_LEN" or None)
+    :param pooling_mode: Pooling mode input ("CLS", "MEAN", "MAX", "MEAN_SQRT_LEN" or None)
     :type pooling_mode: string
     """
     folder_path = (
@@ -352,11 +352,11 @@ def main(
     :type model_id: string
     :param model_version: Version of the pretrained model for registration
     :type model_version: string
-    :param tracing_format: Model format ("TORCH_SCRIPT", "ONNX", or "BOTH")
+    :param tracing_format: Tracing format ("TORCH_SCRIPT", "ONNX", or "BOTH")
     :type tracing_format: string
-    :param embedding_dimension: Embedding dimension of the pretrained model
+    :param embedding_dimension: Embedding dimension input
     :type embedding_dimension: int
-    :param pooling_mode: Pooling mode of the pretrained model ("CLS", "MEAN", "MAX", "MEAN_SQRT_LEN" or None)
+    :param pooling_mode: Pooling mode input ("CLS", "MEAN", "MAX", "MEAN_SQRT_LEN" or None)
     :type pooling_mode: string
     """
 

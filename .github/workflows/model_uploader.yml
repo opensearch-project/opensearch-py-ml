@@ -57,7 +57,8 @@ jobs:
       - name: Check if TORCH_SCRIPT Model Exists
         if: github.event.inputs.tracing_format == 'TORCH_SCRIPT' || github.event.inputs.tracing_format == 'BOTH'
         run: |
-          TORCH_FILE_PATH=$(python utils/model_uploader/save_model_file_path_to_env.py ${{ github.event.inputs.model_id }} ${{ github.event.inputs.model_version }} TORCH_SCRIPT)
+          TORCH_FILE_PATH=$(python utils/model_uploader/save_model_file_path_to_env.py \
+              ${{ github.event.inputs.model_id }} ${{ github.event.inputs.model_version }} TORCH_SCRIPT)
           aws s3api head-object --bucket opensearch-exp --key $TORCH_FILE_PATH > /dev/null 2>&1 || TORCH_MODEL_NOT_EXIST=true
           if [[ -z $TORCH_MODEL_NOT_EXIST ]];
           then
@@ -67,7 +68,8 @@ jobs:
       - name: Check if ONNX Model Exists
         if: github.event.inputs.tracing_format == 'ONNX' || github.event.inputs.tracing_format == 'BOTH'
         run: |
-          ONNX_FILE_PATH=$(python utils/model_uploader/save_model_file_path_to_env.py ${{ github.event.inputs.model_id }} ${{ github.event.inputs.model_version }} ONNX)
+          ONNX_FILE_PATH=$(python utils/model_uploader/save_model_file_path_to_env.py \
+            ${{ github.event.inputs.model_id }} ${{ github.event.inputs.model_version }} ONNX)
           aws s3api head-object --bucket opensearch-exp --key $ONNX_FILE_PATH > /dev/null 2>&1 || ONNX_MODEL_NOT_EXIST=true
           if [[ -z $ONNX_MODEL_NOT_EXIST ]];
           then
@@ -155,8 +157,8 @@ jobs:
           - Model ID: ${{ github.event.inputs.model_id }}
           - Model Version: ${{ github.event.inputs.model_version }}
           - Tracing Format: ${{ github.event.inputs.tracing_format }}
-          - Embedding Dimension: ${embedding_dimension:-N/A}
-          - Pooling Mode: ${pooling_mode:-N/A}
+          - Embedding Dimension: ${embedding_dimension:-Default}
+          - Pooling Mode: ${pooling_mode:-Default}
           
           ===== Dry Run of Model Uploading =====
           ${{ needs.model-auto-tracing.outputs.dryrun_output }}"
@@ -194,5 +196,45 @@ jobs:
           role-to-assume: ${{ secrets.MODEL_UPLOADER_ROLE }}
           role-session-name: model-uploading
       - name: Copy Files to the Bucket
+        id: copying_to_bucket
         run: |
           aws s3 sync ./upload/ s3://opensearch-exp/ml-models/huggingface/sentence-transformers/
+          echo "upload_time=$(TZ='America/Los_Angeles' date "+%Y-%m-%d %T")" >> $GITHUB_OUTPUT
+    outputs:
+      upload_time: ${{ steps.copying_to_bucket.outputs.upload_time }}
+   
+  # Step 6: Update MODEL_UPLOAD_HISTORY.md & supported_models.json
+  history-update:
+    needs: model-uploading
+    runs-on: 'ubuntu-latest'
+    permissions:
+      id-token: write
+      contents: write
+    concurrency: ${{ github.workflow }}-concurrency
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set Up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      - name: Install Packages
+        run:
+          python -m pip install mdutils
+      - name: Update MODEL_UPLOAD_HISTORY.md
+        run: |
+          python utils/model_uploader/update_models_upload_history_md.py \
+            ${{ github.event.inputs.model_id }} \
+            ${{ github.event.inputs.model_version }} \
+            ${{ github.event.inputs.tracing_format }} \
+            -ed ${{ github.event.inputs.embedding_dimension }} \
+            -pm ${{ github.event.inputs.pooling_mode }} \
+            -u ${{ github.actor }} -t "${{ needs.model-uploading.outputs.upload_time }}"
+      - name: Commit Updates
+        uses: stefanzweifel/git-auto-commit-action@v4
+        id: commit
+        with:
+          commit_message: 'Update MODEL_UPLOAD_HISTORY.md (${{ github.event.inputs.model_id }})'
+          commit_options: '--signoff'
+          repository: ./utils/model_uploader/upload_history
+          file_pattern: MODEL_UPLOAD_HISTORY.md supported_models.json
