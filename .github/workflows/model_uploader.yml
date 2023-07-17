@@ -172,7 +172,7 @@ jobs:
           secret: ${{ github.TOKEN }}
           approvers: ${{ steps.get_approvers.outputs.approvers }}
           minimum-approvals: 1
-          issue-title: "Upload opensearch-py-ml model to Amazon S3 Bucket (${{ github.event.inputs.model_id }})"
+          issue-title: "Upload Model to OpenSearch Model Hub (${{ github.event.inputs.model_id }})"
           issue-body: ${{ steps.create_issue_body.outputs.issue_body }}
           exclude-workflow-initiator-as-approver: false
       
@@ -234,7 +234,7 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v4
         id: commit
         with:
-          commit_message: 'Update MODEL_UPLOAD_HISTORY.md (${{ github.event.inputs.model_id }})'
+          commit_message: 'GitHub Actions Workflow - Update MODEL_UPLOAD_HISTORY.md (${{ github.event.inputs.model_id }})'
           commit_options: '--signoff'
           repository: ./utils/model_uploader/upload_history
           file_pattern: MODEL_UPLOAD_HISTORY.md supported_models.json
