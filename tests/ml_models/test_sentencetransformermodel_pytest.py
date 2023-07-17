@@ -10,7 +10,6 @@ import os
 import shutil
 
 import pytest
-from sentence_transformers import SentenceTransformer
 
 from opensearch_py_ml.ml_models import SentenceTransformerModel
 
@@ -455,6 +454,7 @@ def test_missing_fields_in_config_json():
 
 def test_truncation_parameter():
     model_id = "sentence-transformers/msmarco-distilbert-base-tas-b"
+    MAX_LENGTH_TASB = 512
 
     clean_test_folder(TEST_FOLDER)
     test_model10 = SentenceTransformerModel(
@@ -477,9 +477,8 @@ def test_truncation_parameter():
         "truncation"
     ], "truncation parameter in tokenizer.json is null"
 
-    model11 = SentenceTransformer(model_id)
     assert (
-        tokenizer_json["truncation"]["max_length"] == model11.tokenizer.model_max_length
+        tokenizer_json["truncation"]["max_length"] == MAX_LENGTH_TASB
     ), "max_length is not properly set"
 
     clean_test_folder(TEST_FOLDER)
