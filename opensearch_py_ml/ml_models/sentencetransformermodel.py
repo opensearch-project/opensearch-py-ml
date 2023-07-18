@@ -760,17 +760,17 @@ class SentenceTransformerModel:
 
         # save tokenizer.json in save_json_folder_name
         model.save(save_json_folder_path)
-        with open(save_json_folder_path + "/tokenizer.json") as user_file:
-            file_contents = user_file.read()
-        parsed_json = json.loads(file_contents)
-        if not parsed_json["truncation"]:
+        tokenizer_file_path = os.path.join(save_json_folder_path, "tokenizer.json")
+        with open(tokenizer_file_path) as user_file:
+            parsed_json = json.load(user_file)
+        if "truncation" not in parsed_json or parsed_json["truncation"] is None:
             parsed_json["truncation"] = {
                 "direction": "Right",
                 "max_length": model.tokenizer.model_max_length,
                 "strategy": "LongestFirst",
                 "stride": 0,
             }
-        with open(save_json_folder_path + "/tokenizer.json", "w") as file:
+        with open(tokenizer_file_path, "w") as file:
             json.dump(parsed_json, file, indent=2)
 
         # convert to pt format will need to be in cpu,
@@ -863,6 +863,18 @@ class SentenceTransformerModel:
 
         # save tokenizer.json in output_path
         model.save(save_json_folder_path)
+        tokenizer_file_path = os.path.join(save_json_folder_path, "tokenizer.json")
+        with open(tokenizer_file_path) as user_file:
+            parsed_json = json.load(user_file)
+        if "truncation" not in parsed_json or parsed_json["truncation"] is None:
+            parsed_json["truncation"] = {
+                "direction": "Right",
+                "max_length": model.tokenizer.model_max_length,
+                "strategy": "LongestFirst",
+                "stride": 0,
+            }
+        with open(tokenizer_file_path, "w") as file:
+            json.dump(parsed_json, file, indent=2)
 
         convert(
             framework="pt",
