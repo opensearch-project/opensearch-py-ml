@@ -303,6 +303,7 @@ def test_integration_model_train_register_full_cycle():
         zip_file_name=MODEL_FILE_ZIP_NAME,
         num_epochs=1,
         overwrite=True,
+        verbose=True,
     )
     # second generating the config file to create metadoc of the model in opensearch.
     test_model.make_model_config_json()
