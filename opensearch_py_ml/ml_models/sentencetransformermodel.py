@@ -701,15 +701,14 @@ class SentenceTransformerModel:
             )
         print("zip file is saved to " + zip_file_path + "\n")
 
-    def fix_truncation(
+    def _fill_null_truncation_field(
         self,
         save_json_folder_path: str,
         max_length: int,
     ) -> None:
         """
         Description:
-        Fix truncation parameter in tokenizer.json file.
-        If this parameter value is null, it results in error
+        Fill truncation field in tokenizer.json when it is null
 
         :param save_json_folder_path:
              path to save model json file, e.g, "home/save_pre_trained_model_json/")
@@ -792,7 +791,7 @@ class SentenceTransformerModel:
 
         # save tokenizer.json in save_json_folder_name
         model.save(save_json_folder_path)
-        self.fix_truncation(save_json_folder_path, model.tokenizer.model_max_length)
+        self._fill_null_truncation_field(save_json_folder_path, model.tokenizer.model_max_length)
 
         # convert to pt format will need to be in cpu,
         # set the device to cpu, convert its input_ids and attention_mask in cpu and save as .pt format
@@ -884,7 +883,7 @@ class SentenceTransformerModel:
 
         # save tokenizer.json in output_path
         model.save(save_json_folder_path)
-        self.fix_truncation(save_json_folder_path, model.tokenizer.model_max_length)
+        self._fill_null_truncation_field(save_json_folder_path, model.tokenizer.model_max_length)
 
         convert(
             framework="pt",
