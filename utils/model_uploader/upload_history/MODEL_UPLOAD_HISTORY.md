@@ -17,3 +17,4 @@ The following table shows sentence transformer model upload history.
 |Upload Time|Model Uploader|Model ID|Model Version|Tracing Format|Embedding Dimension|Pooling Mode|
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 |2023-07-17 15:35:25|@thanawan-atc|`sentence-transformers/msmarco-distilbert-base-tas-b`|1.0.1|ONNX|Default|Default|
+|2023-07-18 22:32:24|@thanawan-atc|`sentence-transformers/msmarco-distilbert-base-tas-b`|1.0.1|TORCH_SCRIPT|Default|Default|
