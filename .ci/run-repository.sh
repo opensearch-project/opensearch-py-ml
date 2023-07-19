@@ -34,6 +34,7 @@ echo -e "\033[1m>>>>> Run [opensearch-project/opensearch-py-ml container] >>>>>>
 
 
 if [[ "$TASK_TYPE" == "test" ]]; then
+  # Set up OpenSearch cluster & Run test (Invoked by integration.yml workflow)
   docker run \
   --network=${network_name} \
   --env "STACK_VERSION=${STACK_VERSION}" \
@@ -49,6 +50,7 @@ if [[ "$TASK_TYPE" == "test" ]]; then
   docker cp opensearch-py-ml-test-runner:/code/opensearch-py-ml/junit/ ./junit/
   docker rm opensearch-py-ml-test-runner
 elif [[ "$TASK_TYPE" == "doc" ]]; then
+  # Set up OpenSearch cluster & Run docs (Invoked by build_deploy_doc.yml workflow)
   docker run \
   --network=${network_name} \
   --env "STACK_VERSION=${STACK_VERSION}" \
@@ -63,7 +65,8 @@ elif [[ "$TASK_TYPE" == "doc" ]]; then
   
   docker cp opensearch-py-ml-doc-runner:/code/opensearch-py-ml/docs/build/ ./docs/
   docker rm opensearch-py-ml-doc-runner
-else
+elif [[ "$TASK_TYPE" == "trace" ]]; then
+  # Set up OpenSearch cluster & Run model autotracing (Invoked by model_uploader.yml workflow)
   echo -e "\033[34;1mINFO:\033[0m MODEL_ID: ${MODEL_ID}\033[0m"
   echo -e "\033[34;1mINFO:\033[0m MODEL_VERSION: ${MODEL_VERSION}\033[0m"
   echo -e "\033[34;1mINFO:\033[0m TRACING_FORMAT: ${TRACING_FORMAT}\033[0m"
