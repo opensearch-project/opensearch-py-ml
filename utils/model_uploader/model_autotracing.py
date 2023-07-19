@@ -18,7 +18,7 @@ from typing import List, Optional, Tuple
 from zipfile import ZipFile
 
 import numpy as np
-from np.typing import DTypeLike
+from numpy.typing import DTypeLike
 from sentence_transformers import SentenceTransformer
 
 #ROOT_DIR = os.path.abspath(os.path.join("../opensearch-py-ml"))
