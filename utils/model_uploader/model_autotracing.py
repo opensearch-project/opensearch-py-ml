@@ -141,37 +141,23 @@ def register_and_deploy_sentence_transformer_model(
     """
     embedding_data = None
 
-    # 1.) Register the model
+    # 1.) Register & Deploy the model
     model_id = ""
     task_id = ""
     try:
         model_id = ml_client.register_model(
             model_path=model_path,
             model_config_path=model_config_path,
-            deploy_model=False,
+            deploy_model=True,
             isVerbose=True,
         )
         print()
         print(f"{model_format}_model_id:", model_id)
         assert model_id != "" or model_id is not None
     except Exception as e:
-        assert False, f"Raised Exception in {model_format} model registration: {e}"
+        assert False, f"Raised Exception in {model_format} model registration/deployment: {e}"
 
-    # 2.) Deploy the model
-    try:
-        ml_client.deploy_model(model_id)
-        api_url = f"{ML_BASE_URI}/models/{model_id}/_deploy"
-        task_id = ml_client._client.transport.perform_request(
-            method="POST", url=api_url
-        )["task_id"]
-        assert task_id != "" or task_id is not None
-        ml_model_status = ml_client.get_model_info(model_id)
-        assert ml_model_status.get("model_state") != "DEPLOY_FAILED"
-        print(f"{model_format}_task_id:", task_id)
-    except Exception as e:
-        assert False, f"Raised Exception in {model_format} model deployment: {e}"
-
-    # 3.) Check model status
+    # 2.) Check model status
     try:
         ml_model_status = ml_client.get_model_info(model_id)
         print()
@@ -182,22 +168,7 @@ def register_and_deploy_sentence_transformer_model(
     except Exception as e:
         assert False, f"Raised Exception in getting {model_format} model info: {e}"
 
-    # 4.) Check model task status
-    ml_task_status = None
-    try:
-        ml_task_status = ml_client.get_task_info(task_id, wait_until_task_done=True)
-        print()
-        print("Task Status:")
-        print(ml_task_status)
-        assert ml_task_status.get("task_type") == "DEPLOY_MODEL"
-        assert ml_task_status.get("state") != "FAILED"
-    except Exception as e:
-        print("Model Task Status:", ml_task_status)
-        assert (
-            False
-        ), f"Raised Exception in pulling task info for {model_format} model: {e}"
-
-    # 5.) Generate embeddings
+    # 3.) Generate embeddings
     try:
         embedding_output = ml_client.generate_embedding(model_id, TEST_SENTENCES)
         assert len(embedding_output.get("inference_results")) == 2
@@ -210,14 +181,14 @@ def register_and_deploy_sentence_transformer_model(
             False
         ), f"Raised Exception in generating sentence embedding with {model_format} model: {e}"
 
-    # 6.) Delete the task
+    # 4.) Delete the task
     try:
         delete_task_obj = ml_client.delete_task(task_id)
         assert delete_task_obj.get("result") == "deleted"
     except Exception as e:
         assert False, f"Raised Exception in deleting task for {model_format} model: {e}"
 
-    # 7.) Undeploy the model
+    # 5.) Undeploy the model
     try:
         ml_client.undeploy_model(model_id)
         ml_model_status = ml_client.get_model_info(model_id)
@@ -225,14 +196,14 @@ def register_and_deploy_sentence_transformer_model(
     except Exception as e:
         assert False, f"Raised Exception in {model_format} model undeployment: {e}"
 
-    # 8.) Delete the model
+    # 6.) Delete the model
     try:
         delete_model_obj = ml_client.delete_model(model_id)
         assert delete_model_obj.get("result") == "deleted"
     except Exception as e:
         assert False, f"Raised Exception in deleting {model_format} model: {e}"
 
-    # 9.) Return embedding outputs for model verification
+    # 7.) Return embedding outputs for model verification
     return embedding_data
 
 
