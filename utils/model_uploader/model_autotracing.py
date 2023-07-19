@@ -18,7 +18,7 @@ from typing import List, Optional, Tuple
 from zipfile import ZipFile
 
 import numpy as np
-from numpy.typing import DTypeLike
+from np.typing import DTypeLike
 from sentence_transformers import SentenceTransformer
 
 #ROOT_DIR = os.path.abspath(os.path.join("../opensearch-py-ml"))
@@ -26,7 +26,7 @@ from sentence_transformers import SentenceTransformer
 #sys.path.append(ROOT_DIR)
 
 LICENSE_PATH = "LICENSE"
-
+import opensearch_py_ml
 from opensearch_py_ml.ml_commons import MLCommonClient
 from opensearch_py_ml.ml_models.sentencetransformermodel import SentenceTransformerModel
 from test import OPENSEARCH_TEST_CLIENT
