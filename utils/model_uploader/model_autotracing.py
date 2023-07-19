@@ -181,14 +181,7 @@ def register_and_deploy_sentence_transformer_model(
             False
         ), f"Raised Exception in generating sentence embedding with {model_format} model: {e}"
 
-    # 4.) Delete the task
-    try:
-        delete_task_obj = ml_client.delete_task(task_id)
-        assert delete_task_obj.get("result") == "deleted"
-    except Exception as e:
-        assert False, f"Raised Exception in deleting task for {model_format} model: {e}"
-
-    # 5.) Undeploy the model
+    # 4.) Undeploy the model
     try:
         ml_client.undeploy_model(model_id)
         ml_model_status = ml_client.get_model_info(model_id)
@@ -196,14 +189,14 @@ def register_and_deploy_sentence_transformer_model(
     except Exception as e:
         assert False, f"Raised Exception in {model_format} model undeployment: {e}"
 
-    # 6.) Delete the model
+    # 5.) Delete the model
     try:
         delete_model_obj = ml_client.delete_model(model_id)
         assert delete_model_obj.get("result") == "deleted"
     except Exception as e:
         assert False, f"Raised Exception in deleting {model_format} model: {e}"
 
-    # 7.) Return embedding outputs for model verification
+    # 6.) Return embedding outputs for model verification
     return embedding_data
 
 
