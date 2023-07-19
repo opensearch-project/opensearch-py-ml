@@ -791,7 +791,9 @@ class SentenceTransformerModel:
 
         # save tokenizer.json in save_json_folder_name
         model.save(save_json_folder_path)
-        self._fill_null_truncation_field(save_json_folder_path, model.tokenizer.model_max_length)
+        self._fill_null_truncation_field(
+            save_json_folder_path, model.tokenizer.model_max_length
+        )
 
         # convert to pt format will need to be in cpu,
         # set the device to cpu, convert its input_ids and attention_mask in cpu and save as .pt format
@@ -883,7 +885,9 @@ class SentenceTransformerModel:
 
         # save tokenizer.json in output_path
         model.save(save_json_folder_path)
-        self._fill_null_truncation_field(save_json_folder_path, model.tokenizer.model_max_length)
+        self._fill_null_truncation_field(
+            save_json_folder_path, model.tokenizer.model_max_length
+        )
 
         convert(
             framework="pt",
