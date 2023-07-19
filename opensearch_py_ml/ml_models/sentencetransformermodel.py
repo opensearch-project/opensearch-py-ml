@@ -732,7 +732,6 @@ class SentenceTransformerModel:
             }
         with open(tokenizer_file_path, "w") as file:
             json.dump(parsed_json, file, indent=2)
-        
 
     def save_as_pt(
         self,
