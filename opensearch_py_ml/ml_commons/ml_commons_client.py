@@ -6,6 +6,7 @@
 # GitHub history for details.
 
 
+import json
 import time
 from typing import Any, List, Union
 
@@ -390,6 +391,66 @@ class MLCommonClient:
         return self._client.transport.perform_request(
             method="GET",
             url=API_URL,
+        )
+
+    def search_task(self, input_json) -> object:
+        """
+        This method searches a task from opensearch cluster (using ml commons api)
+        :param json: json input for the search request
+        :type json: string or dict
+        :return: returns a json object, with detailed information about the searched task
+        :rtype: object
+        """
+
+        API_URL = f"{ML_BASE_URI}/tasks/_search"
+
+        if isinstance(input_json, str):
+            try:
+                json_obj = json.loads(input_json)
+                if not isinstance(json_obj, dict):
+                    return "Invalid JSON object passed as argument."
+                API_BODY = json.dumps(json_obj)
+            except json.JSONDecodeError:
+                return "Invalid JSON string passed as argument."
+        elif isinstance(input_json, dict):
+            API_BODY = json.dumps(input_json)
+        else:
+            return "Invalid JSON object passed as argument."
+
+        return self._client.transport.perform_request(
+            method="GET",
+            url=API_URL,
+            body=API_BODY,
+        )
+
+    def search_model(self, input_json) -> object:
+        """
+        This method searches a task from opensearch cluster (using ml commons api)
+        :param json: json input for the search request
+        :type json: string or dict
+        :return: returns a json object, with detailed information about the searched task
+        :rtype: object
+        """
+
+        API_URL = f"{ML_BASE_URI}/models/_search"
+
+        if isinstance(input_json, str):
+            try:
+                json_obj = json.loads(input_json)
+                if not isinstance(json_obj, dict):
+                    return "Invalid JSON object passed as argument."
+                API_BODY = json.dumps(json_obj)
+            except json.JSONDecodeError:
+                return "Invalid JSON string passed as argument."
+        elif isinstance(input_json, dict):
+            API_BODY = json.dumps(input_json)
+        else:
+            return "Invalid JSON object passed as argument."
+
+        return self._client.transport.perform_request(
+            method="POST",
+            url=API_URL,
+            body=API_BODY,
         )
 
     def get_model_info(self, model_id: str) -> object:
