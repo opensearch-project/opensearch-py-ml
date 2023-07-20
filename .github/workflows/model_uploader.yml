@@ -228,7 +228,7 @@ jobs:
             ${{ github.event.inputs.tracing_format }} \
             -ed ${{ github.event.inputs.embedding_dimension }} \
             -pm ${{ github.event.inputs.pooling_mode }} \
-            -u ${{ github.actor }}" #-t "${{ needs.model-uploading.outputs.upload_time }}"
+            -u ${{ github.actor }} #-t "${{ needs.model-uploading.outputs.upload_time }}"
       - name: Create PR
         uses: peter-evans/create-pull-request@v5
         id: commit
