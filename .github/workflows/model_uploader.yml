@@ -235,7 +235,6 @@ jobs:
         with:
           commit-message: 'GitHub Actions Workflow - Update MODEL_UPLOAD_HISTORY.md (${{ github.event.inputs.model_id }})'
           signoff: true
-          branch: workflow-nox-cleanup-pr # Need to change before merge
           title: 'Upload Model to OpenSearch Model Hub: ${{ github.event.inputs.model_id }} (v.${{ github.event.inputs.model_version }})'
           labels: ModelUpload
           path: ./utils/model_uploader/upload_history/MODEL_UPLOAD_HISTORY.md
