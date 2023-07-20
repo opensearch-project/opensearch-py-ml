@@ -148,7 +148,7 @@ def docs(session):
     session.cd("docs")
     session.run("make", "clean", external=True)
     session.run("make", "html", external=True)
-    
+
 
 def trace(session):
     session.install(

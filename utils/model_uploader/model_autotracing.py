@@ -23,7 +23,7 @@ from sentence_transformers import SentenceTransformer
 
 THIS_DIR = os.path.dirname(__file__)
 ROOT_DIR = os.path.join(THIS_DIR, "../..")
-sys.path.append(ROOT_DIR) # Required for importing OPENSEARCH_TEST_CLIENT
+sys.path.append(ROOT_DIR)  # Required for importing OPENSEARCH_TEST_CLIENT
 
 LICENSE_PATH = "LICENSE"
 from opensearch_py_ml.ml_commons import MLCommonClient
@@ -142,7 +142,6 @@ def register_and_deploy_sentence_transformer_model(
 
     # 1.) Register & Deploy the model
     model_id = ""
-    task_id = ""
     try:
         model_id = ml_client.register_model(
             model_path=model_path,
@@ -154,7 +153,9 @@ def register_and_deploy_sentence_transformer_model(
         print(f"{model_format}_model_id:", model_id)
         assert model_id != "" or model_id is not None
     except Exception as e:
-        assert False, f"Raised Exception in {model_format} model registration/deployment: {e}"
+        assert (
+            False
+        ), f"Raised Exception in {model_format} model registration/deployment: {e}"
 
     # 2.) Check model status
     try:
