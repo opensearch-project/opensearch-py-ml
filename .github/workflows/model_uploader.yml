@@ -237,4 +237,7 @@ jobs:
           signoff: true
           title: 'Upload Model to OpenSearch Model Hub: ${{ github.event.inputs.model_id }} (v.${{ github.event.inputs.model_version }})'
           labels: ModelUpload
-          path: ./utils/model_uploader/upload_history/MODEL_UPLOAD_HISTORY.md
+          base: workflow-nox-cleanup-pr
+          add-paths: |
+            ./utils/model_uploader/upload_history/MODEL_UPLOAD_HISTORY.md
+            ./utils/model_uploader/upload_history/supported_models.json
