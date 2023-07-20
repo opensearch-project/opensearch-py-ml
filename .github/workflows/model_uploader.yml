@@ -241,4 +241,4 @@ jobs:
           labels: ModelUpload
           path: |
             ./utils/model_uploader/upload_history/MODEL_UPLOAD_HISTORY.md
-            ./utils/model_uploader/upload_history/supported_models.json
+            #./utils/model_uploader/upload_history/supported_models.json
