@@ -16,4 +16,5 @@ The following table shows sentence transformer model upload history.
 
 |Upload Time|Model Uploader|Model ID|Model Version|Tracing Format|Embedding Dimension|Pooling Mode|
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+|-|@thanawan-atc|`sentence-transformers/all-MiniLM-L12-v2`|1.0.1|BOTH|Default|Default|
 |2023-07-19 23:06:38|@thanawan-atc|`sentence-transformers/all-MiniLM-L12-v2`|1.3.1|ONNX|Default|Default|
