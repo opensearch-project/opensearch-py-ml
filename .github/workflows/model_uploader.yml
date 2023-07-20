@@ -34,7 +34,7 @@ on:
         - "MAX"
         - "MEAN_SQRT_LEN"
 
-# jobs:
+jobs:
 #   # Step 2: Check if the model already exists in the model hub
 #   checking-out-model-hub:
 #     runs-on: 'ubuntu-latest'
@@ -235,7 +235,7 @@ on:
         with:
           commit_message: 'GitHub Actions Workflow - Update MODEL_UPLOAD_HISTORY.md (${{ github.event.inputs.model_id }})'
           signoff: true
-          # branch: main
+          branch: workflow-nox-cleanup-pr # Need to change before merge
           commit_options: '--signoff'
           title: 'Upload Model to OpenSearch Model Hub: `${{ github.event.inputs.model_id }}` (v.${{ github.event.inputs.model_version }})'
           labels: ModelUpload
