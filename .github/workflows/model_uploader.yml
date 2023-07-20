@@ -233,10 +233,10 @@ jobs:
         uses: peter-evans/create-pull-request@v5
         id: commit
         with:
-          commit_message: 'GitHub Actions Workflow - Update MODEL_UPLOAD_HISTORY.md (${{ github.event.inputs.model_id }})'
+          commit-message: 'GitHub Actions Workflow - Update MODEL_UPLOAD_HISTORY.md (${{ github.event.inputs.model_id }})'
           signoff: true
           branch: workflow-nox-cleanup-pr # Need to change before merge
-          commit_options: '--signoff'
+          commit-options: '--signoff'
           title: 'Upload Model to OpenSearch Model Hub: ${{ github.event.inputs.model_id }} (v.${{ github.event.inputs.model_version }})'
           labels: ModelUpload
           path: |
