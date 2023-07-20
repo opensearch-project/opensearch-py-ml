@@ -150,6 +150,7 @@ def docs(session):
     session.run("make", "html", external=True)
 
 
+@nox.session
 def trace(session):
     session.install(
         "-r",
