@@ -234,7 +234,7 @@ jobs:
         uses: peter-evans/create-pull-request@v5
         id: commit
         with:
-          committer: ${{ github.actor }}
+          committer: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
           commit-message: 'GitHub Actions Workflow - Update MODEL_UPLOAD_HISTORY.md (${{ github.event.inputs.model_id }})'
           signoff: true
           title: 'Upload Model to OpenSearch Model Hub: ${{ github.event.inputs.model_id }} (v.${{ github.event.inputs.model_version }})'
