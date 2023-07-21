@@ -209,10 +209,11 @@ jobs:
     permissions:
       id-token: write
       contents: write
+      pull-requests: write
     concurrency: ${{ github.workflow }}-concurrency
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+      - name: Checkout Main Branch
+        uses: actions/checkout@v3
       - name: Set Up Python
         uses: actions/setup-python@v2
         with:
@@ -229,11 +230,18 @@ jobs:
             -ed ${{ github.event.inputs.embedding_dimension }} \
             -pm ${{ github.event.inputs.pooling_mode }} \
             -u ${{ github.actor }} -t "${{ needs.model-uploading.outputs.upload_time }}"
-      - name: Commit Updates
-        uses: stefanzweifel/git-auto-commit-action@v4
+      - name: Create a Branch & Raise a PR
+        uses: peter-evans/create-pull-request@v5
         id: commit
         with:
-          commit_message: 'GitHub Actions Workflow - Update MODEL_UPLOAD_HISTORY.md (${{ github.event.inputs.model_id }})'
-          commit_options: '--signoff'
-          repository: ./utils/model_uploader/upload_history
-          file_pattern: MODEL_UPLOAD_HISTORY.md supported_models.json
+          committer: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
+          commit-message: 'GitHub Actions Workflow: Update Model Upload History - ${{ github.event.inputs.model_id }} (v.${{ github.event.inputs.model_version }})(${{ github.event.inputs.tracing_format }})'
+          signoff: true
+          title: 'Update Model Upload History  - ${{ github.event.inputs.model_id }} (v.${{ github.event.inputs.model_version }})(${{ github.event.inputs.tracing_format }})'
+          labels: ModelUploading
+          base: workflow-nox-cleanup-pr
+          branch: model_upload_branch_to_be_deleted_${{ github.run_id }}
+          delete-branch: true
+          add-paths: |
+            ./utils/model_uploader/upload_history/MODEL_UPLOAD_HISTORY.md
+            ./utils/model_uploader/upload_history/supported_models.json
