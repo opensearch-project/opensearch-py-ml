@@ -241,7 +241,11 @@ jobs:
           embedding_dimension=${{ github.event.inputs.embedding_dimension }}
           pooling_mode=${{ github.event.inputs.pooling_mode }}
           
-          pr_body="           
+          pr_body="
+          - [ ] This PR made commit to only these three files: MODEL_UPLOAD_HISTORY.md, supported_models.json, and CHANGELOG.md.
+          - [ ] CHANGELOG.md has been updated by the workflow or by you if the workflow fails to do so. 
+          - [ ] Merge conflicts have been resolved.
+          
           ========= Workflow Details ==========
           - Workflow Name: ${{ github.workflow }}
           - Workflow Run ID: ${{ github.run_id }}
@@ -252,11 +256,7 @@ jobs:
           - Model Version: ${{ github.event.inputs.model_version }}
           - Tracing Format: ${{ github.event.inputs.tracing_format }}
           - Embedding Dimension: ${embedding_dimension:-Default}
-          - Pooling Mode: ${pooling_mode:-Default}
-
-          - [ ] This PR made commit to only these three files: MODEL_UPLOAD_HISTORY.md, supported_models.json, and CHANGELOG.md.
-          - [ ] CHANGELOG.md has been updated by the workflow or by you if the workflow fails to do so. 
-          - [ ] Merge conflicts have been resolved."
+          - Pooling Mode: ${pooling_mode:-Default}"
           
           echo "pr_body<<EOF" >> $GITHUB_OUTPUT
           echo "${pr_body@E}" >> $GITHUB_OUTPUT
