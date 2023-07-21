@@ -1,6 +1,15 @@
 [
     {
         "Model Uploader": "@thanawan-atc",
+        "Upload Time": "2023-07-21 13:21:42",
+        "Model ID": "sentence-transformers/all-mpnet-base-v2",
+        "Model Version": "1.0.1",
+        "Model Format": "ONNX",
+        "Embedding Dimension": "Default",
+        "Pooling Mode": "Default"
+    },
+    {
+        "Model Uploader": "@thanawan-atc",
         "Upload Time": "2023-07-21 13:20:16",
         "Model ID": "sentence-transformers/all-distilroberta-v1",
         "Model Version": "1.1.1",
