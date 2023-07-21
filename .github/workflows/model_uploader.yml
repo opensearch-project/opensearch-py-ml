@@ -93,7 +93,7 @@ jobs:
           - { opensearch_version: 2.7.0 }
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Export Arguments
         run: | 
           echo "MODEL_ID=${{ github.event.inputs.model_id }}" >> $GITHUB_ENV
@@ -212,7 +212,7 @@ jobs:
       pull-requests: write
     concurrency: ${{ github.workflow }}-concurrency
     steps:
-      - name: Checkout Main Branch
+      - name: Checkout Repository
         uses: actions/checkout@v3
       - name: Set Up Python
         uses: actions/setup-python@v2
@@ -239,7 +239,6 @@ jobs:
           signoff: true
           title: 'Update Model Upload History  - ${{ github.event.inputs.model_id }} (v.${{ github.event.inputs.model_version }})(${{ github.event.inputs.tracing_format }})'
           labels: ModelUploading
-          base: workflow-nox-cleanup-pr
           branch: model_upload_branch_to_be_deleted_${{ github.run_id }}
           delete-branch: true
           add-paths: |
