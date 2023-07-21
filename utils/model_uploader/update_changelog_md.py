@@ -15,7 +15,7 @@ from mdutils.fileutils import MarkDownFile
 
 CHANGELOG_DIRNAME = "."
 CHANGELOG_FILENAME = "CHANGELOG.md"
-SECTION_NAME = "Added"
+SECTION_NAME = "Changed"
 
 
 def update_changelog_file(
