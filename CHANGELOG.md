@@ -8,8 +8,14 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - adding documentation for model group id @dhrubo-os ([#176](https://github.com/opensearch-project/opensearch-py-ml/pull/176))
 - adding jupyter notebook based documentation for metrics correlation algorithm by @AlibiZhenis ([#186](https://github.com/opensearch-project/opensearch-py-ml/pull/186))
 
+### Changed
+-  Update jenkins file to use updated docker image ([#189](https://github.com/opensearch-project/opensearch-py-ml/pull/189)) 
+
 ### Fixed
 - Fix ModelUploader bug & Update model tracing demo notebook by @thanawan-atc in ([#185](https://github.com/opensearch-project/opensearch-py-ml/pull/185))
+- Fix make_model_config_json function by @thanawan-atc in ([#188](https://github.com/opensearch-project/opensearch-py-ml/pull/188))
+- Make make_model_config_json function more concise by @thanawan-atc in ([#191](https://github.com/opensearch-project/opensearch-py-ml/pull/191))
+- Enabled auto-truncation for any pretrained models ([#192]https://github.com/opensearch-project/opensearch-py-ml/pull/192)
 
 ## [1.0.0]    
 
