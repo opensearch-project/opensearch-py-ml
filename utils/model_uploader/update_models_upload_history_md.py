@@ -36,6 +36,7 @@ KEYS = [
 ]
 MD_HEADER = "# Pretrained Model Upload History\n\nThe model-serving framework supports a variety of open-source pretrained models that can assist with a range of machine learning (ML) search and analytics use cases. \n\n\n## Uploaded Pretrained Models\n\n\n### Sentence transformers\n\nSentence transformer models map sentences and paragraphs across a dimensional dense vector space. The number of vectors depends on the model. Use these models for use cases such as clustering and semantic search. \n\nThe following table shows sentence transformer model upload history.\n\n[//]: # (This may be the most platform independent comment)\n"
 
+
 def create_model_json_obj(
     model_id: str,
     model_version: str,
@@ -71,7 +72,7 @@ def create_model_json_obj(
         "Pooling Mode": pooling_mode if pooling_mode is not None else "Default",
     }
     return model_obj
-    
+
 
 def update_model_json_file(
     model_id: str,
@@ -104,15 +105,39 @@ def update_model_json_file(
         os.makedirs(DIRNAME)
 
     if tracing_format == TORCH_SCRIPT_FORMAT or tracing_format == BOTH_FORMAT:
-        model_obj = create_model_json_obj(model_id, model_version, TORCH_SCRIPT_FORMAT, embedding_dimension, pooling_mode, model_uploader, uploader_time)
+        model_obj = create_model_json_obj(
+            model_id,
+            model_version,
+            TORCH_SCRIPT_FORMAT,
+            embedding_dimension,
+            pooling_mode,
+            model_uploader,
+            uploader_time,
+        )
         models.append(model_obj)
 
     if tracing_format == ONNX_FORMAT or tracing_format == BOTH_FORMAT:
-        model_obj = create_model_json_obj(model_id, model_version, ONNX_FORMAT, embedding_dimension, pooling_mode, model_uploader, uploader_time)
+        model_obj = create_model_json_obj(
+            model_id,
+            model_version,
+            ONNX_FORMAT,
+            embedding_dimension,
+            pooling_mode,
+            model_uploader,
+            uploader_time,
+        )
         models.append(model_obj)
 
     models = [dict(t) for t in {tuple(m.items()) for m in models}]
-    models = sorted(models, key=lambda d: (d["Upload Time"], d["Model ID"], d["Model Version"], d["Model Format"]))
+    models = sorted(
+        models,
+        key=lambda d: (
+            d["Upload Time"],
+            d["Model ID"],
+            d["Model Version"],
+            d["Model Format"],
+        ),
+    )
     with open(MODEL_JSON_FILEPATH, "w") as f:
         json.dump(models, f, indent=4)
 
@@ -125,7 +150,15 @@ def update_md_file():
     if os.path.exists(MODEL_JSON_FILEPATH):
         with open(MODEL_JSON_FILEPATH, "r") as f:
             models = json.load(f)
-    models = sorted(models, key=lambda d: (d["Upload Time"], d["Model ID"], d["Model Version"], d["Model Format"]))
+    models = sorted(
+        models,
+        key=lambda d: (
+            d["Upload Time"],
+            d["Model ID"],
+            d["Model Version"],
+            d["Model Format"],
+        ),
+    )
     table_data = KEYS[:]
     for m in models:
         for k in KEYS:
