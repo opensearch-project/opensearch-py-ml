@@ -259,7 +259,7 @@ jobs:
           echo "${pr_body@E}"
       - name: Create a Branch & Raise a PR
         uses: peter-evans/create-pull-request@v5
-        id: commit
+        id: create_pr
         with:
           committer: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
           commit-message: 'GitHub Actions Workflow: Update Model Upload History - ${{ github.event.inputs.model_id }} (v.${{ github.event.inputs.model_version }})(${{ github.event.inputs.tracing_format }})'
