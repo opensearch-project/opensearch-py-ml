@@ -7,5 +7,32 @@
         "Model Format": "ONNX",
         "Embedding Dimension": "Default",
         "Pooling Mode": "Default"
+    },
+    {
+        "Model Uploader": "@thanawan-atc",
+        "Upload Time": "2023-07-21 13:20:16",
+        "Model ID": "sentence-transformers/all-distilroberta-v1",
+        "Model Version": "1.1.1",
+        "Model Format": "TORCH_SCRIPT",
+        "Embedding Dimension": "Default",
+        "Pooling Mode": "Default"
+    },
+    {
+        "Model Uploader": "@thanawan-atc",
+        "Upload Time": "2023-07-21 13:19:44",
+        "Model ID": "sentence-transformers/all-MiniLM-L6-v2",
+        "Model Version": "1.2.2",
+        "Model Format": "ONNX",
+        "Embedding Dimension": "Default",
+        "Pooling Mode": "Default"
+    },
+    {
+        "Model Uploader": "@thanawan-atc",
+        "Upload Time": "2023-07-21 13:19:44",
+        "Model ID": "sentence-transformers/all-MiniLM-L6-v2",
+        "Model Version": "1.2.2",
+        "Model Format": "TORCH_SCRIPT",
+        "Embedding Dimension": "Default",
+        "Pooling Mode": "Default"
     }
 ]

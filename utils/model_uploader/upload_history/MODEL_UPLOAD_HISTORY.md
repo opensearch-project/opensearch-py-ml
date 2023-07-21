@@ -16,4 +16,8 @@ The following table shows sentence transformer model upload history.
 
 |Upload Time|Model Uploader|Model ID|Model Version|Model Format|Embedding Dimension|Pooling Mode|
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+|2023-07-21 13:19:44|@thanawan-atc|`sentence-transformers/all-MiniLM-L6-v2`|1.2.2|ONNX|Default|Default|
+|2023-07-21 13:19:44|@thanawan-atc|`sentence-transformers/all-MiniLM-L6-v2`|1.2.2|TORCH_SCRIPT|Default|Default|
+|2023-07-21 13:20:16|@thanawan-atc|`sentence-transformers/all-distilroberta-v1`|1.1.1|TORCH_SCRIPT|Default|Default|
 |2023-07-21 13:21:42|@thanawan-atc|`sentence-transformers/all-mpnet-base-v2`|1.0.1|ONNX|Default|Default|
+
