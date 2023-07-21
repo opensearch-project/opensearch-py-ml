@@ -214,6 +214,8 @@ jobs:
       id-token: write
       contents: write
       pull-requests: write
+    env:
+      model_info: ${{ github.event.inputs.model_id }} (v.${{ github.event.inputs.model_version }})(${{ github.event.inputs.tracing_format }})
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
@@ -239,8 +241,7 @@ jobs:
           embedding_dimension=${{ github.event.inputs.embedding_dimension }}
           pooling_mode=${{ github.event.inputs.pooling_mode }}
           
-          pr_body="Please approve or deny opensearch-py-ml model uploading:
-          
+          pr_body="           
           ========= Workflow Details ==========
           - Workflow Name: ${{ github.workflow }}
           - Workflow Run ID: ${{ github.run_id }}
@@ -251,8 +252,12 @@ jobs:
           - Model Version: ${{ github.event.inputs.model_version }}
           - Tracing Format: ${{ github.event.inputs.tracing_format }}
           - Embedding Dimension: ${embedding_dimension:-Default}
-          - Pooling Mode: ${pooling_mode:-Default}"
+          - Pooling Mode: ${pooling_mode:-Default}
 
+          - [ ] This PR made commit to only these three files: MODEL_UPLOAD_HISTORY.md, supported_models.json, and CHANGELOG.md.
+          - [ ] CHANGELOG.md has been updated by the workflow or by you if the workflow fails to do so. 
+          - [ ] Merge conflicts have been resolved."
+          
           echo "pr_body<<EOF" >> $GITHUB_OUTPUT
           echo "${pr_body@E}" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
@@ -262,9 +267,9 @@ jobs:
         id: create_pr
         with:
           committer: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
-          commit-message: 'GitHub Actions Workflow: Update Model Upload History - ${{ github.event.inputs.model_id }} (v.${{ github.event.inputs.model_version }})(${{ github.event.inputs.tracing_format }})'
+          commit-message: 'GitHub Actions Workflow: Update Model Upload History - ${{ env.model_info }}'
           signoff: true
-          title: 'Update Model Upload History  - ${{ github.event.inputs.model_id }} (v.${{ github.event.inputs.model_version }})(${{ github.event.inputs.tracing_format }})'
+          title: 'Update Model Upload History  - ${{ env.model_info }}'
           body: ${{ steps.create_pr_body.outputs.pr_body }}
           labels: ModelUploading
           branch: model-uploader/${{ github.run_id }}
@@ -272,3 +277,45 @@ jobs:
           add-paths: |
             ./utils/model_uploader/upload_history/MODEL_UPLOAD_HISTORY.md
             ./utils/model_uploader/upload_history/supported_models.json
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          ref: model-uploader/${{ github.run_id }}
+      - name: Create a line for updating CHANGELOG.md
+        id: create_changelog_line
+        continue-on-error: true
+        run: |
+          pr_ref="([#${{ steps.create_pr.outputs.pull-request-number }}](${{ steps.create_pr.outputs.pull-request-url }}))"
+          changelog_line="Update model upload history -  ${{ env.model_info }} by @${{ github.actor }} $pr_ref"
+          echo "changelog_line=$changelog_line" >> $GITHUB_OUTPUT
+      - name: Warning Comment on PR if create_changelog_line fails
+        if: steps.create_changelog_line.outcome == 'failure'
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          pr_number: ${{ steps.create_pr.outputs.pull-request-number }}
+          message: |
+            Warning:exclamation:: The workflow failed to update CHANGELOG.md. Please update CHANGELOG.md manually. 
+      - name: Update CHANGELOG.md
+        if: steps.create_changelog_line.outcome == 'success'
+        id: update_changelog
+        continue-on-error: true
+        run: |
+          python utils/model_uploader/update_changelog_md.py "${{ steps.create_changelog_line.outputs.changelog_line }}"
+      - name: Commit Updates
+        if: steps.create_changelog_line.outcome == 'success' && steps.update_changelog.outcome == 'success'
+        uses: stefanzweifel/git-auto-commit-action@v4
+        id: commit
+        with:
+          branch: model-uploader/${{ github.run_id }}
+          commit_user_email: "github-actions[bot]@users.noreply.github.com"
+          commit_message: 'GitHub Actions Workflow: Update CHANGELOG.md - ${{ env.model_info }}'
+          commit_options: '--signoff'
+          file_pattern: CHANGELOG.md
+      - name: Warning Comment on PR if update_changelog fails
+        if: steps.create_changelog_line.outcome == 'success' && steps.update_changelog.outcome == 'failure'
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          pr_number: ${{ steps.create_pr.outputs.pull-request-number }}
+          message: |
+            Warning:exclamation:: The workflow failed to update CHANGELOG.md. Please add the following line manually.
+            ${{ steps.create_changelog_line.outputs.changelog_line }}
