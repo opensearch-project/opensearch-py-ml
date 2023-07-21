@@ -146,10 +146,12 @@ jobs:
         run: |
           embedding_dimension=${{ github.event.inputs.embedding_dimension }}
           pooling_mode=${{ github.event.inputs.pooling_mode }}
+          
           issue_body="Please approve or deny opensearch-py-ml model uploading:
           
           ========= Workflow Details ==========
           - Workflow Name: ${{ github.workflow }}
+          - Workflow Run ID: ${{ github.run_id }}
           - Workflow Initiator: @${{ github.actor }}
           
           ========= Model Information =========
@@ -230,6 +232,30 @@ jobs:
             -ed ${{ github.event.inputs.embedding_dimension }} \
             -pm ${{ github.event.inputs.pooling_mode }} \
             -u ${{ github.actor }} -t "${{ needs.model-uploading.outputs.upload_time }}"
+      - name: Create PR Body
+        id: create_pr_body
+        run: |
+          embedding_dimension=${{ github.event.inputs.embedding_dimension }}
+          pooling_mode=${{ github.event.inputs.pooling_mode }}
+          
+          pr_body="Please approve or deny opensearch-py-ml model uploading:
+          
+          ========= Workflow Details ==========
+          - Workflow Name: ${{ github.workflow }}
+          - Workflow Run ID: ${{ github.run_id }}
+          - Workflow Initiator: @${{ github.actor }}
+          
+          ========= Model Information =========
+          - Model ID: ${{ github.event.inputs.model_id }}
+          - Model Version: ${{ github.event.inputs.model_version }}
+          - Tracing Format: ${{ github.event.inputs.tracing_format }}
+          - Embedding Dimension: ${embedding_dimension:-Default}
+          - Pooling Mode: ${pooling_mode:-Default}"
+
+          echo "pr_body<<EOF" >> $GITHUB_OUTPUT
+          echo "${pr_body@E}" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          echo "${pr_body@E}"
       - name: Create a Branch & Raise a PR
         uses: peter-evans/create-pull-request@v5
         id: commit
@@ -238,8 +264,9 @@ jobs:
           commit-message: 'GitHub Actions Workflow: Update Model Upload History - ${{ github.event.inputs.model_id }} (v.${{ github.event.inputs.model_version }})(${{ github.event.inputs.tracing_format }})'
           signoff: true
           title: 'Update Model Upload History  - ${{ github.event.inputs.model_id }} (v.${{ github.event.inputs.model_version }})(${{ github.event.inputs.tracing_format }})'
+          body: ${{ steps.create_pr_body.outputs.pr_body }}
           labels: ModelUploading
-          branch: model_upload_branch_to_be_deleted_${{ github.run_id }}
+          branch: model-uploader/${{ github.run_id }}
           delete-branch: true
           add-paths: |
             ./utils/model_uploader/upload_history/MODEL_UPLOAD_HISTORY.md
