@@ -149,8 +149,7 @@ def register_and_deploy_sentence_transformer_model(
             deploy_model=True,
             isVerbose=True,
         )
-        print()
-        print(f"{model_format}_model_id:", model_id)
+        print(f"\n{model_format}_model_id:", model_id)
         assert model_id != "" or model_id is not None
     except Exception as e:
         assert (
@@ -160,8 +159,7 @@ def register_and_deploy_sentence_transformer_model(
     # 2.) Check model status
     try:
         ml_model_status = ml_client.get_model_info(model_id)
-        print()
-        print("Model Status:")
+        print("\nModel Status:")
         print(ml_model_status)
         assert ml_model_status.get("model_format") == model_format
         assert ml_model_status.get("algorithm") == "TEXT_EMBEDDING"
@@ -228,17 +226,15 @@ def verify_embedding_data(
             failed_cases.append((TEST_SENTENCES[i], e))
 
     if len(failed_cases):
-        print()
         print(
-            f"Original embeddings DOES NOT matches {model_format} embeddings in the following case(s):"
+            f"\nOriginal embeddings DOES NOT matches {model_format} embeddings in the following case(s):"
         )
         for sentence, e in failed_cases:
             print(sentence)
             print(e)
         assert False, f"Failed while verifying embeddings of {model_format} model"
     else:
-        print()
-        print(f"Original embeddings matches {model_format} embeddings")
+        print(f"\nOriginal embeddings matches {model_format} embeddings")
 
 
 def prepare_files_for_uploading(
@@ -281,8 +277,7 @@ def prepare_files_for_uploading(
         with ZipFile(src_model_path, "a") as zipObj:
             zipObj.write(filename=LICENSE_PATH, arcname="LICENSE")
         shutil.copy(src_model_path, dst_model_path)
-        print()
-        print(f"Copied {src_model_path} to {dst_model_path}")
+        print(f"\nCopied {src_model_path} to {dst_model_path}")
 
         dst_model_config_dir = (
             f"{UPLOAD_FOLDER_PATH}{model_name}/{model_version}/{model_format}"
@@ -326,8 +321,7 @@ def main(
     :type pooling_mode: string
     """
 
-    print()
-    print("=== Begin running model_autotracing.py ===")
+    print("\n=== Begin running model_autotracing.py ===")
     print("Model ID: ", model_id)
     print("Model Version: ", model_version)
     print("Tracing Format: ", tracing_format)
@@ -395,8 +389,7 @@ def main(
         )
         print("--- Finished tracing a model in ONNX ---")
 
-    print()
-    print("=== Finished running model_autotracing.py ===")
+    print("\n=== Finished running model_autotracing.py ===")
 
 
 if __name__ == "__main__":
