@@ -56,7 +56,7 @@ env:
      - Pooling Mode: ${{ github.event.inputs.pooling_mode:-Default }}
 
 jobs:
-    test:
+  test:
     runs-on: 'ubuntu-latest'
     steps:
     - name: testing
