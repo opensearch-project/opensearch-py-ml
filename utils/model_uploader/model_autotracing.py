@@ -161,6 +161,7 @@ def register_and_deploy_sentence_transformer_model(
         ml_model_status = ml_client.get_model_info(model_id)
         print("\nModel Status:")
         print(ml_model_status)
+        assert ml_model_status.get("model_state") == "DEPLOYED
         assert ml_model_status.get("model_format") == model_format
         assert ml_model_status.get("algorithm") == "TEXT_EMBEDDING"
     except Exception as e:
@@ -183,7 +184,7 @@ def register_and_deploy_sentence_transformer_model(
     try:
         ml_client.undeploy_model(model_id)
         ml_model_status = ml_client.get_model_info(model_id)
-        assert ml_model_status.get("model_state") != "UNDEPLOY_FAILED"
+        assert ml_model_status.get("model_state") == "UNDEPLOYED"
     except Exception as e:
         assert False, f"Raised Exception in {model_format} model undeployment: {e}"
 

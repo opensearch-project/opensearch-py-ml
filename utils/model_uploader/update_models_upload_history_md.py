@@ -12,7 +12,7 @@
 import argparse
 import json
 import os
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 from mdutils.fileutils import MarkDownFile
 from mdutils.tools.Table import Table
@@ -74,6 +74,24 @@ def create_model_json_obj(
     return model_obj
 
 
+def sort_models(models: List[Dict]) -> List[Dict]:
+    """
+    Sort models
+
+    :param models: List of models to be sorted
+    :type models: list[dict]
+    """
+    models = sorted(
+        models,
+        key=lambda d: (
+            d["Upload Time"],
+            d["Model Version"],
+            d["Model ID"],
+            d["Model Format"],
+        ),
+    )
+    return models
+
 def update_model_json_file(
     model_id: str,
     model_version: str,
@@ -129,15 +147,7 @@ def update_model_json_file(
         models.append(model_obj)
 
     models = [dict(t) for t in {tuple(m.items()) for m in models}]
-    models = sorted(
-        models,
-        key=lambda d: (
-            d["Upload Time"],
-            d["Model ID"],
-            d["Model Version"],
-            d["Model Format"],
-        ),
-    )
+    models = sort_models(models)
     with open(MODEL_JSON_FILEPATH, "w") as f:
         json.dump(models, f, indent=4)
 
@@ -150,15 +160,7 @@ def update_md_file():
     if os.path.exists(MODEL_JSON_FILEPATH):
         with open(MODEL_JSON_FILEPATH, "r") as f:
             models = json.load(f)
-    models = sorted(
-        models,
-        key=lambda d: (
-            d["Upload Time"],
-            d["Model ID"],
-            d["Model Version"],
-            d["Model Format"],
-        ),
-    )
+    models = sort_models(models)
     table_data = KEYS[:]
     for m in models:
         for k in KEYS:
