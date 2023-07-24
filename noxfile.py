@@ -150,6 +150,9 @@ def docs(session):
     session.run("make", "html", external=True)
 
 
+# While nox is typically used for automating testing, in this case, we utilize it
+# to automate the action workflow, leveraging its ability to set up the environment
+# required for model autotracing.
 @nox.session
 def trace(session):
     session.install(
