@@ -34,7 +34,7 @@ echo -e "\033[1m>>>>> Run [opensearch-project/opensearch-py-ml container] >>>>>>
 
 
 if [[ "$TASK_TYPE" == "test" ]]; then
-  # Set up OpenSearch cluster & Run test (Invoked by integration.yml workflow)
+  # Set up OpenSearch cluster & Run integration and unit tests (Invoked by integration.yml workflow)
   docker run \
   --network=${network_name} \
   --env "STACK_VERSION=${STACK_VERSION}" \
