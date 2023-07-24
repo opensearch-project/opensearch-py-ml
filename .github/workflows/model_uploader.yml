@@ -6,7 +6,6 @@ on:
       model_source: "Model source (e.g. huggingface)"
         required: true
         type: string
-        default: "huggingface"
       model_id:
         description: "Model ID for auto-tracing and uploading (e.g. sentence-transformers/msmarco-distilbert-base-tas-b)"
         required: true
