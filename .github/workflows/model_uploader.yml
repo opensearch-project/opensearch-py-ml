@@ -70,6 +70,9 @@ jobs:
         - Tracing Format: ${{ github.event.inputs.tracing_format }}
         - Embedding Dimension: ${embedding_dimension:-Default}
         - Pooling Mode: ${pooling_mode:-Default}"
+        
+        ========= Test Information =========
+        - Embedding Verification: Passed
 
         echo "workflow_info<<EOF" >> $GITHUB_OUTPUT
         echo "${workflow_info@E}" >> $GITHUB_OUTPUT
