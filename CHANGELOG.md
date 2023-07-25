@@ -8,7 +8,8 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Adding documentation for model group id @dhrubo-os ([#176](https://github.com/opensearch-project/opensearch-py-ml/pull/176))
 
 ### Changed
--  Update jenkins file to use updated docker image ([#189](https://github.com/opensearch-project/opensearch-py-ml/pull/189)) 
+-  Update jenkins file to use updated docker image ([#189](https://github.com/opensearch-project/opensearch-py-ml/pull/189))
+- Update model upload history -  sentence-transformers/xlm-r-bert-base-nli-mean-tokens (v.9.0.0)(BOTH) by @thanawan-atc ([#101](https://github.com/thanawan-atc/opensearch-py-ml/pull/101))
 
 ### Fixed
 - Fix ModelUploader bug & Update model tracing demo notebook by @thanawan-atc in ([#185](https://github.com/opensearch-project/opensearch-py-ml/pull/185))
