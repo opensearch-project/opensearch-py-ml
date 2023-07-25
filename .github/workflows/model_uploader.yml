@@ -61,11 +61,11 @@ jobs:
     steps:
     - name: testing
       run: |
-          TORCH_FILE_PATH=$(python utils/model_uploader/save_model_file_path_to_env.py \
-             $MODEL_FOLDER ${{ github.event.inputs.model_id }} ${{ github.event.inputs.model_version }} TORCH_SCRIPT)
-          echo $TORCH_FILE_PATH
-          echo $INFO
-          echo $MODEL_FOLDER
+        TORCH_FILE_PATH=$(python utils/model_uploader/save_model_file_path_to_env.py \
+          $MODEL_FOLDER ${{ github.event.inputs.model_id }} ${{ github.event.inputs.model_version }} TORCH_SCRIPT)
+        echo $TORCH_FILE_PATH
+        echo $INFO
+        echo $MODEL_FOLDER
 
 # jobs:
 #   # Step 2: Check if the model already exists in the model hub
