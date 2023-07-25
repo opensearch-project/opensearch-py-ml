@@ -41,7 +41,7 @@ on:
 
 env:
   OPENSEARCH_BUCKET: "opensearch-models"
-  MODEL_FOLDER: "ml-models/${{github.event.inputs.model_source}}/${{github.event.inputs.model_id%%/*}}/"
+  MODEL_FOLDER: "ml-models/${{github.event.inputs.model_source}}/${{{github.event.inputs.model_id}}%%/*}/"
   INFO: |
      ========= Workflow Details ==========
      - Workflow Name: ${{ github.workflow }}
@@ -53,8 +53,8 @@ env:
      - Model ID: ${{ github.event.inputs.model_id }}
      - Model Version: ${{ github.event.inputs.model_version }}
      - Tracing Format: ${{ github.event.inputs.tracing_format }}
-     - Embedding Dimension: ${{ github.event.inputs.embedding_dimension:-Default }}
-     - Pooling Mode: ${{ github.event.inputs.pooling_mode:-Default }}
+     - Embedding Dimension: ${{{ github.event.inputs.embedding_dimension }}:-Default}
+     - Pooling Mode: ${{{ github.event.inputs.pooling_mode }}:-Default}
 
 jobs:
   test:
