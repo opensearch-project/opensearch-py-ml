@@ -6,6 +6,7 @@ on:
       model_source: "Model source (e.g. huggingface)"
         required: true
         type: string
+        default: "huggingface"
       model_id:
         description: "Model ID for auto-tracing and uploading (e.g. sentence-transformers/msmarco-distilbert-base-tas-b)"
         required: true
@@ -37,22 +38,22 @@ on:
         - "MAX"
         - "MEAN_SQRT_LEN"
 
-env:
-  OPENSEARCH_BUCKET: "opensearch-models"
-  MODEL_FOLDER: "ml-models/${{github.event.inputs.model_source}}/${{github.event.inputs.model_id%%/*}}/"
-  INFO: |
-     ========= Workflow Details ==========
-     - Workflow Name: ${{ github.workflow }}
-     - Workflow Run ID: ${{ github.run_id }}
-     - Workflow Initiator: @${{ github.actor }}
+# env:
+#   OPENSEARCH_BUCKET: "opensearch-models"
+#   MODEL_FOLDER: "ml-models/${{github.event.inputs.model_source}}/${{github.event.inputs.model_id%%/*}}/"
+#   INFO: |
+#      ========= Workflow Details ==========
+#      - Workflow Name: ${{ github.workflow }}
+#      - Workflow Run ID: ${{ github.run_id }}
+#      - Workflow Initiator: @${{ github.actor }}
           
-     ========= Model Information =========
-     - Model Source: ${{ github.event.inputs.model_source }}
-     - Model ID: ${{ github.event.inputs.model_id }}
-     - Model Version: ${{ github.event.inputs.model_version }}
-     - Tracing Format: ${{ github.event.inputs.tracing_format }}
-     - Embedding Dimension: ${{ github.event.inputs.embedding_dimension:-Default }}
-     - Pooling Mode: ${{ github.event.inputs.pooling_mode:-Default }}
+#      ========= Model Information =========
+#      - Model Source: ${{ github.event.inputs.model_source }}
+#      - Model ID: ${{ github.event.inputs.model_id }}
+#      - Model Version: ${{ github.event.inputs.model_version }}
+#      - Tracing Format: ${{ github.event.inputs.tracing_format }}
+#      - Embedding Dimension: ${{ github.event.inputs.embedding_dimension:-Default }}
+#      - Pooling Mode: ${{ github.event.inputs.pooling_mode:-Default }}
 
 jobs:
   test:
