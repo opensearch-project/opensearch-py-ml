@@ -78,24 +78,6 @@ jobs:
     outputs:
       model_folder: ${{ steps.init_model_folder.outputs.model_folder }}
       workflow_info: ${{ steps.init_workflow_info.outputs.workflow_info }}
-        
-          
-#   test:
-#     runs-on: 'ubuntu-latest'
-#     needs: init-workflow-var
-#     permissions:
-#       id-token: write
-#       contents: read
-#     concurrency: ${{ github.workflow }}-concurrency
-#     steps:
-#     - name: testing
-#       run: |
-#         TORCH_FILE_PATH=$(python utils/model_uploader/save_model_file_path_to_env.py \
-#           "${{ needs.init-workflow-var.outputs.model_folder }}" ${{ github.event.inputs.model_id }} ${{ github.event.inputs.model_version }} TORCH_SCRIPT)
-#         echo ${{ needs.init-workflow-var.outputs.model_folder }}
-#         echo ${{ needs.init-workflow-var.outputs.workflow_info }}
-#         echo $TORCH_FILE_PATH
-
 
   # Step 3: Check if the model already exists in the model hub
   checking-out-model-hub:
@@ -143,7 +125,7 @@ jobs:
             exit 1;
           fi
   
-  # Step 3: Trace the model, Verify the embeddings & Upload the model files as artifacts
+  # Step 4: Trace the model, Verify the embeddings & Upload the model files as artifacts
   model-auto-tracing:
     needs: [init-workflow-var, checking-out-model-hub]
     name: model-auto-tracing
@@ -193,7 +175,7 @@ jobs:
     outputs:
       dryrun_output: ${{ steps.dryrun_model_uploading.outputs.dryrun_output }}
 
-  # Step 4: Ask for manual approval from the CODEOWNERS
+  # Step 5: Ask for manual approval from the CODEOWNERS
   manual-approval:
     needs: [init-workflow-var, model-auto-tracing]
     runs-on: 'ubuntu-latest'
@@ -229,7 +211,7 @@ jobs:
           issue-body: ${{ steps.create_issue_body.outputs.issue_body }}
           exclude-workflow-initiator-as-approver: false
       
-  # Step 5: Download the artifacts & Upload it to the S3 bucket
+  # Step 6: Download the artifacts & Upload it to the S3 bucket
   model-uploading:
     needs: [init-workflow-var, manual-approval]
     runs-on: 'ubuntu-latest'
@@ -257,7 +239,7 @@ jobs:
     outputs:
       upload_time: ${{ steps.copying_to_bucket.outputs.upload_time }}
    
-  # Step 6: Update MODEL_UPLOAD_HISTORY.md & supported_models.json
+  # Step 7: Update MODEL_UPLOAD_HISTORY.md & supported_models.json
   history-update:
     needs: [init-workflow-var, model-uploading]
     runs-on: 'ubuntu-latest'
