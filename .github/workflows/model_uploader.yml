@@ -82,11 +82,15 @@ jobs:
   test:
     runs-on: 'ubuntu-latest'
     needs: init-workflow-var
+    permissions:
+      id-token: write
+      contents: read
+    concurrency: ${{ github.workflow }}-concurrency
     steps:
     - name: testing
       run: |
         TORCH_FILE_PATH=$(python utils/model_uploader/save_model_file_path_to_env.py \
-          "${{ needs.init-workflow-var.outputs.model_folder }}" ${{ github.event.inputs.model_id }} ${{ github.event.inputs.model_version }} TORCH_SCRIPT)
+          ${{ needs.init-workflow-var.outputs.model_folder }} ${{ github.event.inputs.model_id }} ${{ github.event.inputs.model_version }} TORCH_SCRIPT)
         echo ${{ needs.init-workflow-var.outputs.model_folder }}
         echo ${{ needs.init-workflow-var.outputs.workflow_info }}
         echo $TORCH_FILE_PATH
