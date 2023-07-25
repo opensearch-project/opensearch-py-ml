@@ -92,6 +92,7 @@ def sort_models(models: List[Dict]) -> List[Dict]:
     )
     return models
 
+
 def update_model_json_file(
     model_id: str,
     model_version: str,

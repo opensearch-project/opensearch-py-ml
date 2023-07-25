@@ -25,10 +25,14 @@ def verify_inputs(model_id: str, model_version: str) -> None:
     :type model_version: string
     """
     assert model_id.count("/") == 1, f"Invalid Model ID: {model_id}"
-    assert re.fullmatch(VERSION_PATTERN, model_version) is not None, f"Invalid Model Version: {model_version}"
+    assert (
+        re.fullmatch(VERSION_PATTERN, model_version) is not None
+    ), f"Invalid Model Version: {model_version}"
 
 
-def get_model_file_path(model_folder: str, model_id: str, model_version: str, model_format: str) -> str:
+def get_model_file_path(
+    model_folder: str, model_id: str, model_version: str, model_format: str
+) -> str:
     """
     Construct the expected model file path on model hub
 

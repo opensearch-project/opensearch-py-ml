@@ -226,7 +226,7 @@ def verify_embedding_data(
 
     if len(failed_cases):
         print(
-            f"\nOriginal embeddings DOES NOT matches the embeddings in the following case(s):"
+            "\nOriginal embeddings DOES NOT matches the embeddings in the following case(s):"
         )
         for sentence, e in failed_cases:
             print(sentence)
@@ -354,8 +354,10 @@ def main(
             TORCH_SCRIPT_FORMAT,
         )
         pass_test = verify_embedding_data(original_embedding_data, torch_embedding_data)
-        assert pass_test, f"Failed while verifying embeddings of {model_id} model in TORCH_SCRIPT format"
-              
+        assert (
+            pass_test
+        ), f"Failed while verifying embeddings of {model_id} model in TORCH_SCRIPT format"
+
         prepare_files_for_uploading(
             model_id,
             model_version,
@@ -379,8 +381,10 @@ def main(
         )
 
         pass_test = verify_embedding_data(original_embedding_data, onnx_embedding_data)
-        assert pass_test, f"Failed while verifying embeddings of {model_id} model in ONNX format"
-        
+        assert (
+            pass_test
+        ), f"Failed while verifying embeddings of {model_id} model in ONNX format"
+
         prepare_files_for_uploading(
             model_id,
             model_version,
