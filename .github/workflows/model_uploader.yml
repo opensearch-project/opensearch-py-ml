@@ -40,7 +40,7 @@ on:
         - "MEAN_SQRT_LEN"
 
 env:
-  OPENSEARCH_BUCKET: "opensearch-models"
+  OPENSEARCH_BUCKET: "opensearch-exp" # Will be renamed to"opensearch-models" 
 
 jobs:
   init-workflow-var:
