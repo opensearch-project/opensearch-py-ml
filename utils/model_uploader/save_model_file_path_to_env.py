@@ -24,10 +24,8 @@ def verify_inputs(model_id: str, model_version: str) -> None:
     :param model_version: Version of the pretrained model for registration
     :type model_version: string
     """
-    if model_id.count("/") == 1:
-        assert False, f"Invalid Model ID: {model_id}"
-    if re.fullmatch(VERSION_PATTERN, model_version) is None:
-        assert False, f"Invalid Model Version: {model_version}"
+    assert model_id.count("/") == 1, f"Invalid Model ID: {model_id}"
+    assert re.fullmatch(VERSION_PATTERN, model_version) is not None, f"Invalid Model Version: {model_version}"
 
 
 def get_model_file_path(model_folder: str, model_id: str, model_version: str, model_format: str) -> str:
