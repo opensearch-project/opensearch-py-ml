@@ -3,6 +3,11 @@ on:
   # Step 1: Initiate the workflow
   workflow_dispatch:
     inputs:
+      model_source: 
+        description: "Model source (e.g. huggingface)"
+        required: true
+        type: string
+        default: "huggingface"
       model_id:
         description: "Model ID for auto-tracing and uploading (e.g. sentence-transformers/msmarco-distilbert-base-tas-b)"
         required: true
@@ -34,9 +39,49 @@ on:
         - "MAX"
         - "MEAN_SQRT_LEN"
 
+env:
+  opensearch_bucket: "opensearch-exp" # Will be renamed to"opensearch-models" 
+
 jobs:
-  # Step 2: Check if the model already exists in the model hub
+  # Step 2: Initiate workflow variable
+  init-workflow-var:
+    runs-on: 'ubuntu-latest'
+    steps:
+    - name: Initiate model_folder
+      id: init_model_folder
+      run: |
+        model_id=${{ github.event.inputs.model_id }}
+        echo "model_folder=ml-models/${{github.event.inputs.model_source}}/${model_id%%/*}/" >> $GITHUB_OUTPUT
+    - name: Initiate workflow_info
+      id: init_workflow_info
+      run: |
+        embedding_dimension=${{ github.event.inputs.embedding_dimension }}
+        pooling_mode=${{ github.event.inputs.pooling_mode }}
+        
+        workflow_info="
+        ========= Workflow Details ==========
+        - Workflow Name: ${{ github.workflow }}
+        - Workflow Run ID: ${{ github.run_id }}
+        - Workflow Initiator: @${{ github.actor }}
+          
+        ========= Model Information =========
+        - Model ID: ${{ github.event.inputs.model_id }}
+        - Model Version: ${{ github.event.inputs.model_version }}
+        - Tracing Format: ${{ github.event.inputs.tracing_format }}
+        - Embedding Dimension: ${embedding_dimension:-Default}
+        - Pooling Mode: ${pooling_mode:-Default}"
+
+        echo "workflow_info<<EOF" >> $GITHUB_OUTPUT
+        echo "${workflow_info@E}" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+        echo "${workflow_info@E}"
+    outputs:
+      model_folder: ${{ steps.init_model_folder.outputs.model_folder }}
+      workflow_info: ${{ steps.init_workflow_info.outputs.workflow_info }}
+
+  # Step 3: Check if the model already exists in the model hub
   checking-out-model-hub:
+    needs: init-workflow-var
     runs-on: 'ubuntu-latest'
     permissions:
       id-token: write
@@ -59,8 +104,9 @@ jobs:
         if: github.event.inputs.tracing_format == 'TORCH_SCRIPT' || github.event.inputs.tracing_format == 'BOTH'
         run: |
           TORCH_FILE_PATH=$(python utils/model_uploader/save_model_file_path_to_env.py \
-              ${{ github.event.inputs.model_id }} ${{ github.event.inputs.model_version }} TORCH_SCRIPT)
-          aws s3api head-object --bucket opensearch-exp --key $TORCH_FILE_PATH > /dev/null 2>&1 || TORCH_MODEL_NOT_EXIST=true
+              ${{ needs.init-workflow-var.outputs.model_folder }} ${{ github.event.inputs.model_id }} \
+              ${{ github.event.inputs.model_version }} TORCH_SCRIPT)
+          aws s3api head-object --bucket ${{ env.opensearch_bucket }} --key $TORCH_FILE_PATH > /dev/null 2>&1 || TORCH_MODEL_NOT_EXIST=true
           if [[ -z $TORCH_MODEL_NOT_EXIST ]];
           then
             echo "TORCH_SCRIPT Model already exists on model hub."
@@ -70,17 +116,18 @@ jobs:
         if: github.event.inputs.tracing_format == 'ONNX' || github.event.inputs.tracing_format == 'BOTH'
         run: |
           ONNX_FILE_PATH=$(python utils/model_uploader/save_model_file_path_to_env.py \
-            ${{ github.event.inputs.model_id }} ${{ github.event.inputs.model_version }} ONNX)
-          aws s3api head-object --bucket opensearch-exp --key $ONNX_FILE_PATH > /dev/null 2>&1 || ONNX_MODEL_NOT_EXIST=true
+            ${{ needs.init-workflow-var.outputs.model_folder }} ${{ github.event.inputs.model_id }} \
+            ${{ github.event.inputs.model_version }} ONNX)
+          aws s3api head-object --bucket ${{ env.opensearch_bucket }} --key $ONNX_FILE_PATH > /dev/null 2>&1 || ONNX_MODEL_NOT_EXIST=true
           if [[ -z $ONNX_MODEL_NOT_EXIST ]];
           then
             echo "TORCH_SCRIPT Model already exists on model hub."
             exit 1;
           fi
   
-  # Step 3: Trace the model, Verify the embeddings & Upload the model files as artifacts
+  # Step 4: Trace the model, Verify the embeddings & Upload the model files as artifacts
   model-auto-tracing:
-    needs: checking-out-model-hub
+    needs: [init-workflow-var, checking-out-model-hub]
     name: model-auto-tracing
     runs-on: ubuntu-latest
     permissions:
@@ -120,8 +167,7 @@ jobs:
       - name: Dryrun model uploading
         id: dryrun_model_uploading
         run: |
-          aws s3 sync ./upload/ s3://opensearch-exp/ml-models/huggingface/sentence-transformers/ --dryrun
-          dryrun_output=$(aws s3 sync ./upload/ s3://opensearch-exp/ml-models/huggingface/sentence-transformers/ --dryrun)
+          dryrun_output=$(aws s3 sync ./upload/ s3://${{ env.opensearch_bucket }}/${{ needs.init-workflow-var.outputs.model_folder }} --dryrun)
           echo "dryrun_output<<EOF" >> $GITHUB_OUTPUT
           echo "${dryrun_output@E}" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
@@ -129,9 +175,9 @@ jobs:
     outputs:
       dryrun_output: ${{ steps.dryrun_model_uploading.outputs.dryrun_output }}
 
-  # Step 4: Ask for manual approval from the CODEOWNERS
+  # Step 5: Ask for manual approval from the CODEOWNERS
   manual-approval:
-    needs: model-auto-tracing
+    needs: [init-workflow-var, model-auto-tracing]
     runs-on: 'ubuntu-latest'
     permissions:
       issues: write
@@ -145,22 +191,9 @@ jobs:
       - name: Create Issue Body
         id: create_issue_body
         run: |
-          embedding_dimension=${{ github.event.inputs.embedding_dimension }}
-          pooling_mode=${{ github.event.inputs.pooling_mode }}
-          
           issue_body="Please approve or deny opensearch-py-ml model uploading:
           
-          ========= Workflow Details ==========
-          - Workflow Name: ${{ github.workflow }}
-          - Workflow Run ID: ${{ github.run_id }}
-          - Workflow Initiator: @${{ github.actor }}
-          
-          ========= Model Information =========
-          - Model ID: ${{ github.event.inputs.model_id }}
-          - Model Version: ${{ github.event.inputs.model_version }}
-          - Tracing Format: ${{ github.event.inputs.tracing_format }}
-          - Embedding Dimension: ${embedding_dimension:-Default}
-          - Pooling Mode: ${pooling_mode:-Default}
+          ${{ needs.init-workflow-var.outputs.workflow_info }}
           
           ===== Dry Run of Model Uploading =====
           ${{ needs.model-auto-tracing.outputs.dryrun_output }}"
@@ -178,9 +211,9 @@ jobs:
           issue-body: ${{ steps.create_issue_body.outputs.issue_body }}
           exclude-workflow-initiator-as-approver: false
       
-  # Step 5: Download the artifacts & Upload it to the S3 bucket
+  # Step 6: Download the artifacts & Upload it to the S3 bucket
   model-uploading:
-    needs: manual-approval
+    needs: [init-workflow-var, manual-approval]
     runs-on: 'ubuntu-latest'
     permissions:
       id-token: write
@@ -201,14 +234,14 @@ jobs:
       - name: Copy Files to the Bucket
         id: copying_to_bucket
         run: |
-          aws s3 sync ./upload/ s3://opensearch-exp/ml-models/huggingface/sentence-transformers/
+          aws s3 sync ./upload/ s3://${{ env.opensearch_bucket }}/${{ needs.init-workflow-var.outputs.model_folder }}
           echo "upload_time=$(TZ='America/Los_Angeles' date "+%Y-%m-%d %T")" >> $GITHUB_OUTPUT
     outputs:
       upload_time: ${{ steps.copying_to_bucket.outputs.upload_time }}
    
-  # Step 6: Update MODEL_UPLOAD_HISTORY.md & supported_models.json
+  # Step 7: Update MODEL_UPLOAD_HISTORY.md & supported_models.json
   history-update:
-    needs: model-uploading
+    needs: [init-workflow-var, model-uploading]
     runs-on: 'ubuntu-latest'
     permissions:
       id-token: write
@@ -238,25 +271,12 @@ jobs:
       - name: Create PR Body
         id: create_pr_body
         run: |
-          embedding_dimension=${{ github.event.inputs.embedding_dimension }}
-          pooling_mode=${{ github.event.inputs.pooling_mode }}
-          
           pr_body="
           - [ ] This PR made commit to only these three files: MODEL_UPLOAD_HISTORY.md, supported_models.json, and CHANGELOG.md.
           - [ ] CHANGELOG.md has been updated by the workflow or by you if the workflow fails to do so. 
           - [ ] Merge conflicts have been resolved.
           
-          ========= Workflow Details ==========
-          - Workflow Name: ${{ github.workflow }}
-          - Workflow Run ID: ${{ github.run_id }}
-          - Workflow Initiator: @${{ github.actor }}
-          
-          ========= Model Information =========
-          - Model ID: ${{ github.event.inputs.model_id }}
-          - Model Version: ${{ github.event.inputs.model_version }}
-          - Tracing Format: ${{ github.event.inputs.tracing_format }}
-          - Embedding Dimension: ${embedding_dimension:-Default}
-          - Pooling Mode: ${pooling_mode:-Default}"
+          ${{ needs.init-workflow-var.outputs.workflow_info }}"
           
           echo "pr_body<<EOF" >> $GITHUB_OUTPUT
           echo "${pr_body@E}" >> $GITHUB_OUTPUT

@@ -12,9 +12,7 @@
 import argparse
 import re
 
-MODEL_ID_START_PATTERN = "sentence-transformers/"
 VERSION_PATTERN = r"^([1-9]\d*|0)(\.(([1-9]\d*)|0)){0,3}$"
-MODEL_HUB_PATH = "ml-models/huggingface/sentence-transformers/"
 
 
 def verify_inputs(model_id: str, model_version: str) -> None:
@@ -26,16 +24,16 @@ def verify_inputs(model_id: str, model_version: str) -> None:
     :param model_version: Version of the pretrained model for registration
     :type model_version: string
     """
-    if not model_id.startswith(MODEL_ID_START_PATTERN):
-        assert False, f"Invalid Model ID: {model_id}"
-    if re.fullmatch(VERSION_PATTERN, model_version) is None:
-        assert False, f"Invalid Model Version: {model_version}"
+    assert model_id.count("/") == 1, f"Invalid Model ID: {model_id}"
+    assert re.fullmatch(VERSION_PATTERN, model_version) is not None, f"Invalid Model Version: {model_version}"
 
 
-def get_model_file_path(model_id: str, model_version: str, model_format: str) -> str:
+def get_model_file_path(model_folder: str, model_id: str, model_version: str, model_format: str) -> str:
     """
     Construct the expected model file path on model hub
 
+    :param model_folder: Model folder for uploading
+    :type model_folder: string
     :param model_id: Model ID of the pretrained model
     :type model_id: string
     :param model_version: Version of the pretrained model for registration
@@ -45,7 +43,7 @@ def get_model_file_path(model_id: str, model_version: str, model_format: str) ->
     """
     model_name = str(model_id.split("/")[-1])
     model_format = model_format.lower()
-    model_dirname = f"{MODEL_HUB_PATH}{model_name}/{model_version}/{model_format}"
+    model_dirname = f"{model_folder}{model_name}/{model_version}/{model_format}"
     model_filename = (
         f"sentence-transformers_{model_name}-{model_version}-{model_format}.zip"
     )
@@ -55,6 +53,11 @@ def get_model_file_path(model_id: str, model_version: str, model_format: str) ->
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "model_folder",
+        type=str,
+        help="Model folder for uploading (e.g. ml-models/huggingface/sentence-transformers/)",
+    )
     parser.add_argument(
         "model_id",
         type=str,
@@ -72,7 +75,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     verify_inputs(args.model_id, args.model_version)
     model_file_path = get_model_file_path(
-        args.model_id, args.model_version, args.model_format
+        args.model_folder, args.model_id, args.model_version, args.model_format
     )
 
     # Print the model file path so that the workflow can store it in the variable (See model_uploader.yml)
