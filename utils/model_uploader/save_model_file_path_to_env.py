@@ -12,7 +12,6 @@
 import argparse
 import re
 
-MODEL_ID_START_PATTERN = "sentence-transformers/"
 VERSION_PATTERN = r"^([1-9]\d*|0)(\.(([1-9]\d*)|0)){0,3}$"
 
 
@@ -25,7 +24,7 @@ def verify_inputs(model_id: str, model_version: str) -> None:
     :param model_version: Version of the pretrained model for registration
     :type model_version: string
     """
-    if not model_id.startswith(MODEL_ID_START_PATTERN):
+    if model_id.count("/") == 1:
         assert False, f"Invalid Model ID: {model_id}"
     if re.fullmatch(VERSION_PATTERN, model_version) is None:
         assert False, f"Invalid Model Version: {model_version}"
