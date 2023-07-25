@@ -232,7 +232,6 @@ def verify_embedding_data(
             print(sentence)
             print(e)
         return False
-        
     else:
         return True
 
