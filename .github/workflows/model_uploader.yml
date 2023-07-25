@@ -167,7 +167,7 @@ jobs:
       - name: Dryrun model uploading
         id: dryrun_model_uploading
         run: |
-          dryrun_output=$(aws s3 sync ./upload/ s3://${{ needs.init-workflow-var.outputs.model_folder }} --dryrun)
+          dryrun_output=$(aws s3 sync ./upload/ s3://${{ env.opensearch_bucket }}/${{ needs.init-workflow-var.outputs.model_folder }} --dryrun)
           echo "dryrun_output<<EOF" >> $GITHUB_OUTPUT
           echo "${dryrun_output@E}" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
@@ -234,7 +234,7 @@ jobs:
       - name: Copy Files to the Bucket
         id: copying_to_bucket
         run: |
-          aws s3 sync ./upload/ s3://${{ needs.init-workflow-var.outputs.model_folder }}
+          aws s3 sync ./upload/ s3://${{ env.opensearch_bucket }}/${{ needs.init-workflow-var.outputs.model_folder }}
           echo "upload_time=$(TZ='America/Los_Angeles' date "+%Y-%m-%d %T")" >> $GITHUB_OUTPUT
     outputs:
       upload_time: ${{ steps.copying_to_bucket.outputs.upload_time }}
