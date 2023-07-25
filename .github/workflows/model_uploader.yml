@@ -41,32 +41,55 @@ on:
 
 env:
   OPENSEARCH_BUCKET: "opensearch-models"
-  MODEL_FOLDER: "ml-models/${{github.event.inputs.model_source}}/${{{github.event.inputs.model_id}}%%/*}/"
-  INFO: |
-     ========= Workflow Details ==========
-     - Workflow Name: ${{ github.workflow }}
-     - Workflow Run ID: ${{ github.run_id }}
-     - Workflow Initiator: @${{ github.actor }}
-          
-     ========= Model Information =========
-     - Model Source: ${{ github.event.inputs.model_source }}
-     - Model ID: ${{ github.event.inputs.model_id }}
-     - Model Version: ${{ github.event.inputs.model_version }}
-     - Tracing Format: ${{ github.event.inputs.tracing_format }}
-     - Embedding Dimension: ${{{ github.event.inputs.embedding_dimension }}:-Default}
-     - Pooling Mode: ${{{ github.event.inputs.pooling_mode }}:-Default}
 
 jobs:
+  init-workflow-var:
+    runs-on: 'ubuntu-latest'
+    steps:
+    - name: Initiate model_folder
+      id: init_model_folder
+      run: |
+        model_id=${{ github.event.inputs.model_id }}
+        echo "model_folder=ml-models/${{github.event.inputs.model_source}}/${model_id%%/*}/" >> $GITHUB_OUTPUT
+    - name: Initiate workflow_info
+      id: init_workflow_info
+      run: |
+        embedding_dimension=${{ github.event.inputs.embedding_dimension }}
+        pooling_mode=${{ github.event.inputs.pooling_mode }}
+        
+        workflow_info="
+        ========= Workflow Details ==========
+        - Workflow Name: ${{ github.workflow }}
+        - Workflow Run ID: ${{ github.run_id }}
+        - Workflow Initiator: @${{ github.actor }}
+          
+        ========= Model Information =========
+        - Model ID: ${{ github.event.inputs.model_id }}
+        - Model Version: ${{ github.event.inputs.model_version }}
+        - Tracing Format: ${{ github.event.inputs.tracing_format }}
+        - Embedding Dimension: ${embedding_dimension:-Default}
+        - Pooling Mode: ${pooling_mode:-Default}"
+
+        echo "workflow_info<<EOF" >> $GITHUB_OUTPUT
+        echo "${workflow_info@E}" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+        echo "${workflow_info@E}"
+    outputs:
+      model_folder: ${{ steps.init_model_folder.outputs.model_folder }}
+      workflow_info: ${{ steps.init_workflow_info.outputs.workflow_info }}
+        
+          
   test:
     runs-on: 'ubuntu-latest'
+    needs: init-workflow-var
     steps:
     - name: testing
       run: |
         TORCH_FILE_PATH=$(python utils/model_uploader/save_model_file_path_to_env.py \
-          $MODEL_FOLDER ${{ github.event.inputs.model_id }} ${{ github.event.inputs.model_version }} TORCH_SCRIPT)
+          ${{ needs.init-workflow-var.outputs.model_folder }} ${{ github.event.inputs.model_id }} ${{ github.event.inputs.model_version }} TORCH_SCRIPT)
+        echo ${{ needs.init-workflow-var.outputs.model_folder }}
+        echo ${{ needs.init-workflow-var.outputs.workflow_info }}
         echo $TORCH_FILE_PATH
-        echo $INFO
-        echo $MODEL_FOLDER
 
 # jobs:
 #   # Step 2: Check if the model already exists in the model hub
