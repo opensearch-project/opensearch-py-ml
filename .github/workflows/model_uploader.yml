@@ -86,7 +86,6 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    concurrency: ${{ github.workflow }}-concurrency
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
@@ -218,7 +217,6 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    concurrency: ${{ github.workflow }}-concurrency
     steps:
       - name: Download Artifact
         uses: actions/download-artifact@v2
