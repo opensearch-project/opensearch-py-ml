@@ -24,7 +24,7 @@ import torch
 import yaml
 from accelerate import Accelerator, notebook_launcher
 from sentence_transformers import SentenceTransformer
-from sentence_transformers.models import Normalize, Pooling, Transformer
+from sentence_transformers.models import Normalize, Pooling, Transformer  # , Dense
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from transformers import TrainingArguments, get_linear_schedule_with_warmup
@@ -1068,28 +1068,25 @@ class SentenceTransformerModel:
             or normalize_result is None
         ):
             try:
-                if (
-                    model_type is None
-                    and len(model._modules) >= 1
-                    and isinstance(model._modules["0"], Transformer)
-                ):
-                    model_type = model._modules["0"].auto_model.__class__.__name__
-                    model_type = model_type.lower().rstrip("model")
                 if embedding_dimension is None:
                     embedding_dimension = model.get_sentence_embedding_dimension()
-                if (
-                    pooling_mode is None
-                    and len(model._modules) >= 2
-                    and isinstance(model._modules["1"], Pooling)
-                ):
-                    pooling_mode = model._modules["1"].get_pooling_mode_str().upper()
-                if normalize_result is None:
-                    if len(model._modules) >= 3 and isinstance(
-                        model._modules["2"], Normalize
-                    ):
+
+                for str_idx, module in model._modules.items():
+                    if model_type is None and isinstance(module, Transformer):
+                        model_type = module.auto_model.__class__.__name__
+                        model_type = model_type.lower().rstrip("model")
+                    elif pooling_mode is None and isinstance(module, Pooling):
+                        pooling_mode = module.get_pooling_mode_str().upper()
+                    elif normalize_result is None and isinstance(module, Normalize):
                         normalize_result = True
-                    else:
-                        normalize_result = False
+                #                     Currently, we don't support Dense
+                #                     elif (
+                #                          ... is not None
+                #                          isinstance(module, Dense)
+                #                     ):
+                #                          ...
+                if normalize_result is None:
+                    normalize_result = False
             except Exception as e:
                 raise Exception(
                     f"Raised exception while getting model data from pre-trained hugging-face model object: {e}"
