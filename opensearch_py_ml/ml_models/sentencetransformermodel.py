@@ -24,7 +24,7 @@ import torch
 import yaml
 from accelerate import Accelerator, notebook_launcher
 from sentence_transformers import SentenceTransformer
-from sentence_transformers.models import Normalize, Pooling, Transformer  # , Dense
+from sentence_transformers.models import Normalize, Pooling, Transformer
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from transformers import TrainingArguments, get_linear_schedule_with_warmup
@@ -1079,12 +1079,7 @@ class SentenceTransformerModel:
                         pooling_mode = module.get_pooling_mode_str().upper()
                     elif normalize_result is None and isinstance(module, Normalize):
                         normalize_result = True
-                #                     Currently, we don't support Dense
-                #                     elif (
-                #                          ... is not None
-                #                          isinstance(module, Dense)
-                #                     ):
-                #                          ...
+                    # TODO: Support 'Dense' module
                 if normalize_result is None:
                     normalize_result = False
             except Exception as e:
