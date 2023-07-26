@@ -40,13 +40,19 @@ on:
         - "MEAN_SQRT_LEN"
 
 env:
-  opensearch_bucket: "opensearch-exp" # Will be renamed to"opensearch-models" 
+  opensearch_bucket: "opensearch-exp" # TO-BE-CHANGED
 
 jobs:
   # Step 2: Initiate workflow variable
   init-workflow-var:
     runs-on: 'ubuntu-latest'
     steps:
+    - name: Fail if branch is not main
+      if: github.ref != 'refs/heads/workflow_for_review' # TO-BE-CHANGED
+      #if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+      run: |
+        echo "This workflow should not be triggered with workflow_dispatch on a branch other than main"
+        exit 1
     - name: Initiate model_folder
       id: init_model_folder
       run: |
