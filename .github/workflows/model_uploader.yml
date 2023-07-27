@@ -346,3 +346,21 @@ jobs:
           message: |
             Warning:exclamation:: The workflow failed to update CHANGELOG.md. Please add the following line manually.
             ${{ steps.create_changelog_line.outputs.changelog_line }}
+            
+#   # Step 8: Trigger Jenkins ml-models workflow
+#   trigger-model-release-workflow:
+#     needs: [init-workflow-var, history-update]
+#     runs-on: 'ubuntu-latest'
+#     steps:
+#       - name: Trigger Jenkins Workflow Remotely
+#         run: |
+#           JENKINS_URL="https://build.ci.opensearch.org"
+#           JENKINS_JOB="ml-models-release"
+#           BASE_DOWNLOAD_PATH=${{ needs.init-workflow-var.outputs.model_folder }} # Might need to add "/torch_script" / "onnx"
+#           VERSION=${{ github.event.inputs.model_version }}
+#           JENKINS_PARAMS={"parameter": [{"name":"BASE_DOWNLOAD_PATH", "value":$BASE_DOWNLOAD_PATH}, {"name":"VERSION", "value":$VERSION}]}
+          
+#           # TODO: Set up user + token https://www.youtube.com/watch?v=KHrNlpKYuwU
+#           curl -X POST $JENKINS_URL/job/$JENKINS_JOB/buildWithParameters \
+#             --user ${{ secret.JENKINS_MODEL_UPLOADER_USER }}:${{ secret.JENKINS_MODEL_UPLOADER_USER }} \
+#             --data-urlencode json=$JENKINS_PARAMS
