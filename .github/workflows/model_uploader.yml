@@ -40,7 +40,7 @@ on:
         - "MEAN_SQRT_LEN"
 
 env:
-  opensearch_bucket: "opensearch-exp" # TO-BE-CHANGED
+  opensearch_bucket: ${{ secrets.MODEL_BUCKET }}
 
 jobs:
   # Step 2: Initiate workflow variable
@@ -95,6 +95,7 @@ jobs:
     permissions:
       id-token: write
       contents: read
+    environment: opensearch-py-ml-cicd-env
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
@@ -141,6 +142,7 @@ jobs:
     permissions:
       id-token: write
       contents: read
+    environment: opensearch-py-ml-cicd-env
     strategy:
       matrix:
         cluster: ["opensearch"]
@@ -228,6 +230,7 @@ jobs:
     permissions:
       id-token: write
       contents: read
+    environment: opensearch-py-ml-cicd-env
     steps:
       - name: Download Artifact
         uses: actions/download-artifact@v2
