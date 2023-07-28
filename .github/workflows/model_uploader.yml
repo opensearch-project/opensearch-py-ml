@@ -201,10 +201,12 @@ jobs:
         run: |
           issue_body="Please approve or deny opensearch-py-ml model uploading:
           
+          - [ ]  :warning:  ${\color{red} \text{Please Confirm here that the model is licensed under apache 2.0}}$  :warning:  
+          
           ${{ needs.init-workflow-var.outputs.workflow_info }}
           
           ===== Dry Run of Model Uploading =====
-          ${{ needs.model-auto-tracing.outputs.dryrun_output }}"
+          ${{ needs.model-auto-tracing.outputs.dryrun_output }}
 
           echo "issue_body<<EOF" >> $GITHUB_OUTPUT
           echo "${issue_body@E}" >> $GITHUB_OUTPUT
@@ -352,15 +354,19 @@ jobs:
 #     needs: [init-workflow-var, history-update]
 #     runs-on: 'ubuntu-latest'
 #     steps:
-#       - name: Trigger Jenkins Workflow Remotely
+#       - name: Trigger Jenkins Workflow with Generic Webhook
 #         run: |
 #           JENKINS_URL="https://build.ci.opensearch.org"
-#           JENKINS_JOB="ml-models-release"
-#           BASE_DOWNLOAD_PATH=${{ needs.init-workflow-var.outputs.model_folder }} # Might need to add "/torch_script" / "onnx"
+#           JENKINS_TRIGGER_TOKEN=${{ secrets.JENKINS_ML_MODELS_RELEASE_GENERIC_WEBHOOK_TOKEN }}
+          
+#           # TODO: Might need to add "/torch_script" / "onnx"
+#           BASE_DOWNLOAD_PATH=${{ needs.init-workflow-var.outputs.model_folder }} 
 #           VERSION=${{ github.event.inputs.model_version }}
 #           JENKINS_PARAMS={"parameter": [{"name":"BASE_DOWNLOAD_PATH", "value":$BASE_DOWNLOAD_PATH}, {"name":"VERSION", "value":$VERSION}]}
           
-#           # TODO: Set up user + token https://www.youtube.com/watch?v=KHrNlpKYuwU
-#           curl -X POST $JENKINS_URL/job/$JENKINS_JOB/buildWithParameters \
-#             --user ${{ secret.JENKINS_MODEL_UPLOADER_USER }}:${{ secret.JENKINS_MODEL_UPLOADER_USER }} \
-#             --data-urlencode json=$JENKINS_PARAMS
+#           # TODO: Set up JENKINS_TRIGGER_TOKEN
+#           curl -s -XPOST 
+#             -H "Authorization: Bearer $JENKINS_TRIGGER_TOKEN" \
+#             -H "Content-Type: application/json" \
+#             "$JENKINS_URL/generic-webhook-trigger/invoke" \
+#             --data "$(echo $JENKINS_PARAMS)"`
