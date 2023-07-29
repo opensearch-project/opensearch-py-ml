@@ -39,9 +39,6 @@ on:
         - "MAX"
         - "MEAN_SQRT_LEN"
 
-env:
-  opensearch_bucket: ${{ secrets.MODEL_BUCKET }}
-
 jobs:
   # Step 2: Initiate workflow variable
   init-workflow-var:
@@ -115,7 +112,7 @@ jobs:
           TORCH_FILE_PATH=$(python utils/model_uploader/save_model_file_path_to_env.py \
               ${{ needs.init-workflow-var.outputs.model_folder }} ${{ github.event.inputs.model_id }} \
               ${{ github.event.inputs.model_version }} TORCH_SCRIPT)
-          aws s3api head-object --bucket ${{ env.opensearch_bucket }} --key $TORCH_FILE_PATH > /dev/null 2>&1 || TORCH_MODEL_NOT_EXIST=true
+          aws s3api head-object --bucket ${{ secrets.MODEL_BUCKET }} --key $TORCH_FILE_PATH > /dev/null 2>&1 || TORCH_MODEL_NOT_EXIST=true
           if [[ -z $TORCH_MODEL_NOT_EXIST ]];
           then
             echo "TORCH_SCRIPT Model already exists on model hub."
@@ -127,7 +124,7 @@ jobs:
           ONNX_FILE_PATH=$(python utils/model_uploader/save_model_file_path_to_env.py \
             ${{ needs.init-workflow-var.outputs.model_folder }} ${{ github.event.inputs.model_id }} \
             ${{ github.event.inputs.model_version }} ONNX)
-          aws s3api head-object --bucket ${{ env.opensearch_bucket }} --key $ONNX_FILE_PATH > /dev/null 2>&1 || ONNX_MODEL_NOT_EXIST=true
+          aws s3api head-object --bucket ${{ secrets.MODEL_BUCKET }} --key $ONNX_FILE_PATH > /dev/null 2>&1 || ONNX_MODEL_NOT_EXIST=true
           if [[ -z $ONNX_MODEL_NOT_EXIST ]];
           then
             echo "TORCH_SCRIPT Model already exists on model hub."
@@ -177,7 +174,7 @@ jobs:
       - name: Dryrun model uploading
         id: dryrun_model_uploading
         run: |
-          dryrun_output=$(aws s3 sync ./upload/ s3://${{ env.opensearch_bucket }}/${{ needs.init-workflow-var.outputs.model_folder }} --dryrun)
+          dryrun_output=$(aws s3 sync ./upload/ s3://${{ secrets.MODEL_BUCKET }}/${{ needs.init-workflow-var.outputs.model_folder }} --dryrun)
           echo "dryrun_output<<EOF" >> $GITHUB_OUTPUT
           echo "${dryrun_output@E}" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
@@ -201,7 +198,7 @@ jobs:
       - name: Debug
         run: |
           x=${{ needs.model-auto-tracing.outputs.dryrun_output }}
-          echo "${x@E}"
+          echo $x
           echo ${{ needs.model-auto-tracing.outputs.dryrun_output }}
       - name: Create Issue Body
         id: create_issue_body
@@ -251,7 +248,7 @@ jobs:
       - name: Copy Files to the Bucket
         id: copying_to_bucket
         run: |
-          aws s3 sync ./upload/ s3://${{ env.opensearch_bucket }}/${{ needs.init-workflow-var.outputs.model_folder }}
+          aws s3 sync ./upload/ s3://${{ secrets.MODEL_BUCKET }}/${{ needs.init-workflow-var.outputs.model_folder }}
           echo "upload_time=$(TZ='America/Los_Angeles' date "+%Y-%m-%d %T")" >> $GITHUB_OUTPUT
     outputs:
       upload_time: ${{ steps.copying_to_bucket.outputs.upload_time }}
