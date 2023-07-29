@@ -208,7 +208,7 @@ jobs:
           ${{ needs.init-workflow-var.outputs.workflow_info }}
           
           ===== Dry Run of Model Uploading =====
-          ${{ needs.model-auto-tracing.outputs.dryrun_output }}
+          ${{ needs.model-auto-tracing.outputs.dryrun_output }}"
 
           echo "issue_body<<EOF" >> $GITHUB_OUTPUT
           echo "${issue_body@E}" >> $GITHUB_OUTPUT
