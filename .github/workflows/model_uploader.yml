@@ -202,7 +202,7 @@ jobs:
         run: |    
           issue_body="Please approve or deny opensearch-py-ml model uploading:
           
-          - [ ]  :warning:  \${\color{red} \text{Please Confirm here that the model is licensed under apache 2.0}}\$  :warning:  
+          - [ ]  :warning:  \${\\color{red} \\text{Please Confirm here that the model is licensed under apache 2.0}}\$  :warning:  
           
           ${{ needs.init-workflow-var.outputs.workflow_info }}
           
