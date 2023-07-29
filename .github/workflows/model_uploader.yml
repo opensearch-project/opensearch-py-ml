@@ -252,7 +252,7 @@ jobs:
    
   # Step 7: Update MODEL_UPLOAD_HISTORY.md & supported_models.json
   history-update:
-    needs: model-uploading #[init-workflow-var, model-uploading]
+    needs: init-workflow-var #[init-workflow-var, model-uploading]
     runs-on: 'ubuntu-latest'
     permissions:
       id-token: write
