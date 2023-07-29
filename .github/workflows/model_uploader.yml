@@ -201,6 +201,9 @@ jobs:
       - name: Create Issue Body
         id: create_issue_body
         run: |
+          x=${{ needs.model-auto-tracing.outputs.dryrun_output }}
+          echo "${x@E}"
+          echo ${{ needs.model-auto-tracing.outputs.dryrun_output }}
           issue_body="Please approve or deny opensearch-py-ml model uploading:
           
           - [ ]  :warning:  ${\color{red} \text{Please Confirm here that the model is licensed under apache 2.0}}$  :warning:  
