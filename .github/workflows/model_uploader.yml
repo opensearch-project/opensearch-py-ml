@@ -197,7 +197,7 @@ jobs:
         id: dryrun_model_uploading
         run: |
           dryrun_output=$(aws s3 sync ./upload/ s3://${{ secrets.PERSONAL_MODEL_BUCKET }}/${{ needs.init-workflow-var.outputs.model_folder }} --dryrun \
-            | sed 's|s3://${{ secrets.PERSONAL_MODEL_BUCKET }}/|s3://\*\*\*/|' 
+            | sed 's|s3://${{ secrets.PERSONAL_MODEL_BUCKET }}/|s3://_MODEL_BUCKET_|' 
           )
           echo "dryrun_output<<EOF" >> $GITHUB_OUTPUT
           echo "${dryrun_output@E}" >> $GITHUB_OUTPUT
@@ -275,7 +275,7 @@ jobs:
    
   # Step 7: Update MODEL_UPLOAD_HISTORY.md & supported_models.json
   history-update:
-    needs: init-workflow-var #[init-workflow-var, model-uploading]
+    needs: [init-workflow-var, model-uploading]
     runs-on: 'ubuntu-latest'
     permissions:
       id-token: write
@@ -301,7 +301,7 @@ jobs:
             ${{ github.event.inputs.tracing_format }} \
             -ed ${{ github.event.inputs.embedding_dimension }} \
             -pm ${{ github.event.inputs.pooling_mode }} \
-            -u ${{ github.actor }} #-t "${{ needs.model-uploading.outputs.upload_time }}"
+            -u ${{ github.actor }} -t "${{ needs.model-uploading.outputs.upload_time }}"
       - name: Create PR Body
         id: create_pr_body
         run: |
