@@ -162,7 +162,7 @@ def trace(session):
         "1500",
     )
     session.install(".")
-
+    session.install("mdutils")
     session.run(
         "python",
         "utils/model_uploader/model_autotracing.py",

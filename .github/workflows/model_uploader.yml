@@ -81,9 +81,16 @@ jobs:
         echo "${workflow_info@E}" >> $GITHUB_OUTPUT
         echo "EOF" >> $GITHUB_OUTPUT
         echo "${workflow_info@E}"
+    - name: Initiate license_line
+      id: init_license_line
+      run: |
+        echo "verified=:white_check_mark: — It is verified that this model is licensed under Apache 2.0" >> $GITHUB_OUTPUT
+        echo "unverified=- [ ]  :warning: The license cannot be verified. Please confirm by yourself that the model is licensed under Apache 2.0  :warning:" >> $GITHUB_OUTPUT
     outputs:
       model_folder: ${{ steps.init_model_folder.outputs.model_folder }}
       workflow_info: ${{ steps.init_workflow_info.outputs.workflow_info }}
+      verified_license_line: ${{ steps.init_license_line.outputs.verified }}
+      unverified_license_line: ${{ steps.init_license_line.outputs.unverified }}
 
   # Step 3: Check if the model already exists in the model hub
   checking-out-model-hub:
@@ -113,7 +120,7 @@ jobs:
               ${{ needs.init-workflow-var.outputs.model_folder }} ${{ github.event.inputs.model_id }} \
               ${{ github.event.inputs.model_version }} TORCH_SCRIPT)
           aws s3api head-object --bucket ${{ secrets.PERSONAL_MODEL_BUCKET }} --key $TORCH_FILE_PATH > /dev/null 2>&1 || TORCH_MODEL_NOT_EXIST=true
-          if [[ -z $TORCH_MODEL_NOT_EXIST ]];
+          if [[ -z $TORCH_MODEL_NOT_EXIST ]]
           then
             echo "TORCH_SCRIPT Model already exists on model hub."
             exit 1
@@ -125,10 +132,10 @@ jobs:
             ${{ needs.init-workflow-var.outputs.model_folder }} ${{ github.event.inputs.model_id }} \
             ${{ github.event.inputs.model_version }} ONNX)
           aws s3api head-object --bucket ${{ secrets.PERSONAL_MODEL_BUCKET }} --key $ONNX_FILE_PATH > /dev/null 2>&1 || ONNX_MODEL_NOT_EXIST=true
-          if [[ -z $ONNX_MODEL_NOT_EXIST ]];
+          if [[ -z $ONNX_MODEL_NOT_EXIST ]]
           then
             echo "TORCH_SCRIPT Model already exists on model hub."
-            exit 1;
+            exit 1
           fi
   
   # Step 4: Trace the model, Verify the embeddings & Upload the model files as artifacts
@@ -158,6 +165,21 @@ jobs:
           echo "POOLING_MODE=${{ github.event.inputs.pooling_mode }}" >> $GITHUB_ENV     
       - name: Autotracing ${{ matrix.cluster }} secured=${{ matrix.secured }} version=${{matrix.entry.opensearch_version}}
         run: "./.ci/run-tests ${{ matrix.cluster }} ${{ matrix.secured }} ${{ matrix.entry.opensearch_version }} trace"
+      - name: License verification
+        id: license_verification
+        continue-on-error: true
+        run: |
+          apache_verified=$(<trace_output/apache_verified.txt)
+          if [[ $apache_verified == "True" ]]
+          then
+            echo "license_line=${{ needs.init-workflow-var.outputs.verified_license_line }}" >> $GITHUB_OUTPUT   
+          else
+            echo "license_line=${{ needs.init-workflow-var.outputs.unverified_license_line }}" >> $GITHUB_OUTPUT   
+          fi
+      - name: Handle if license_verification fails
+        if: steps.license_verification.outcome == 'failure'
+        run: |
+          echo "license_line=${{ needs.init-workflow-var.outputs.unverified_license_line }}" >> $GITHUB_OUTPUT
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with: 
@@ -182,6 +204,7 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
           echo "${dryrun_output@E}"
     outputs:
+      license_line: ${{ steps.license_verification.outputs.license_line }}
       dryrun_output: ${{ steps.dryrun_model_uploading.outputs.dryrun_output }}
 
   # Step 5: Ask for manual approval from the CODEOWNERS
@@ -202,7 +225,7 @@ jobs:
         run: |    
           issue_body="Please approve or deny opensearch-py-ml model uploading:
           
-          - [ ]  :warning: Please Confirm here that the model is licensed under Apache 2.0  :warning:  
+          ${{ needs.model-auto-tracing.outputs.license_line }}
           
           ${{ needs.init-workflow-var.outputs.workflow_info }}
           

@@ -86,5 +86,6 @@ elif [[ "$TASK_TYPE" == "trace" ]]; then
   nox -s trace -- ${MODEL_ID} ${MODEL_VERSION} ${TRACING_FORMAT} -ed ${EMBEDDING_DIMENSION} -pm ${POOLING_MODE}
   
   docker cp opensearch-py-ml-trace-runner:/code/opensearch-py-ml/upload/ ./upload/
+  docker cp opensearch-py-ml-trace-runner:/code/opensearch-py-ml/trace_output/ ./trace_output/
   docker rm opensearch-py-ml-trace-runner
 fi
