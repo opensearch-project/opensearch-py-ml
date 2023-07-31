@@ -71,10 +71,10 @@ def verify_license_in_md_file() -> bool:
         return False
     model_info = readme_data[start + 3 : end]
     if "apache-2.0" in model_info.lower():
-        print("\nFound apache-2.0 license at " + model_folder_path + "README.md")
+        print("\nFound apache-2.0 license at " + TEMP_MODEL_PATH + "README.md")
         return True
     else:
-        print("\nDid not find apache-2.0 license at " + model_folder_path + "README.md")
+        print("\nDid not find apache-2.0 license at " + TEMP_MODEL_PATH + "README.md")
         return False
 
 
@@ -396,7 +396,7 @@ def main(
         pre_trained_model.encode(TEST_SENTENCES, convert_to_numpy=True)
     )
 
-    pretrained_model.save(path=TEMP_MODEL_PATH)
+    pre_trained_model.save(path=TEMP_MODEL_PATH)
     license_verified = verify_license_in_md_file()
     try:
         shutil.rmtree(TEMP_MODEL_PATH)
