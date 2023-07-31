@@ -1,6 +1,7 @@
 name: Update Model Listing
 on:
   workflow_dispatch: # TO-BE-CHANGED
+  workflow_call:
 
 jobs:
   update-model-listing:
@@ -32,7 +33,7 @@ jobs:
     - name: Upload Artifact
       uses: actions/upload-artifact@v3
       with: 
-        name: upload
+        name: model-listing
         path: |
           ./old_pre_trained_models.json
           ./new_pre_trained_models.json
