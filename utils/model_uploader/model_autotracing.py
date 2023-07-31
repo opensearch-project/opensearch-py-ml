@@ -35,6 +35,7 @@ BOTH_FORMAT = "BOTH"
 TORCH_SCRIPT_FORMAT = "TORCH_SCRIPT"
 ONNX_FORMAT = "ONNX"
 
+TEMP_MODEL_PATH = "temp_model_path"
 ORIGINAL_FOLDER_PATH = "sentence-transformers-original/"
 TORCHSCRIPT_FOLDER_PATH = "sentence-transformers-torchscript/"
 ONNX_FOLDER_PATH = "sentence-transformers-onnx/"
@@ -51,17 +52,15 @@ ATOL_TEST = 1e-05
 ML_BASE_URI = "/_plugins/_ml"
 
 
-def verify_license(model_folder_path: str) -> bool:
+def verify_license_in_md_file() -> bool:
     """
     Verify that the model is licensed under Apache 2.0
 
-    :param model_folder_path: Path to model folder
-    :type model_path: string
     :return: Whether the model is licensed under Apache 2.0
     :rtype: Bool
     """
     try:
-        readme_data = MarkDownFile.read_file(model_folder_path + "README.md")
+        readme_data = MarkDownFile.read_file(TEMP_MODEL_PATH + "/" + "README.md")
     except Exception as e:
         print(f"Cannot verify the license: {e}")
         return False
@@ -85,7 +84,7 @@ def trace_sentence_transformer_model(
     model_format: str,
     embedding_dimension: Optional[int] = None,
     pooling_mode: Optional[str] = None,
-) -> Tuple[str, str, bool]:
+) -> Tuple[str, str]:
     """
     Trace the pretrained sentence transformer model, create a model config file,
     and return a path to the model file and a path to the model config file required for model registration
@@ -100,9 +99,8 @@ def trace_sentence_transformer_model(
     :type embedding_dimension: int
     :param pooling_mode: Pooling mode input ("CLS", "MEAN", "MAX", "MEAN_SQRT_LEN" or None)
     :type pooling_mode: string
-    :return: Tuple of model_path (path to model zip file), model_config_path (path to model config json file),
-    and license_verified (whether the model is licensed under Apache 2.0)
-    :rtype: Tuple[str, str, bool]
+    :return: Tuple of model_path (path to model zip file) and model_config_path (path to model config json file)
+    :rtype: Tuple[str, str]
     """
     folder_path = (
         TORCHSCRIPT_FOLDER_PATH
@@ -150,10 +148,7 @@ def trace_sentence_transformer_model(
     # 4.) Return model_path & model_config_path for model registration
     model_config_path = folder_path + MODEL_CONFIG_FILE_NAME
 
-    # 5.) Verify license
-    license_verified = verify_license(folder_path)
-
-    return model_path, model_config_path, license_verified
+    return model_path, model_config_path
 
 
 def register_and_deploy_sentence_transformer_model(
@@ -401,14 +396,18 @@ def main(
         pre_trained_model.encode(TEST_SENTENCES, convert_to_numpy=True)
     )
 
-    license_verified = False
+    pretrained_model.save(path=TEMP_MODEL_PATH)
+    license_verified = verify_license_in_md_file()
+    try:
+        shutil.rmtree(TEMP_MODEL_PATH)
+    except Exception as e:
+        assert False, f"Raised Exception while deleting {TEMP_MODEL_PATH}: {e}"
 
     if tracing_format in [TORCH_SCRIPT_FORMAT, BOTH_FORMAT]:
         print("--- Begin tracing a model in TORCH_SCRIPT ---")
         (
             torchscript_model_path,
             torchscript_model_config_path,
-            torch_script_license_verified,
         ) = trace_sentence_transformer_model(
             model_id,
             model_version,
@@ -416,8 +415,6 @@ def main(
             embedding_dimension,
             pooling_mode,
         )
-
-        license_verified = license_verified or torch_script_license_verified
 
         torch_embedding_data = register_and_deploy_sentence_transformer_model(
             ml_client,
@@ -444,7 +441,6 @@ def main(
         (
             onnx_model_path,
             onnx_model_config_path,
-            onnx_license_verified,
         ) = trace_sentence_transformer_model(
             model_id,
             model_version,
@@ -452,8 +448,6 @@ def main(
             embedding_dimension,
             pooling_mode,
         )
-
-        license_verified = license_verified or onnx_license_verified
 
         onnx_embedding_data = register_and_deploy_sentence_transformer_model(
             ml_client, onnx_model_path, onnx_model_config_path, ONNX_FORMAT
