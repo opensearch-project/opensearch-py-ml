@@ -275,11 +275,13 @@ jobs:
       
   # Step 7: Update model-listing in S3 bucket
   model-listing-update:
+    needs: [init-workflow-var, model-uploading]
     uses: ./.github/workflows/update_model_listing.yml
+    secrets: inherit
    
   # Step 8: Update MODEL_UPLOAD_HISTORY.md & supported_models.json
   history-update:
-    needs: [init-workflow-var, model-uploading]
+    needs: [init-workflow-var, model-listing-update]
     runs-on: 'ubuntu-latest'
     permissions:
       id-token: write
