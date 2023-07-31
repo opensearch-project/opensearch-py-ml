@@ -23,6 +23,8 @@ def verify_inputs(model_id: str, model_version: str) -> None:
     :type model_id: string
     :param model_version: Version of the pretrained model for registration
     :type model_version: string
+    :return: No return value expected
+    :rtype: None
     """
     assert model_id.count("/") == 1, f"Invalid Model ID: {model_id}"
     assert (
@@ -44,6 +46,8 @@ def get_model_file_path(
     :type model_version: string
     :param model_format: Model format ("TORCH_SCRIPT" or "ONNX")
     :type model_format: string
+    :return: Expected model file path on model hub
+    :rtype: string
     """
     model_name = str(model_id.split("/")[-1])
     model_format = model_format.lower()

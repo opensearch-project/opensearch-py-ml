@@ -26,6 +26,8 @@ def update_changelog_file(
 
     :param changelog_line: Line to be added to CHANGELOG.md
     :type changelog_line: string
+    :return: No return value expected
+    :rtype: None
     """
     changelog_data = MarkDownFile.read_file(f"{CHANGELOG_DIRNAME}/{CHANGELOG_FILENAME}")
 

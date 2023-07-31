@@ -292,7 +292,7 @@ def prepare_files_for_uploading(
     :type src_model_path: string
     :param src_model_config_path: Path to model config files for uploading
     :type src_model_config_path: string
-    :return: no return value expected
+    :return: No return value expected
     :rtype: None
     """
     model_name = str(model_id.split("/")[-1])
@@ -336,14 +336,14 @@ def prepare_files_for_uploading(
         assert False, f"Raised Exception while deleting {folder_to_delete}: {e}"
 
 
-def store_license_verified_variable(license_verified):
+def store_license_verified_variable(license_verified: bool) -> None:
     """
     Store whether the model is licensed under Apache 2.0 in OUTPUT_DIR/LICENSE_VAR_FILE
     to be used to generate issue body for manual approval
 
     :param license_verified: Whether the model is licensed under Apache 2.0
     :type model_path: bool
-    :return: no return value expected
+    :return: No return value expected
     :rtype: None
     """
     try:
@@ -377,7 +377,7 @@ def main(
     :type embedding_dimension: int
     :param pooling_mode: Pooling mode input ("CLS", "MEAN", "MAX", "MEAN_SQRT_LEN" or None)
     :type pooling_mode: string
-    :return: no return value expected
+    :return: No return value expected
     :rtype: None
     """
 

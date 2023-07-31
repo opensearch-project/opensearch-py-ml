@@ -59,6 +59,8 @@ def create_model_json_obj(
     :type embedding_dimension: int
     :param pooling_mode: Pooling mode input ("CLS", "MEAN", "MAX", "MEAN_SQRT_LEN" or None)
     :type pooling_mode: string
+    :return: Model dictionary object to be added to supported_models.json
+    :rtype: dict
     """
     model_obj = {
         "Model Uploader": "@" + model_uploader if model_uploader is not None else "-",
@@ -78,8 +80,10 @@ def sort_models(models: List[Dict]) -> List[Dict]:
     """
     Sort models
 
-    :param models: List of models to be sorted
+    :param models: List of model dictionary objects to be sorted
     :type models: list[dict]
+    :return: Sorted list of model dictionary objects
+    :rtype: list[dict]
     """
     models = sorted(
         models,
@@ -115,6 +119,8 @@ def update_model_json_file(
     :type embedding_dimension: int
     :param pooling_mode: Pooling mode input ("CLS", "MEAN", "MAX", "MEAN_SQRT_LEN" or None)
     :type pooling_mode: string
+    :return: No return value expected
+    :rtype: None
     """
     models = []
     if os.path.exists(MODEL_JSON_FILEPATH):
@@ -156,6 +162,9 @@ def update_model_json_file(
 def update_md_file():
     """
     Update MODEL_UPLOAD_HISTORY.md
+
+    :return: No return value expected
+    :rtype: None
     """
     models = []
     if os.path.exists(MODEL_JSON_FILEPATH):

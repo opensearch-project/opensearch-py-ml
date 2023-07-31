@@ -17,7 +17,17 @@ PREFIX_SENTENCE_TRANSFORMER_FILEPATH = "ml-models/huggingface/sentence-transform
 TEMP_MODEL_PATH = "temp_model_path"
 
 
-def get_description_from_md_file(model_id):
+def get_description_from_md_file(model_id: str) -> str:
+    """
+    Get description of the model from README.md file
+    after the model is saved in local directory
+
+    :param model_id: Model ID of the pretrained model
+    (e.g. sentence-transformers/msmarco-distilbert-base-tas-b)
+    :type model_id: string
+    :return: Description of the model
+    :rtype: string
+    """
     readme_data = MarkDownFile.read_file(TEMP_MODEL_PATH + "/" + "README.md")
     start_str = f"# {model_id}"
     start = readme_data.find(start_str) + len(start_str) + 1
@@ -31,7 +41,16 @@ def get_description_from_md_file(model_id):
     return description
 
 
-def get_sentence_transformer_model_description(model_name):
+def get_sentence_transformer_model_description(model_name) -> str:
+    """
+    Get description of the pretrained sentence transformer model
+
+    :param model_name: Model name of the pretrained model
+    (e.g. huggingface/sentence-transformers/msmarco-distilbert-base-tas-b)
+    :type model_name: string
+    :return: Description of the model
+    :rtype: string
+    """
     model_id = model_name[len("huggingface/") :]
     pretrained_model = SentenceTransformer(model_id)
     pretrained_model.save(path=TEMP_MODEL_PATH)
@@ -46,6 +65,23 @@ def get_sentence_transformer_model_description(model_name):
 def create_new_pretrained_model_listing(
     models_txt_filename, old_json_filename, new_json_filename
 ):
+    """
+    Create a new pretrained model listing and store it at new_json_filename
+    based on current models in models_txt_filename and the old pretrained model
+    listing in old_json_filename
+
+    :param models_txt_filename: Name of the txt file that stores string of
+    directories in the ml-models/huggingface/ folder of the S3 bucket
+    :type models_txt_filename: string
+    :param old_json_filename: Name of the json file that contains the old pretrained
+    model listing
+    :type old_json_filename: string
+    :param new_json_filename: Name of the json file that the new model listing will
+    be stored at
+    :type new_json_filename: string
+    :return: No return value expected
+    :rtype: None
+    """
     with open(models_txt_filename, "r") as f:
         model_lst = f.read().split()
         model_lst = list(
@@ -56,7 +92,7 @@ def create_new_pretrained_model_listing(
                 ]
             )
         )
-    print(model_lst)
+
     with open(old_json_filename, "r") as f:
         old_model_listing_lst = json.load(f)
 
@@ -67,6 +103,7 @@ def create_new_pretrained_model_listing(
     new_model_listing_dict = {}
     for model_filepath in model_lst:
         if model_filepath.startswith(PREFIX_SENTENCE_TRANSFORMER_FILEPATH):
+            # (e.g. ml-models/huggingface/sentence-transformers/msmarco-distilbert-base-tas-b/1.0.1/torch_script)
             model_parts = model_filepath.split("/")
             model_name = "/".join(model_parts[1:4])
             model_version = model_parts[4]
