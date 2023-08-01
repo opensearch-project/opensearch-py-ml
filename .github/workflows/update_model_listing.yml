@@ -7,7 +7,8 @@ jobs:
     runs-on: 'ubuntu-latest'
     permissions:
       id-token: write
-      contents: read
+      contents: write
+      pull-requests: write
     environment: opensearch-py-ml-cicd-env
     env:
       repo_model_listing_path: ./utils/model_uploader/model_listing/pretrained_model_listing.json
@@ -23,7 +24,6 @@ jobs:
     - name: List models
       run: |
         aws s3api list-objects --bucket ${{ secrets.PERSONAL_MODEL_BUCKET }} --prefix "ml-models/huggingface/" --query "Contents[].{Key: Key}" --output text >> current_models.txt
-        echo $(cat current_models.txt)
         aws s3 cp s3://${{ secrets.PERSONAL_MODEL_BUCKET }}/ml-models/model_listing/pre_trained_models.json old_pre_trained_models.json
     - name: Set Up Python
       uses: actions/setup-python@v2
