@@ -393,7 +393,7 @@ def test_missing_readme_md_files():
     test_model9.save_as_pt(model_id=model_id, sentences=["today is sunny"])
     temp_path = os.path.join(
         TEST_FOLDER,
-        "REAMD.md",
+        "README.md",
     )
     os.remove(temp_path)
     model_config_path_torch = test_model9.make_model_config_json(
@@ -408,7 +408,7 @@ def test_missing_readme_md_files():
         ), f"Creating model config file for tracing in torch_script raised an exception {exec}"
 
     assert (
-        "description" in model_config_data_torch
+        "description" not in model_config_data_torch
     ), "Should not have description in model config file"
 
     clean_test_folder(TEST_FOLDER)
