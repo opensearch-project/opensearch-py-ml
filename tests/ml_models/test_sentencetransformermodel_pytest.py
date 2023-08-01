@@ -204,7 +204,12 @@ def test_make_model_config_json_for_torch_script():
     assert (
         "model_format" in model_config_data_torch
         and model_config_data_torch["model_format"] == "TORCH_SCRIPT"
-    )
+    ), "Missing or Wrong model_format in torch script model config file"
+    assert (
+        "description" in model_config_data_torch
+        and model_config_data_torch["description"]
+        == "This is a sentence-transformers model: It maps sentences & paragraphs to a 384 dimensional dense vector space and was designed for semantic search. It has been trained on 215M  pairs from diverse sources."
+    ), "Missing or Wrong model description in onnx model config file'"
     assert (
         "model_config" in model_config_data_torch
     ), "Missing 'model_config' in torch script model config file"
@@ -248,11 +253,16 @@ def test_make_model_config_json_for_onnx():
 
     assert (
         "name" in model_config_data_onnx and model_config_data_onnx["name"] == model_id
-    ), "Missing or Wrong model name in onnx model config file'"
+    ), "Missing or Wrong model name in onnx model config file"
     assert (
         "model_format" in model_config_data_onnx
         and model_config_data_onnx["model_format"] == "ONNX"
-    )
+    ), "Missing or Wrong model_format in onnx model config file"
+    assert (
+        "description" in model_config_data_onnx
+        and model_config_data_onnx["description"]
+        == "This is a sentence-transformers model: It maps sentences & paragraphs to a 384 dimensional dense vector space and can be used for tasks like clustering or semantic search."
+    ), "Missing or Wrong model description in onnx model config file'"
     assert (
         "model_config" in model_config_data_onnx
     ), "Missing 'model_config' in onnx model config file"
@@ -310,7 +320,7 @@ def test_overwrite_fields_in_model_config():
     assert (
         "model_format" in model_config_data_torch
         and model_config_data_torch["model_format"] == "TORCH_SCRIPT"
-    )
+    ), "Missing or Wrong model_format in onnx model config file"
     assert (
         "model_config" in model_config_data_torch
     ), "Missing 'model_config' in torch script model config file"
@@ -354,7 +364,7 @@ def test_overwrite_fields_in_model_config():
     assert (
         "model_format" in model_config_data_torch
         and model_config_data_torch["model_format"] == "TORCH_SCRIPT"
-    )
+    ), "Missing or Wrong model_format in torch script model config file"
     assert (
         "model_config" in model_config_data_torch
     ), "Missing 'model_config' in torch script model config file"
@@ -372,10 +382,41 @@ def test_overwrite_fields_in_model_config():
     clean_test_folder(TEST_FOLDER)
 
 
-def test_truncation_parameter():
+def test_missing_readme_md_files():
     model_id = "sentence-transformers/msmarco-distilbert-base-tas-b"
-    MAX_LENGTH_TASB = 512
+    clean_test_folder(TEST_FOLDER)
+    test_model9 = SentenceTransformerModel(
+        folder_path=TEST_FOLDER,
+        model_id=model_id,
+    )
 
+    test_model9.save_as_pt(model_id=model_id, sentences=["today is sunny"])
+    temp_path = os.path.join(
+        TEST_FOLDER,
+        "tests",
+        "REAMD.md",
+    )
+    os.remove(temp_path)
+    model_config_path_torch = test_model9.make_model_config_json(
+        model_format="TORCH_SCRIPT"
+    )
+    try:
+        with open(model_config_path_torch) as json_file:
+            model_config_data_torch = json.load(json_file)
+    except Exception as exec:
+        assert (
+            False
+        ), f"Creating model config file for tracing in torch_script raised an exception {exec}"
+
+    assert (
+        "description" in model_config_data_torch
+    ), "Should not have description in model config file"
+
+    clean_test_folder(TEST_FOLDER)
+
+
+def test_overwrite_description():
+    model_id = "sentence-transformers/msmarco-distilbert-base-tas-b"
     clean_test_folder(TEST_FOLDER)
     test_model10 = SentenceTransformerModel(
         folder_path=TEST_FOLDER,
@@ -383,6 +424,36 @@ def test_truncation_parameter():
     )
 
     test_model10.save_as_pt(model_id=model_id, sentences=["today is sunny"])
+    model_config_path_torch = test_model10.make_model_config_json(
+        model_format="TORCH_SCRIPT", description="Expected Description"
+    )
+    try:
+        with open(model_config_path_torch) as json_file:
+            model_config_data_torch = json.load(json_file)
+    except Exception as exec:
+        assert (
+            False
+        ), f"Creating model config file for tracing in torch_script raised an exception {exec}"
+
+    assert (
+        "description" in model_config_data_torch
+        and model_config_data_torch["description"] == "Expected Description"
+    ), "Cannot overwrite description in model config file"
+
+    clean_test_folder(TEST_FOLDER)
+
+
+def test_truncation_parameter():
+    model_id = "sentence-transformers/msmarco-distilbert-base-tas-b"
+    MAX_LENGTH_TASB = 512
+
+    clean_test_folder(TEST_FOLDER)
+    test_model11 = SentenceTransformerModel(
+        folder_path=TEST_FOLDER,
+        model_id=model_id,
+    )
+
+    test_model11.save_as_pt(model_id=model_id, sentences=["today is sunny"])
 
     tokenizer_json_file_path = os.path.join(TEST_FOLDER, "tokenizer.json")
     try:
