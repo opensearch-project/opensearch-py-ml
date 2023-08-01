@@ -1,0 +1,12 @@
+[
+ {
+  "name": "huggingface/sentence-transformers/msmarco-distilbert-base-tas-b",
+  "version": [
+   "1.0.1"
+  ],
+  "format": [
+   "torch_script"
+  ],
+  "description": "This is a port of the DistilBert TAS-B Model to sentence-transformers model: It maps sentences & paragraphs to a 768 dimensional dense vector space and is optimized for the task of semantic search."
+ }
+]

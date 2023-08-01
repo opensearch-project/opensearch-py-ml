@@ -23,6 +23,7 @@ jobs:
     - name: List models
       run: |
         aws s3api list-objects --bucket ${{ secrets.PERSONAL_MODEL_BUCKET }} --prefix "ml-models/huggingface/" --query "Contents[].{Key: Key}" --output text >> current_models.txt
+        echo $(cat current_models.txt)
         aws s3 cp s3://${{ secrets.PERSONAL_MODEL_BUCKET }}/ml-models/model_listing/pre_trained_models.json old_pre_trained_models.json
     - name: Set Up Python
       uses: actions/setup-python@v2
@@ -31,11 +32,11 @@ jobs:
     - name: Install Requirements
       run: python -m pip install -r requirements-dev.txt --timeout 1500
     - name: Update pre_trained_models.json
-      run: python utils/model_uploader/create_new_trained_model_listing.py "current_models.txt" "old_pre_trained_models.json"
+      run: python utils/model_uploader/update_pretrained_model_listing.py "current_models.txt" "old_pre_trained_models.json"
     - name: Create PR Body
       id: create_pr_body
       run: |
-        echo "update_time=$(TZ='America/Los_Angeles' date "+%Y-%m-%d %T")"
+        update_time=$(TZ='America/Los_Angeles' date "+%Y-%m-%d %T")
         pr_body="
         - [ ] This PR made commit to only one files: pretrained_model_listing.json.
         - [ ] pretrained_model_listing.json looks good.

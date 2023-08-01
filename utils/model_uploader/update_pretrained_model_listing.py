@@ -83,6 +83,8 @@ def create_new_pretrained_model_listing(models_txt_filename, old_json_filename):
     :return: No return value expected
     :rtype: None
     """
+    print("\n=== Begin running update_pretrained_model_listing.py ===")
+    print(f"--- Reading {models_txt_filename} ---")
     with open(models_txt_filename, "r") as f:
         model_lst = f.read().split()
         model_lst = list(
@@ -94,6 +96,7 @@ def create_new_pretrained_model_listing(models_txt_filename, old_json_filename):
             )
         )
 
+    print(f"--- Reading {old_json_filename} --- ")
     with open(old_json_filename, "r") as f:
         old_model_listing_lst = json.load(f)
 
@@ -101,6 +104,7 @@ def create_new_pretrained_model_listing(models_txt_filename, old_json_filename):
         model_data["name"]: model_data for model_data in old_model_listing_lst
     }
 
+    print("---  Creating New Model Listing --- ")
     new_model_listing_dict = {}
     for model_filepath in model_lst:
         if model_filepath.startswith(PREFIX_SENTENCE_TRANSFORMER_FILEPATH):
@@ -138,11 +142,12 @@ def create_new_pretrained_model_listing(models_txt_filename, old_json_filename):
 
     new_model_listing_lst = list(new_model_listing_dict.values())
 
+    print(f"---  Dumping New Model Listing in {PRETRAINED_MODEL_LISTING_JSON_FILEPATH} --- ")
     if not os.path.isdir(JSON_DIRNAME):
         os.makedirs(JSON_DIRNAME)
     with open(PRETRAINED_MODEL_LISTING_JSON_FILEPATH, "w") as f:
         json.dump(new_model_listing_lst, f, indent=1)
-
+    print("\n=== Finished running update_pretrained_model_listing.py ===")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
