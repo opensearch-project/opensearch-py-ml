@@ -52,15 +52,5 @@
    "onnx"
   ],
   "description": "This is a sentence-transformers model: It maps sentences & paragraphs to a 384 dimensional dense vector space and can be used for tasks like clustering or semantic search."
- },
- {
-  "name": "huggingface/sentence-transformers/multi-qa-mpnet-base-dot-v1",
-  "version": [
-   "1.0.1"
-  ],
-  "format": [
-   "torch_script"
-  ],
-  "description": "This is a sentence-transformers model: It maps sentences & paragraphs to a 384 dimensional dense vector space and can be used for tasks like clustering or semantic search."
  }
 ]
