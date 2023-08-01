@@ -14,6 +14,7 @@ jobs:
       contents: read
     environment: opensearch-py-ml-cicd-env
     env:
+      bucket_model_listing_file_path: ml-models/model_listing/pre_trained_models.json
       repo_model_listing_path: ./utils/model_uploader/model_listing/pretrained_model_listing.json
     steps:
     - name: Checkout Repository
@@ -25,7 +26,7 @@ jobs:
         role-to-assume: ${{ secrets.PERSONAL_MODEL_UPLOADER_ROLE }}
         role-session-name: upload-model-listing
     - name: Update pre_trained_models.json in S3
-      run: aws s3 cp ${{ env.repo_model_listing_path }} s3://${{ secrets.PERSONAL_MODEL_BUCKET }}/ml-models/model_listing/pre_trained_models.json
+      run: aws s3 cp ${{ env.repo_model_listing_path }} s3://${{ secrets.PERSONAL_MODEL_BUCKET }}/${{ env.bucket_model_listing_file_path }}
       
       
       
