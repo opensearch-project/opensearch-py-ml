@@ -1,0 +1,34 @@
+name: Update Pretrained Model Listing
+on:
+  push:
+    branches: workflow-for-review # TO-BE-CHANGED
+    paths: ./utils/model_uploader/model_listing/pretrained_model_listing.json
+  
+jobs:
+  upload-model-listing:
+    runs-on: 'ubuntu-latest'
+    permissions:
+      id-token: write
+      contents: read
+    environment: opensearch-py-ml-cicd-env
+    env:
+      repo_model_listing_path: ./utils/model_uploader/model_listing/pretrained_model_listing.json
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+    - name: Set Up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-region: ${{ secrets.PERSONAL_MODEL_UPLOADER_AWS_REGION }}
+        role-to-assume: ${{ secrets.PERSONAL_MODEL_UPLOADER_ROLE }}
+        role-session-name: upload-model-listing
+    - name: Update pre_trained_models.json in S3
+      run: aws s3 cp ${{ env.repo_model_listing_path }} s3://${{ secrets.PERSONAL_MODEL_BUCKET }}/ml-models/model_listing/pre_trained_models.json
+      
+      
+      
+# TODO: Trigger Jenkins Workflow

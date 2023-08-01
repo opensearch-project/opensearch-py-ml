@@ -1,14 +1,16 @@
-name: Update Model Listing
+name: Update Pretrained Model Listing
 on:
-  workflow_dispatch: # TO-BE-CHANGED
-  workflow_call:
-
+  workflow_dispatch:
+  
 jobs:
   update-model-listing:
     runs-on: 'ubuntu-latest'
     permissions:
       id-token: write
       contents: read
+    environment: opensearch-py-ml-cicd-env
+    env:
+      repo_model_listing_path: ./utils/model_uploader/model_listing/pretrained_model_listing.json
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v3
@@ -26,21 +28,39 @@ jobs:
       run: |
         aws s3api list-objects --bucket ${{ secrets.PERSONAL_MODEL_BUCKET }} --prefix "ml-models/huggingface/" --query "Contents[].{Key: Key}" --output text >> current_models.txt
         aws s3 cp s3://${{ secrets.PERSONAL_MODEL_BUCKET }}/ml-models/model_listing/pre_trained_models.json old_pre_trained_models.json
-    - name: Create new pre_trained_models.json
+    - name: Update pre_trained_models.json
       run: | 
         python -m pip install mdutils sentence_transformers
-        python utils/model_uploader/create_new_trained_model_listing.py "current_models.txt" "old_pre_trained_models.json" "new_pre_trained_models.json"
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v3
-      with: 
-        name: model-listing
-        path: |
-          ./old_pre_trained_models.json
-          ./new_pre_trained_models.json
-        retention-days: 5
-        if-no-files-found: error
-    - name: Update new pre_trained_models.json in S3
-      run: aws s3 cp new_pre_trained_models.json s3://${{ secrets.PERSONAL_MODEL_BUCKET }}/ml-models/model_listing/pre_trained_models.json
+        python utils/model_uploader/create_new_trained_model_listing.py "current_models.txt" "old_pre_trained_models.json"
+    - name: Create PR Body
+        id: create_pr_body
+        run: |
+          echo "update_time=$(TZ='America/Los_Angeles' date "+%Y-%m-%d %T")"
+          pr_body="
+          - [ ] This PR made commit to only one files: pretrained_model_listing.json.
+          - [ ] pretrained_model_listing.json looks good.
+          
+          ========= Workflow Details ==========
+          - Workflow Name: ${{ github.workflow }}
+          - Workflow Run ID: ${{ github.run_id }}
+          - Workflow Initiator: @${{ github.actor }}
+          - File Update Time: $update_time"
+          
+          echo "pr_body<<EOF" >> $GITHUB_OUTPUT
+          echo "${pr_body@E}" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          echo "${pr_body@E}"
+    - name: Create a Branch & Raise a PR
+      uses: peter-evans/create-pull-request@v5
+      id: create_pr
+      with:
+        committer: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
+        commit-message: 'GitHub Actions Workflow: Update Pretrained Model Listing'
+        signoff: true
+        title: 'Update Model Upload History'
+        body: ${{ steps.create_pr_body.outputs.pr_body }}
+        labels: ModelListingUploading
+        branch: model-listing-uploader/${{ github.run_id }}
+        delete-branch: true
+        add-paths: ${{ env.repo_model_listing_path }}
       
-        
-# TODO: Trigger Jenkins Workflow

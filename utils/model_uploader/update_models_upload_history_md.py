@@ -123,10 +123,10 @@ def update_model_json_file(
     :rtype: None
     """
     models = []
-    if os.path.exists(MODEL_JSON_FILEPATH):
+    if os.path.isfile(MODEL_JSON_FILEPATH):
         with open(MODEL_JSON_FILEPATH, "r") as f:
             models = json.load(f)
-    else:
+    elif not os.path.isdir(DIRNAME):
         os.makedirs(DIRNAME)
 
     if tracing_format == TORCH_SCRIPT_FORMAT or tracing_format == BOTH_FORMAT:

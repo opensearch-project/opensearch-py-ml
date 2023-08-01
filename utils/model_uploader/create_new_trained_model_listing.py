@@ -10,51 +10,60 @@ import json
 import re
 import shutil
 
-from mdutils.fileutils import MarkDownFile
 from sentence_transformers import SentenceTransformer
 
+THIS_DIR = os.path.dirname(__file__)
+ROOT_DIR = os.path.join(THIS_DIR, "../..")
+sys.path.append(ROOT_DIR)
+
+from opensearch_py_ml.ml_models.sentencetransformermodel import SentenceTransformerModel
+
+JSON_FILENAME = "pretrained_model_listing.json"
+JSON_DIRNAME = "utils/model_uploader/model_listing"
+PRETRAINED_MODEL_LISTING_JSON_FILEPATH = os.path.join(JSON_DIRNAME, JSON_FILENAME)
+
 PREFIX_SENTENCE_TRANSFORMER_FILEPATH = "ml-models/huggingface/sentence-transformers"
+TORCH_SCRIPT_FORMAT = "TORCH_SCRIPT"
+ONNX_FORMAT = "ONNX"
 TEMP_MODEL_PATH = "temp_model_path"
+TEST_SENTENCES = [
+    "First test sentence",
+    "Second test sentence",
+]
 
 
-def get_description_from_md_file(model_id: str) -> str:
-    """
-    Get description of the model from README.md file
-    after the model is saved in local directory
-
-    :param model_id: Model ID of the pretrained model
-    (e.g. sentence-transformers/msmarco-distilbert-base-tas-b)
-    :type model_id: string
-    :return: Description of the model
-    :rtype: string
-    """
-    readme_data = MarkDownFile.read_file(TEMP_MODEL_PATH + "/" + "README.md")
-    start_str = f"# {model_id}"
-    start = readme_data.find(start_str) + len(start_str) + 1
-    end = readme_data.find("## ", start)
-    if start == -1 or end == -1:
-        assert False, "Cannot get description from model's README.md"
-
-    description = readme_data[start:end].strip()
-    description = re.sub(r"\(.*?\)", "", description)
-    description = re.sub(r"[\[\]]", "", description)
-    return description
-
-
-def get_sentence_transformer_model_description(model_name) -> str:
+def get_sentence_transformer_model_description(model_name, model_format) -> str:
     """
     Get description of the pretrained sentence transformer model
 
     :param model_name: Model name of the pretrained model
     (e.g. huggingface/sentence-transformers/msmarco-distilbert-base-tas-b)
     :type model_name: string
+    :param model_format: Model format of the pretrained model (TORCH_SCRIPT/ONNX)
+    :type model_format: string
     :return: Description of the model
     :rtype: string
     """
     model_id = model_name[len("huggingface/") :]
-    pretrained_model = SentenceTransformer(model_id)
-    pretrained_model.save(path=TEMP_MODEL_PATH)
-    description = get_description_from_md_file(model_id)
+    pretrained_model = SentenceTransformerModel(
+        model_id=model_id
+        folder_path=TEMP_MODEL_PATH
+    )
+    if model_format == TORCH_SCRIPT_FORMAT:
+        pre_trained_model.save_as_pt(
+            model_id=model_id, sentences=TEST_SENTENCES
+        )
+    else:
+        pre_trained_model.save_as_onnx(model_id=model_id)
+    
+    description = None
+    readme_file_path = os.path.join(self.folder_path, "README.md")
+    if os.path.exists(readme_file_path):
+        description = pre_trained_model.get_model_description_from_md_file(
+                readme_file_path
+        )
+        except Exception as e:
+            print(f"Cannot get model description from README.md file: {e}")             
     try:
         shutil.rmtree(TEMP_MODEL_PATH)
     except Exception as e:
@@ -63,10 +72,10 @@ def get_sentence_transformer_model_description(model_name) -> str:
 
 
 def create_new_pretrained_model_listing(
-    models_txt_filename, old_json_filename, new_json_filename
+    models_txt_filename, old_json_filename
 ):
     """
-    Create a new pretrained model listing and store it at new_json_filename
+    Create a new pretrained model listing and store it at PRETRAINED_MODEL_LISTING_JSON_FILEPATH
     based on current models in models_txt_filename and the old pretrained model
     listing in old_json_filename
 
@@ -76,9 +85,6 @@ def create_new_pretrained_model_listing(
     :param old_json_filename: Name of the json file that contains the old pretrained
     model listing
     :type old_json_filename: string
-    :param new_json_filename: Name of the json file that the new model listing will
-    be stored at
-    :type new_json_filename: string
     :return: No return value expected
     :rtype: None
     """
@@ -112,8 +118,7 @@ def create_new_pretrained_model_listing(
                 new_model_listing_dict[model_name] = {
                     "name": model_name,
                     "version": [],
-                    "format": [],
-                    "description": "",
+                    "format": []
                 }
             model_content = new_model_listing_dict[model_name]
             if model_version not in model_content["version"]:
@@ -121,16 +126,24 @@ def create_new_pretrained_model_listing(
             if model_format not in model_content["format"]:
                 model_content["format"].append(model_format)
             if model_name in old_model_listing_dict:
-                model_content["description"] = old_model_listing_dict[model_name][
-                    "description"
-                ]
+                if "description" in old_model_listing_dict[model_name]:
+                    model_content["description"] = old_model_listing_dict[model_name][
+                        "description"
+                    ]
             else:
-                model_content[
-                    "description"
-                ] = get_sentence_transformer_model_description(model_name)
-
+                try:
+                    description = get_sentence_transformer_model_description(model_name, model_format)
+                except Exception as e:
+                    description = None
+                    print(f"Cannot get sentence transformer model description: {e})
+                if description is not None:
+                    model_content["description"] = description
+                    
     new_model_listing_lst = list(new_model_listing_dict.values())
-    with open(new_json_filename, "w") as f:
+                          
+    if not os.path.isdir(JSON_DIRNAME):
+        os.makedirs(JSON_DIRNAME)
+    with open(PRETRAINED_MODEL_LISTING_JSON_FILEPATH, "w") as f:
         json.dump(new_model_listing_lst, f, indent=1)
 
 
@@ -146,20 +159,14 @@ if __name__ == "__main__":
         type=str,
         help="Name of the file that stores the old version of the listing of pretrained models",
     )
-    parser.add_argument(
-        "new_json_filename",
-        type=str,
-        help="Name of the file that stores the new version of the listing of pretrained models",
-    )
+
     args = parser.parse_args()
 
     if (
         not args.models_txt_filename.endswith(".txt")
         or not args.old_json_filename.endswith(".json")
-        or not args.new_json_filename.endswith(".json")
     ):
         assert False, "Invalid arguments"
 
     create_new_pretrained_model_listing(
-        args.models_txt_filename, args.old_json_filename, args.new_json_filename
-    )
+        args.models_txt_filename, args.old_json_filename)

@@ -272,14 +272,8 @@ jobs:
           echo "upload_time=$(TZ='America/Los_Angeles' date "+%Y-%m-%d %T")" >> $GITHUB_OUTPUT
     outputs:
       upload_time: ${{ steps.copying_to_bucket.outputs.upload_time }}
-      
-  # Step 7: Update model-listing in S3 bucket
-  model-listing-update:
-    needs: [init-workflow-var, model-uploading]
-    uses: ./.github/workflows/update_model_listing.yml
-    secrets: inherit
    
-  # Step 8: Update MODEL_UPLOAD_HISTORY.md & supported_models.json
+  # Step 7: Update MODEL_UPLOAD_HISTORY.md & supported_models.json
   history-update:
     needs: [init-workflow-var, model-uploading]
     runs-on: 'ubuntu-latest'
@@ -380,9 +374,7 @@ jobs:
             Warning:exclamation:: The workflow failed to update CHANGELOG.md. Please add the following line manually.
             ${{ steps.create_changelog_line.outputs.changelog_line }}
             
-            
-            
-#   # Step 9: Trigger Jenkins ml-models workflow
+#   # Step 8: Trigger Jenkins ml-models workflow
 #   trigger-model-release-workflow:
 #     needs: [init-workflow-var, history-update]
 #     runs-on: 'ubuntu-latest'
