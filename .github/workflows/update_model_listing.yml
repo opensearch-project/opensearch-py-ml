@@ -30,7 +30,7 @@ jobs:
         aws s3 cp s3://${{ secrets.PERSONAL_MODEL_BUCKET }}/ml-models/model_listing/pre_trained_models.json old_pre_trained_models.json
     - name: Update pre_trained_models.json
       run: | 
-        python -m pip install mdutils sentence_transformers
+        python -m pip install -r requirements-dev.txt --timeout 1500
         python utils/model_uploader/create_new_trained_model_listing.py "current_models.txt" "old_pre_trained_models.json"
     - name: Create PR Body
       id: create_pr_body
