@@ -11,6 +11,7 @@ jobs:
       pull-requests: write
     environment: opensearch-py-ml-cicd-env
     env:
+      bucket_model_listing_file_path: ml-models/model_listing/pre_trained_models.json old_pre_trained_models.json
       repo_model_listing_path: ./utils/model_uploader/model_listing/pretrained_model_listing.json
     steps:
     - name: Checkout Repository
@@ -21,10 +22,18 @@ jobs:
         aws-region: ${{ secrets.PERSONAL_MODEL_UPLOADER_AWS_REGION }}
         role-to-assume: ${{ secrets.PERSONAL_MODEL_UPLOADER_ROLE }}
         role-session-name: update-model-listing
-    - name: List models
+    - name: List Models
       run: |
         aws s3api list-objects --bucket ${{ secrets.PERSONAL_MODEL_BUCKET }} --prefix "ml-models/huggingface/" --query "Contents[].{Key: Key}" --output text >> current_models.txt
-        aws s3 cp s3://${{ secrets.PERSONAL_MODEL_BUCKET }}/ml-models/model_listing/pre_trained_models.json old_pre_trained_models.json
+    - name: Get Current Model Listing for Reference
+      run: 
+        aws s3api head-object --bucket ${{ secrets.PERSONAL_MODEL_BUCKET }} --key ${{ env.bucket_model_listing_file_path }} > /dev/null 2>&1 || NOT_EXIST=true
+          if [[ $ONNX_MODEL_NOT_EXIST ]]
+          then
+            aws s3 cp s3://${{ secrets.PERSONAL_MODEL_BUCKET }}/${{ env.bucket_model_listing_file_path }} old_pre_trained_models.json
+          else
+            echo "[]" >> old_pre_trained_models.json
+          fi
     - name: Set Up Python
       uses: actions/setup-python@v2
       with:
