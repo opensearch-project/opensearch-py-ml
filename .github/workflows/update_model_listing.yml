@@ -28,12 +28,12 @@ jobs:
     - name: Get Current Model Listing for Reference
       run: 
         aws s3api head-object --bucket ${{ secrets.PERSONAL_MODEL_BUCKET }} --key ${{ env.bucket_model_listing_file_path }} > /dev/null 2>&1 || NOT_EXIST=true
-          if [[ $ONNX_MODEL_NOT_EXIST ]]
-          then
-            aws s3 cp s3://${{ secrets.PERSONAL_MODEL_BUCKET }}/${{ env.bucket_model_listing_file_path }} old_pre_trained_models.json
-          else
-            echo "[]" >> old_pre_trained_models.json
-          fi
+        if [[ $NOT_EXIST ]]
+        then
+          aws s3 cp s3://${{ secrets.PERSONAL_MODEL_BUCKET }}/${{ env.bucket_model_listing_file_path }} old_pre_trained_models.json
+        else
+          echo "[]" >> old_pre_trained_models.json
+        fi
     - name: Set Up Python
       uses: actions/setup-python@v2
       with:
