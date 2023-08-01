@@ -26,7 +26,7 @@ jobs:
       run: |
         aws s3api list-objects --bucket ${{ secrets.PERSONAL_MODEL_BUCKET }} --prefix "ml-models/huggingface/" --query "Contents[].{Key: Key}" --output text >> current_models.txt
     - name: Get Current Model Listing for Reference
-      run: 
+      run: |
         aws s3api head-object --bucket ${{ secrets.PERSONAL_MODEL_BUCKET }} --key ${{ env.bucket_model_listing_file_path }} > /dev/null 2>&1 || NOT_EXIST=true
         if [[ $NOT_EXIST ]]
         then
