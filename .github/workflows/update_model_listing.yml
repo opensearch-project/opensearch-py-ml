@@ -11,7 +11,7 @@ jobs:
       pull-requests: write
     environment: opensearch-py-ml-cicd-env
     env:
-      bucket_model_listing_file_path: ml-models/model_listing/pre_trained_models.json old_pre_trained_models.json
+      bucket_model_listing_file_path: ml-models/model_listing/pre_trained_models.json
       repo_model_listing_path: ./utils/model_uploader/model_listing/pretrained_model_listing.json
     steps:
     - name: Checkout Repository
