@@ -33,23 +33,23 @@ jobs:
         python -m pip install mdutils sentence_transformers
         python utils/model_uploader/create_new_trained_model_listing.py "current_models.txt" "old_pre_trained_models.json"
     - name: Create PR Body
-        id: create_pr_body
-        run: |
-          echo "update_time=$(TZ='America/Los_Angeles' date "+%Y-%m-%d %T")"
-          pr_body="
-          - [ ] This PR made commit to only one files: pretrained_model_listing.json.
-          - [ ] pretrained_model_listing.json looks good.
+      id: create_pr_body
+      run: |
+        echo "update_time=$(TZ='America/Los_Angeles' date "+%Y-%m-%d %T")"
+        pr_body="
+        - [ ] This PR made commit to only one files: pretrained_model_listing.json.
+        - [ ] pretrained_model_listing.json looks good.
           
-          ========= Workflow Details ==========
-          - Workflow Name: ${{ github.workflow }}
-          - Workflow Run ID: ${{ github.run_id }}
-          - Workflow Initiator: @${{ github.actor }}
-          - File Update Time: $update_time"
+        ========= Workflow Details ==========
+        - Workflow Name: ${{ github.workflow }}
+        - Workflow Run ID: ${{ github.run_id }}
+        - Workflow Initiator: @${{ github.actor }}
+        - File Update Time: $update_time"
           
-          echo "pr_body<<EOF" >> $GITHUB_OUTPUT
-          echo "${pr_body@E}" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-          echo "${pr_body@E}"
+        echo "pr_body<<EOF" >> $GITHUB_OUTPUT
+        echo "${pr_body@E}" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+        echo "${pr_body@E}"
     - name: Create a Branch & Raise a PR
       uses: peter-evans/create-pull-request@v5
       id: create_pr
