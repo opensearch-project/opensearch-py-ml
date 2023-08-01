@@ -44,7 +44,7 @@
   "description": "This is a sentence-transformers model: It maps sentences & paragraphs to a 384 dimensional dense vector space and was designed for semantic search. It has been trained on 215M (question, answer) pairs from diverse sources."
  },
  {
-  "name": "huggingface/sentence-transformers/all-MiniLM-L6-v2",
+  "name": "huggingface/sentence-transformers/test",
   "version": [
    "1.1.1"
   ],
