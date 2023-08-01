@@ -1,4 +1,4 @@
-name: Update Pretrained Model Listing
+name: Model Listing Uploading
 on:
   push:
     branches: workflow-for-review # TO-BE-CHANGED
