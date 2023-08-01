@@ -132,7 +132,7 @@ def create_new_pretrained_model_listing(models_txt_filename, old_json_filename):
             else:
                 try:
                     description = get_sentence_transformer_model_description(
-                        model_name, model_format
+                        model_name, model_format.upper()
                     )
                 except Exception as e:
                     description = None
