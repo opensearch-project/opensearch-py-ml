@@ -7,10 +7,9 @@
 
 import argparse
 import json
-import re
+import os
 import shutil
-
-from sentence_transformers import SentenceTransformer
+import sys
 
 THIS_DIR = os.path.dirname(__file__)
 ROOT_DIR = os.path.join(THIS_DIR, "../..")
@@ -45,25 +44,23 @@ def get_sentence_transformer_model_description(model_name, model_format) -> str:
     :rtype: string
     """
     model_id = model_name[len("huggingface/") :]
-    pretrained_model = SentenceTransformerModel(
-        model_id=model_id
-        folder_path=TEMP_MODEL_PATH
+    pre_trained_model = SentenceTransformerModel(
+        model_id=model_id, folder_path=TEMP_MODEL_PATH
     )
     if model_format == TORCH_SCRIPT_FORMAT:
-        pre_trained_model.save_as_pt(
-            model_id=model_id, sentences=TEST_SENTENCES
-        )
+        pre_trained_model.save_as_pt(model_id=model_id, sentences=TEST_SENTENCES)
     else:
         pre_trained_model.save_as_onnx(model_id=model_id)
-    
+
     description = None
-    readme_file_path = os.path.join(self.folder_path, "README.md")
+    readme_file_path = os.path.join(TEMP_MODEL_PATH, "README.md")
     if os.path.exists(readme_file_path):
-        description = pre_trained_model.get_model_description_from_md_file(
+        try:
+            description = pre_trained_model.get_model_description_from_md_file(
                 readme_file_path
-        )
+            )
         except Exception as e:
-            print(f"Cannot get model description from README.md file: {e}")             
+            print(f"Cannot get model description from README.md file: {e}")
     try:
         shutil.rmtree(TEMP_MODEL_PATH)
     except Exception as e:
@@ -71,9 +68,7 @@ def get_sentence_transformer_model_description(model_name, model_format) -> str:
     return description
 
 
-def create_new_pretrained_model_listing(
-    models_txt_filename, old_json_filename
-):
+def create_new_pretrained_model_listing(models_txt_filename, old_json_filename):
     """
     Create a new pretrained model listing and store it at PRETRAINED_MODEL_LISTING_JSON_FILEPATH
     based on current models in models_txt_filename and the old pretrained model
@@ -118,7 +113,7 @@ def create_new_pretrained_model_listing(
                 new_model_listing_dict[model_name] = {
                     "name": model_name,
                     "version": [],
-                    "format": []
+                    "format": [],
                 }
             model_content = new_model_listing_dict[model_name]
             if model_version not in model_content["version"]:
@@ -132,15 +127,17 @@ def create_new_pretrained_model_listing(
                     ]
             else:
                 try:
-                    description = get_sentence_transformer_model_description(model_name, model_format)
+                    description = get_sentence_transformer_model_description(
+                        model_name, model_format
+                    )
                 except Exception as e:
                     description = None
-                    print(f"Cannot get sentence transformer model description: {e})
+                    print(f"Cannot get sentence transformer model description: {e}")
                 if description is not None:
                     model_content["description"] = description
-                    
+
     new_model_listing_lst = list(new_model_listing_dict.values())
-                          
+
     if not os.path.isdir(JSON_DIRNAME):
         os.makedirs(JSON_DIRNAME)
     with open(PRETRAINED_MODEL_LISTING_JSON_FILEPATH, "w") as f:
@@ -162,11 +159,11 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    if (
-        not args.models_txt_filename.endswith(".txt")
-        or not args.old_json_filename.endswith(".json")
-    ):
+    if not args.models_txt_filename.endswith(
+        ".txt"
+    ) or not args.old_json_filename.endswith(".json"):
         assert False, "Invalid arguments"
 
     create_new_pretrained_model_listing(
-        args.models_txt_filename, args.old_json_filename)
+        args.models_txt_filename, args.old_json_filename
+    )
