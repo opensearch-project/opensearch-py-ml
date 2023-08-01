@@ -45,7 +45,7 @@ def get_sentence_transformer_model_description(model_name, model_format) -> str:
     """
     model_id = model_name[len("huggingface/") :]
     pre_trained_model = SentenceTransformerModel(
-        model_id=model_id, folder_path=TEMP_MODEL_PATH
+        model_id=model_id, folder_path=TEMP_MODEL_PATH, overwrite=True
     )
     if model_format == TORCH_SCRIPT_FORMAT:
         pre_trained_model.save_as_pt(model_id=model_id, sentences=TEST_SENTENCES)
@@ -141,6 +141,7 @@ def create_new_pretrained_model_listing(models_txt_filename, old_json_filename):
                     model_content["description"] = description
 
     new_model_listing_lst = list(new_model_listing_dict.values())
+    new_model_listing_lst = sorted(new_model_listing_lst, key=lambda d: d["name"])
 
     print(f"---  Dumping New Model Listing in {PRETRAINED_MODEL_LISTING_JSON_FILEPATH} --- ")
     if not os.path.isdir(JSON_DIRNAME):
