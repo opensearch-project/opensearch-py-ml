@@ -393,7 +393,6 @@ def test_missing_readme_md_files():
     test_model9.save_as_pt(model_id=model_id, sentences=["today is sunny"])
     temp_path = os.path.join(
         TEST_FOLDER,
-        "tests",
         "REAMD.md",
     )
     os.remove(temp_path)
