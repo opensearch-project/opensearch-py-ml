@@ -6,16 +6,30 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ### Added
 
 - Adding documentation for model group id @dhrubo-os ([#176](https://github.com/opensearch-project/opensearch-py-ml/pull/176))
+- listing pre-trained release models @dhrubo-os ([#85](https://github.com/opensearch-project/opensearch-py-ml/pull/85))
+- Upload pretrained models @AlibiZhenis ([#111](https://github.com/opensearch-project/opensearch-py-ml/pull/111/files))
+- Added delete task API. @Nurlanprog ([#127](https://github.com/opensearch-project/opensearch-py-ml/pull/127/files))
+- Add test coverage statistics to Codecod @Yerzhaisang @bl1nkker ([#138](https://github.com/opensearch-project/opensearch-py-ml/pull/138/files))
+- Merging Feature/mcorr to main @dhrubo-os @greaa-aws ([#150](https://github.com/opensearch-project/opensearch-py-ml/pull/150/files))
+- Adding boolean argument to ML Commons API @AlibiZhenis ([#143](https://github.com/opensearch-project/opensearch-py-ml/pull/143/files))
+- Rename APIs for model serving framework @AlibiZhenis ([#159](https://github.com/opensearch-project/opensearch-py-ml/pull/159/files))
+- Adding executeAPI @AlibiZhenis ([#165](https://github.com/opensearch-project/opensearch-py-ml/pull/165/files))
+- Adding documentation for model group id @dhrubo-os ([#176](https://github.com/opensearch-project/opensearch-py-ml/pull/176/files))
+- Search task added @Nurlanprog ([#177](https://github.com/opensearch-project/opensearch-py-ml/pull/177/files))
+- adding jupyter notebook based documentation for metrics correlation algorithm by @AlibiZhenis ([#186](https://github.com/opensearch-project/opensearch-py-ml/pull/186))
 
 ### Changed
--  Update jenkins file to use updated docker image ([#189](https://github.com/opensearch-project/opensearch-py-ml/pull/189))
-- Update model upload history -  sentence-transformers/xlm-r-bert-base-nli-mean-tokens (v.9.0.0)(BOTH) by @thanawan-atc ([#101](https://github.com/thanawan-atc/opensearch-py-ml/pull/101))
+- Update jenkins file to use updated docker image ([#189](https://github.com/opensearch-project/opensearch-py-ml/pull/189))
+- Updated documentation @dhrubo-os ([#98](https://github.com/opensearch-project/opensearch-py-ml/pull/98))
+- Updating ML Commons API documentation @AlibiZhenis ([#156](https://github.com/opensearch-project/opensearch-py-ml/pull/156))
 
 ### Fixed
 - Fix ModelUploader bug & Update model tracing demo notebook by @thanawan-atc in ([#185](https://github.com/opensearch-project/opensearch-py-ml/pull/185))
 - Fix make_model_config_json function by @thanawan-atc in ([#188](https://github.com/opensearch-project/opensearch-py-ml/pull/188))
 - Make make_model_config_json function more concise by @thanawan-atc in ([#191](https://github.com/opensearch-project/opensearch-py-ml/pull/191))
-- Enabled auto-truncation for any pretrained models ([#192]https://github.com/opensearch-project/opensearch-py-ml/pull/192)
+- Enabled auto-truncation for any pretrained models by @Yerzhaisang in ([#192](https://github.com/opensearch-project/opensearch-py-ml/pull/192))
+- Generalize make_model_config_json function by @thanawan-atc in ([#200](https://github.com/opensearch-project/opensearch-py-ml/pull/200))
+- Enable make_model_config_json to add model description to model config file by @thanawan-atc in ([#203](https://github.com/opensearch-project/opensearch-py-ml/pull/203))
 
 ## [1.0.0]    
 

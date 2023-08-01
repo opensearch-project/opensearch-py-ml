@@ -10,6 +10,7 @@ import os
 import pickle
 import platform
 import random
+import re
 import shutil
 import subprocess
 import time
@@ -23,6 +24,7 @@ import pandas as pd
 import torch
 import yaml
 from accelerate import Accelerator, notebook_launcher
+from mdutils.fileutils import MarkDownFile
 from sentence_transformers import SentenceTransformer
 from sentence_transformers.models import Normalize, Pooling, Transformer
 from torch.utils.data import DataLoader
@@ -1006,6 +1008,36 @@ class SentenceTransformerModel:
                 "Failed to open config file for ml common upload: " + file_path + "\n"
             )
 
+    def get_model_description_from_md_file(self, readme_file_path) -> str:
+        """
+        Get description of the model from README.md file
+        after the model is saved in local directory
+
+        :param readme_file_path: Path to README.md file
+        :type readme_file_path: string
+        :return: Description of the model
+        :rtype: string
+        """
+        readme_data = MarkDownFile.read_file(readme_file_path)
+        start_str = f"# {self.model_id}"
+        start = readme_data.find(start_str)
+        if start == -1:
+            model_name = self.model_id.split("/")[1]
+            start_str = f"# {model_name}"
+            start = readme_data.find(start_str)
+        end = readme_data.find("## ", start)
+        if start == -1 or end == -1:
+            assert False, "Cannot find description in README.md file"
+
+        description = readme_data[start + len(start_str) + 1 : end].strip()
+        description = re.sub(r"\(.*?\)", "", description)
+        description = re.sub(r"[\[\]]", "", description)
+        description = re.sub(r"\*", "", description)
+        unnecessary_part = description.find(" For an introduction to")
+        if unnecessary_part != -1:
+            description = description[:unnecessary_part]
+        return description
+
     def make_model_config_json(
         self,
         model_name: str = None,
@@ -1014,6 +1046,7 @@ class SentenceTransformerModel:
         embedding_dimension: int = None,
         pooling_mode: str = None,
         normalize_result: bool = None,
+        description: str = None,
         all_config: str = None,
         model_type: str = None,
         verbose: bool = False,
@@ -1040,6 +1073,9 @@ class SentenceTransformerModel:
         :param normalize_result: Optional, whether to normalize the result of the model. If None, check from the pre-trained
         hugging-face model object.
         :type normalize_result: bool
+        :param description: Optional, the description of the model. If None, get description from the README.md
+            file in the model folder.
+        :type description: str
         :param all_config:
             Optional, the all_config of the model. If None, parse all contents from the config file of pre-trained
             hugging-face model
@@ -1068,32 +1104,36 @@ class SentenceTransformerModel:
             or normalize_result is None
         ):
             try:
-                if (
-                    model_type is None
-                    and len(model._modules) >= 1
-                    and isinstance(model._modules["0"], Transformer)
-                ):
-                    model_type = model._modules["0"].auto_model.__class__.__name__
-                    model_type = model_type.lower().rstrip("model")
                 if embedding_dimension is None:
                     embedding_dimension = model.get_sentence_embedding_dimension()
-                if (
-                    pooling_mode is None
-                    and len(model._modules) >= 2
-                    and isinstance(model._modules["1"], Pooling)
-                ):
-                    pooling_mode = model._modules["1"].get_pooling_mode_str().upper()
-                if normalize_result is None:
-                    if len(model._modules) >= 3 and isinstance(
-                        model._modules["2"], Normalize
-                    ):
+
+                for str_idx, module in model._modules.items():
+                    if model_type is None and isinstance(module, Transformer):
+                        model_type = module.auto_model.__class__.__name__
+                        model_type = model_type.lower().rstrip("model")
+                    elif pooling_mode is None and isinstance(module, Pooling):
+                        pooling_mode = module.get_pooling_mode_str().upper()
+                    elif normalize_result is None and isinstance(module, Normalize):
                         normalize_result = True
-                    else:
-                        normalize_result = False
+                    # TODO: Support 'Dense' module
+                if normalize_result is None:
+                    normalize_result = False
             except Exception as e:
                 raise Exception(
                     f"Raised exception while getting model data from pre-trained hugging-face model object: {e}"
                 )
+
+        if description is None:
+            readme_file_path = os.path.join(self.folder_path, "README.md")
+            if os.path.exists(readme_file_path):
+                try:
+                    if verbose:
+                        print("reading README.md file")
+                    description = self.get_model_description_from_md_file(
+                        readme_file_path
+                    )
+                except Exception as e:
+                    print(f"Cannot get model description from README.md file: {e}")
 
         if all_config is None:
             if not os.path.exists(config_json_file_path):
@@ -1133,6 +1173,9 @@ class SentenceTransformerModel:
                 "all_config": json.dumps(all_config),
             },
         }
+
+        if description is not None:
+            model_config_content["description"] = description
 
         if verbose:
             print("generating ml-commons_model_config.json file...\n")
