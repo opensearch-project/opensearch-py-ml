@@ -1,8 +1,10 @@
 name: Model Listing Uploading
 on:
   push:
-    branches: workflow-for-review # TO-BE-CHANGED
-    paths: ./utils/model_uploader/model_listing/pretrained_model_listing.json
+    branches: 
+     - workflow-for-review # TO-BE-CHANGED
+    paths: 
+     - ./utils/model_uploader/model_listing/pretrained_model_listing.json
   
 jobs:
   upload-model-listing:
