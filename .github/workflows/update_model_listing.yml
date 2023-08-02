@@ -24,7 +24,7 @@ jobs:
         role-session-name: update-model-listing
     - name: List Models
       run: |
-        aws s3api list-objects --bucket ${{ secrets.PERSONAL_MODEL_BUCKET }} --prefix "ml-models/huggingface/" --query "Contents[].{Key: Key}" --output text | grep "/config.json$" >> current_models.txt
+        aws s3api list-objects --bucket ${{ secrets.PERSONAL_MODEL_BUCKET }} --prefix "ml-models/huggingface/" --query "Contents[].{Key: Key}" --output text | grep "/config.json$" >> config_paths.txt
         echo $(cat current_models.txt)
     - name: Download config files
       run: |
@@ -40,43 +40,43 @@ jobs:
         else
           aws s3 cp s3://${{ secrets.PERSONAL_MODEL_BUCKET }}/${{ env.bucket_model_listing_file_path }} old_pre_trained_models.json
         fi
-#     - name: Set Up Python
-#       uses: actions/setup-python@v2
-#       with:
-#         python-version: '3.x'
-#     - name: Update pre_trained_models.json
-#       run: |
-#         python -m pip install -r requirements-dev.txt --timeout 1500
-#         python utils/model_uploader/update_pretrained_model_listing.py "current_models.txt" "old_pre_trained_models.json"
-#     - name: Create PR Body
-#       id: create_pr_body
-#       run: |
-#         update_time=$(TZ='America/Los_Angeles' date "+%Y-%m-%d %T")
-#         pr_body="
-#         - [ ] This PR made commit to only one files: pretrained_model_listing.json.
-#         - [ ] pretrained_model_listing.json looks good.
+    - name: Set Up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+    - name: Update pre_trained_models.json
+      run: |
+        python utils/model_uploader/update_pretrained_model_listing.py "config_paths.txt" "config_folder" "old_pre_trained_models.json"
+    - name: Create PR Body
+      id: create_pr_body
+      run: |
+        update_time=$(TZ='America/Los_Angeles' date "+%Y-%m-%d %T")
+        pr_body="
+        - [ ] This PR made commit to only one files: pretrained_model_listing.json.
+        - [ ] pretrained_model_listing.json looks good.
           
-#         ========= Workflow Details ==========
-#         - Workflow Name: ${{ github.workflow }}
-#         - Workflow Run ID: ${{ github.run_id }}
-#         - Workflow Initiator: @${{ github.actor }}
-#         - File Update Time: $update_time"
+        ========= Workflow Details ==========
+        - Workflow Name: ${{ github.workflow }}
+        - Workflow Run ID: ${{ github.run_id }}
+        - Workflow Initiator: @${{ github.actor }}
+        - File Update Time: $update_time"
           
-#         echo "pr_body<<EOF" >> $GITHUB_OUTPUT
-#         echo "${pr_body@E}" >> $GITHUB_OUTPUT
-#         echo "EOF" >> $GITHUB_OUTPUT
-#         echo "${pr_body@E}"
-#     - name: Create a Branch & Raise a PR
-#       uses: peter-evans/create-pull-request@v5
-#       id: create_pr
-#       with:
-#         committer: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
-#         commit-message: 'GitHub Actions Workflow: Update Pretrained Model Listing'
-#         signoff: true
-#         title: 'Update Model Upload History'
-#         body: ${{ steps.create_pr_body.outputs.pr_body }}
-#         labels: ModelListingUploading
-#         branch: model-listing-uploader/${{ github.run_id }}
-#         delete-branch: true
-#         add-paths: ${{ env.repo_model_listing_path }}
+        echo "pr_body<<EOF" >> $GITHUB_OUTPUT
+        echo "${pr_body@E}" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+        echo "${pr_body@E}"
+    - name: Create a Branch & Raise a PR
+      uses: peter-evans/create-pull-request@v5
+      id: create_pr
+      with:
+        committer: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
+        commit-message: 'GitHub Actions Workflow: Update Pretrained Model Listing'
+        signoff: true
+        title: 'Update Model Upload History'
+        body: ${{ steps.create_pr_body.outputs.pr_body }}
+        labels: ModelListingUploading
+        branch: model-listing-uploader/${{ github.run_id }}
+        delete-branch: true
+        add-paths: ${{ env.repo_model_listing_path }}
       
+ 
