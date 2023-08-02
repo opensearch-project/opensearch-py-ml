@@ -30,7 +30,7 @@ jobs:
       run: |
         mkdir config_folder
         aws s3 cp s3://${{ secrets.PERSONAL_MODEL_BUCKET }}/ml-models/huggingface/ config_folder --recursive --exclude "*" --include "config.json"
-        ls config_folder
+        echo $(ls config_folder)
     - name: Get Current Model Listing for Reference
       run: |
         aws s3api head-object --bucket ${{ secrets.PERSONAL_MODEL_BUCKET }} --key ${{ env.bucket_model_listing_file_path }} > /dev/null 2>&1 || NOT_EXIST=true
