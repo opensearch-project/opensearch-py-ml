@@ -382,7 +382,7 @@ def test_overwrite_fields_in_model_config():
     clean_test_folder(TEST_FOLDER)
 
 
-def test_missing_readme_md_files():
+def test_missing_readme_md_file():
     model_id = "sentence-transformers/msmarco-distilbert-base-tas-b"
     clean_test_folder(TEST_FOLDER)
     test_model9 = SentenceTransformerModel(
@@ -414,7 +414,7 @@ def test_missing_readme_md_files():
     clean_test_folder(TEST_FOLDER)
 
 
-def test_overwrite_description():
+def missing_description_in_readme_file():
     model_id = "sentence-transformers/msmarco-distilbert-base-tas-b"
     clean_test_folder(TEST_FOLDER)
     test_model10 = SentenceTransformerModel(
@@ -423,7 +423,40 @@ def test_overwrite_description():
     )
 
     test_model10.save_as_pt(model_id=model_id, sentences=["today is sunny"])
+    temp_path = os.path.join(
+        TEST_FOLDER,
+        "README.md",
+    )
+    with open(temp_path, "w") as f:
+        f.write("No model description here")
     model_config_path_torch = test_model10.make_model_config_json(
+        model_format="TORCH_SCRIPT"
+    )
+    try:
+        with open(model_config_path_torch) as json_file:
+            model_config_data_torch = json.load(json_file)
+    except Exception as exec:
+        assert (
+            False
+        ), f"Creating model config file for tracing in torch_script raised an exception {exec}"
+
+    assert (
+        "description" not in model_config_data_torch
+    ), "Should not have description in model config file"
+
+    clean_test_folder(TEST_FOLDER)
+
+
+def test_overwrite_description():
+    model_id = "sentence-transformers/msmarco-distilbert-base-tas-b"
+    clean_test_folder(TEST_FOLDER)
+    test_model11 = SentenceTransformerModel(
+        folder_path=TEST_FOLDER,
+        model_id=model_id,
+    )
+
+    test_model11.save_as_pt(model_id=model_id, sentences=["today is sunny"])
+    model_config_path_torch = test_model11.make_model_config_json(
         model_format="TORCH_SCRIPT", description="Expected Description"
     )
     try:
@@ -447,12 +480,12 @@ def test_truncation_parameter():
     MAX_LENGTH_TASB = 512
 
     clean_test_folder(TEST_FOLDER)
-    test_model11 = SentenceTransformerModel(
+    test_model12 = SentenceTransformerModel(
         folder_path=TEST_FOLDER,
         model_id=model_id,
     )
 
-    test_model11.save_as_pt(model_id=model_id, sentences=["today is sunny"])
+    test_model12.save_as_pt(model_id=model_id, sentences=["today is sunny"])
 
     tokenizer_json_file_path = os.path.join(TEST_FOLDER, "tokenizer.json")
     try:
