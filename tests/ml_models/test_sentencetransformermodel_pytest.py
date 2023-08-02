@@ -414,7 +414,7 @@ def test_missing_readme_md_file():
     clean_test_folder(TEST_FOLDER)
 
 
-def missing_description_in_readme_file():
+def test_missing_description_in_readme_file():
     model_id = "sentence-transformers/msmarco-distilbert-base-tas-b"
     clean_test_folder(TEST_FOLDER)
     test_model10 = SentenceTransformerModel(
