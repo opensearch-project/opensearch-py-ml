@@ -155,6 +155,6 @@ if __name__ == "__main__":
 
     create_new_pretrained_model_listing(
         args.config_paths_txt_filename,
-        args.local_config_foldername,
+        args.config_foldername,
         args.old_json_filename,
     )
