@@ -29,7 +29,7 @@ jobs:
     - name: Download config files
       run: |
         mkdir config_folder
-        aws s3 cp s3://${{ secrets.PERSONAL_MODEL_BUCKET }}/ml-models/huggingface/ config_folder --recursive --exclude "*" --include "config.json"
+        aws s3 cp s3://${{ secrets.PERSONAL_MODEL_BUCKET }}/ml-models/huggingface/ config_folder --recursive --exclude "*" --include "*/config.json"
         echo $(ls config_folder)
     - name: Get Current Model Listing for Reference
       run: |
