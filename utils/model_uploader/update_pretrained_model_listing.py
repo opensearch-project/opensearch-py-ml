@@ -91,7 +91,7 @@ def create_new_pretrained_model_listing(
             model_name = "/".join(model_parts[1:4])
             model_version = model_parts[4]
             model_format = model_parts[5]
-            local_config_filepath = model_parts[2:]
+            local_config_filepath = /".join(model_parts[2:])
             if model_name not in new_model_listing_dict:
                 new_model_listing_dict[model_name] = {
                     "name": model_name,
