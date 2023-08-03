@@ -392,9 +392,9 @@ def main(
     print("Model ID: ", model_id)
     print("Model Version: ", model_version)
     print("Tracing Format: ", tracing_format)
-    print("Embedding Dimension: ", embedding_dimension)
-    print("Pooling Mode: ", pooling_mode)
-    print("Model Description: ", model_description)
+    print("Embedding Dimension: ", embedding_dimension if embedding_dimension is not None else "Default")
+    print("Pooling Mode: ", pooling_mode if pooling_mode is not None else "Default")
+    print("Model Description: ", model_description if model_description is not None else "Default")
     print("==========================================")
 
     ml_client = MLCommonClient(OPENSEARCH_TEST_CLIENT)
