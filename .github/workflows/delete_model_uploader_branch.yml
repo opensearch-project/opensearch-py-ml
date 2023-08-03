@@ -9,9 +9,10 @@ jobs:
     runs-on: ubuntu-latest
     if: startsWith(github.event.pull_request.head.ref,'model-uploader/') || startsWith(github.event.pull_request.head.ref,'model-listing-uploader/')
     steps:
-      - name: Delete merged branch
-        uses: SvanBoxel/delete-merged-branch@main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Delete closed PR branch
+        uses: dawidd6/action-delete-branch@v3
+        with:
+          GITHUB_TOKEN: ${{github.token}}
+          numbers: ${{github.event.pull_request.number}}
 
 # TODO: Add branch protection rule for model-listing-uploader
