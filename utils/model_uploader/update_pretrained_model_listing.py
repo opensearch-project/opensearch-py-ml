@@ -108,9 +108,14 @@ def create_new_pretrained_model_listing(
                     model_name in old_model_listing_dict
                     and "versions" in old_model_listing_dict[model_name]
                     and model_version in old_model_listing_dict[model_name]["versions"]
-                    and "description" in old_model_listing_dict[model_name]["versions"][model_version]
+                    and "description"
+                    in old_model_listing_dict[model_name]["versions"][model_version]
                 ):
-                    versions_content[model_version]["description"] = old_model_listing_dict[model_name]["versions"][model_version]["description"]
+                    versions_content[model_version][
+                        "description"
+                    ] = old_model_listing_dict[model_name]["versions"][model_version][
+                        "description"
+                    ]
                 else:
                     description = get_sentence_transformer_model_description(
                         config_foldername, local_config_filepath

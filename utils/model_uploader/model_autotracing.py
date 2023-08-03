@@ -142,7 +142,7 @@ def trace_sentence_transformer_model(
             model_format=model_format,
             embedding_dimension=embedding_dimension,
             pooling_mode=pooling_mode,
-            description=model_description
+            description=model_description,
         )
     except Exception as e:
         assert (
@@ -392,9 +392,15 @@ def main(
     print("Model ID: ", model_id)
     print("Model Version: ", model_version)
     print("Tracing Format: ", tracing_format)
-    print("Embedding Dimension: ", embedding_dimension if embedding_dimension is not None else "Default")
+    print(
+        "Embedding Dimension: ",
+        embedding_dimension if embedding_dimension is not None else "Default",
+    )
     print("Pooling Mode: ", pooling_mode if pooling_mode is not None else "Default")
-    print("Model Description: ", model_description if model_description is not None else "Default")
+    print(
+        "Model Description: ",
+        model_description if model_description is not None else "Default",
+    )
     print("==========================================")
 
     ml_client = MLCommonClient(OPENSEARCH_TEST_CLIENT)
@@ -422,7 +428,7 @@ def main(
             TORCH_SCRIPT_FORMAT,
             embedding_dimension,
             pooling_mode,
-            model_description
+            model_description,
         )
 
         torch_embedding_data = register_and_deploy_sentence_transformer_model(
@@ -456,7 +462,7 @@ def main(
             ONNX_FORMAT,
             embedding_dimension,
             pooling_mode,
-            model_description
+            model_description,
         )
 
         onnx_embedding_data = register_and_deploy_sentence_transformer_model(
@@ -534,12 +540,12 @@ if __name__ == "__main__":
         help="Model description if you want to overwrite the default description",
     )
     args = parser.parse_args()
-        
+
     main(
         args.model_id,
         args.model_version,
         args.tracing_format,
         args.embedding_dimension,
         args.pooling_mode,
-        args.model_description
+        args.model_description,
     )
