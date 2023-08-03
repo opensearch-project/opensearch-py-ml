@@ -33,6 +33,7 @@ KEYS = [
     "Model Format",
     "Embedding Dimension",
     "Pooling Mode",
+    "Model Description",
 ]
 MD_HEADER = "# Pretrained Model Upload History\n\nThe model-serving framework supports a variety of open-source pretrained models that can assist with a range of machine learning (ML) search and analytics use cases. \n\n\n## Uploaded Pretrained Models\n\n\n### Sentence transformers\n\nSentence transformer models map sentences and paragraphs across a dimensional dense vector space. The number of vectors depends on the model. Use these models for use cases such as clustering and semantic search. \n\nThe following table shows sentence transformer model upload history.\n\n[//]: # (This may be the most platform independent comment)\n"
 
@@ -43,8 +44,9 @@ def create_model_json_obj(
     model_format: str,
     embedding_dimension: Optional[int] = None,
     pooling_mode: Optional[str] = None,
+    model_description: Optional[str] = None,
     model_uploader: Optional[str] = None,
-    uploader_time: Optional[str] = None,
+    upload_time: Optional[str] = None,
 ) -> Dict:
     """
     Create a model dict obj to be added to supported_models.json
@@ -59,12 +61,18 @@ def create_model_json_obj(
     :type embedding_dimension: int
     :param pooling_mode: Pooling mode input ("CLS", "MEAN", "MAX", "MEAN_SQRT_LEN" or None)
     :type pooling_mode: string
+    :param model_description: Model description input
+    :type model_description: string
+    :param model_uploader: Model uploader input
+    :type model_uploader: string
+    :param uploader_time: Upload time input
+    :type uploader_time: string
     :return: Model dictionary object to be added to supported_models.json
     :rtype: dict
     """
     model_obj = {
         "Model Uploader": "@" + model_uploader if model_uploader is not None else "-",
-        "Upload Time": uploader_time if uploader_time is not None else "-",
+        "Upload Time": upload_time if upload_time is not None else "-",
         "Model ID": model_id,
         "Model Version": model_version,
         "Model Format": model_format,
@@ -72,6 +80,7 @@ def create_model_json_obj(
         if embedding_dimension is not None
         else "Default",
         "Pooling Mode": pooling_mode if pooling_mode is not None else "Default",
+        "Model Description": model_description if model_description is not None else "Default",
     }
     return model_obj
 
@@ -103,8 +112,9 @@ def update_model_json_file(
     tracing_format: str,
     embedding_dimension: Optional[int] = None,
     pooling_mode: Optional[str] = None,
+    model_description: Optional[str] = None,
     model_uploader: Optional[str] = None,
-    uploader_time: Optional[str] = None,
+    upload_time: Optional[str] = None,
 ) -> None:
     """
     Update supported_models.json
@@ -119,6 +129,12 @@ def update_model_json_file(
     :type embedding_dimension: int
     :param pooling_mode: Pooling mode input ("CLS", "MEAN", "MAX", "MEAN_SQRT_LEN" or None)
     :type pooling_mode: string
+    :param model_description: Model description input
+    :type model_description: string
+    :param model_uploader: Model uploader input
+    :type model_uploader: string
+    :param uploader_time: Upload time input
+    :type uploader_time: string
     :return: No return value expected
     :rtype: None
     """
@@ -136,8 +152,9 @@ def update_model_json_file(
             TORCH_SCRIPT_FORMAT,
             embedding_dimension,
             pooling_mode,
+            model_description,
             model_uploader,
-            uploader_time,
+            upload_time,
         )
         models.append(model_obj)
 
@@ -148,8 +165,9 @@ def update_model_json_file(
             ONNX_FORMAT,
             embedding_dimension,
             pooling_mode,
+            model_description,
             model_uploader,
-            uploader_time,
+            upload_time,
         )
         models.append(model_obj)
 
@@ -212,7 +230,6 @@ if __name__ == "__main__":
         const=None,
         help="Embedding dimension of the model to use if it does not exist in original config.json",
     )
-
     parser.add_argument(
         "-pm",
         "--pooling_mode",
@@ -223,7 +240,15 @@ if __name__ == "__main__":
         choices=["CLS", "MEAN", "MAX", "MEAN_SQRT_LEN"],
         help="Pooling mode if it does not exist in original config.json",
     )
-
+    parser.add_argument(
+        "-md",
+        "--model_description",
+        type=str,
+        nargs="?",
+        default=None,
+        const=None,
+        help="Model description if you want to overwrite the default description",
+    )
     parser.add_argument(
         "-u",
         "--model_uploader",
@@ -233,7 +258,6 @@ if __name__ == "__main__":
         const=None,
         help="Model Uploader",
     )
-
     parser.add_argument(
         "-t",
         "--upload_time",
@@ -251,6 +275,7 @@ if __name__ == "__main__":
         args.tracing_format,
         args.embedding_dimension,
         args.pooling_mode,
+        args.model_description,
         args.model_uploader,
         args.upload_time,
     )

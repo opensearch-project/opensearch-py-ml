@@ -95,28 +95,33 @@ def create_new_pretrained_model_listing(
             if model_name not in new_model_listing_dict:
                 new_model_listing_dict[model_name] = {
                     "name": model_name,
-                    "version": [],
+                    "versions": {},
+                }
+            versions_content = new_model_listing_dict[model_name]["versions"]
+            if model_version not in versions_content:
+                versions_content[model_version] = {
                     "format": [],
                 }
-                if model_name in old_model_listing_dict:
-                    if "description" in old_model_listing_dict[model_name]:
-                        new_model_listing_dict[model_name][
-                            "description"
-                        ] = old_model_listing_dict[model_name]["description"]
+            versions_content[model_version]["format"].append(model_format)
+            if "description" not in versions_content[model_version]:
+                if (
+                    model_name in old_model_listing_dict
+                    and "versions" in old_model_listing_dict[model_name]
+                    and model_version in old_model_listing_dict[model_name]["versions"]
+                    and "description" in old_model_listing_dict[model_name]["versions"][model_version]
+                ):
+                    versions_content[model_version]["description"] = old_model_listing_dict[model_name]["versions"][model_version]["description"]
                 else:
                     description = get_sentence_transformer_model_description(
                         config_foldername, local_config_filepath
                     )
                     if description is not None:
-                        new_model_listing_dict[model_name]["description"] = description
-            model_content = new_model_listing_dict[model_name]
-            if model_version not in model_content["version"]:
-                model_content["version"].append(model_version)
-            if model_format not in model_content["format"]:
-                model_content["format"].append(model_format)
+                        versions_content[model_version]["description"] = description
 
     new_model_listing_lst = list(new_model_listing_dict.values())
     new_model_listing_lst = sorted(new_model_listing_lst, key=lambda d: d["name"])
+    for model_dict in new_model_listing_lst:
+        model_dict["versions"] = dict(sorted(model_dict["versions"].items()))
 
     print(
         f"---  Dumping New Model Listing in {PRETRAINED_MODEL_LISTING_JSON_FILEPATH} --- "
@@ -124,7 +129,7 @@ def create_new_pretrained_model_listing(
     if not os.path.isdir(JSON_DIRNAME):
         os.makedirs(JSON_DIRNAME)
     with open(PRETRAINED_MODEL_LISTING_JSON_FILEPATH, "w") as f:
-        json.dump(new_model_listing_lst, f, indent=1)
+        json.dump(new_model_listing_lst, f, indent=2)
     print("\n=== Finished running update_pretrained_model_listing.py ===")
 
 

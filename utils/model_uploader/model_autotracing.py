@@ -84,6 +84,7 @@ def trace_sentence_transformer_model(
     model_format: str,
     embedding_dimension: Optional[int] = None,
     pooling_mode: Optional[str] = None,
+    model_description: Optional[str] = None,
 ) -> Tuple[str, str]:
     """
     Trace the pretrained sentence transformer model, create a model config file,
@@ -99,6 +100,8 @@ def trace_sentence_transformer_model(
     :type embedding_dimension: int
     :param pooling_mode: Pooling mode input ("CLS", "MEAN", "MAX", "MEAN_SQRT_LEN" or None)
     :type pooling_mode: string
+    :param model_description: Model description input
+    :type model_description: string
     :return: Tuple of model_path (path to model zip file) and model_config_path (path to model config json file)
     :rtype: Tuple[str, str]
     """
@@ -139,6 +142,7 @@ def trace_sentence_transformer_model(
             model_format=model_format,
             embedding_dimension=embedding_dimension,
             pooling_mode=pooling_mode,
+            description=model_description
         )
     except Exception as e:
         assert (
@@ -363,6 +367,7 @@ def main(
     tracing_format: str,
     embedding_dimension: Optional[int] = None,
     pooling_mode: Optional[str] = None,
+    model_description: Optional[str] = None,
 ) -> None:
     """
     Perform model auto-tracing and prepare files for uploading to OpenSearch model hub
@@ -377,6 +382,8 @@ def main(
     :type embedding_dimension: int
     :param pooling_mode: Pooling mode input ("CLS", "MEAN", "MAX", "MEAN_SQRT_LEN" or None)
     :type pooling_mode: string
+    :param model_description: Model description input
+    :type model_description: string
     :return: No return value expected
     :rtype: None
     """
@@ -387,6 +394,7 @@ def main(
     print("Tracing Format: ", tracing_format)
     print("Embedding Dimension: ", embedding_dimension)
     print("Pooling Mode: ", pooling_mode)
+    print("Model Description: ", model_description)
     print("==========================================")
 
     ml_client = MLCommonClient(OPENSEARCH_TEST_CLIENT)
@@ -414,6 +422,7 @@ def main(
             TORCH_SCRIPT_FORMAT,
             embedding_dimension,
             pooling_mode,
+            model_description
         )
 
         torch_embedding_data = register_and_deploy_sentence_transformer_model(
@@ -447,6 +456,7 @@ def main(
             ONNX_FORMAT,
             embedding_dimension,
             pooling_mode,
+            model_description
         )
 
         onnx_embedding_data = register_and_deploy_sentence_transformer_model(
@@ -514,12 +524,22 @@ if __name__ == "__main__":
         choices=["CLS", "MEAN", "MAX", "MEAN_SQRT_LEN"],
         help="Pooling mode if it does not exist in original config.json",
     )
+    parser.add_argument(
+        "-md",
+        "--model_description",
+        type=str,
+        nargs="?",
+        default=None,
+        const=None,
+        help="Model description if you want to overwrite the default description",
+    )
     args = parser.parse_args()
-
+        
     main(
         args.model_id,
         args.model_version,
         args.tracing_format,
         args.embedding_dimension,
         args.pooling_mode,
+        args.model_description
     )

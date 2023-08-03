@@ -70,8 +70,9 @@ elif [[ "$TASK_TYPE" == "trace" ]]; then
   echo -e "\033[34;1mINFO:\033[0m MODEL_ID: ${MODEL_ID}\033[0m"
   echo -e "\033[34;1mINFO:\033[0m MODEL_VERSION: ${MODEL_VERSION}\033[0m"
   echo -e "\033[34;1mINFO:\033[0m TRACING_FORMAT: ${TRACING_FORMAT}\033[0m"
-  echo -e "\033[34;1mINFO:\033[0m EMBEDDING_DIMENSION: ${EMBEDDING_DIMENSION:-N/A}\033[0m"
-  echo -e "\033[34;1mINFO:\033[0m POOLING_MODE: ${POOLING_MODE:-N/A}\033[0m"
+  echo -e "\033[34;1mINFO:\033[0m EMBEDDING_DIMENSION: ${EMBEDDING_DIMENSION:-Default}\033[0m"
+  echo -e "\033[34;1mINFO:\033[0m POOLING_MODE: ${POOLING_MODE:-Default}\033[0m"
+  echo -e "\033[34;1mINFO:\033[0m MODEL_DESCRIPTION: ${MODEL_DESCRIPTION:-Default}\033[0m"
 
   docker run \
   --network=${network_name} \
@@ -83,7 +84,8 @@ elif [[ "$TASK_TYPE" == "trace" ]]; then
   --env "TEST_TYPE=server" \
   --name opensearch-py-ml-trace-runner \
   opensearch-project/opensearch-py-ml \
-  nox -s trace -- ${MODEL_ID} ${MODEL_VERSION} ${TRACING_FORMAT} -ed ${EMBEDDING_DIMENSION} -pm ${POOLING_MODE}
+  nox -s trace -- ${MODEL_ID} ${MODEL_VERSION} ${TRACING_FORMAT} -ed ${EMBEDDING_DIMENSION} -pm ${POOLING_MODE} -md ${MODEL_DESCRIPTION:+"$MODEL_DESCRIPTION"}
+  
   
   docker cp opensearch-py-ml-trace-runner:/code/opensearch-py-ml/upload/ ./upload/
   docker cp opensearch-py-ml-trace-runner:/code/opensearch-py-ml/trace_output/ ./trace_output/
