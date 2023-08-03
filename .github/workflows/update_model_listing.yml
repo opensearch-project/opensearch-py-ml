@@ -57,7 +57,7 @@ jobs:
       run: |
         update_time=$(TZ='America/Los_Angeles' date "+%Y-%m-%d %T")
         pr_body="
-        - [ ] This PR made commit to only one files: pretrained_model_listing.json.
+        - [ ] This PR made changes to only one file: pretrained_model_listing.json.
         - [ ] pretrained_model_listing.json looks good.
           
         ========= Workflow Details ==========
