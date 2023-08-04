@@ -384,26 +384,27 @@ jobs:
             Warning:exclamation:: The workflow failed to update CHANGELOG.md. Please add the following line manually.
             ${{ steps.create_changelog_line.outputs.changelog_line }}
             
-  # Step 8: Trigger Jenkins ml-models workflow
-  trigger-model-release-workflow:
-    needs: [init-workflow-var, history-update]
-    runs-on: 'ubuntu-latest'
-    steps:
-      - name: Trigger Jenkins Workflow with Generic Webhook
-        run: |
-          JENKINS_URL="https://build.ci.opensearch.org"
-          JENKINS_TRIGGER_TOKEN=${{ secrets.JENKINS_ML_MODELS_RELEASE_GENERIC_WEBHOOK_TOKEN }}
+  # # Step 8: Trigger Jenkins ml-models workflow
+  # trigger-model-release-workflow:
+  #   needs: [init-workflow-var, history-update]
+  #   runs-on: 'ubuntu-latest'
+  #   steps:
+  #     - name: Trigger Jenkins Workflow with Generic Webhook
+  #       run: |
+  #         JENKINS_URL="https://build.ci.opensearch.org"
+  #         JENKINS_TRIGGER_TOKEN=${{ secrets.JENKINS_ML_MODELS_RELEASE_GENERIC_WEBHOOK_TOKEN }}
           
-          BASE_DOWNLOAD_PATH=${{ needs.init-workflow-var.outputs.model_folder }}
-          VERSION=${{ github.event.inputs.model_version }}
-          JENKINS_PARAMS="{\"BASE_DOWNLOAD_PATH\":\"$BASE_DOWNLOAD_PATH\", \"VERSION\":\"$VERSION\"}"
+  #         BASE_DOWNLOAD_PATH=${{ needs.init-workflow-var.outputs.model_folder }}
+  #         VERSION=${{ github.event.inputs.model_version }}
+  #         MODEL_FORMAT=${{ github.event.inputs.tracing_format }}
+  #         JENKINS_PARAMS="{\"BASE_DOWNLOAD_PATH\":\"$BASE_DOWNLOAD_PATH\", \"VERSION\":\"$VERSION\", \"MODEL_FORMAT\": \"$MODEL_FORMAT\"}"
           
-          # TODO: Set up JENKINS_TRIGGER_TOKEN
-          JENKINS_REQ=`curl -s -XPOST \
-             -H "Authorization: Bearer $JENKINS_TRIGGER_TOKEN" \
-             -H "Content-Type: application/json" \
-             "$JENKINS_URL/generic-webhook-trigger/invoke" \
-             --data "$(echo $JENKINS_PARAMS)"`
+  #         # TODO: Set up JENKINS_TRIGGER_TOKEN
+  #         JENKINS_REQ=`curl -s -XPOST \
+  #            -H "Authorization: Bearer $JENKINS_TRIGGER_TOKEN" \
+  #            -H "Content-Type: application/json" \
+  #            "$JENKINS_URL/generic-webhook-trigger/invoke" \
+  #            --data "$(echo $JENKINS_PARAMS)"`
 
-          echo $JENKINS_REQ
+  #         echo $JENKINS_REQ
     
