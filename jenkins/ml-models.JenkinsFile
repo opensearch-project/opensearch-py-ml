@@ -26,9 +26,14 @@ pipeline {
             description: 'Version number of the model',
             trim: true
         )
+        choice(
+            name: 'MODEL_FORMAT',
+            description: 'Tracing format of the model',
+            choices: ['BOTH', 'TORCH_SCRIPT', 'ONNX']
+        )
         }
     environment {
-        ARTIFACT_PATH = "${env.BASE_DOWNLOAD_PATH == "ml-models/model_listing" ? "${env.BASE_DOWNLOAD_PATH}/" : "${env.BASE_DOWNLOAD_PATH}/${env.VERSION}/"}"
+        ARTIFACT_PATH = "${env.BASE_DOWNLOAD_PATH == "ml-models/model_listing" ? "${env.BASE_DOWNLOAD_PATH}" : "${env.BASE_DOWNLOAD_PATH}/${env.VERSION}"}"
         UPLOAD_PATH = "models/ml-models"
         BUCKET_NAME = credentials('ml-models-bucket-name')
     }
@@ -36,15 +41,17 @@ pipeline {
         stage('Parameters Check') {
             steps {
                 script {
-                    if(env.BASE_DOWNLOAD_PATH == "ml-models/model_listing" && env.VERSION.isEmpty()) {
+                    if (env.BASE_DOWNLOAD_PATH == "ml-models/model_listing" && env.VERSION.isEmpty() && env.MODEL_FORMAT.isEmpty()) {
                         echo "Proceeding to download the ml-models/model_listing."
-                    }                  
-                    else if (env.BASE_DOWNLOAD_PATH.isEmpty()) {
+                    } else if (env.BASE_DOWNLOAD_PATH.isEmpty()) {
                         currentBuild.result = 'ABORTED'
-                        error('Parameters cannot be empty! Please provide the correct values.')
+                        error('BASE_DOWNLOAD_PATH cannot be empty! Please provide the correct values.')
                     } else if (env.VERSION.isEmpty()) {
                         currentBuild.result = 'ABORTED'
-                        error('Parameters cannot be empty! Please provide the correct values.')
+                        error('VERSION cannot be empty! Please provide the correct values.')
+                    } else if (env.MODEL_FORMAT.isEmpty()) {
+                        currentBuild.result = 'ABORTED'
+                        error('MODEL_FORMAT cannot be empty! Please provide the correct values.')
                     } else {
                         echo "Proceeding to download the ml-models."
                     }
@@ -58,15 +65,40 @@ pipeline {
         stage('Download the artifacts') {
             steps {
                 script {
-                    downloadFromS3(
-                        assumedRoleName: 'get_models',
-                        roleAccountNumberCred: 'ml-models-aws-account-number',
-                        downloadPath: "${env.ARTIFACT_PATH}",
-                        bucketName: "${env.BUCKET_NAME}",
-                        localPath: "${env.WORKSPACE}/artifacts",
-                        force: true,
-                        region: 'us-west-2'
-                    )
+                    if (env.BASE_DOWNLOAD_PATH == "ml-models/model_listing") {
+                        downloadFromS3(
+                            assumedRoleName: 'get_models',
+                            roleAccountNumberCred: 'ml-models-aws-account-number',
+                            downloadPath: "${env.ARTIFACT_PATH}/",
+                            bucketName: "${env.BUCKET_NAME}",
+                            localPath: "${env.WORKSPACE}/artifacts",
+                            force: true,
+                            region: 'us-west-2'
+                        )
+                    } else {
+                        if (env.MODEL_FORMAT == "TORCH_SCRIPT" || env.MODEL_FORMAT == "BOTH) {
+                            downloadFromS3(
+                                assumedRoleName: 'get_models',
+                                roleAccountNumberCred: 'ml-models-aws-account-number',
+                                downloadPath: "${env.ARTIFACT_PATH}/torch_script/",
+                                bucketName: "${env.BUCKET_NAME}",
+                                localPath: "${env.WORKSPACE}/artifacts",
+                                force: true,
+                                region: 'us-west-2'
+                            )
+                        }
+                        if (env.MODEL_FORMAT == "ONNX" || env.MODEL_FORMAT == "BOTH) {
+                            downloadFromS3(
+                                assumedRoleName: 'get_models',
+                                roleAccountNumberCred: 'ml-models-aws-account-number',
+                                downloadPath: "${env.ARTIFACT_PATH}/onnx/",
+                                bucketName: "${env.BUCKET_NAME}",
+                                localPath: "${env.WORKSPACE}/artifacts",
+                                force: true,
+                                region: 'us-west-2'
+                            )
+                        }
+                    }
                 }
             }
         }
