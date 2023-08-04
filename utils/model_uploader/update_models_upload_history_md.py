@@ -71,8 +71,8 @@ def create_model_json_obj(
     :rtype: dict
     """
     model_obj = {
-        "Model Uploader": "@" + model_uploader if model_uploader is not None else "-",
         "Upload Time": upload_time if upload_time is not None else "-",
+        "Model Uploader": "@" + model_uploader if model_uploader is not None else "-",
         "Model ID": model_id,
         "Model Version": model_version,
         "Model Format": model_format,
