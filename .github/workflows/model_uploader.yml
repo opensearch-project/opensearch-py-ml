@@ -77,7 +77,7 @@ jobs:
         - Tracing Format: ${{ github.event.inputs.tracing_format }}
         - Embedding Dimension: ${embedding_dimension:-Default}
         - Pooling Mode: ${pooling_mode:-Default}
-        - Model Description: \"${model_description:-Default}\"
+        - Model Description: ${model_description:-Default}
         
         ========= Test Information ==========
         - Embedding Verification: Passed"
