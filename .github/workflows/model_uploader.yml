@@ -39,7 +39,7 @@ on:
         - "MAX"
         - "MEAN_SQRT_LEN"
       model_description:
-        description: "(Optional) Description (Specify here if you want to overwrite the default model description)"
+        description: "(Optional) Description (Specify here if you want to overwrite the default model description)(Does not accept double quotes)"
         required: false
         type: string
 
