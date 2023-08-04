@@ -34,22 +34,22 @@ jobs:
     - name: Update pre_trained_models.json in S3
       run: aws s3 cp ${{ env.repo_model_listing_path }} s3://${{ secrets.PERSONAL_MODEL_BUCKET }}/${{ env.bucket_model_listing_file_path }}
 
-# TODO: Trigger Jenkins Workflow
-  trigger-model-release-workflow:
-    runs-on: 'ubuntu-latest'
-    steps:
-      - name: Trigger Jenkins Workflow with Generic Webhook
-        run: |
-          JENKINS_URL="https://build.ci.opensearch.org"
-          JENKINS_TRIGGER_TOKEN=${{ secrets.JENKINS_ML_MODELS_RELEASE_GENERIC_WEBHOOK_TOKEN }}
+# # TODO: Trigger Jenkins Workflow
+#   trigger-model-release-workflow:
+#     runs-on: 'ubuntu-latest'
+#     steps:
+#       - name: Trigger Jenkins Workflow with Generic Webhook
+#         run: |
+#           JENKINS_URL="https://build.ci.opensearch.org"
+#           JENKINS_TRIGGER_TOKEN=${{ secrets.JENKINS_ML_MODELS_RELEASE_GENERIC_WEBHOOK_TOKEN }}
           
-          JENKINS_PARAMS="{\"BASE_DOWNLOAD_PATH\":\"ml-models/model_listing\"}"
+#           JENKINS_PARAMS="{\"BASE_DOWNLOAD_PATH\":\"ml-models/model_listing\"}"
           
-          # TODO: Set up JENKINS_TRIGGER_TOKEN
-          JENKINS_REQ=`curl -s -XPOST \
-             -H "Authorization: Bearer $JENKINS_TRIGGER_TOKEN" \
-             -H "Content-Type: application/json" \
-             "$JENKINS_URL/generic-webhook-trigger/invoke" \
-             --data "$(echo $JENKINS_PARAMS)"`
+#           # TODO: Set up JENKINS_TRIGGER_TOKEN
+#           JENKINS_REQ=`curl -s -XPOST \
+#              -H "Authorization: Bearer $JENKINS_TRIGGER_TOKEN" \
+#              -H "Content-Type: application/json" \
+#              "$JENKINS_URL/generic-webhook-trigger/invoke" \
+#              --data "$(echo $JENKINS_PARAMS)"`
 
-          echo $JENKINS_REQ
+#           echo $JENKINS_REQ
