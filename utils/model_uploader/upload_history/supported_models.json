@@ -1,0 +1,12 @@
+[
+    {
+        "Model Uploader": "@thanawan-atc",
+        "Upload Time": "2023-08-03 19:43:58",
+        "Model ID": "sentence-transformers/all-mpnet-base-v2",
+        "Model Version": "1.0.4",
+        "Model Format": "ONNX",
+        "Embedding Dimension": "Default",
+        "Pooling Mode": "Default",
+        "Model Description": "New version description"
+    }
+]
