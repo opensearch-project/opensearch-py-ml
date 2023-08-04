@@ -1,6 +1,36 @@
 [
     {
         "Model Uploader": "@thanawan-atc",
+        "Upload Time": "2023-08-03 19:32:40",
+        "Model ID": "sentence-transformers/all-mpnet-base-v2",
+        "Model Version": "1.0.3",
+        "Model Format": "ONNX",
+        "Embedding Dimension": "Default",
+        "Pooling Mode": "Default",
+        "Model Description": "Default"
+    },
+    {
+        "Model Uploader": "@thanawan-atc",
+        "Upload Time": "2023-08-03 19:32:40",
+        "Model ID": "sentence-transformers/all-mpnet-base-v2",
+        "Model Version": "1.0.3",
+        "Model Format": "TORCH_SCRIPT",
+        "Embedding Dimension": "Default",
+        "Pooling Mode": "Default",
+        "Model Description": "Default"
+    },
+    {
+        "Model Uploader": "@thanawan-atc",
+        "Upload Time": "2023-08-03 19:43:58",
+        "Model ID": "sentence-transformers/all-mpnet-base-v2",
+        "Model Version": "1.0.4",
+        "Model Format": "ONNX",
+        "Embedding Dimension": "Default",
+        "Pooling Mode": "Default",
+        "Model Description": "New version description"
+    },
+    {
+        "Model Uploader": "@thanawan-atc",
         "Upload Time": "2023-08-03 19:47:17",
         "Model ID": "sentence-transformers/msmarco-distilbert-base-tas-b",
         "Model Version": "1.0.6",
