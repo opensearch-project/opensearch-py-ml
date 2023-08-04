@@ -22,7 +22,11 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Update jenkins file to use updated docker image ([#189](https://github.com/opensearch-project/opensearch-py-ml/pull/189))
 - Updated documentation @dhrubo-os ([#98](https://github.com/opensearch-project/opensearch-py-ml/pull/98))
 - Updating ML Commons API documentation @AlibiZhenis ([#156](https://github.com/opensearch-project/opensearch-py-ml/pull/156))
+- Update model upload history -  sentence-transformers/all-mpnet-base-v2 (v.1.0.3)(BOTH) by @thanawan-atc ([#140](https://github.com/thanawan-atc/opensearch-py-ml/pull/140))
+- Update model upload history -  sentence-transformers/all-mpnet-base-v2 (v.1.0.4)(ONNX) by @thanawan-atc ([#142](https://github.com/thanawan-atc/opensearch-py-ml/pull/142))
+- Update model upload history -  sentence-transformers/msmarco-distilbert-base-tas-b (v.1.0.6)(BOTH) by @thanawan-atc ([#145](https://github.com/thanawan-atc/opensearch-py-ml/pull/145))
 - Update model upload history -  sentence-transformers/multi-qa-mpnet-base-dot-v1 (v.1.0.1)(TORCH_SCRIPT) by @thanawan-atc ([#146](https://github.com/thanawan-atc/opensearch-py-ml/pull/146))
+
 
 ### Fixed
 - Fix ModelUploader bug & Update model tracing demo notebook by @thanawan-atc in ([#185](https://github.com/opensearch-project/opensearch-py-ml/pull/185))
