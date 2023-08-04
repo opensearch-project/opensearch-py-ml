@@ -53,11 +53,12 @@ jobs:
 #       run: |
 #          echo "This workflow should only be triggered on a default branch"
 #          exit 1
-    - name: Initiate model_folder
-      id: init_model_folder
+    - name: Initiate folders
+      id: init_folders
       run: |
         model_id=${{ github.event.inputs.model_id }}
-        echo "model_folder=ml-models/${{github.event.inputs.model_source}}/${model_id%%/*}/" >> $GITHUB_OUTPUT
+        echo "model_folder=ml-models/${{github.event.inputs.model_source}}/${model_id}" >> $GITHUB_OUTPUT
+        echo "sentence_transformer_folder=ml-models/${{github.event.inputs.model_source}}/${model_id%%/*}/" >> $GITHUB_OUTPUT
     - name: Initiate workflow_info
       id: init_workflow_info
       run: |
@@ -92,7 +93,8 @@ jobs:
         echo "verified=:white_check_mark: — It is verified that this model is licensed under Apache 2.0" >> $GITHUB_OUTPUT
         echo "unverified=- [ ]  :warning: The license cannot be verified. Please confirm by yourself that the model is licensed under Apache 2.0  :warning:" >> $GITHUB_OUTPUT
     outputs:
-      model_folder: ${{ steps.init_model_folder.outputs.model_folder }}
+      model_folder: ${{ steps.init_folders.outputs.sentence_transformer_folder }}
+      sentence_transformer_folder: ${{ steps.init_folders.outputs.sentence_transformer_folder }}
       workflow_info: ${{ steps.init_workflow_info.outputs.workflow_info }}
       verified_license_line: ${{ steps.init_license_line.outputs.verified }}
       unverified_license_line: ${{ steps.init_license_line.outputs.unverified }}
@@ -122,7 +124,7 @@ jobs:
         if: github.event.inputs.tracing_format == 'TORCH_SCRIPT' || github.event.inputs.tracing_format == 'BOTH'
         run: |
           TORCH_FILE_PATH=$(python utils/model_uploader/save_model_file_path_to_env.py \
-              ${{ needs.init-workflow-var.outputs.model_folder }} ${{ github.event.inputs.model_id }} \
+              ${{ needs.init-workflow-var.outputs.sentence_transformer_folder }} ${{ github.event.inputs.model_id }} \
               ${{ github.event.inputs.model_version }} TORCH_SCRIPT)
           aws s3api head-object --bucket ${{ secrets.PERSONAL_MODEL_BUCKET }} --key $TORCH_FILE_PATH > /dev/null 2>&1 || TORCH_MODEL_NOT_EXIST=true
           if [[ -z $TORCH_MODEL_NOT_EXIST ]]
@@ -134,7 +136,7 @@ jobs:
         if: github.event.inputs.tracing_format == 'ONNX' || github.event.inputs.tracing_format == 'BOTH'
         run: |
           ONNX_FILE_PATH=$(python utils/model_uploader/save_model_file_path_to_env.py \
-            ${{ needs.init-workflow-var.outputs.model_folder }} ${{ github.event.inputs.model_id }} \
+            ${{ needs.init-workflow-var.outputs.sentence_transformer_folder }} ${{ github.event.inputs.model_id }} \
             ${{ github.event.inputs.model_version }} ONNX)
           aws s3api head-object --bucket ${{ secrets.PERSONAL_MODEL_BUCKET }} --key $ONNX_FILE_PATH > /dev/null 2>&1 || ONNX_MODEL_NOT_EXIST=true
           if [[ -z $ONNX_MODEL_NOT_EXIST ]]
@@ -202,7 +204,7 @@ jobs:
       - name: Dryrun model uploading
         id: dryrun_model_uploading
         run: |
-          dryrun_output=$(aws s3 sync ./upload/ s3://${{ secrets.PERSONAL_MODEL_BUCKET }}/${{ needs.init-workflow-var.outputs.model_folder }} --dryrun \
+          dryrun_output=$(aws s3 sync ./upload/ s3://${{ secrets.PERSONAL_MODEL_BUCKET }}/${{ needs.init-workflow-var.outputs.sentence_transformer_folder }} --dryrun \
             | sed 's|s3://${{ secrets.PERSONAL_MODEL_BUCKET }}/|s3://_MODEL_BUCKET_/|' 
           )
           echo "dryrun_output<<EOF" >> $GITHUB_OUTPUT
@@ -274,7 +276,7 @@ jobs:
       - name: Copy Files to the Bucket
         id: copying_to_bucket
         run: |
-          aws s3 sync ./upload/ s3://${{ secrets.PERSONAL_MODEL_BUCKET }}/${{ needs.init-workflow-var.outputs.model_folder }}
+          aws s3 sync ./upload/ s3://${{ secrets.PERSONAL_MODEL_BUCKET }}/${{ needs.init-workflow-var.outputs.sentence_transformer_folder }}
           echo "upload_time=$(TZ='America/Los_Angeles' date "+%Y-%m-%d %T")" >> $GITHUB_OUTPUT
     outputs:
       upload_time: ${{ steps.copying_to_bucket.outputs.upload_time }}
@@ -382,25 +384,26 @@ jobs:
             Warning:exclamation:: The workflow failed to update CHANGELOG.md. Please add the following line manually.
             ${{ steps.create_changelog_line.outputs.changelog_line }}
             
-#   # Step 8: Trigger Jenkins ml-models workflow
-#   trigger-model-release-workflow:
-#     needs: [init-workflow-var, history-update]
-#     runs-on: 'ubuntu-latest'
-#     steps:
-#       - name: Trigger Jenkins Workflow with Generic Webhook
-#         run: |
-#           JENKINS_URL="https://build.ci.opensearch.org"
-#           JENKINS_TRIGGER_TOKEN=${{ secrets.JENKINS_ML_MODELS_RELEASE_GENERIC_WEBHOOK_TOKEN }}
+  # Step 8: Trigger Jenkins ml-models workflow
+  trigger-model-release-workflow:
+    needs: [init-workflow-var, history-update]
+    runs-on: 'ubuntu-latest'
+    steps:
+      - name: Trigger Jenkins Workflow with Generic Webhook
+        run: |
+          JENKINS_URL="https://build.ci.opensearch.org"
+          JENKINS_TRIGGER_TOKEN=${{ secrets.JENKINS_ML_MODELS_RELEASE_GENERIC_WEBHOOK_TOKEN }}
           
-#           # TODO: Might need to add "/torch_script" / "onnx"
-#           BASE_DOWNLOAD_PATH=${{ needs.init-workflow-var.outputs.model_folder }} 
-#           VERSION=${{ github.event.inputs.model_version }}
-#           JENKINS_PARAMS={"parameter": [{"name":"BASE_DOWNLOAD_PATH", "value":$BASE_DOWNLOAD_PATH}, {"name":"VERSION", "value":$VERSION}]}
+          BASE_DOWNLOAD_PATH=${{ needs.init-workflow-var.outputs.model_folder }}
+          VERSION=${{ github.event.inputs.model_version }}
+          JENKINS_PARAMS="{\"BASE_DOWNLOAD_PATH\":\"$BASE_DOWNLOAD_PATH\", \"VERSION\":\"$VERSION\"}"
           
-#           # TODO: Set up JENKINS_TRIGGER_TOKEN
-#           curl -s -XPOST 
-#             -H "Authorization: Bearer $JENKINS_TRIGGER_TOKEN" \
-#             -H "Content-Type: application/json" \
-#             "$JENKINS_URL/generic-webhook-trigger/invoke" \
-#             --data "$(echo $JENKINS_PARAMS)"`
+          # TODO: Set up JENKINS_TRIGGER_TOKEN
+          JENKINS_REQ=`curl -s -XPOST \
+             -H "Authorization: Bearer $JENKINS_TRIGGER_TOKEN" \
+             -H "Content-Type: application/json" \
+             "$JENKINS_URL/generic-webhook-trigger/invoke" \
+             --data "$(echo $JENKINS_PARAMS)"`
+
+          echo $JENKINS_REQ
     
