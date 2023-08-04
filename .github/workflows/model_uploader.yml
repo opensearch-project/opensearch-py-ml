@@ -203,7 +203,7 @@ jobs:
         id: dryrun_model_uploading
         run: |
           dryrun_output=$(aws s3 sync ./upload/ s3://${{ secrets.PERSONAL_MODEL_BUCKET }}/${{ needs.init-workflow-var.outputs.model_folder }} --dryrun \
-            | sed 's|s3://${{ secrets.PERSONAL_MODEL_BUCKET }}/|s3://_MODEL_BUCKET_|' 
+            | sed 's|s3://${{ secrets.PERSONAL_MODEL_BUCKET }}/|s3://_MODEL_BUCKET_/|' 
           )
           echo "dryrun_output<<EOF" >> $GITHUB_OUTPUT
           echo "${dryrun_output@E}" >> $GITHUB_OUTPUT
