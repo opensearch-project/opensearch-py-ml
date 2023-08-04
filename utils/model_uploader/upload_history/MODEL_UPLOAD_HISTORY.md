@@ -16,4 +16,7 @@ The following table shows sentence transformer model upload history.
 
 |Upload Time|Model Uploader|Model ID|Model Version|Model Format|Embedding Dimension|Pooling Mode|Model Description|
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+|2023-08-03 19:32:40|@thanawan-atc|`sentence-transformers/all-mpnet-base-v2`|1.0.3|ONNX|Default|Default|Default|
+|2023-08-03 19:32:40|@thanawan-atc|`sentence-transformers/all-mpnet-base-v2`|1.0.3|TORCH_SCRIPT|Default|Default|Default|
 |2023-08-03 19:43:58|@thanawan-atc|`sentence-transformers/all-mpnet-base-v2`|1.0.4|ONNX|Default|Default|New version description|
+
