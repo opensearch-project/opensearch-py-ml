@@ -1,0 +1,78 @@
+[
+  {
+    "name": "huggingface/sentence-transformers/all-MiniLM-L12-v2",
+    "versions": {
+      "1.0.1": {
+        "format": [
+          "onnx"
+        ],
+        "description": "This is a sentence-transformers model: It maps sentences & paragraphs to a 384 dimensional dense vector space and can be used for tasks like clustering or semantic search."
+      }
+    }
+  },
+  {
+    "name": "huggingface/sentence-transformers/all-MiniLM-L6-v2",
+    "versions": {
+      "1.0.1": {
+        "format": [
+          "torch_script"
+        ],
+        "description": "This is a sentence-transformers model: It maps sentences & paragraphs to a 384 dimensional dense vector space and can be used for tasks like clustering or semantic search."
+      }
+    }
+  },
+  {
+    "name": "huggingface/sentence-transformers/all-mpnet-base-v2",
+    "versions": {
+      "1.0.3": {
+        "format": [
+          "onnx",
+          "torch_script"
+        ],
+        "description": "This is a sentence-transformers model: It maps sentences & paragraphs to a 768 dimensional dense vector space and can be used for tasks like clustering or semantic search."
+      },
+      "1.0.4": {
+        "format": [
+          "onnx"
+        ],
+        "description": "New version description"
+      }
+    }
+  },
+  {
+    "name": "huggingface/sentence-transformers/msmarco-distilbert-base-tas-b",
+    "versions": {
+      "1.0.1": {
+        "format": [
+          "onnx",
+          "torch_script"
+        ],
+        "description": "This is a port of the DistilBert TAS-B Model to sentence-transformers model: It maps sentences & paragraphs to a 768 dimensional dense vector space and is optimized for the task of semantic search."
+      },
+      "1.0.2": {
+        "format": [
+          "torch_script"
+        ],
+        "description": "Overwritting description"
+      },
+      "1.0.6": {
+        "format": [
+          "onnx",
+          "torch_script"
+        ],
+        "description": "'Description with single quotation'"
+      }
+    }
+  },
+  {
+    "name": "huggingface/sentence-transformers/multi-qa-mpnet-base-dot-v1",
+    "versions": {
+      "1.0.1": {
+        "format": [
+          "torch_script"
+        ],
+        "description": "(Very long description) This is a sentence-transformers model: It maps sentences & paragraphs to a 384 dimensional dense vector space and can be used for tasks like clustering or semantic search. This is a sentence-transformers model: It maps sentences & paragraphs to a 384 dimensional dense vector space and can be used for tasks like clustering or semantic search. This is a sentence-transformers model: It maps sentences & paragraphs to a 384 dimensional dense vector space and can be used for tasks like clustering or semantic search. This is a sentence-transformers model: It maps sentences & paragraphs to a 384 dimensional dense vector space and can be used for tasks like clustering or semantic search."
+      }
+    }
+  }
+]
