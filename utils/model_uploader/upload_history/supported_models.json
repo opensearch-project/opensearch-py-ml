@@ -1,0 +1,22 @@
+[
+    {
+        "Model Uploader": "@thanawan-atc",
+        "Upload Time": "2023-08-03 19:47:17",
+        "Model ID": "sentence-transformers/msmarco-distilbert-base-tas-b",
+        "Model Version": "1.0.6",
+        "Model Format": "ONNX",
+        "Embedding Dimension": "Default",
+        "Pooling Mode": "Default",
+        "Model Description": "'Description with single quotation'"
+    },
+    {
+        "Model Uploader": "@thanawan-atc",
+        "Upload Time": "2023-08-03 19:47:17",
+        "Model ID": "sentence-transformers/msmarco-distilbert-base-tas-b",
+        "Model Version": "1.0.6",
+        "Model Format": "TORCH_SCRIPT",
+        "Embedding Dimension": "Default",
+        "Pooling Mode": "Default",
+        "Model Description": "'Description with single quotation'"
+    }
+]
