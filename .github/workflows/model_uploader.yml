@@ -397,7 +397,7 @@ jobs:
   #         BASE_DOWNLOAD_PATH=${{ needs.init-workflow-var.outputs.model_folder }}
   #         VERSION=${{ github.event.inputs.model_version }}
   #         MODEL_FORMAT=${{ github.event.inputs.tracing_format }}
-  #         JENKINS_PARAMS="{\"BASE_DOWNLOAD_PATH\":\"$BASE_DOWNLOAD_PATH\", \"VERSION\":\"$VERSION\", \"MODEL_FORMAT\": \"$MODEL_FORMAT\"}"
+  #         JENKINS_PARAMS="{\"BASE_DOWNLOAD_PATH\":\"$BASE_DOWNLOAD_PATH\", \"VERSION\":\"$VERSION\", \"TRACING_FORMAT\": \"$TRACING_FORMAT\"}"
           
   #         # TODO: Set up JENKINS_TRIGGER_TOKEN
   #         JENKINS_REQ=`curl -s -XPOST \
