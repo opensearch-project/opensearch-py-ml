@@ -27,7 +27,7 @@ pipeline {
             trim: true
         )
         choice(
-            name: 'MODEL_FORMAT',
+            name: 'FORMAT',
             description: 'Tracing format of the model',
             choices: ['BOTH', 'TORCH_SCRIPT', 'ONNX']
         )
