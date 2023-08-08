@@ -1008,17 +1008,31 @@ class SentenceTransformerModel:
                 "Failed to open config file for ml common upload: " + file_path + "\n"
             )
 
-    def get_model_description_from_md_file(self, readme_file_path) -> str:
+    def _get_model_description_from_md_file(self, readme_file_path) -> str:
         """
         Get description of the model from README.md file
         after the model is saved in local directory
+        
+        This function assumes that the md file has the following format in the README.md:
 
+        # sentence-transformers/msmarco-distilbert-base-tas-b
+        This is a port of the DistilBert TAS-B Model to sentence-transformers model: 
+        It maps sentences & paragraphs to a 768 dimensional dense vector space and 
+        is optimized for the task of semantic search.
+        
+        # Usage (Sentence-Transformers)
+        ...
+         
+        where "# MODEL_ID" is the first line that starts with #.
+        
         :param readme_file_path: Path to README.md file
         :type readme_file_path: string
         :return: Description of the model
         :rtype: string
         """
         readme_data = MarkDownFile.read_file(readme_file_path)
+        
+        # Find the description section
         start_str = f"# {self.model_id}"
         start = readme_data.find(start_str)
         if start == -1:
@@ -1026,16 +1040,24 @@ class SentenceTransformerModel:
             start_str = f"# {model_name}"
             start = readme_data.find(start_str)
         end = readme_data.find("## ", start)
+        
+        # If we cannot find the scope of description section, raise error.
         if start == -1 or end == -1:
             assert False, "Cannot find description in README.md file"
 
+        # Parse out the description section
         description = readme_data[start + len(start_str) + 1 : end].strip()
+        
+        # Remove hyperlink and reformat text
         description = re.sub(r"\(.*?\)", "", description)
         description = re.sub(r"[\[\]]", "", description)
         description = re.sub(r"\*", "", description)
+        
+        # Remove unnecessary part if exists(e.g. " For an introduction to ..."
         unnecessary_part = description.find(" For an introduction to")
         if unnecessary_part != -1:
             description = description[:unnecessary_part]
+            
         return description
 
     def make_model_config_json(
@@ -1129,7 +1151,7 @@ class SentenceTransformerModel:
                 try:
                     if verbose:
                         print("reading README.md file")
-                    description = self.get_model_description_from_md_file(
+                    description = self._get_model_description_from_md_file(
                         readme_file_path
                     )
                 except Exception as e:
