@@ -1043,9 +1043,11 @@ class SentenceTransformerModel:
 
         # Parse out the description section
         description = readme_data[start + len(start_str) + 1 : end].strip()
-        description = description.split('\n')[0]
-        if not description.startswith('This is'):
-            assert False, "Cannot find description that starts with 'This is' in README.md file"
+        description = description.split("\n")[0]
+        if not description.startswith("This is"):
+            assert (
+                False
+            ), "Cannot find description that starts with 'This is' in README.md file"
 
         # Remove hyperlink and reformat text
         description = re.sub(r"\(.*?\)", "", description)

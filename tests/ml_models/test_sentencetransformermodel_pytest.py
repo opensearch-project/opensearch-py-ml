@@ -443,9 +443,11 @@ def test_missing_expected_description_in_readme_file():
     assert (
         "description" not in model_config_data_torch
     ), "Should not have description in model config file"
-    
+
     with open(temp_path, "w") as f:
-        f.write("# sentence-transformers/msmarco-distilbert-base-tas-b\n\nNothing\n\n## Usage (Sentence-Transformers)")
+        f.write(
+            "# sentence-transformers/msmarco-distilbert-base-tas-b\n\nNothing\n\n## Usage (Sentence-Transformers)"
+        )
     model_config_path_torch = test_model10.make_model_config_json(
         model_format="TORCH_SCRIPT"
     )
@@ -491,7 +493,7 @@ def test_overwrite_description():
 
     clean_test_folder(TEST_FOLDER)
 
-    
+
 def test_long_description():
     model_id = "sentence-transformers/gtr-t5-base"
     clean_test_folder(TEST_FOLDER)
@@ -501,7 +503,9 @@ def test_long_description():
     )
 
     test_model12.save_as_pt(model_id=model_id, sentences=["today is sunny"])
-    model_config_path_torch = test_model11.make_model_config_json(model_format="TORCH_SCRIPT")
+    model_config_path_torch = test_model12.make_model_config_json(
+        model_format="TORCH_SCRIPT"
+    )
     try:
         with open(model_config_path_torch) as json_file:
             model_config_data_torch = json.load(json_file)
@@ -509,7 +513,7 @@ def test_long_description():
         assert (
             False
         ), f"Creating model config file for tracing in torch_script raised an exception {exec}"
-    
+
     assert (
         "description" in model_config_data_torch
         and model_config_data_torch["description"]
@@ -518,7 +522,7 @@ def test_long_description():
 
     clean_test_folder(TEST_FOLDER)
 
-    
+
 def test_truncation_parameter():
     model_id = "sentence-transformers/msmarco-distilbert-base-tas-b"
     MAX_LENGTH_TASB = 512
