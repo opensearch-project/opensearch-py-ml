@@ -1035,7 +1035,7 @@ class SentenceTransformerModel:
             model_name = self.model_id.split("/")[1]
             start_str = f"# {model_name}"
             start = readme_data.find(start_str)
-        end = readme_data.find("# ", start + len(start_str))
+        end = readme_data.find("\n#", start + len(start_str))
 
         # If we cannot find the scope of description section, raise error.
         if start == -1 or end == -1:
