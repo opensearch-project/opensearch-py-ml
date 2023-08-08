@@ -1035,7 +1035,7 @@ class SentenceTransformerModel:
             model_name = self.model_id.split("/")[1]
             start_str = f"# {model_name}"
             start = readme_data.find(start_str)
-        end = readme_data.find("## ", start)
+        end = readme_data.find("# ", start + len(start_str))
 
         # If we cannot find the scope of description section, raise error.
         if start == -1 or end == -1:
@@ -1044,10 +1044,6 @@ class SentenceTransformerModel:
         # Parse out the description section
         description = readme_data[start + len(start_str) + 1 : end].strip()
         description = description.split("\n")[0]
-        if not description.startswith("This is"):
-            assert (
-                False
-            ), "Cannot find description that starts with 'This is' in README.md file"
 
         # Remove hyperlink and reformat text
         description = re.sub(r"\(.*?\)", "", description)

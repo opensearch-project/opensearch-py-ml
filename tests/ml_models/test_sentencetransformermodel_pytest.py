@@ -444,25 +444,6 @@ def test_missing_expected_description_in_readme_file():
         "description" not in model_config_data_torch
     ), "Should not have description in model config file"
 
-    with open(temp_path, "w") as f:
-        f.write(
-            "# sentence-transformers/msmarco-distilbert-base-tas-b\n\nNothing\n\n## Usage (Sentence-Transformers)"
-        )
-    model_config_path_torch = test_model10.make_model_config_json(
-        model_format="TORCH_SCRIPT"
-    )
-    try:
-        with open(model_config_path_torch) as json_file:
-            model_config_data_torch = json.load(json_file)
-    except Exception as exec:
-        assert (
-            False
-        ), f"Creating model config file for tracing in torch_script raised an exception {exec}"
-
-    assert (
-        "description" not in model_config_data_torch
-    ), "Should not have description in model config file"
-
     clean_test_folder(TEST_FOLDER)
 
 
