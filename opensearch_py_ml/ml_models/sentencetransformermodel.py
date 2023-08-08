@@ -1016,14 +1016,10 @@ class SentenceTransformerModel:
         This function assumes that the md file has the following format in the README.md:
 
         # sentence-transformers/msmarco-distilbert-base-tas-b
-        This is a port of the DistilBert TAS-B Model to sentence-transformers model:
-        It maps sentences & paragraphs to a 768 dimensional dense vector space and
-        is optimized for the task of semantic search.
+        This is [ ... further description ... ]
 
-        # Usage (Sentence-Transformers)
+        # [ ... Next section ...]
         ...
-
-        where "# MODEL_ID" is the first line that starts with #.
 
         :param readme_file_path: Path to README.md file
         :type readme_file_path: string
@@ -1047,6 +1043,9 @@ class SentenceTransformerModel:
 
         # Parse out the description section
         description = readme_data[start + len(start_str) + 1 : end].strip()
+        description = description.split('\n')[0]
+        if not description.startswith('This is'):
+            assert False, "Cannot find description that starts with 'This is' in README.md file"
 
         # Remove hyperlink and reformat text
         description = re.sub(r"\(.*?\)", "", description)

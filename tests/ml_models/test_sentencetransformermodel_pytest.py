@@ -262,7 +262,7 @@ def test_make_model_config_json_for_onnx():
         "description" in model_config_data_onnx
         and model_config_data_onnx["description"]
         == "This is a sentence-transformers model: It maps sentences & paragraphs to a 384 dimensional dense vector space and can be used for tasks like clustering or semantic search."
-    ), "Missing or Wrong model description in onnx model config file'"
+    ), "Missing or Wrong model description in onnx model config file"
     assert (
         "model_config" in model_config_data_onnx
     ), "Missing 'model_config' in onnx model config file"
@@ -414,7 +414,7 @@ def test_missing_readme_md_file():
     clean_test_folder(TEST_FOLDER)
 
 
-def test_missing_description_in_readme_file():
+def test_missing_expected_description_in_readme_file():
     model_id = "sentence-transformers/msmarco-distilbert-base-tas-b"
     clean_test_folder(TEST_FOLDER)
     test_model10 = SentenceTransformerModel(
@@ -429,6 +429,23 @@ def test_missing_description_in_readme_file():
     )
     with open(temp_path, "w") as f:
         f.write("No model description here")
+    model_config_path_torch = test_model10.make_model_config_json(
+        model_format="TORCH_SCRIPT"
+    )
+    try:
+        with open(model_config_path_torch) as json_file:
+            model_config_data_torch = json.load(json_file)
+    except Exception as exec:
+        assert (
+            False
+        ), f"Creating model config file for tracing in torch_script raised an exception {exec}"
+
+    assert (
+        "description" not in model_config_data_torch
+    ), "Should not have description in model config file"
+    
+    with open(temp_path, "w") as f:
+        f.write("# sentence-transformers/msmarco-distilbert-base-tas-b\n\nNothing\n\n## Usage (Sentence-Transformers)")
     model_config_path_torch = test_model10.make_model_config_json(
         model_format="TORCH_SCRIPT"
     )
@@ -474,11 +491,9 @@ def test_overwrite_description():
 
     clean_test_folder(TEST_FOLDER)
 
-
-def test_truncation_parameter():
-    model_id = "sentence-transformers/msmarco-distilbert-base-tas-b"
-    MAX_LENGTH_TASB = 512
-
+    
+def test_long_description():
+    model_id = "sentence-transformers/gtr-t5-base"
     clean_test_folder(TEST_FOLDER)
     test_model12 = SentenceTransformerModel(
         folder_path=TEST_FOLDER,
@@ -486,6 +501,35 @@ def test_truncation_parameter():
     )
 
     test_model12.save_as_pt(model_id=model_id, sentences=["today is sunny"])
+    model_config_path_torch = test_model11.make_model_config_json(model_format="TORCH_SCRIPT")
+    try:
+        with open(model_config_path_torch) as json_file:
+            model_config_data_torch = json.load(json_file)
+    except Exception as exec:
+        assert (
+            False
+        ), f"Creating model config file for tracing in torch_script raised an exception {exec}"
+    
+    assert (
+        "description" in model_config_data_torch
+        and model_config_data_torch["description"]
+        == "This is a sentence-transformers model: It maps sentences & paragraphs to a 768 dimensional dense vector space. The model was specifically trained for the task of sematic search."
+    ), "Missing or Wrong model description in torch_script model config file"
+
+    clean_test_folder(TEST_FOLDER)
+
+    
+def test_truncation_parameter():
+    model_id = "sentence-transformers/msmarco-distilbert-base-tas-b"
+    MAX_LENGTH_TASB = 512
+
+    clean_test_folder(TEST_FOLDER)
+    test_model13 = SentenceTransformerModel(
+        folder_path=TEST_FOLDER,
+        model_id=model_id,
+    )
+
+    test_model13.save_as_pt(model_id=model_id, sentences=["today is sunny"])
 
     tokenizer_json_file_path = os.path.join(TEST_FOLDER, "tokenizer.json")
     try:
