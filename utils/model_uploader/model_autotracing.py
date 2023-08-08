@@ -22,9 +22,12 @@ from mdutils.fileutils import MarkDownFile
 from numpy.typing import DTypeLike
 from sentence_transformers import SentenceTransformer
 
+# We need to append ROOT_DIR path so that we can import 
+# OPENSEARCH_TEST_CLIENT and opensearch_py_ml since this 
+# python script is not in the root directory.
 THIS_DIR = os.path.dirname(__file__)
 ROOT_DIR = os.path.join(THIS_DIR, "../..")
-sys.path.append(ROOT_DIR)  # Required for importing OPENSEARCH_TEST_CLIENT
+sys.path.append(ROOT_DIR)  
 
 LICENSE_PATH = "LICENSE"
 from opensearch_py_ml.ml_commons import MLCommonClient
