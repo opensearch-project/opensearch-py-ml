@@ -129,7 +129,7 @@ jobs:
           aws s3api head-object --bucket ${{ secrets.PERSONAL_MODEL_BUCKET }} --key $TORCH_FILE_PATH > /dev/null 2>&1 || TORCH_MODEL_NOT_EXIST=true
           if [[ -z $TORCH_MODEL_NOT_EXIST ]]
           then
-            echo "TORCH_SCRIPT Model already exists on model hub."
+            echo "${{ github.event.inputs.model_id }} already exists on model hub for TORCH_SCRIPT format and ${{ github.event.inputs.model_version }} version."
             exit 1
           fi
       - name: Check if ONNX Model Exists
@@ -141,7 +141,7 @@ jobs:
           aws s3api head-object --bucket ${{ secrets.PERSONAL_MODEL_BUCKET }} --key $ONNX_FILE_PATH > /dev/null 2>&1 || ONNX_MODEL_NOT_EXIST=true
           if [[ -z $ONNX_MODEL_NOT_EXIST ]]
           then
-            echo "TORCH_SCRIPT Model already exists on model hub."
+            echo "${{ github.event.inputs.model_id }} already exists on model hub for ONNX format and ${{ github.event.inputs.model_version }} version."
             exit 1
           fi
   
