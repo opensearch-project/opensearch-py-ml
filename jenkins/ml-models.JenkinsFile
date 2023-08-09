@@ -12,6 +12,9 @@ pipeline {
             alwaysPull true
         }
     }
+    options {
+        timeout(time: 1, unit: 'HOURS')
+    }
     parameters {
         string(
             name: 'BASE_DOWNLOAD_PATH',
