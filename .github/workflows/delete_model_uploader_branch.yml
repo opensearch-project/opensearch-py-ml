@@ -1,0 +1,16 @@
+name: Delete merged branch for model-uploader & model-listing-uploader 
+on: 
+  pull_request:
+    types:
+      - closed
+  
+jobs:
+  delete-branch:
+    runs-on: ubuntu-latest
+    if: startsWith(github.event.pull_request.head.ref,'model-uploader/') || startsWith(github.event.pull_request.head.ref,'model-listing-uploader/')
+    steps:
+      - name: Delete closed PR branch
+        uses: dawidd6/action-delete-branch@v3
+        with:
+          GITHUB_TOKEN: ${{github.token}}
+          numbers: ${{github.event.pull_request.number}}
