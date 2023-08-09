@@ -1008,10 +1008,21 @@ class SentenceTransformerModel:
                 "Failed to open config file for ml common upload: " + file_path + "\n"
             )
 
-    def get_model_description_from_md_file(self, readme_file_path) -> str:
+    def _get_model_description_from_readme_file(self, readme_file_path) -> str:
         """
-        Get description of the model from README.md file
+        Get description of the model from README.md file in the model folder
         after the model is saved in local directory
+
+        See example here:
+        https://huggingface.co/sentence-transformers/msmarco-distilbert-base-tas-b/blob/main/README.md)
+
+        This function assumes that the README.md has the following format:
+
+        # sentence-transformers/msmarco-distilbert-base-tas-b
+        This is [ ... further description ... ]
+
+        # [ ... Next section ...]
+        ...
 
         :param readme_file_path: Path to README.md file
         :type readme_file_path: string
@@ -1019,23 +1030,50 @@ class SentenceTransformerModel:
         :rtype: string
         """
         readme_data = MarkDownFile.read_file(readme_file_path)
+
+        # Find the description section
         start_str = f"# {self.model_id}"
         start = readme_data.find(start_str)
         if start == -1:
             model_name = self.model_id.split("/")[1]
             start_str = f"# {model_name}"
             start = readme_data.find(start_str)
-        end = readme_data.find("## ", start)
+        end = readme_data.find("\n#", start + len(start_str))
+
+        # If we cannot find the scope of description section, raise error.
         if start == -1 or end == -1:
             assert False, "Cannot find description in README.md file"
 
+        # Parse out the description section
         description = readme_data[start + len(start_str) + 1 : end].strip()
+        description = description.split("\n")[0]
+
+        # Remove hyperlink and reformat text
         description = re.sub(r"\(.*?\)", "", description)
         description = re.sub(r"[\[\]]", "", description)
         description = re.sub(r"\*", "", description)
+
+        # Remove unnecessary part if exists (i.e. " For an introduction to ...")
+        # (Found in https://huggingface.co/sentence-transformers/multi-qa-mpnet-base-dot-v1/blob/main/README.md)
         unnecessary_part = description.find(" For an introduction to")
         if unnecessary_part != -1:
             description = description[:unnecessary_part]
+
+        return description
+
+    def _generate_default_model_description(self, embedding_dimension) -> str:
+        """
+        Generate default model description of the model based on embedding_dimension
+
+        ::param embedding_dimension: Embedding dimension of the model.
+        :type embedding_dimension: int
+        :return: Description of the model
+        :rtype: string
+        """
+        print(
+            "Using default description from embedding_dimension instead (You can overwrite this by specifying description parameter in make_model_config_json function"
+        )
+        description = f"This is a sentence-transformers model: It maps sentences & paragraphs to a {embedding_dimension} dimensional dense vector space."
         return description
 
     def make_model_config_json(
@@ -1129,11 +1167,19 @@ class SentenceTransformerModel:
                 try:
                     if verbose:
                         print("reading README.md file")
-                    description = self.get_model_description_from_md_file(
+                    description = self._get_model_description_from_readme_file(
                         readme_file_path
                     )
                 except Exception as e:
-                    print(f"Cannot get model description from README.md file: {e}")
+                    print(f"Cannot scrape model description from README.md file: {e}")
+                    description = self._generate_default_model_description(
+                        embedding_dimension
+                    )
+            else:
+                print("Cannot find README.md file to scrape model description")
+                description = self._generate_default_model_description(
+                    embedding_dimension
+                )
 
         if all_config is None:
             if not os.path.exists(config_json_file_path):
@@ -1162,6 +1208,7 @@ class SentenceTransformerModel:
         model_config_content = {
             "name": model_name,
             "version": version_number,
+            "description": description,
             "model_format": model_format,
             "model_task_type": "TEXT_EMBEDDING",
             "model_config": {
@@ -1173,9 +1220,6 @@ class SentenceTransformerModel:
                 "all_config": json.dumps(all_config),
             },
         }
-
-        if description is not None:
-            model_config_content["description"] = description
 
         if verbose:
             print("generating ml-commons_model_config.json file...\n")
