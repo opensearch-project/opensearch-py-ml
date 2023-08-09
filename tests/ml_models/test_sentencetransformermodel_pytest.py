@@ -408,14 +408,16 @@ def test_missing_readme_md_file():
         ), f"Creating model config file for tracing in torch_script raised an exception {exec}"
 
     assert (
-        "description" not in model_config_data_torch
-    ), "Should not have description in model config file"
+        "description" in model_config_data_torch
+        and model_config_data_torch["description"]
+        == "This is a sentence-transformers model: It maps sentences & paragraphs to a 768 dimensional dense vector space."
+    ), "Should use default model description when README.md file is missing"
 
     clean_test_folder(TEST_FOLDER)
 
 
 def test_missing_expected_description_in_readme_file():
-    model_id = "sentence-transformers/msmarco-distilbert-base-tas-b"
+    model_id = "sentence-transformers/paraphrase-MiniLM-L3-v2"
     clean_test_folder(TEST_FOLDER)
     test_model10 = SentenceTransformerModel(
         folder_path=TEST_FOLDER,
@@ -441,8 +443,10 @@ def test_missing_expected_description_in_readme_file():
         ), f"Creating model config file for tracing in torch_script raised an exception {exec}"
 
     assert (
-        "description" not in model_config_data_torch
-    ), "Should not have description in model config file"
+        "description" in model_config_data_torch
+        and model_config_data_torch["description"]
+        == "This is a sentence-transformers model: It maps sentences & paragraphs to a 384 dimensional dense vector space."
+    ), "Should use default model description when description is missing from README.md"
 
     clean_test_folder(TEST_FOLDER)
 
