@@ -10,6 +10,7 @@
 # files for uploading to OpenSearch model hub.
 
 import argparse
+import json
 import os
 import shutil
 import sys
@@ -22,12 +23,9 @@ from mdutils.fileutils import MarkDownFile
 from numpy.typing import DTypeLike
 from sentence_transformers import SentenceTransformer
 
-# We need to append ROOT_DIR path so that we can import 
-# OPENSEARCH_TEST_CLIENT and opensearch_py_ml since this 
-# python script is not in the root directory.
 THIS_DIR = os.path.dirname(__file__)
 ROOT_DIR = os.path.join(THIS_DIR, "../..")
-sys.path.append(ROOT_DIR)  
+sys.path.append(ROOT_DIR)  # Required for importing OPENSEARCH_TEST_CLIENT
 
 LICENSE_PATH = "LICENSE"
 from opensearch_py_ml.ml_commons import MLCommonClient
@@ -46,6 +44,7 @@ UPLOAD_FOLDER_PATH = "upload/"
 MODEL_CONFIG_FILE_NAME = "ml-commons_model_config.json"
 OUTPUT_DIR = "trace_output/"
 LICENSE_VAR_FILE = "apache_verified.txt"
+DESCRIPTION_VAR_FILE = "description.txt"
 TEST_SENTENCES = [
     "First test sentence",
     "This is a very long sentence used for testing model embedding outputs.",
@@ -299,8 +298,9 @@ def prepare_files_for_uploading(
     :type src_model_path: string
     :param src_model_config_path: Path to model config files for uploading
     :type src_model_config_path: string
-    :return: No return value expected
-    :rtype: None
+    :return: Tuple of dst_model_path (path to model zip file) and dst_model_config_path
+    (path to model config json file) in the UPLOAD_FOLDER_PATH
+    :rtype: Tuple[str, str]
     """
     model_name = str(model_id.split("/")[-1])
     model_format = model_format.lower()
@@ -342,6 +342,8 @@ def prepare_files_for_uploading(
     except Exception as e:
         assert False, f"Raised Exception while deleting {folder_to_delete}: {e}"
 
+    return dst_model_path, dst_model_config_path
+
 
 def store_license_verified_variable(license_verified: bool) -> None:
     """
@@ -361,6 +363,32 @@ def store_license_verified_variable(license_verified: bool) -> None:
     except Exception as e:
         print(
             f"Cannot store license_verified ({license_verified}) in {license_var_filepath}: {e}"
+        )
+
+
+def store_description_variable(config_path_for_checking_description: str) -> None:
+    """
+    Store model description in OUTPUT_DIR/DESCRIPTION_VAR_FILE
+    to be used to generate issue body for manual approval
+
+    :param config_path_for_checking_description: Path to config json file
+    :type config_path_for_checking_description: str
+    :return: No return value expected
+    :rtype: None
+    """
+    try:
+        os.makedirs(OUTPUT_DIR, exist_ok=True)
+        description_var_filepath = OUTPUT_DIR + "/" + DESCRIPTION_VAR_FILE
+        with open(config_path_for_checking_description, "r") as f:
+            config_dict = json.load(f)
+            description = (
+                config_dict["description"] if "description" in config_dict else "-"
+            )
+        with open(description_var_filepath, "w") as f:
+            f.write(description)
+    except Exception as e:
+        print(
+            f"Cannot store description ({description}) in {description_var_filepath}: {e}"
         )
 
 
@@ -434,24 +462,31 @@ def main(
             model_description,
         )
 
-        torch_embedding_data = register_and_deploy_sentence_transformer_model(
+        torchscript_embedding_data = register_and_deploy_sentence_transformer_model(
             ml_client,
             torchscript_model_path,
             torchscript_model_config_path,
             TORCH_SCRIPT_FORMAT,
         )
-        pass_test = verify_embedding_data(original_embedding_data, torch_embedding_data)
+        pass_test = verify_embedding_data(
+            original_embedding_data, torchscript_embedding_data
+        )
         assert (
             pass_test
         ), f"Failed while verifying embeddings of {model_id} model in TORCH_SCRIPT format"
 
-        prepare_files_for_uploading(
+        (
+            torchscript_dst_model_path,
+            torchscript_dst_model_config_path,
+        ) = prepare_files_for_uploading(
             model_id,
             model_version,
             TORCH_SCRIPT_FORMAT,
             torchscript_model_path,
             torchscript_model_config_path,
         )
+
+        config_path_for_checking_description = torchscript_dst_model_config_path
         print("--- Finished tracing a model in TORCH_SCRIPT ---")
 
     if tracing_format in [ONNX_FORMAT, BOTH_FORMAT]:
@@ -477,16 +512,19 @@ def main(
             pass_test
         ), f"Failed while verifying embeddings of {model_id} model in ONNX format"
 
-        prepare_files_for_uploading(
+        onnx_dst_model_path, onnx_dst_model_config_path = prepare_files_for_uploading(
             model_id,
             model_version,
             ONNX_FORMAT,
             onnx_model_path,
             onnx_model_config_path,
         )
+
+        config_path_for_checking_description = onnx_dst_model_config_path
         print("--- Finished tracing a model in ONNX ---")
 
     store_license_verified_variable(license_verified)
+    store_description_variable(config_path_for_checking_description)
 
     print("\n=== Finished running model_autotracing.py ===")
 

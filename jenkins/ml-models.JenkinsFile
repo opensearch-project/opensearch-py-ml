@@ -1,17 +1,5 @@
-lib = library(identifier: 'jenkins@2.0.0', retriever: modernSCM([
-    $class: 'GitSCMSource',
-    remote: 'https://github.com/opensearch-project/opensearch-build-libraries.git',
-]))
-
 pipeline {
-    agent
-    {
-        docker {
-            label 'Jenkins-Agent-AL2-X64-C54xlarge-Docker-Host'
-            image 'opensearchstaging/ci-runner:release-centos7-clients-v4'
-            alwaysPull true
-        }
-    }
+    agent any
     options {
         timeout(time: 1, unit: 'HOURS')
     }
@@ -27,21 +15,38 @@ pipeline {
             trim: true
         )
         choice(
-            name: 'TRACING_FORMAT',
+            name: 'FORMAT',
             description: 'Tracing format of the model',
-            choices: ['BOTH', 'TORCH_SCRIPT', 'ONNX']
+            choices: ['', 'BOTH', 'TORCH_SCRIPT', 'ONNX']
         )
-        }
+    }
+    triggers {
+        GenericTrigger(
+            genericVariables: [
+                [key: 'BASE_DOWNLOAD_PATH', value: '$.BASE_DOWNLOAD_PATH'],
+                [key: 'VERSION', value: '$.VERSION'],
+                [key: 'FORMAT', value: '$.FORMAT']
+            ],
+            token: 'JENKINS_ML_MODELS_RELEASE_GENERIC_WEBHOOK_TOKEN',
+            causeString: 'Triggered by GitHub Actions Workflow',
+            printContributedVariables: true,
+            printPostContent: true
+        )
+    }
     environment {
         ARTIFACT_PATH = "${env.BASE_DOWNLOAD_PATH == "ml-models/model_listing" ? "${env.BASE_DOWNLOAD_PATH}" : "${env.BASE_DOWNLOAD_PATH}/${env.VERSION}"}"
         UPLOAD_PATH = "models/ml-models"
-        BUCKET_NAME = credentials('ml-models-bucket-name')
     }
     stages{
         stage('Parameters Check') {
             steps {
                 script {
-                    if (env.BASE_DOWNLOAD_PATH == "ml-models/model_listing" && env.VERSION.isEmpty() && env.TRACING_FORMAT.isEmpty()) {
+                    echo "BASE_DOWNLOAD_PATH: ${env.BASE_DOWNLOAD_PATH}"
+                    echo "VERSION: ${env.VERSION}"
+                    echo "FORMAT: ${env.FORMAT}"
+                    echo "ARTIFACT_PATH: ${env.ARTIFACT_PATH}"
+                    echo "UPLOAD_PATH: ${env.UPLOAD_PATH}"
+                    if (env.BASE_DOWNLOAD_PATH == "ml-models/model_listing") {
                         echo "Proceeding to download the ml-models/model_listing."
                     } else if (env.BASE_DOWNLOAD_PATH.isEmpty()) {
                         currentBuild.result = 'ABORTED'
@@ -49,9 +54,9 @@ pipeline {
                     } else if (env.VERSION.isEmpty()) {
                         currentBuild.result = 'ABORTED'
                         error('VERSION cannot be empty! Please provide the correct values.')
-                    } else if (env.TRACING_FORMAT.isEmpty()) {
+                    } else if (env.FORMAT.isEmpty()) {
                         currentBuild.result = 'ABORTED'
-                        error('TRACING_FORMAT cannot be empty! Please provide the correct values.')
+                        error('FORMAT cannot be empty! Please provide the correct values.')
                     } else {
                         echo "Proceeding to download the ml-models."
                     }
@@ -65,38 +70,53 @@ pipeline {
         stage('Download the artifacts') {
             steps {
                 script {
+                    local_path = "${env.WORKSPACE}/artifacts"
                     if (env.BASE_DOWNLOAD_PATH == "ml-models/model_listing") {
-                        downloadFromS3(
-                            assumedRoleName: 'get_models',
-                            roleAccountNumberCred: 'ml-models-aws-account-number',
-                            downloadPath: "${env.ARTIFACT_PATH}/",
-                            bucketName: "${env.BUCKET_NAME}",
-                            localPath: "${env.WORKSPACE}/artifacts",
-                            force: true,
-                            region: 'us-west-2'
-                        )
+                        download_path = "${env.ARTIFACT_PATH}/"
+                        withCredentials([
+                            string(credentialsId: "ml_team_bucket_role", variable: "TEAM_BUCKET_ROLE"),
+                            string(credentialsId: "ml_team_bucket_cred", variable: "TEAM_BUCKET_CRED"),
+                            string(credentialsId: "ml_team_bucket_name", variable: "TEAM_BUCKET_NAME")
+                        ]) {
+                            withAWS(role: "$TEAM_BUCKET_ROLE", roleAccount: "$TEAM_BUCKET_CRED", duration: 900, roleSessionName: "model-releasing", region: "us-west-2") {
+                                s3Download(file: "$local_path", bucket: "$TEAM_BUCKET_NAME", path: "$download_path", force: true)
+                            }
+                        }    
                     } else {
-                        if (env.TRACING_FORMAT == "TORCH_SCRIPT" || env.TRACING_FORMAT == "BOTH) {
-                            downloadFromS3(
-                                assumedRoleName: 'get_models',
-                                roleAccountNumberCred: 'ml-models-aws-account-number',
-                                downloadPath: "${env.ARTIFACT_PATH}/torch_script/",
-                                bucketName: "${env.BUCKET_NAME}",
-                                localPath: "${env.WORKSPACE}/artifacts",
-                                force: true,
-                                region: 'us-west-2'
-                            )
-                        }
-                        if (env.TRACING_FORMAT == "ONNX" || env.TRACING_FORMAT == "BOTH) {
-                            downloadFromS3(
-                                assumedRoleName: 'get_models',
-                                roleAccountNumberCred: 'ml-models-aws-account-number',
-                                downloadPath: "${env.ARTIFACT_PATH}/onnx/",
-                                bucketName: "${env.BUCKET_NAME}",
-                                localPath: "${env.WORKSPACE}/artifacts",
-                                force: true,
-                                region: 'us-west-2'
-                            )
+                        if (env.FORMAT == "TORCH_SCRIPT") {
+                            download_path = "${env.ARTIFACT_PATH}/torch_script/"
+                            withCredentials([
+                                string(credentialsId: "ml_team_bucket_role", variable: "TEAM_BUCKET_ROLE"),
+                                string(credentialsId: "ml_team_bucket_cred", variable: "TEAM_BUCKET_CRED"),
+                                string(credentialsId: "ml_team_bucket_name", variable: "TEAM_BUCKET_NAME")
+                            ]) {
+                                withAWS(role: "$TEAM_BUCKET_ROLE", roleAccount: "$TEAM_BUCKET_CRED", duration: 900, roleSessionName: "model-releasing", region: "us-west-2") {
+                                    s3Download(file: "$local_path", bucket: "$TEAM_BUCKET_NAME", path: "$download_path", force: true)
+                                }
+                            }    
+                        } else if (env.FORMAT == "ONNX") {
+                            download_path = "${env.ARTIFACT_PATH}/onnx/"
+                            withCredentials([
+                                string(credentialsId: "ml_team_bucket_role", variable: "TEAM_BUCKET_ROLE"),
+                                string(credentialsId: "ml_team_bucket_cred", variable: "TEAM_BUCKET_CRED"),
+                                string(credentialsId: "ml_team_bucket_name", variable: "TEAM_BUCKET_NAME")
+                            ]) {
+                                withAWS(role: "$TEAM_BUCKET_ROLE", roleAccount: "$TEAM_BUCKET_CRED", duration: 900, roleSessionName: "model-releasing", region: "us-west-2") {
+                                    s3Download(file: "$local_path", bucket: "$TEAM_BUCKET_NAME", path: "$download_path", force: true)
+                                }
+                            }        
+                        } else { 
+                            // env.FORMAT == "BOTH"
+                            download_path = "${env.ARTIFACT_PATH}/"
+                            withCredentials([
+                                string(credentialsId: "ml_team_bucket_role", variable: "TEAM_BUCKET_ROLE"),
+                                string(credentialsId: "ml_team_bucket_cred", variable: "TEAM_BUCKET_CRED"),
+                                string(credentialsId: "ml_team_bucket_name", variable: "TEAM_BUCKET_NAME")
+                            ]) {
+                                withAWS(role: "$TEAM_BUCKET_ROLE", roleAccount: "$TEAM_BUCKET_CRED", duration: 900, roleSessionName: "model-releasing", region: "us-west-2") {
+                                    s3Download(file: "$local_path", bucket: "$TEAM_BUCKET_NAME", path: "$download_path", force: true)
+                                }
+                            }        
                         }
                     }
                 }
@@ -105,14 +125,17 @@ pipeline {
         stage('Sign and Release the artifacts') {
             steps {
                 script {
-                    publishToArtifactsProdBucket(
-                        assumedRoleName: 'ml-models-artifacts-upload-role',
-                        source: "${env.WORKSPACE}/artifacts/ml-models",
-                        destination: "${env.UPLOAD_PATH}",
-                        signingPlatform: 'linux',
-                        sigType: '.sig',
-                        sigOverwrite: true
-                    )
+                    source = "${env.WORKSPACE}/artifacts/ml-models"
+                    destination = "${env.UPLOAD_PATH}"
+                    withCredentials([
+                        string(credentialsId: "ml_release_bucket_role", variable: "RELEASE_BUCKET_ROLE"),
+                        string(credentialsId: "ml_release_bucket_cred", variable: "RELEASE_BUCKET_CRED"),
+                        string(credentialsId: "ml_release_bucket_name", variable: "RELEASE_BUCKET_NAME")
+                    ]) {
+                        withAWS(role: "$RELEASE_BUCKET_ROLE", roleAccount: "$RELEASE_BUCKET_CRED", duration: 900, roleSessionName: "model-releasing", region: "us-east-1") {
+                            s3Upload(file: "$source", bucket: "$RELEASE_BUCKET_NAME", path: "$destination")
+                        }
+                    }   
                 }
             }
         }
@@ -120,7 +143,7 @@ pipeline {
     post {
         always {
             script {
-                postCleanup()
+                cleanWs(disableDeferredWipeout: true, deleteDirs: true)
                 }
             }
         }

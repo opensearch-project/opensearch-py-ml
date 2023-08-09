@@ -4,8 +4,10 @@ on:
     branches: # TO-BE-CHANGED
      - workflow-for-review 
      - experiment-description
+     - experiment-trigger-jenkins
     paths: 
      - utils/model_uploader/model_listing/pretrained_model_listing.json
+  workflow_dispatch: # TODO: Remove this
   
 jobs:
   upload-model-listing:
@@ -34,22 +36,18 @@ jobs:
     - name: Update pre_trained_models.json in S3
       run: aws s3 cp ${{ env.repo_model_listing_path }} s3://${{ secrets.PERSONAL_MODEL_BUCKET }}/${{ env.bucket_model_listing_file_path }}
 
-# # TODO: Trigger Jenkins Workflow
-#   trigger-model-release-workflow:
-#     runs-on: 'ubuntu-latest'
-#     steps:
-#       - name: Trigger Jenkins Workflow with Generic Webhook
-#         run: |
-#           JENKINS_URL="https://build.ci.opensearch.org"
-#           JENKINS_TRIGGER_TOKEN=${{ secrets.JENKINS_ML_MODELS_RELEASE_GENERIC_WEBHOOK_TOKEN }}
-          
-#           JENKINS_PARAMS="{\"BASE_DOWNLOAD_PATH\":\"ml-models/model_listing\"}"
-          
-#           # TODO: Set up JENKINS_TRIGGER_TOKEN
-#           JENKINS_REQ=`curl -s -XPOST \
-#              -H "Authorization: Bearer $JENKINS_TRIGGER_TOKEN" \
-#              -H "Content-Type: application/json" \
-#              "$JENKINS_URL/generic-webhook-trigger/invoke" \
-#              --data "$(echo $JENKINS_PARAMS)"`
-
-#           echo $JENKINS_REQ
+  trigger-ml-models-release-workflow:
+    needs: upload-model-listing
+    runs-on: 'ubuntu-latest'
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+      - name: Trigger Jenkins Workflow with Generic Webhook
+        run: |
+          # TODO: Set up JENKINS_TRIGGER_TOKEN & Remove ${{ secrets.JENKINS_URL }}
+          JENKINS_URL=${{ secrets.JENKINS_URL }} # "https://build.ci.opensearch.org"
+          JENKINS_TRIGGER_TOKEN=${{ secrets.JENKINS_ML_MODELS_RELEASE_GENERIC_WEBHOOK_TOKEN }}
+          JENKINS_PARAMS="{\"BASE_DOWNLOAD_PATH\":\"ml-models/model_listing\"}"
+          sh utils/model_uploader/trigger_ml_models_release.sh $JENKINS_TRIGGER_TOKEN $JENKINS_PARAMS $JENKINS_URL
