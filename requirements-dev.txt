@@ -11,6 +11,7 @@ sentence_transformers
 tqdm
 transformers
 deprecated
+mdutils
 
 #
 # Testing
