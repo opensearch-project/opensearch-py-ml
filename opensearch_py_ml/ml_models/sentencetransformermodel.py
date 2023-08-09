@@ -1070,7 +1070,10 @@ class SentenceTransformerModel:
         :return: Description of the model
         :rtype: string
         """
-        description = f"This is a sentence-transformers model: It maps sentences & paragraphs to a {embedding_dimension} dimensional dense vector space"
+        print(
+            "Using default description from embedding_dimension instead (You can overwrite this by specifying description parameter in make_model_config_json function"
+        )
+        description = f"This is a sentence-transformers model: It maps sentences & paragraphs to a {embedding_dimension} dimensional dense vector space."
         return description
 
     def make_model_config_json(
@@ -1165,15 +1168,16 @@ class SentenceTransformerModel:
                     if verbose:
                         print("reading README.md file")
                     description = self._get_model_description_from_readme_file(
-                        embedding_dimension
+                        readme_file_path
                     )
                 except Exception as e:
+                    print(f"Cannot scrape model description from README.md file: {e}")
                     description = self._generate_default_model_description(
                         embedding_dimension
                     )
-                    print(f"Cannot get model description from README.md file: {e}")
             else:
-                description = self.__generate_default_model_description(
+                print("Cannot find README.md file to scrape model description")
+                description = self._generate_default_model_description(
                     embedding_dimension
                 )
 
