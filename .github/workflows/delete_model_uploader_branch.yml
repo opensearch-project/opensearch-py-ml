@@ -7,9 +7,7 @@ on:
 jobs:
   delete-branch:
     runs-on: ubuntu-latest
-    if: |
-    startsWith(github.event.pull_request.head.ref,'model-uploader/') ||
-    startsWith(github.event.pull_request.head.ref,'model-listing-uploader/')
+    if: startsWith(github.event.pull_request.head.ref,'model-uploader/') || startsWith(github.event.pull_request.head.ref,'model-listing-uploader/')
     steps:
       - name: Delete closed PR branch
         uses: dawidd6/action-delete-branch@v3

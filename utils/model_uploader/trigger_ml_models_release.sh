@@ -12,24 +12,23 @@
 
 JENKINS_TRIGGER_TOKEN=$1
 JENKINS_PARAMS=$2
-# JENKINS_URL="https://build.ci.opensearch.org"
-JENKINS_URL=$3 # TODO: Remove this
+JENKINS_URL="https://build.ci.opensearch.org"
 
 TIMEPASS=0
 TIMEOUT=7200
 RESULT="null"
 
-echo "Trigger ml-models-release Jenkins workflows"
 JENKINS_REQ=$(curl -s -XPOST \
              -H "Authorization: Bearer $JENKINS_TRIGGER_TOKEN" \
              -H "Content-Type: application/json" \
              "$JENKINS_URL/generic-webhook-trigger/invoke" \
              --data "$JENKINS_PARAMS")
 
+echo "Trigger ml-models-release Jenkins workflows"
 echo $JENKINS_PARAMS
 echo $JENKINS_REQ
 
-QUEUE_URL=$(echo $JENKINS_REQ | jq --raw-output '.jobs."opensearch-exp-jenkins-workflow".url') # TODO: Change to "ml-models-release"
+QUEUE_URL=$(echo $JENKINS_REQ | jq --raw-output '.jobs."ml-models-release".url')
 echo "QUEUE_URL: $QUEUE_URL"
 echo "Wait for jenkins to start workflow" && sleep 15
 
@@ -37,12 +36,9 @@ echo "Check if queue exist in Jenkins after triggering"
 if [ -z "$QUEUE_URL" ] || [ "$QUEUE_URL" != "null" ]; then
     WORKFLOW_URL=$(curl -s -XGET ${JENKINS_URL}/${QUEUE_URL}api/json | jq --raw-output .executable.url)
     echo WORKFLOW_URL $WORKFLOW_URL
-
     echo "Use queue information to find build number in Jenkins if available"
     if [ -z "$WORKFLOW_URL" ] || [ "$WORKFLOW_URL" != "null" ]; then
-
         RUNNING="true"
-
         echo "Waiting for Jenkins to complete the run"
         while [ "$RUNNING" = "true" ] && [ "$TIMEPASS" -le "$TIMEOUT" ]; do
             echo "Still running, wait for another 5 seconds before checking again, max timeout $TIMEOUT"
@@ -59,7 +55,6 @@ if [ -z "$QUEUE_URL" ] || [ "$QUEUE_URL" != "null" ]; then
             echo "Complete the run, checking results now......"
             RESULT=$(curl -s -XGET ${WORKFLOW_URL}api/json | jq --raw-output .result)
         fi
-
     fi
 fi
 

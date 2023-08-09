@@ -13,7 +13,6 @@ import argparse
 import json
 import os
 from typing import Dict, List, Optional
-
 from mdutils.fileutils import MarkDownFile
 from mdutils.tools.Table import Table
 

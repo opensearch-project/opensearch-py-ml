@@ -1,7 +1,16 @@
+lib = library(identifier: 'jenkins@2.0.0', retriever: modernSCM([
+    $class: 'GitSCMSource',
+    remote: 'https://github.com/opensearch-project/opensearch-build-libraries.git',
+]))
+
 pipeline {
-    agent any
-    options {
-        timeout(time: 1, unit: 'HOURS')
+    agent
+    {
+        docker {
+            label 'Jenkins-Agent-AL2-X64-C54xlarge-Docker-Host'
+            image 'opensearchstaging/ci-runner:release-centos7-clients-v4'
+            alwaysPull true
+        }
     }
     parameters {
         string(
@@ -70,53 +79,48 @@ pipeline {
         stage('Download the artifacts') {
             steps {
                 script {
-                    local_path = "${env.WORKSPACE}/artifacts"
                     if (env.BASE_DOWNLOAD_PATH == "ml-models/model_listing") {
-                        download_path = "${env.ARTIFACT_PATH}/"
-                        withCredentials([
-                            string(credentialsId: "ml_team_bucket_role", variable: "TEAM_BUCKET_ROLE"),
-                            string(credentialsId: "ml_team_bucket_cred", variable: "TEAM_BUCKET_CRED"),
-                            string(credentialsId: "ml_team_bucket_name", variable: "TEAM_BUCKET_NAME")
-                        ]) {
-                            withAWS(role: "$TEAM_BUCKET_ROLE", roleAccount: "$TEAM_BUCKET_CRED", duration: 900, roleSessionName: "model-releasing", region: "us-west-2") {
-                                s3Download(file: "$local_path", bucket: "$TEAM_BUCKET_NAME", path: "$download_path", force: true)
-                            }
-                        }    
+                        downloadFromS3(
+                            assumedRoleName: 'get_models',
+                            roleAccountNumberCred: 'ml-models-aws-account-number',
+                            downloadPath: "${env.ARTIFACT_PATH}/",
+                            bucketName: "${env.BUCKET_NAME}",
+                            localPath: "${env.WORKSPACE}/artifacts",
+                            force: true,
+                            region: 'us-west-2'
+                        )
                     } else {
                         if (env.FORMAT == "TORCH_SCRIPT") {
-                            download_path = "${env.ARTIFACT_PATH}/torch_script/"
-                            withCredentials([
-                                string(credentialsId: "ml_team_bucket_role", variable: "TEAM_BUCKET_ROLE"),
-                                string(credentialsId: "ml_team_bucket_cred", variable: "TEAM_BUCKET_CRED"),
-                                string(credentialsId: "ml_team_bucket_name", variable: "TEAM_BUCKET_NAME")
-                            ]) {
-                                withAWS(role: "$TEAM_BUCKET_ROLE", roleAccount: "$TEAM_BUCKET_CRED", duration: 900, roleSessionName: "model-releasing", region: "us-west-2") {
-                                    s3Download(file: "$local_path", bucket: "$TEAM_BUCKET_NAME", path: "$download_path", force: true)
-                                }
-                            }    
+                            downloadFromS3(
+                                assumedRoleName: 'get_models',
+                                roleAccountNumberCred: 'ml-models-aws-account-number',
+                                downloadPath: "${env.ARTIFACT_PATH}/torch_script/",
+                                bucketName: "${env.BUCKET_NAME}",
+                                localPath: "${env.WORKSPACE}/artifacts",
+                                force: true,
+                                region: 'us-west-2'
+                            )
                         } else if (env.FORMAT == "ONNX") {
-                            download_path = "${env.ARTIFACT_PATH}/onnx/"
-                            withCredentials([
-                                string(credentialsId: "ml_team_bucket_role", variable: "TEAM_BUCKET_ROLE"),
-                                string(credentialsId: "ml_team_bucket_cred", variable: "TEAM_BUCKET_CRED"),
-                                string(credentialsId: "ml_team_bucket_name", variable: "TEAM_BUCKET_NAME")
-                            ]) {
-                                withAWS(role: "$TEAM_BUCKET_ROLE", roleAccount: "$TEAM_BUCKET_CRED", duration: 900, roleSessionName: "model-releasing", region: "us-west-2") {
-                                    s3Download(file: "$local_path", bucket: "$TEAM_BUCKET_NAME", path: "$download_path", force: true)
-                                }
-                            }        
+                            downloadFromS3(
+                                assumedRoleName: 'get_models',
+                                roleAccountNumberCred: 'ml-models-aws-account-number',
+                                downloadPath: "${env.ARTIFACT_PATH}/onnx/",
+                                bucketName: "${env.BUCKET_NAME}",
+                                localPath: "${env.WORKSPACE}/artifacts",
+                                force: true,
+                                region: 'us-west-2'
+                            )
                         } else { 
-                            // env.FORMAT == "BOTH"
-                            download_path = "${env.ARTIFACT_PATH}/"
-                            withCredentials([
-                                string(credentialsId: "ml_team_bucket_role", variable: "TEAM_BUCKET_ROLE"),
-                                string(credentialsId: "ml_team_bucket_cred", variable: "TEAM_BUCKET_CRED"),
-                                string(credentialsId: "ml_team_bucket_name", variable: "TEAM_BUCKET_NAME")
-                            ]) {
-                                withAWS(role: "$TEAM_BUCKET_ROLE", roleAccount: "$TEAM_BUCKET_CRED", duration: 900, roleSessionName: "model-releasing", region: "us-west-2") {
-                                    s3Download(file: "$local_path", bucket: "$TEAM_BUCKET_NAME", path: "$download_path", force: true)
-                                }
-                            }        
+                            // Download all formats
+                            downloadFromS3(
+                                assumedRoleName: 'get_models',
+                                roleAccountNumberCred: 'ml-models-aws-account-number',
+                                downloadPath: "${env.ARTIFACT_PATH}/",
+                                bucketName: "${env.BUCKET_NAME}",
+                                localPath: "${env.WORKSPACE}/artifacts",
+                                force: true,
+                                region: 'us-west-2'
+                            )
                         }
                     }
                 }
@@ -125,17 +129,14 @@ pipeline {
         stage('Sign and Release the artifacts') {
             steps {
                 script {
-                    source = "${env.WORKSPACE}/artifacts/ml-models"
-                    destination = "${env.UPLOAD_PATH}"
-                    withCredentials([
-                        string(credentialsId: "ml_release_bucket_role", variable: "RELEASE_BUCKET_ROLE"),
-                        string(credentialsId: "ml_release_bucket_cred", variable: "RELEASE_BUCKET_CRED"),
-                        string(credentialsId: "ml_release_bucket_name", variable: "RELEASE_BUCKET_NAME")
-                    ]) {
-                        withAWS(role: "$RELEASE_BUCKET_ROLE", roleAccount: "$RELEASE_BUCKET_CRED", duration: 900, roleSessionName: "model-releasing", region: "us-east-1") {
-                            s3Upload(file: "$source", bucket: "$RELEASE_BUCKET_NAME", path: "$destination")
-                        }
-                    }   
+                    publishToArtifactsProdBucket(
+                        assumedRoleName: 'ml-models-artifacts-upload-role',
+                        source: "${env.WORKSPACE}/artifacts/ml-models",
+                        destination: "${env.UPLOAD_PATH}",
+                        signingPlatform: 'linux',
+                        sigType: '.sig',
+                        sigOverwrite: true
+                    )
                 }
             }
         }
@@ -143,8 +144,8 @@ pipeline {
     post {
         always {
             script {
-                cleanWs(disableDeferredWipeout: true, deleteDirs: true)
-                }
+                postCleanup()
             }
         }
     }
+}

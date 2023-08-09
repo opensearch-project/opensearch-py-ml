@@ -11,21 +11,23 @@
 
 import argparse
 import json
+import numpy as np
 import os
 import shutil
 import sys
 import warnings
-from typing import List, Optional, Tuple
-from zipfile import ZipFile
-
-import numpy as np
 from mdutils.fileutils import MarkDownFile
 from numpy.typing import DTypeLike
 from sentence_transformers import SentenceTransformer
+from typing import List, Optional, Tuple
+from zipfile import ZipFile
 
+# We need to append ROOT_DIR path so that we can import 
+# OPENSEARCH_TEST_CLIENT and opensearch_py_ml since this 
+# python script is not in the root directory.
 THIS_DIR = os.path.dirname(__file__)
 ROOT_DIR = os.path.join(THIS_DIR, "../..")
-sys.path.append(ROOT_DIR)  # Required for importing OPENSEARCH_TEST_CLIENT
+sys.path.append(ROOT_DIR)
 
 LICENSE_PATH = "LICENSE"
 from opensearch_py_ml.ml_commons import MLCommonClient
