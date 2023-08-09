@@ -78,11 +78,11 @@ def create_model_json_obj(
         "Model Format": model_format,
         "Embedding Dimension": str(embedding_dimension)
         if embedding_dimension is not None
-        else "Default",
-        "Pooling Mode": pooling_mode if pooling_mode is not None else "Default",
+        else "N/A",
+        "Pooling Mode": pooling_mode if pooling_mode is not None else "N/A",
         "Model Description": model_description
         if model_description is not None
-        else "Default",
+        else "N/A",
     }
     return model_obj
 

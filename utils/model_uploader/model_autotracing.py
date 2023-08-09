@@ -430,12 +430,12 @@ def main(
     print("Tracing Format: ", tracing_format)
     print(
         "Embedding Dimension: ",
-        embedding_dimension if embedding_dimension is not None else "Default",
+        embedding_dimension if embedding_dimension is not None else "N/A",
     )
-    print("Pooling Mode: ", pooling_mode if pooling_mode is not None else "Default")
+    print("Pooling Mode: ", pooling_mode if pooling_mode is not None else "N/A")
     print(
         "Model Description: ",
-        model_description if model_description is not None else "Default",
+        model_description if model_description is not None else "N/A",
     )
     print("==========================================")
 

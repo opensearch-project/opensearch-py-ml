@@ -76,9 +76,9 @@ jobs:
         - Model ID: ${{ github.event.inputs.model_id }}
         - Model Version: ${{ github.event.inputs.model_version }}
         - Tracing Format: ${{ github.event.inputs.tracing_format }}
-        - Embedding Dimension: ${embedding_dimension:-Default}
-        - Pooling Mode: ${pooling_mode:-Default}
-        - Model Description: ${model_description:-Default}
+        - Embedding Dimension: ${embedding_dimension:-N/A}
+        - Pooling Mode: ${pooling_mode:-N/A}
+        - Model Description: ${model_description:-N/A}
         
         ======== Workflow Output Information =========
         - Embedding Verification: Passed"
