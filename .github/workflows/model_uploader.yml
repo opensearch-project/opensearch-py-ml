@@ -316,8 +316,8 @@ jobs:
             ${{ github.event.inputs.tracing_format }} \
             -ed ${{ github.event.inputs.embedding_dimension }} \
             -pm ${{ github.event.inputs.pooling_mode }} \
-            -md ${model_description:+"$model_description"} \
-            -u ${{ github.actor }} -t "${{ needs.model-uploading.outputs.upload_time }}"
+            -id ${{ github.run_id }} -u ${{ github.actor }} \
+            -t "${{ needs.model-uploading.outputs.upload_time }}"
       - name: Create PR Body
         id: create_pr_body
         run: |
