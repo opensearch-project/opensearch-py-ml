@@ -9,6 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     if: startsWith(github.event.pull_request.head.ref,'model-uploader/') || startsWith(github.event.pull_request.head.ref,'model-listing-uploader/')
     steps:
+      # Compared to backport.yml, this GitHub action will delete branch
+      # of a PR that is closed, but not merged as well.
       - name: Delete closed PR branch
         uses: dawidd6/action-delete-branch@v3
         with:
