@@ -80,7 +80,7 @@ def create_model_json_obj(
         if embedding_dimension is not None
         else "N/A",
         "Pooling Mode": pooling_mode if pooling_mode is not None else "N/A",
-        "Workflow Run ID": workflow_id if workflow_id is not None else "-"
+        "Workflow Run ID": workflow_id if workflow_id is not None else "-",
     }
     return model_obj
 
