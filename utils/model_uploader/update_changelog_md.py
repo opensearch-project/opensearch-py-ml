@@ -5,9 +5,10 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
-# This program is run by "Model Auto-tracing & Uploading" workflow
-# (See model_uploader.yml) to update CHANGELOG.md after uploading the model
-# to our model hub.
+# This program is run by "Model Auto-tracing & Uploading"
+# & "Model Listing Uploading" workflow (See model_uploader.yml
+# & model_listing_uploader.yml) to update CHANGELOG.md after
+# uploading the model to our model hub.
 
 import argparse
 
@@ -15,7 +16,8 @@ from mdutils.fileutils import MarkDownFile
 
 CHANGELOG_DIRNAME = "."
 CHANGELOG_FILENAME = "CHANGELOG.md"
-SECTION_NAME = "Changed"
+SUBSECTION_NAME = "Changed"
+PREV_SUBSECTION_NAME = "Added"
 
 
 def update_changelog_file(
@@ -31,14 +33,24 @@ def update_changelog_file(
     """
     changelog_data = MarkDownFile.read_file(f"{CHANGELOG_DIRNAME}/{CHANGELOG_FILENAME}")
 
-    this_version_ptr = changelog_data.find("## [")
-    assert this_version_ptr != -1, "Cannot find a version section in the CHANGELOG.md"
-    next_version_ptr = changelog_data.find("## [", this_version_ptr + 1)
+    # Find the most recent version section and pull it out
+    this_version_ptr = changelog_data.find("\n## ") + 1
+    assert this_version_ptr != 0, "Cannot find a version section in the CHANGELOG.md"
+    next_version_ptr = changelog_data.find("\n## ", this_version_ptr + 1) + 1
+    if next_version_ptr == 0:
+        next_version_ptr = -1
     this_version_section = changelog_data[this_version_ptr:next_version_ptr]
 
-    this_subsection_ptr = this_version_section.find(f"### {SECTION_NAME}")
-    if this_subsection_ptr != -1:
-        next_subsection_ptr = this_version_section.find("### ", this_subsection_ptr + 1)
+    # Find the sub-section SUBSECTION_NAME
+    this_subsection_ptr = this_version_section.find(f"\n### {SUBSECTION_NAME}") + 1
+    if this_subsection_ptr != 0:
+        # Case 1: Section SUBSECTION_NAME exists
+        # Append a change_log line to the end of that subsection if it exists
+        next_subsection_ptr = (
+            this_version_section.find("\n### ", this_subsection_ptr + 1) + 1
+        )
+        if next_subsection_ptr == 0:
+            next_subsection_ptr = -1
         this_subsection = this_version_section[
             this_subsection_ptr:next_subsection_ptr
         ].strip()
@@ -49,10 +61,47 @@ def update_changelog_file(
             + this_version_section[next_subsection_ptr:]
         )
     else:
-        this_subsection = this_version_section.strip()
-        this_subsection += "\n\n" + f"### {SECTION_NAME}\n- " + changelog_line + "\n\n"
-        new_version_section = this_subsection
+        # Case 2: Sub-section SUBSECTION_NAME does not exist
+        # Create sub-section SUBSECTION_NAME and add a change_log line
+        this_subsection = f"### {SUBSECTION_NAME}\n- {changelog_line}\n\n"
+        prev_subsection_ptr = (
+            this_version_section.find(f"\n### {PREV_SUBSECTION_NAME}") + 1
+        )
+        if prev_subsection_ptr != 0:
+            # Case 2.1: Sub-section PREV_SUBSECTION_NAME exist
+            # Add a sub-section SUBSECTION_NAME after PREV_SUBSECTION_NAME if PREV_SUBSECTION_NAME exists
+            next_subsection_ptr = (
+                this_version_section.find("\n### ", prev_subsection_ptr + 1) + 1
+            )
+            prev_subsection = this_version_section[
+                prev_subsection_ptr:next_subsection_ptr
+            ].strip()
+            new_version_section = (
+                this_version_section[:prev_subsection_ptr]
+                + prev_subsection
+                + "\n\n"
+                + this_subsection
+                + this_version_section[next_subsection_ptr:]
+            )
+        else:
+            # Case 2.2: Sub-section PREV_SUBSECTION_NAME does not exist
+            next_subsection_ptr = this_version_section.find("\n### ") + 1
+            if next_subsection_ptr != 0:
+                # Case 2.2.1: There exists other sub-section in this version section
+                # Add a sub-section SECTION_NAME before other sub-sections
+                new_version_section = (
+                    this_version_section[:next_subsection_ptr]
+                    + this_subsection
+                    + this_version_section[next_subsection_ptr:]
+                )
+            else:
+                # Case 2.2.2: There isn't any other sub-section in this version section
+                # Add a sub-section SECTION_NAME after version headline
+                new_version_section = (
+                    this_version_section.strip() + "\n\n" + this_subsection
+                )
 
+    # Insert new_version_section back to the document
     new_changelog_data = (
         changelog_data[:this_version_ptr]
         + new_version_section
