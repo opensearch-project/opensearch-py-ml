@@ -384,6 +384,8 @@ def store_description_variable(config_path_for_checking_description: str) -> Non
             description = (
                 config_dict["description"] if "description" in config_dict else "-"
             )
+        print(f"Storing the following description at {description_var_filepath}")
+        print(description)
         with open(description_var_filepath, "w") as f:
             f.write(description)
     except Exception as e:

@@ -188,8 +188,9 @@ jobs:
       - name: Model Description Info
         id: model_description_info
         run: |
-          model_description_info=$(<trace_output/description.txt)
-          echo "model_description_info=$model_description_info" >> $GITHUB_OUTPUT
+          model_description_info="$(<trace_output/description.txt)"
+          echo "model_description_info=- Model Description: $model_description_info" >> $GITHUB_OUTPUT
+          echo "$model_description_info"
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with: 
@@ -216,7 +217,7 @@ jobs:
     outputs:
       license_line: ${{ steps.license_verification.outputs.license_line }}
       license_info: ${{ steps.license_verification.outputs.license_info }}
-      model_description_info: ${{ steps.model_description.outputs.model_description_info }}
+      model_description_info: ${{ steps.model_description_info.outputs.model_description_info }}
       dryrun_output: ${{ steps.dryrun_model_uploading.outputs.dryrun_output }}
 
   # Step 5: Ask for manual approval from the CODEOWNERS
@@ -327,7 +328,7 @@ jobs:
           
           ${{ needs.init-workflow-var.outputs.workflow_info }}
           ${{ needs.model-auto-tracing.outputs.license_info }}
-          ${{ needs.model-auto-tracing.outputs.model_description }}"
+          ${{ needs.model-auto-tracing.outputs.model_description_info }}"
           
           echo "pr_body<<EOF" >> $GITHUB_OUTPUT
           echo "${pr_body@E}" >> $GITHUB_OUTPUT
