@@ -10,6 +10,7 @@ import os
 import pickle
 import platform
 import random
+import re
 import shutil
 import subprocess
 import time
@@ -23,6 +24,7 @@ import pandas as pd
 import torch
 import yaml
 from accelerate import Accelerator, notebook_launcher
+from mdutils.fileutils import MarkDownFile
 from sentence_transformers import SentenceTransformer
 from sentence_transformers.models import Normalize, Pooling, Transformer
 from torch.utils.data import DataLoader
@@ -1006,6 +1008,74 @@ class SentenceTransformerModel:
                 "Failed to open config file for ml common upload: " + file_path + "\n"
             )
 
+    def _get_model_description_from_readme_file(self, readme_file_path) -> str:
+        """
+        Get description of the model from README.md file in the model folder
+        after the model is saved in local directory
+
+        See example here:
+        https://huggingface.co/sentence-transformers/msmarco-distilbert-base-tas-b/blob/main/README.md)
+
+        This function assumes that the README.md has the following format:
+
+        # sentence-transformers/msmarco-distilbert-base-tas-b
+        This is [ ... further description ... ]
+
+        # [ ... Next section ...]
+        ...
+
+        :param readme_file_path: Path to README.md file
+        :type readme_file_path: string
+        :return: Description of the model
+        :rtype: string
+        """
+        readme_data = MarkDownFile.read_file(readme_file_path)
+
+        # Find the description section
+        start_str = f"# {self.model_id}"
+        start = readme_data.find(start_str)
+        if start == -1:
+            model_name = self.model_id.split("/")[1]
+            start_str = f"# {model_name}"
+            start = readme_data.find(start_str)
+        end = readme_data.find("\n#", start + len(start_str))
+
+        # If we cannot find the scope of description section, raise error.
+        if start == -1 or end == -1:
+            assert False, "Cannot find description in README.md file"
+
+        # Parse out the description section
+        description = readme_data[start + len(start_str) + 1 : end].strip()
+        description = description.split("\n")[0]
+
+        # Remove hyperlink and reformat text
+        description = re.sub(r"\(.*?\)", "", description)
+        description = re.sub(r"[\[\]]", "", description)
+        description = re.sub(r"\*", "", description)
+
+        # Remove unnecessary part if exists (i.e. " For an introduction to ...")
+        # (Found in https://huggingface.co/sentence-transformers/multi-qa-mpnet-base-dot-v1/blob/main/README.md)
+        unnecessary_part = description.find(" For an introduction to")
+        if unnecessary_part != -1:
+            description = description[:unnecessary_part]
+
+        return description
+
+    def _generate_default_model_description(self, embedding_dimension) -> str:
+        """
+        Generate default model description of the model based on embedding_dimension
+
+        ::param embedding_dimension: Embedding dimension of the model.
+        :type embedding_dimension: int
+        :return: Description of the model
+        :rtype: string
+        """
+        print(
+            "Using default description from embedding_dimension instead (You can overwrite this by specifying description parameter in make_model_config_json function"
+        )
+        description = f"This is a sentence-transformers model: It maps sentences & paragraphs to a {embedding_dimension} dimensional dense vector space."
+        return description
+
     def make_model_config_json(
         self,
         model_name: str = None,
@@ -1014,6 +1084,7 @@ class SentenceTransformerModel:
         embedding_dimension: int = None,
         pooling_mode: str = None,
         normalize_result: bool = None,
+        description: str = None,
         all_config: str = None,
         model_type: str = None,
         verbose: bool = False,
@@ -1040,6 +1111,9 @@ class SentenceTransformerModel:
         :param normalize_result: Optional, whether to normalize the result of the model. If None, check from the pre-trained
         hugging-face model object.
         :type normalize_result: bool
+        :param description: Optional, the description of the model. If None, get description from the README.md
+            file in the model folder.
+        :type description: str
         :param all_config:
             Optional, the all_config of the model. If None, parse all contents from the config file of pre-trained
             hugging-face model
@@ -1087,6 +1161,26 @@ class SentenceTransformerModel:
                     f"Raised exception while getting model data from pre-trained hugging-face model object: {e}"
                 )
 
+        if description is None:
+            readme_file_path = os.path.join(self.folder_path, "README.md")
+            if os.path.exists(readme_file_path):
+                try:
+                    if verbose:
+                        print("reading README.md file")
+                    description = self._get_model_description_from_readme_file(
+                        readme_file_path
+                    )
+                except Exception as e:
+                    print(f"Cannot scrape model description from README.md file: {e}")
+                    description = self._generate_default_model_description(
+                        embedding_dimension
+                    )
+            else:
+                print("Cannot find README.md file to scrape model description")
+                description = self._generate_default_model_description(
+                    embedding_dimension
+                )
+
         if all_config is None:
             if not os.path.exists(config_json_file_path):
                 raise Exception(
@@ -1114,6 +1208,7 @@ class SentenceTransformerModel:
         model_config_content = {
             "name": model_name,
             "version": version_number,
+            "description": description,
             "model_format": model_format,
             "model_task_type": "TEXT_EMBEDDING",
             "model_config": {
