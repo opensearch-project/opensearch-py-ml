@@ -701,6 +701,37 @@ class SentenceTransformerModel:
             )
         print("zip file is saved to " + zip_file_path + "\n")
 
+    def _fill_null_truncation_field(
+        self,
+        save_json_folder_path: str,
+        max_length: int,
+    ) -> None:
+        """
+        Description:
+        Fill truncation field in tokenizer.json when it is null
+
+        :param save_json_folder_path:
+             path to save model json file, e.g, "home/save_pre_trained_model_json/")
+        :type save_json_folder_path: string
+        :param max_length:
+             maximum sequence length for model
+        :type max_length: int
+        :return: no return value expected
+        :rtype: None
+        """
+        tokenizer_file_path = os.path.join(save_json_folder_path, "tokenizer.json")
+        with open(tokenizer_file_path) as user_file:
+            parsed_json = json.load(user_file)
+        if "truncation" not in parsed_json or parsed_json["truncation"] is None:
+            parsed_json["truncation"] = {
+                "direction": "Right",
+                "max_length": max_length,
+                "strategy": "LongestFirst",
+                "stride": 0,
+            }
+            with open(tokenizer_file_path, "w") as file:
+                json.dump(parsed_json, file, indent=2)
+
     def save_as_pt(
         self,
         sentences: [str],
@@ -760,6 +791,9 @@ class SentenceTransformerModel:
 
         # save tokenizer.json in save_json_folder_name
         model.save(save_json_folder_path)
+        self._fill_null_truncation_field(
+            save_json_folder_path, model.tokenizer.model_max_length
+        )
 
         # convert to pt format will need to be in cpu,
         # set the device to cpu, convert its input_ids and attention_mask in cpu and save as .pt format
@@ -851,6 +885,9 @@ class SentenceTransformerModel:
 
         # save tokenizer.json in output_path
         model.save(save_json_folder_path)
+        self._fill_null_truncation_field(
+            save_json_folder_path, model.tokenizer.model_max_length
+        )
 
         convert(
             framework="pt",
@@ -1031,28 +1068,20 @@ class SentenceTransformerModel:
             or normalize_result is None
         ):
             try:
-                if (
-                    model_type is None
-                    and len(model._modules) >= 1
-                    and isinstance(model._modules["0"], Transformer)
-                ):
-                    model_type = model._modules["0"].auto_model.__class__.__name__
-                    model_type = model_type.lower().rstrip("model")
                 if embedding_dimension is None:
                     embedding_dimension = model.get_sentence_embedding_dimension()
-                if (
-                    pooling_mode is None
-                    and len(model._modules) >= 2
-                    and isinstance(model._modules["1"], Pooling)
-                ):
-                    pooling_mode = model._modules["1"].get_pooling_mode_str().upper()
-                if normalize_result is None:
-                    if len(model._modules) >= 3 and isinstance(
-                        model._modules["2"], Normalize
-                    ):
+
+                for str_idx, module in model._modules.items():
+                    if model_type is None and isinstance(module, Transformer):
+                        model_type = module.auto_model.__class__.__name__
+                        model_type = model_type.lower().rstrip("model")
+                    elif pooling_mode is None and isinstance(module, Pooling):
+                        pooling_mode = module.get_pooling_mode_str().upper()
+                    elif normalize_result is None and isinstance(module, Normalize):
                         normalize_result = True
-                    else:
-                        normalize_result = False
+                    # TODO: Support 'Dense' module
+                if normalize_result is None:
+                    normalize_result = False
             except Exception as e:
                 raise Exception(
                     f"Raised exception while getting model data from pre-trained hugging-face model object: {e}"
