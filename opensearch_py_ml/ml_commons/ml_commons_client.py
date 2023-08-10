@@ -338,7 +338,6 @@ class MLCommonClient:
             "task_id"
         ]
 
-        print(f"Task ID: {task_id}")
         if wait_until_deployed:
             # Wait until deployed
             for i in range(TIMEOUT):
