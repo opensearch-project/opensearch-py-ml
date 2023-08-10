@@ -26,25 +26,49 @@ pipeline {
             description: 'Version number of the model',
             trim: true
         )
-        }
+        choice(
+            name: 'FORMAT',
+            description: 'Tracing format of the model',
+            choices: ['', 'BOTH', 'TORCH_SCRIPT', 'ONNX']
+        )
+    }
+    triggers {
+        GenericTrigger(
+            genericVariables: [
+                [key: 'BASE_DOWNLOAD_PATH', value: '$.BASE_DOWNLOAD_PATH'],
+                [key: 'VERSION', value: '$.VERSION'],
+                [key: 'FORMAT', value: '$.FORMAT']
+            ],
+            token: 'JENKINS_ML_MODELS_RELEASE_GENERIC_WEBHOOK_TOKEN',
+            causeString: 'Triggered by GitHub Actions Workflow',
+            printContributedVariables: true,
+            printPostContent: true
+        )
+    }
     environment {
-        ARTIFACT_PATH = "${env.BASE_DOWNLOAD_PATH == "ml-models/model_listing" ? "${env.BASE_DOWNLOAD_PATH}/" : "${env.BASE_DOWNLOAD_PATH}/${env.VERSION}/"}"
+        ARTIFACT_PATH = "${env.BASE_DOWNLOAD_PATH == "ml-models/model_listing" ? "${env.BASE_DOWNLOAD_PATH}" : "${env.BASE_DOWNLOAD_PATH}/${env.VERSION}"}"
         UPLOAD_PATH = "models/ml-models"
-        BUCKET_NAME = credentials('ml-models-bucket-name')
     }
     stages{
         stage('Parameters Check') {
             steps {
                 script {
-                    if(env.BASE_DOWNLOAD_PATH == "ml-models/model_listing" && env.VERSION.isEmpty()) {
+                    echo "BASE_DOWNLOAD_PATH: ${env.BASE_DOWNLOAD_PATH}"
+                    echo "VERSION: ${env.VERSION}"
+                    echo "FORMAT: ${env.FORMAT}"
+                    echo "ARTIFACT_PATH: ${env.ARTIFACT_PATH}"
+                    echo "UPLOAD_PATH: ${env.UPLOAD_PATH}"
+                    if (env.BASE_DOWNLOAD_PATH == "ml-models/model_listing") {
                         echo "Proceeding to download the ml-models/model_listing."
-                    }                  
-                    else if (env.BASE_DOWNLOAD_PATH.isEmpty()) {
+                    } else if (env.BASE_DOWNLOAD_PATH.isEmpty()) {
                         currentBuild.result = 'ABORTED'
-                        error('Parameters cannot be empty! Please provide the correct values.')
+                        error('BASE_DOWNLOAD_PATH cannot be empty! Please provide the correct values.')
                     } else if (env.VERSION.isEmpty()) {
                         currentBuild.result = 'ABORTED'
-                        error('Parameters cannot be empty! Please provide the correct values.')
+                        error('VERSION cannot be empty! Please provide the correct values.')
+                    } else if (env.FORMAT.isEmpty()) {
+                        currentBuild.result = 'ABORTED'
+                        error('FORMAT cannot be empty! Please provide the correct values.')
                     } else {
                         echo "Proceeding to download the ml-models."
                     }
@@ -58,15 +82,50 @@ pipeline {
         stage('Download the artifacts') {
             steps {
                 script {
-                    downloadFromS3(
-                        assumedRoleName: 'get_models',
-                        roleAccountNumberCred: 'ml-models-aws-account-number',
-                        downloadPath: "${env.ARTIFACT_PATH}",
-                        bucketName: "${env.BUCKET_NAME}",
-                        localPath: "${env.WORKSPACE}/artifacts",
-                        force: true,
-                        region: 'us-west-2'
-                    )
+                    if (env.BASE_DOWNLOAD_PATH == "ml-models/model_listing") {
+                        downloadFromS3(
+                            assumedRoleName: 'get_models',
+                            roleAccountNumberCred: 'ml-models-aws-account-number',
+                            downloadPath: "${env.ARTIFACT_PATH}/",
+                            bucketName: "${env.BUCKET_NAME}",
+                            localPath: "${env.WORKSPACE}/artifacts",
+                            force: true,
+                            region: 'us-west-2'
+                        )
+                    } else {
+                        if (env.FORMAT == "TORCH_SCRIPT") {
+                            downloadFromS3(
+                                assumedRoleName: 'get_models',
+                                roleAccountNumberCred: 'ml-models-aws-account-number',
+                                downloadPath: "${env.ARTIFACT_PATH}/torch_script/",
+                                bucketName: "${env.BUCKET_NAME}",
+                                localPath: "${env.WORKSPACE}/artifacts",
+                                force: true,
+                                region: 'us-west-2'
+                            )
+                        } else if (env.FORMAT == "ONNX") {
+                            downloadFromS3(
+                                assumedRoleName: 'get_models',
+                                roleAccountNumberCred: 'ml-models-aws-account-number',
+                                downloadPath: "${env.ARTIFACT_PATH}/onnx/",
+                                bucketName: "${env.BUCKET_NAME}",
+                                localPath: "${env.WORKSPACE}/artifacts",
+                                force: true,
+                                region: 'us-west-2'
+                            )
+                        } else { 
+                            // Download all formats
+                            downloadFromS3(
+                                assumedRoleName: 'get_models',
+                                roleAccountNumberCred: 'ml-models-aws-account-number',
+                                downloadPath: "${env.ARTIFACT_PATH}/",
+                                bucketName: "${env.BUCKET_NAME}",
+                                localPath: "${env.WORKSPACE}/artifacts",
+                                force: true,
+                                region: 'us-west-2'
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -89,7 +148,7 @@ pipeline {
         always {
             script {
                 postCleanup()
-                }
             }
         }
     }
+}
