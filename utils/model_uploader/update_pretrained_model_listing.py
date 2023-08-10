@@ -5,6 +5,9 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
+# This program is run by "Model Listing Uploading" workflow
+# (See model_listing_uploader.yml) to update pretrained_model_listing.json.
+
 import argparse
 import json
 import os
@@ -21,7 +24,6 @@ TEST_SENTENCES = [
     "First test sentence",
     "Second test sentence",
 ]
-
 
 def get_sentence_transformer_model_description(
     config_folder_name: str, config_filepath: str
