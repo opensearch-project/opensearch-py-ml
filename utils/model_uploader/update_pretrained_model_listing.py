@@ -25,6 +25,7 @@ TEST_SENTENCES = [
     "Second test sentence",
 ]
 
+
 def get_sentence_transformer_model_description(
     config_folder_name: str, config_filepath: str
 ) -> Optional[str]:
