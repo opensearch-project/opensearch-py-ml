@@ -1,8 +1,9 @@
 name: Model Listing Uploading
 on:
   push:
+    # DEMO
     branches:
-     - * # DEMO
+     -  final-all-actual
     paths: 
      - utils/model_uploader/model_listing/pretrained_model_listing.json
   workflow_dispatch:
