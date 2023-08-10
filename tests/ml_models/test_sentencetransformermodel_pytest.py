@@ -539,5 +539,6 @@ def test_truncation_parameter():
 
     clean_test_folder(TEST_FOLDER)
 
+
 clean_test_folder(TEST_FOLDER)
 clean_test_folder(TESTDATA_UNZIP_FOLDER)
