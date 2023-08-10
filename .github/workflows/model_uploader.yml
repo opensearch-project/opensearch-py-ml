@@ -48,11 +48,12 @@ jobs:
   init-workflow-var:
     runs-on: 'ubuntu-latest'
     steps:
-    - name: Fail if branch is not main
-      if: github.ref == 'refs/heads/main'
-      run: |
-         echo "This workflow should only be triggered on 'main' branch"
-         exit 1
+# DEMO
+#     - name: Fail if branch is not main
+#       if: github.ref == 'refs/heads/main'
+#       run: |
+#          echo "This workflow should only be triggered on 'main' branch"
+#          exit 1
     - name: Initiate folders
       id: init_folders
       run: |
@@ -117,8 +118,8 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          aws-region: ${{ secrets.MODEL_UPLOADER_AWS_REGION }}
-          role-to-assume: ${{ secrets.MODEL_UPLOADER_ROLE }}
+          aws-region: ${{ secrets.PERSONAL_MODEL_UPLOADER_AWS_REGION }}
+          role-to-assume: ${{ secrets.PERSONAL_MODEL_UPLOADER_ROLE }}
           role-session-name: checking-out-model-hub
       - name: Check if TORCH_SCRIPT Model Exists
         if: github.event.inputs.tracing_format == 'TORCH_SCRIPT' || github.event.inputs.tracing_format == 'BOTH'
@@ -126,7 +127,7 @@ jobs:
           TORCH_FILE_PATH=$(python utils/model_uploader/save_model_file_path_to_env.py \
               ${{ needs.init-workflow-var.outputs.sentence_transformer_folder }} ${{ github.event.inputs.model_id }} \
               ${{ github.event.inputs.model_version }} TORCH_SCRIPT)
-          aws s3api head-object --bucket ${{ secrets.MODEL_BUCKET }} --key $TORCH_FILE_PATH > /dev/null 2>&1 || TORCH_MODEL_NOT_EXIST=true
+          aws s3api head-object --bucket ${{ secrets.PERSONAL_MODEL_BUCKET }} --key $TORCH_FILE_PATH > /dev/null 2>&1 || TORCH_MODEL_NOT_EXIST=true
           if [[ -z $TORCH_MODEL_NOT_EXIST ]]
           then
             echo "${{ github.event.inputs.model_id }} already exists on model hub for TORCH_SCRIPT format and ${{ github.event.inputs.model_version }} version."
@@ -138,7 +139,7 @@ jobs:
           ONNX_FILE_PATH=$(python utils/model_uploader/save_model_file_path_to_env.py \
             ${{ needs.init-workflow-var.outputs.sentence_transformer_folder }} ${{ github.event.inputs.model_id }} \
             ${{ github.event.inputs.model_version }} ONNX)
-          aws s3api head-object --bucket ${{ secrets.MODEL_BUCKET }} --key $ONNX_FILE_PATH > /dev/null 2>&1 || ONNX_MODEL_NOT_EXIST=true
+          aws s3api head-object --bucket ${{ secrets.PERSONAL_MODEL_BUCKET }} --key $ONNX_FILE_PATH > /dev/null 2>&1 || ONNX_MODEL_NOT_EXIST=true
           if [[ -z $ONNX_MODEL_NOT_EXIST ]]
           then
             echo "${{ github.event.inputs.model_id }} already exists on model hub for ONNX format and ${{ github.event.inputs.model_version }} version."
@@ -201,14 +202,14 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          aws-region: ${{ secrets.MODEL_UPLOADER_AWS_REGION }}
-          role-to-assume: ${{ secrets.MODEL_UPLOADER_ROLE }}
+          aws-region: ${{ secrets.PERSONAL_MODEL_UPLOADER_AWS_REGION }}
+          role-to-assume: ${{ secrets.PERSONAL_MODEL_UPLOADER_ROLE }}
           role-session-name: model-auto-tracing
       - name: Dryrun model uploading
         id: dryrun_model_uploading
         run: |
-          dryrun_output=$(aws s3 sync ./upload/ s3://${{ secrets.MODEL_BUCKET }}/${{ needs.init-workflow-var.outputs.sentence_transformer_folder }} --dryrun \
-            | sed 's|s3://${{ secrets.MODEL_BUCKET }}/|s3://(MODEL_BUCKET)/|' 
+          dryrun_output=$(aws s3 sync ./upload/ s3://${{ secrets.PERSONAL_MODEL_BUCKET }}/${{ needs.init-workflow-var.outputs.sentence_transformer_folder }} --dryrun \
+            | sed 's|s3://${{ secrets.PERSONAL_MODEL_BUCKET }}/|s3://(MODEL_BUCKET)/|' 
           )
           echo "dryrun_output<<EOF" >> $GITHUB_OUTPUT
           echo "${dryrun_output@E}" >> $GITHUB_OUTPUT
@@ -276,13 +277,13 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
-          aws-region: ${{ secrets.MODEL_UPLOADER_AWS_REGION }}
-          role-to-assume: ${{ secrets.MODEL_UPLOADER_ROLE }}
+          aws-region: ${{ secrets.PERSONAL_MODEL_UPLOADER_AWS_REGION }}
+          role-to-assume: ${{ secrets.PERSONAL_MODEL_UPLOADER_ROLE }}
           role-session-name: model-uploading
       - name: Copy Files to the Bucket
         id: copying_to_bucket
         run: |
-          aws s3 sync ./upload/ s3://${{ secrets.MODEL_BUCKET }}/${{ needs.init-workflow-var.outputs.sentence_transformer_folder }}
+          aws s3 sync ./upload/ s3://${{ secrets.PERSONAL_MODEL_BUCKET }}/${{ needs.init-workflow-var.outputs.sentence_transformer_folder }}
           echo "upload_time=$(TZ='America/Los_Angeles' date "+%Y-%m-%d %T")" >> $GITHUB_OUTPUT
     outputs:
       upload_time: ${{ steps.copying_to_bucket.outputs.upload_time }}
@@ -404,9 +405,10 @@ jobs:
         uses: actions/checkout@v3
       - name: Trigger Jenkins Workflow with Generic Webhook
         run: |
+          jenkins_url=${{ secrets.JENKINS_URL }} # DEMO
           jenkins_trigger_token=${{ secrets.JENKINS_ML_MODELS_RELEASE_GENERIC_WEBHOOK_TOKEN }}
           base_download_path=${{ needs.init-workflow-var.outputs.model_folder }}
           version=${{ github.event.inputs.model_version }}
           format=${{ github.event.inputs.tracing_format }}
           jenkins_params="{\"BASE_DOWNLOAD_PATH\":\"$base_download_path\", \"VERSION\":\"$version\", \"FORMAT\":\"$format\"}"
-          sh utils/model_uploader/trigger_ml_models_release.sh $jenkins_trigger_token "$jenkins_params"
+          sh utils/model_uploader/trigger_ml_models_release.sh $jenkins_trigger_token "$jenkins_params" $jenkins_url

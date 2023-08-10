@@ -12,7 +12,8 @@
 
 JENKINS_TRIGGER_TOKEN=$1
 JENKINS_PARAMS=$2
-JENKINS_URL="https://build.ci.opensearch.org"
+# JENKINS_URL="https://build.ci.opensearch.org" # DEMO
+JENKINS_URL=$3
 
 TIMEPASS=0
 TIMEOUT=7200
@@ -28,7 +29,7 @@ echo "Trigger ml-models-release Jenkins workflows"
 echo $JENKINS_PARAMS
 echo $JENKINS_REQ
 
-QUEUE_URL=$(echo $JENKINS_REQ | jq --raw-output '.jobs."ml-models-release".url')
+QUEUE_URL=$(echo $JENKINS_REQ | jq --raw-output '.jobs."opensearch-exp-jenkins-workflow".url') # DEMO
 echo "QUEUE_URL: $QUEUE_URL"
 echo "Wait for jenkins to start workflow" && sleep 15
 
