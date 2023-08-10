@@ -68,8 +68,8 @@ clean_test_folder(TEST_FOLDER)
 
 
 def test_init():
-    assert type(ml_client._client) == OpenSearch
-    assert type(ml_client._model_uploader) == ModelUploader
+    assert isinstance(ml_client._client, OpenSearch)
+    assert isinstance(ml_client._model_uploader, ModelUploader)
 
 
 def test_execute():
