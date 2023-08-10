@@ -4,7 +4,7 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [1.2.0]
 
 ### Added
-- Add workflows and scripts for automating model tracing and uploading process by @thanawan-atc in ([#209]
+- Add workflows and scripts for automating model tracing and uploading process by @thanawan-atc in ([#209](https://github.com/opensearch-project/opensearch-py-ml/pull/209))
 
 ### Changed
 
