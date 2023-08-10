@@ -1,0 +1,130 @@
+name: Update Pretrained Model Listing
+on:
+  workflow_dispatch:
+  
+jobs:
+  update-model-listing:
+    runs-on: 'ubuntu-latest'
+    permissions:
+      id-token: write
+      contents: write
+      pull-requests: write
+    environment: opensearch-py-ml-cicd-env
+    env:
+      bucket_model_listing_file_path: ml-models/model_listing/pre_trained_models.json
+      repo_model_listing_path: ./utils/model_uploader/model_listing/pretrained_model_listing.json
+    steps:
+    - name: Fail if branch is not main
+      if: github.ref == 'refs/heads/main'
+      run: |
+         echo "This workflow should only be triggered on 'main' branch"
+         exit 1
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-region: ${{ secrets.MODEL_UPLOADER_AWS_REGION }}
+        role-to-assume: ${{ secrets.MODEL_UPLOADER_ROLE }}
+        role-session-name: update-model-listing
+    - name: List Models
+      run: |
+        aws s3api list-objects --bucket ${{ secrets.MODEL_BUCKET }} --prefix "ml-models/huggingface/" --query "Contents[].{Key: Key}" --output text | grep "/config.json$" >> config_paths.txt
+        echo $(cat current_models.txt)
+    - name: Download config files
+      run: |
+        mkdir config_folder
+        aws s3 cp s3://${{ secrets.MODEL_BUCKET }}/ml-models/huggingface/ config_folder --recursive --exclude "*" --include "*/config.json"
+        echo $(ls config_folder)
+    - name: Get Current Model Listing for Reference
+      run: |
+        aws s3api head-object --bucket ${{ secrets.MODEL_BUCKET }} --key ${{ env.bucket_model_listing_file_path }} > /dev/null 2>&1 || NOT_EXIST=true
+        if [[ $NOT_EXIST ]]
+        then
+          echo "[]" >> old_pre_trained_models.json
+        else
+          aws s3 cp s3://${{ secrets.MODEL_BUCKET }}/${{ env.bucket_model_listing_file_path }} old_pre_trained_models.json
+        fi
+    - name: Set Up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+    - name: Update pre_trained_models.json
+      run: |
+        python utils/model_uploader/update_pretrained_model_listing.py "config_paths.txt" "config_folder" "old_pre_trained_models.json"
+    - name: Create PR Body
+      id: create_pr_body
+      run: |
+        update_time=$(TZ='America/Los_Angeles' date "+%Y-%m-%d %T")
+        echo "update_time=$update_time" >> $GITHUB_OUTPUT
+        pr_body="
+        - [ ] This PR made commit to only these two files: pretrained_model_listing.json and CHANGELOG.md.
+        - [ ] CHANGELOG.md has been updated by the workflow or by you if the workflow fails to do so. 
+        - [ ] Merge conflicts have been resolved.
+          
+        ========= Workflow Details ==========
+        - Workflow Name: ${{ github.workflow }}
+        - Workflow Run ID: ${{ github.run_id }}
+        - Workflow Initiator: @${{ github.actor }}
+        - File Update Time: $update_time"
+          
+        echo "pr_body<<EOF" >> $GITHUB_OUTPUT
+        echo "${pr_body@E}" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+        echo "${pr_body@E}"
+    - name: Create a Branch & Raise a PR
+      uses: peter-evans/create-pull-request@v5
+      id: create_pr
+      with:
+        committer: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
+        commit-message: 'GitHub Actions Workflow: Update Pretrained Model Listing'
+        signoff: true
+        title: 'Update Pretrained Model Listing - ${{ steps.create_pr_body.outputs.update_time }}'
+        body: ${{ steps.create_pr_body.outputs.pr_body }}
+        labels: ModelListingUploading
+        branch: model-listing-uploader/${{ github.run_id }}
+        delete-branch: true
+        add-paths: ${{ env.repo_model_listing_path }}
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+      with:
+        ref: model-listing-uploader/${{ github.run_id }}
+    - name: Create a line for updating CHANGELOG.md
+      id: create_changelog_line
+      continue-on-error: true
+      run: |
+        pr_ref="([#${{ steps.create_pr.outputs.pull-request-number }}](${{ steps.create_pr.outputs.pull-request-url }}))"
+        changelog_line="Update pretrained_model_listing.json (${{ steps.create_pr_body.outputs.update_time }}) by @${{ github.actor }} $pr_ref"
+        echo "changelog_line=$changelog_line" >> $GITHUB_OUTPUT
+    - name: Warning Comment on PR if create_changelog_line fails
+      if: steps.create_changelog_line.outcome == 'failure'
+      uses: thollander/actions-comment-pull-request@v2
+      with:
+        pr_number: ${{ steps.create_pr.outputs.pull-request-number }}
+        message: "Warning:exclamation:: The workflow failed to update CHANGELOG.md. Please update CHANGELOG.md manually."
+    - name: Update CHANGELOG.md
+      if: steps.create_changelog_line.outcome == 'success'
+      id: update_changelog
+      continue-on-error: true
+      run: |
+        python -m pip install mdutils
+        python utils/model_uploader/update_changelog_md.py "${{ steps.create_changelog_line.outputs.changelog_line }}"
+    - name: Commit Updates
+      if: steps.create_changelog_line.outcome == 'success' && steps.update_changelog.outcome == 'success'
+      uses: stefanzweifel/git-auto-commit-action@v4
+      id: commit
+      with:
+        branch: model-listing-uploader/${{ github.run_id }}
+        commit_user_email: "github-actions[bot]@users.noreply.github.com"
+        commit_message: 'GitHub Actions Workflow: Update CHANGELOG.md - ${{ env.model_info }}'
+        commit_options: '--signoff'
+        file_pattern: CHANGELOG.md
+    - name: Warning Comment on PR if update_changelog fails
+      if: steps.create_changelog_line.outcome == 'success' && steps.update_changelog.outcome == 'failure'
+      uses: thollander/actions-comment-pull-request@v2
+      with:
+        pr_number: ${{ steps.create_pr.outputs.pull-request-number }}
+        message: |
+          Warning:exclamation:: The workflow failed to update CHANGELOG.md. Please add the following line manually.
+          >>>
+          ${{ steps.create_changelog_line.outputs.changelog_line }}
