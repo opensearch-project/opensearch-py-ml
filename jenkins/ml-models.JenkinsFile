@@ -89,7 +89,6 @@ pipeline {
         stage('Download the artifacts') {
             steps {
                 script {
-                    
                     if (env.BASE_DOWNLOAD_PATH == "ml-models/model_listing") {
                         downloadFromS3(
                             assumedRoleName: 'get_models',
@@ -121,8 +120,7 @@ pipeline {
                                 force: true,
                                 region: 'us-west-2'
                             )
-                        } else { 
-                            // Download all formats
+                        } else if (env.FORMAT == "BOTH") {
                             downloadFromS3(
                                 assumedRoleName: 'get_models',
                                 roleAccountNumberCred: 'ml-models-aws-account-number',
@@ -176,8 +174,7 @@ pipeline {
                                     s3Download(file: "$local_path", bucket: "$TEAM_BUCKET_NAME", path: "$download_path", force: true)
                                 }
                             }        
-                        } else { 
-                            // env.FORMAT == "BOTH"
+                        } else if (env.FORMAT == "BOTH") {
                             download_path = "${env.ARTIFACT_PATH}/"
                             withCredentials([
                                 string(credentialsId: "ml_team_bucket_role", variable: "TEAM_BUCKET_ROLE"),
