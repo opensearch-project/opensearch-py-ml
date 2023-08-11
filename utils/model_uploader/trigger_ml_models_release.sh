@@ -52,7 +52,7 @@ if [ -z "$QUEUE_URL" ] || [ "$QUEUE_URL" != "null" ]; then
             echo "Timed out"
             RESULT="TIMEOUT"
         else
-            echo "Complete the run, checking results now......"
+            echo "Completed the run, checking the results now......"
             RESULT=$(curl -s -XGET ${WORKFLOW_URL}api/json | jq --raw-output .result)
         fi
     fi
