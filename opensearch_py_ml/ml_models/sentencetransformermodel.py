@@ -793,7 +793,7 @@ class SentenceTransformerModel:
 
         # handle undefined model_max_length in model's tokenizer (e.g. "intfloat/e5-small-v2" )
         if model.tokenizer.model_max_length == 1000000000000000019884624838656:
-            model.tokenizer.model_max_length == model.get_max_seq_length()
+            model.tokenizer.model_max_length = model.get_max_seq_length()
             print(
                 f"The model_max_length is not properly defined in tokenizer_config.json. Setting it to be {model.tokenizer.model_max_length}"
             )
@@ -894,7 +894,7 @@ class SentenceTransformerModel:
 
         # handle undefined model_max_length in model's tokenizer (e.g. "intfloat/e5-small-v2" )
         if model.tokenizer.model_max_length == 1000000000000000019884624838656:
-            model.tokenizer.model_max_length == model.get_max_seq_length()
+            model.tokenizer.model_max_length = model.get_max_seq_length()
             print(
                 f"The model_max_length is not properly defined in tokenizer_config.json. Setting it to be {model.tokenizer.model_max_length}"
             )
