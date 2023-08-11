@@ -42,7 +42,7 @@ if [ -z "$QUEUE_URL" ] || [ "$QUEUE_URL" != "null" ]; then
         echo "Waiting for Jenkins to complete the run"
         while [ "$RUNNING" = "true" ] && [ "$TIMEPASS" -le "$TIMEOUT" ]; do
             echo "Still running, wait for another 5 seconds before checking again, max timeout $TIMEOUT"
-            echo "Jenkins Workflow Url: $WORKFLOW_URL"
+            echo "Jenkins Workflow URL: $WORKFLOW_URL"
             TIMEPASS=$(( TIMEPASS + 5 )) && echo time pass: $TIMEPASS
             sleep 5
             RUNNING=$(curl -s -XGET ${WORKFLOW_URL}api/json | jq --raw-output .building)
