@@ -113,8 +113,7 @@ pipeline {
                                 force: true,
                                 region: 'us-west-2'
                             )
-                        } else { 
-                            // Download all formats
+                        } else if (env.FORMAT == "BOTH") {
                             downloadFromS3(
                                 assumedRoleName: 'get_models',
                                 roleAccountNumberCred: 'ml-models-aws-account-number',
