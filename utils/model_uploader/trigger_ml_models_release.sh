@@ -15,7 +15,7 @@ JENKINS_PARAMS=$2
 JENKINS_URL="https://build.ci.opensearch.org"
 
 TIMEPASS=0
-TIMEOUT=7200
+TIMEOUT=3600
 RESULT="null"
 
 JENKINS_REQ=$(curl -s -XPOST \
