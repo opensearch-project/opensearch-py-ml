@@ -540,5 +540,63 @@ def test_truncation_parameter():
     clean_test_folder(TEST_FOLDER)
 
 
+def test_undefined_model_max_length_in_tokenizer_for_torch_script():
+    # Model of which tokenizer has undefined model max length.
+    model_id = "intfloat/e5-small-v2"
+    expected_max_length = 512
+
+    clean_test_folder(TEST_FOLDER)
+    test_model14 = SentenceTransformerModel(
+        folder_path=TEST_FOLDER,
+        model_id=model_id,
+    )
+
+    test_model14.save_as_pt(model_id=model_id, sentences=["today is sunny"])
+
+    tokenizer_json_file_path = os.path.join(TEST_FOLDER, "tokenizer.json")
+    try:
+        with open(tokenizer_json_file_path, "r") as json_file:
+            tokenizer_json = json.load(json_file)
+    except Exception as exec:
+        assert (
+            False
+        ), f"Creating tokenizer.json file for tracing raised an exception {exec}"
+
+    assert (
+        tokenizer_json["truncation"]["max_length"] == expected_max_length
+    ), "max_length is not properly set"
+
+    clean_test_folder(TEST_FOLDER)
+
+
+def test_undefined_model_max_length_in_tokenizer_for_onnx():
+    # Model of which tokenizer has undefined model max length.
+    model_id = "intfloat/e5-small-v2"
+    expected_max_length = 512
+
+    clean_test_folder(TEST_FOLDER)
+    test_model14 = SentenceTransformerModel(
+        folder_path=TEST_FOLDER,
+        model_id=model_id,
+    )
+
+    test_model14.save_as_onnx(model_id=model_id)
+
+    tokenizer_json_file_path = os.path.join(TEST_FOLDER, "tokenizer.json")
+    try:
+        with open(tokenizer_json_file_path, "r") as json_file:
+            tokenizer_json = json.load(json_file)
+    except Exception as exec:
+        assert (
+            False
+        ), f"Creating tokenizer.json file for tracing raised an exception {exec}"
+
+    assert (
+        tokenizer_json["truncation"]["max_length"] == expected_max_length
+    ), "max_length is not properly set"
+
+    clean_test_folder(TEST_FOLDER)
+
+
 clean_test_folder(TEST_FOLDER)
 clean_test_folder(TESTDATA_UNZIP_FOLDER)
