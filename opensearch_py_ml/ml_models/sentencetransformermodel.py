@@ -892,8 +892,9 @@ class SentenceTransformerModel:
 
         zip_file_path = os.path.join(model_output_path, zip_file_name)
 
-        # handle undefined model_max_length in model's tokenizer (e.g. "intfloat/e5-small-v2" )
-        if model.tokenizer.model_max_length == 1000000000000000019884624838656:
+        # handle when model_max_length is unproperly defined in model's tokenizer (e.g. "intfloat/e5-small-v2")
+        # (See PR #219 and https://github.com/huggingface/transformers/issues/14561 for more context)
+        if model.tokenizer.model_max_length > model.get_max_seq_length():
             model.tokenizer.model_max_length = model.get_max_seq_length()
             print(
                 f"The model_max_length is not properly defined in tokenizer_config.json. Setting it to be {model.tokenizer.model_max_length}"
