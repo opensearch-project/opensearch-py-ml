@@ -58,7 +58,7 @@ def create_new_pretrained_model_listing(
 ):
     """
     Create a new pretrained model listing and store it at PRETRAINED_MODEL_LISTING_JSON_FILEPATH
-    based on current models in models_txt_filename and their config files in config_paths_txt_filename
+    based on current models in config_paths_txt_filename and their config files in config_foldername
 
     :param config_paths_txt_filename: Name of the txt file that stores paths to config file
     in the ml-models/huggingface/ folder of the S3 bucket
