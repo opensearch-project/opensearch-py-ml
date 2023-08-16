@@ -30,7 +30,7 @@ jobs:
     - name: List Models
       run: |
         aws s3api list-objects --bucket ${{ secrets.MODEL_BUCKET }} --prefix "ml-models/huggingface/" --query "Contents[].{Key: Key}" --output text | grep "/config.json$" >> config_paths.txt
-        echo $(cat current_models.txt)
+        echo $(cat config_paths.txt)
     - name: Download config files
       run: |
         mkdir config_folder
