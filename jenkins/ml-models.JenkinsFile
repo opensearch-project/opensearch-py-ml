@@ -29,7 +29,9 @@ pipeline {
         choice(
             name: 'FORMAT',
             description: 'Tracing format of the model',
-            choices: ['', 'BOTH', 'TORCH_SCRIPT', 'ONNX']
+            /* The first choice will be the default choice, and we need it to be empty string
+               so that we can update model listing without specifying 'FORMAT' in JENKINS_PARAM. */
+            choices: ['', 'BOTH', 'TORCH_SCRIPT', 'ONNX'] // We set empty string to be the f
         )
     }
     triggers {
