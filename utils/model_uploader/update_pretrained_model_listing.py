@@ -16,7 +16,7 @@ from typing import Optional
 JSON_FILENAME = "pretrained_model_listing.json"
 JSON_DIRNAME = "utils/model_uploader/model_listing"
 PRETRAINED_MODEL_LISTING_JSON_FILEPATH = os.path.join(JSON_DIRNAME, JSON_FILENAME)
-PREFIX_SENTENCE_TRANSFORMER_FILEPATH = "ml-models/huggingface/sentence-transformers"
+PREFIX_HUGGINGFACE_MODEL_FILEPATH = "ml-models/huggingface/"
 TORCH_SCRIPT_FORMAT = "TORCH_SCRIPT"
 ONNX_FORMAT = "ONNX"
 TEMP_MODEL_PATH = "temp_model_path"
@@ -76,7 +76,7 @@ def create_new_pretrained_model_listing(
     print("---  Creating New Model Listing --- ")
     new_model_listing_dict = {}
     for config_filepath in config_paths_lst:
-        if config_filepath.startswith(PREFIX_SENTENCE_TRANSFORMER_FILEPATH):
+        if config_filepath.startswith(PREFIX_HUGGINGFACE_MODEL_FILEPATH):
             # (e.g. 'ml-models/huggingface/sentence-transformers/all-MiniLM-L12-v2/2.0.0/onnx/config.json')
             model_parts = config_filepath.split("/")
             model_name = "/".join(model_parts[1:4])
