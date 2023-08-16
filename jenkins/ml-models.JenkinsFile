@@ -32,6 +32,8 @@ pipeline {
             description: 'Version number of the model',
             trim: true
         )
+        /* The first choice will be the default choice, and we need it to be empty string
+           so that we can update model listing without specifying 'FORMAT' in JENKINS_PARAM. */
         choice(
             name: 'FORMAT',
             description: 'Tracing format of the model',
