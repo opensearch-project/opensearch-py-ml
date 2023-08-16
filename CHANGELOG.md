@@ -14,6 +14,7 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Update model upload history -  sentence-transformers/multi-qa-mpnet-base-cos-v1 (v.9.0.0)(BOTH) by @thanawan-atc ([#187](https://github.com/thanawan-atc/opensearch-py-ml/pull/187))
 - Update pretrained_model_listing.json (2023-08-14 16:43:34) by @thanawan-atc ([#203](https://github.com/thanawan-atc/opensearch-py-ml/pull/203))
 - Update pretrained_model_listing.json (2023-08-16 15:36:34) by @thanawan-atc ([#206](https://github.com/thanawan-atc/opensearch-py-ml/pull/206))
+- Update pretrained_model_listing.json (2023-08-16 15:43:59) by @thanawan-atc ([#207](https://github.com/thanawan-atc/opensearch-py-ml/pull/207))
 
 ### Fixed
 - Enable make_model_config_json to add model description to model config file by @thanawan-atc in ([#203](https://github.com/opensearch-project/opensearch-py-ml/pull/203))
