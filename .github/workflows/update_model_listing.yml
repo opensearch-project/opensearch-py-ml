@@ -87,9 +87,17 @@ jobs:
         delete-branch: true
         add-paths: ${{ env.repo_model_listing_path }}
     - name: Checkout Repository
+      id: checkout_pr_branch
+      continue-on-error: true
       uses: actions/checkout@v3
       with:
         ref: model-listing-uploader/${{ github.run_id }}
+    - name: No Change in Model Listing
+      if: steps.checkout_pr_branch.outcome == 'failure'
+      run: |
+        echo "There is no change in model listing."
+        echo "Exiting the workflow"
+        exit 0
     - name: Create a line for updating CHANGELOG.md
       id: create_changelog_line
       continue-on-error: true
