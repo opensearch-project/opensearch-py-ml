@@ -92,34 +92,29 @@ jobs:
       uses: actions/checkout@v3
       with:
         ref: model-listing-uploader/${{ github.run_id }}
-    - name: No Change in Model Listing
-      if: steps.checkout_pr_branch.outcome == 'failure'
-      run: |
-        echo "There is no change in model listing."
-        echo "Exiting the workflow"
-        exit 0
     - name: Create a line for updating CHANGELOG.md
       id: create_changelog_line
+      if: steps.checkout_pr_branch.outcome == 'success'
       continue-on-error: true
       run: |
         pr_ref="([#${{ steps.create_pr.outputs.pull-request-number }}](${{ steps.create_pr.outputs.pull-request-url }}))"
         changelog_line="Update pretrained_model_listing.json (${{ steps.create_pr_body.outputs.update_time }}) by @${{ github.actor }} $pr_ref"
         echo "changelog_line=$changelog_line" >> $GITHUB_OUTPUT
     - name: Warning Comment on PR if create_changelog_line fails
-      if: steps.create_changelog_line.outcome == 'failure'
+      if: steps.checkout_pr_branch.outcome == 'success' && steps.create_changelog_line.outcome == 'failure'
       uses: thollander/actions-comment-pull-request@v2
       with:
         pr_number: ${{ steps.create_pr.outputs.pull-request-number }}
         message: "Warning:exclamation:: The workflow failed to update CHANGELOG.md. Please update CHANGELOG.md manually."
     - name: Update CHANGELOG.md
-      if: steps.create_changelog_line.outcome == 'success'
+      if: steps.checkout_pr_branch.outcome == 'success' && steps.create_changelog_line.outcome == 'success'
       id: update_changelog
       continue-on-error: true
       run: |
         python -m pip install mdutils
         python utils/model_uploader/update_changelog_md.py "${{ steps.create_changelog_line.outputs.changelog_line }}"
     - name: Commit Updates
-      if: steps.create_changelog_line.outcome == 'success' && steps.update_changelog.outcome == 'success'
+      if: steps.checkout_pr_branch.outcome == 'success' && steps.create_changelog_line.outcome == 'success' && steps.update_changelog.outcome == 'success'
       uses: stefanzweifel/git-auto-commit-action@v4
       id: commit
       with:
@@ -129,7 +124,7 @@ jobs:
         commit_options: '--signoff'
         file_pattern: CHANGELOG.md
     - name: Warning Comment on PR if update_changelog fails
-      if: steps.create_changelog_line.outcome == 'success' && steps.update_changelog.outcome == 'failure'
+      if: steps.checkout_pr_branch.outcome == 'success' && steps.create_changelog_line.outcome == 'success' && steps.update_changelog.outcome == 'failure'
       uses: thollander/actions-comment-pull-request@v2
       with:
         pr_number: ${{ steps.create_pr.outputs.pull-request-number }}
@@ -137,3 +132,8 @@ jobs:
           Warning:exclamation:: The workflow failed to update CHANGELOG.md. Please add the following line manually.
           >>>
           ${{ steps.create_changelog_line.outputs.changelog_line }}
+    - name: No Change in Model Listing
+      if: steps.checkout_pr_branch.outcome == 'failure'
+      run: |
+        echo "There is no change in model listing."
+        echo "Exiting the workflow"
