@@ -49,11 +49,11 @@ def get_model_file_path(
     :return: Expected model file path on model hub
     :rtype: string
     """
-    model_name = str(model_id.split("/")[-1])
+    model_type, model_name = model_id.split("/")
     model_format = model_format.lower()
     model_dirname = f"{model_folder}{model_name}/{model_version}/{model_format}"
     model_filename = (
-        f"sentence-transformers_{model_name}-{model_version}-{model_format}.zip"
+        f"{model_type}_{model_name}-{model_version}-{model_format}.zip"
     )
     model_file_path = model_dirname + "/" + model_filename
     return model_file_path
