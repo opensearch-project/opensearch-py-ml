@@ -40,9 +40,8 @@ TORCH_SCRIPT_FORMAT = "TORCH_SCRIPT"
 ONNX_FORMAT = "ONNX"
 
 TEMP_MODEL_PATH = "temp_model_path"
-ORIGINAL_FOLDER_PATH = "sentence-transformers-original/"
-TORCHSCRIPT_FOLDER_PATH = "sentence-transformers-torchscript/"
-ONNX_FOLDER_PATH = "sentence-transformers-onnx/"
+TORCHSCRIPT_FOLDER_PATH = "model-torchscript/"
+ONNX_FOLDER_PATH = "model-onnx/"
 UPLOAD_FOLDER_PATH = "upload/"
 MODEL_CONFIG_FILE_NAME = "ml-commons_model_config.json"
 OUTPUT_DIR = "trace_output/"
@@ -305,7 +304,7 @@ def prepare_files_for_uploading(
     (path to model config json file) in the UPLOAD_FOLDER_PATH
     :rtype: Tuple[str, str]
     """
-    model_name = str(model_id.split("/")[-1])
+    model_type, model_name = model_id.split("/")
     model_format = model_format.lower()
     folder_to_delete = (
         TORCHSCRIPT_FOLDER_PATH if model_format == "torch_script" else ONNX_FOLDER_PATH
@@ -318,7 +317,7 @@ def prepare_files_for_uploading(
         )
         os.makedirs(dst_model_dir, exist_ok=True)
         dst_model_filename = (
-            f"sentence-transformers_{model_name}-{model_version}-{model_format}.zip"
+            f"{model_type}_{model_name}-{model_version}-{model_format}.zip"
         )
         dst_model_path = dst_model_dir + "/" + dst_model_filename
         with ZipFile(src_model_path, "a") as zipObj:
