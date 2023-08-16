@@ -37,22 +37,13 @@ jobs:
         mkdir config_folder
         aws s3 cp s3://${{ secrets.PERSONAL_MODEL_BUCKET }}/ml-models/huggingface/ config_folder --recursive --exclude "*" --include "*/config.json"
         echo $(ls config_folder)
-    - name: Get Current Model Listing for Reference
-      run: |
-        aws s3api head-object --bucket ${{ secrets.PERSONAL_MODEL_BUCKET }} --key ${{ env.bucket_model_listing_file_path }} > /dev/null 2>&1 || NOT_EXIST=true
-        if [[ $NOT_EXIST ]]
-        then
-          echo "[]" >> old_pre_trained_models.json
-        else
-          aws s3 cp s3://${{ secrets.PERSONAL_MODEL_BUCKET }}/${{ env.bucket_model_listing_file_path }} old_pre_trained_models.json
-        fi
     - name: Set Up Python
       uses: actions/setup-python@v2
       with:
         python-version: '3.x'
     - name: Update pre_trained_models.json
       run: |
-        python utils/model_uploader/update_pretrained_model_listing.py "config_paths.txt" "config_folder" "old_pre_trained_models.json"
+        python utils/model_uploader/update_pretrained_model_listing.py "config_paths.txt" "config_folder"
     - name: Create PR Body
       id: create_pr_body
       run: |

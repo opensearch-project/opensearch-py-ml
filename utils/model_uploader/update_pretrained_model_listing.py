@@ -54,20 +54,17 @@ def get_sentence_transformer_model_description(
 
 
 def create_new_pretrained_model_listing(
-    config_paths_txt_filename: str, config_foldername: str, old_json_filename: str
+    config_paths_txt_filename: str, config_foldername: str
 ):
     """
     Create a new pretrained model listing and store it at PRETRAINED_MODEL_LISTING_JSON_FILEPATH
-    based on current models in models_txt_filename and the old pretrained model
-    listing in old_json_filename
+    based on current models in config_paths_txt_filename and their config files in config_foldername
 
     :param config_paths_txt_filename: Name of the txt file that stores paths to config file
     in the ml-models/huggingface/ folder of the S3 bucket
     :type config_paths_txt_filename: string
     :param config_foldername: Name of the local folder that stores config files
     :type config_foldername: string
-    :param old_json_filename: Name of the json file that stores outdated model listing
-    :type old_json_filename: string
     :return: No return value expected
     :rtype: None
     """
@@ -75,14 +72,6 @@ def create_new_pretrained_model_listing(
     print(f"--- Reading {config_paths_txt_filename} ---")
     with open(config_paths_txt_filename, "r") as f:
         config_paths_lst = f.read().split()
-
-    print(f"--- Reading {old_json_filename} --- ")
-    with open(old_json_filename, "r") as f:
-        old_model_listing_lst = json.load(f)
-
-    old_model_listing_dict = {
-        model_data["name"]: model_data for model_data in old_model_listing_lst
-    }
 
     print("---  Creating New Model Listing --- ")
     new_model_listing_dict = {}
@@ -106,24 +95,11 @@ def create_new_pretrained_model_listing(
                 }
             versions_content[model_version]["format"].append(model_format)
             if "description" not in versions_content[model_version]:
-                if (
-                    model_name in old_model_listing_dict
-                    and "versions" in old_model_listing_dict[model_name]
-                    and model_version in old_model_listing_dict[model_name]["versions"]
-                    and "description"
-                    in old_model_listing_dict[model_name]["versions"][model_version]
-                ):
-                    versions_content[model_version][
-                        "description"
-                    ] = old_model_listing_dict[model_name]["versions"][model_version][
-                        "description"
-                    ]
-                else:
-                    description = get_sentence_transformer_model_description(
-                        config_foldername, local_config_filepath
-                    )
-                    if description is not None:
-                        versions_content[model_version]["description"] = description
+                description = get_sentence_transformer_model_description(
+                    config_foldername, local_config_filepath
+                )
+                if description is not None:
+                    versions_content[model_version]["description"] = description
 
     new_model_listing_lst = list(new_model_listing_dict.values())
     new_model_listing_lst = sorted(new_model_listing_lst, key=lambda d: d["name"])
@@ -152,21 +128,15 @@ if __name__ == "__main__":
         type=str,
         help="Name of the local folder that stores copies of config files from S3",
     )
-    parser.add_argument(
-        "old_json_filename",
-        type=str,
-        help="Name of the file that stores the old version of the listing of pretrained models",
-    )
-
+    
     args = parser.parse_args()
 
     if not args.config_paths_txt_filename.endswith(
         ".txt"
-    ) or not args.old_json_filename.endswith(".json"):
+    ):
         assert False, "Invalid arguments"
 
     create_new_pretrained_model_listing(
         args.config_paths_txt_filename,
         args.config_foldername,
-        args.old_json_filename,
     )
