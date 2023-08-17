@@ -59,6 +59,7 @@ ML_BASE_URI = "/_plugins/_ml"
 def verify_license_in_md_file() -> bool:
     """
     Verify that the model is licensed under Apache 2.0
+    by looking at metadata in README.md file of the model
 
     TODO: Support other open source licenses in future
 
@@ -75,8 +76,8 @@ def verify_license_in_md_file() -> bool:
     end = readme_data.find("---", start + 3)
     if start == -1 or end == -1:
         return False
-    model_info = readme_data[start + 3 : end]
-    if "apache-2.0" in model_info.lower():
+    metadata_info = readme_data[start + 3 : end]
+    if "apache-2.0" in metadata_info.lower():
         print("\nFound apache-2.0 license at " + TEMP_MODEL_PATH + "README.md")
         return True
     else:
