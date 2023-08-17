@@ -27,26 +27,25 @@ TEST_SENTENCES = [
 
 
 def get_sentence_transformer_model_description(
-    config_folder_name: str, config_filepath: str
+    config_folderpath: str, config_filepath: str
 ) -> Optional[str]:
     """
     Get description of the pretrained sentence transformer model from config file
 
-    :param config_folder_name: Name of the local folder that stores config files (e.g. 'config_folder')
-    :type config_folder_name: string
+    :param config_folderpath: Path to the folder that stores copies of config files from S3 (e.g. 'config_folder')
+    :type config_folderpath: string
     :param config_filepath: Path to local config file
     (e.g. 'sentence-transformers/all-MiniLM-L12-v2/2.0.0/onnx/config.json')
     :type config_filepath: string
     :return: Description of the model
     :rtype: string or None
     """
-    filepath = os.path.join(config_folder_name, config_filepath)
+    filepath = os.path.join(config_folderpath, config_filepath)
     try:
         with open(filepath, "r") as f:
             model_config = json.load(f)
     except Exception as e:
-        print(f"Cannot open {filepath} to get model description: {e}")
-        return None
+        raise Exception(f"Cannot open {filepath} to get model description: {e}")
     if "description" in model_config:
         return model_config["description"]
     else:
@@ -54,26 +53,29 @@ def get_sentence_transformer_model_description(
 
 
 def create_new_pretrained_model_listing(
-    config_paths_txt_filename: str, config_foldername: str
+    config_paths_txt_filepath: str,
+    config_folderpath: str,
+    pretrained_model_listing_json_filepath: str = PRETRAINED_MODEL_LISTING_JSON_FILEPATH,
 ):
     """
-    Create a new pretrained model listing and store it at PRETRAINED_MODEL_LISTING_JSON_FILEPATH
-    based on current models in config_paths_txt_filename and their config files in config_foldername
+    Create a new pretrained model listing and store it at pretrained_model_listing_json_filepath
+    based on current models in config_paths_txt_filepath and their config files in config_folderpath
 
-    :param config_paths_txt_filename: Name of the txt file that stores paths to config file
+    :param config_paths_txt_filepath: Path to the txt file that stores a list of config paths from S3
     in the ml-models/huggingface/ folder of the S3 bucket
-    :type config_paths_txt_filename: string
-    :param config_foldername: Name of the local folder that stores config files
-    :type config_foldername: string
+    :type config_paths_txt_filepath: string
+    :param config_folderpath: Path to the folder that stores copies of config files from S3
+    :type config_folderpath: string
     :return: No return value expected
+    :param pretrained_model_listing_json_filepath: Path to the json file that stores new model listing
     :rtype: None
     """
     print("\n=== Begin running update_pretrained_model_listing.py ===")
-    print(f"--- Reading {config_paths_txt_filename} ---")
-    with open(config_paths_txt_filename, "r") as f:
+    print(f"--- Reading {config_paths_txt_filepath} ---")
+    with open(config_paths_txt_filepath, "r") as f:
         config_paths_lst = f.read().split()
 
-    print("---  Creating New Model Listing --- ")
+    print("\n---  Creating New Model Listing --- ")
     new_model_listing_dict = {}
     for config_filepath in config_paths_lst:
         if config_filepath.startswith(PREFIX_HUGGINGFACE_MODEL_FILEPATH):
@@ -96,7 +98,7 @@ def create_new_pretrained_model_listing(
             versions_content[model_version]["format"].append(model_format)
             if "description" not in versions_content[model_version]:
                 description = get_sentence_transformer_model_description(
-                    config_foldername, local_config_filepath
+                    config_folderpath, local_config_filepath
                 )
                 if description is not None:
                     versions_content[model_version]["description"] = description
@@ -107,11 +109,11 @@ def create_new_pretrained_model_listing(
         model_dict["versions"] = dict(sorted(model_dict["versions"].items()))
 
     print(
-        f"---  Dumping New Model Listing in {PRETRAINED_MODEL_LISTING_JSON_FILEPATH} --- "
+        f"\n---  Dumping New Model Listing in {pretrained_model_listing_json_filepath} --- "
     )
     if not os.path.isdir(JSON_DIRNAME):
         os.makedirs(JSON_DIRNAME)
-    with open(PRETRAINED_MODEL_LISTING_JSON_FILEPATH, "w") as f:
+    with open(pretrained_model_listing_json_filepath, "w") as f:
         json.dump(new_model_listing_lst, f, indent=2)
     print("\n=== Finished running update_pretrained_model_listing.py ===")
 
@@ -119,22 +121,24 @@ def create_new_pretrained_model_listing(
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "config_paths_txt_filename",
+        "config_paths_txt_filepath",
         type=str,
-        help="Name of the file that stores config paths in S3",
+        help="Path to the txt file that stores a list of config paths from S3",
     )
     parser.add_argument(
-        "config_foldername",
+        "config_folderpath",
         type=str,
-        help="Name of the local folder that stores copies of config files from S3",
+        help="Path to the folder that stores copies of config files from S3",
     )
 
     args = parser.parse_args()
 
-    if not args.config_paths_txt_filename.endswith(".txt"):
-        assert False, "Invalid arguments"
+    if not args.config_paths_txt_filepath.endswith(".txt"):
+        raise Exception(
+            "Invalid argument: config_paths_txt_filepath should be .txt file"
+        )
 
     create_new_pretrained_model_listing(
-        args.config_paths_txt_filename,
-        args.config_foldername,
+        args.config_paths_txt_filepath,
+        args.config_folderpath,
     )
