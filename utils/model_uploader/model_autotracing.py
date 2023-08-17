@@ -60,6 +60,8 @@ def verify_license_in_md_file() -> bool:
     """
     Verify that the model is licensed under Apache 2.0
 
+    TODO: Support other open source licenses in future
+
     :return: Whether the model is licensed under Apache 2.0
     :rtype: Bool
     """
@@ -74,8 +76,6 @@ def verify_license_in_md_file() -> bool:
     if start == -1 or end == -1:
         return False
     model_info = readme_data[start + 3 : end]
-    
-    # TODO: Support other open source license in future
     if "apache-2.0" in model_info.lower():
         print("\nFound apache-2.0 license at " + TEMP_MODEL_PATH + "README.md")
         return True
