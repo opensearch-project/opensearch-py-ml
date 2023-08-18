@@ -125,7 +125,7 @@ def test(session, pandas_version: str):
         "-m",
         "pytest",
         "--cov-report=term-missing",
-        "--cov=opensearch_py_ml/",
+        "--cov",
         "--cov-config=setup.cfg",
         "--doctest-modules",
         "--nbval",
