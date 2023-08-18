@@ -426,10 +426,10 @@ class MLCommonClient:
 
     def search_model(self, input_json) -> object:
         """
-        This method searches a task from opensearch cluster (using ml commons api)
+        This method searches a model from opensearch cluster (using ml commons api)
         :param json: json input for the search request
         :type json: string or dict
-        :return: returns a json object, with detailed information about the searched task
+        :return: returns a json object, with detailed information about the searched model
         :rtype: object
         """
 
