@@ -1050,11 +1050,11 @@ class SentenceTransformerModel:
         readme_data = MarkDownFile.read_file(readme_file_path)
 
         # Find the description section
-        start_str = f"# {self.model_id}"
+        start_str = f"\n# {self.model_id}"
         start = readme_data.find(start_str)
         if start == -1:
             model_name = self.model_id.split("/")[1]
-            start_str = f"# {model_name}"
+            start_str = f"\n# {model_name}"
             start = readme_data.find(start_str)
         end = readme_data.find("\n#", start + len(start_str))
 
