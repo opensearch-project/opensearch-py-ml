@@ -381,7 +381,7 @@ def test_overwrite_fields_in_model_config():
 
     clean_test_folder(TEST_FOLDER)
 
-    
+
 def test_missing_readme_md_file():
     model_id = "sentence-transformers/msmarco-distilbert-base-tas-b"
     clean_test_folder(TEST_FOLDER)
@@ -535,95 +535,6 @@ def test_truncation_parameter():
 
     assert (
         tokenizer_json["truncation"]["max_length"] == MAX_LENGTH_TASB
-    ), "max_length is not properly set"
-
-    clean_test_folder(TEST_FOLDER)
-
-def test_truncation_parameter():
-    model_id = "sentence-transformers/msmarco-distilbert-base-tas-b"
-    MAX_LENGTH_TASB = 512
-
-    clean_test_folder(TEST_FOLDER)
-    test_model10 = SentenceTransformerModel(
-        folder_path=TEST_FOLDER,
-        model_id=model_id,
-    )
-
-    test_model10.save_as_pt(model_id=model_id, sentences=["today is sunny"])
-
-    tokenizer_json_file_path = os.path.join(TEST_FOLDER, "tokenizer.json")
-    try:
-        with open(tokenizer_json_file_path, "r") as json_file:
-            tokenizer_json = json.load(json_file)
-    except Exception as exec:
-        assert (
-            False
-        ), f"Creating tokenizer.json file for tracing raised an exception {exec}"
-
-    assert tokenizer_json[
-        "truncation"
-    ], "truncation parameter in tokenizer.json is null"
-
-    assert (
-        tokenizer_json["truncation"]["max_length"] == MAX_LENGTH_TASB
-    ), "max_length is not properly set"
-
-    clean_test_folder(TEST_FOLDER)
-
-
-def test_undefined_model_max_length_in_tokenizer_for_torch_script():
-    # Model of which tokenizer has undefined model max length.
-    model_id = "intfloat/e5-small-v2"
-    expected_max_length = 512
-
-    clean_test_folder(TEST_FOLDER)
-    test_model14 = SentenceTransformerModel(
-        folder_path=TEST_FOLDER,
-        model_id=model_id,
-    )
-
-    test_model14.save_as_pt(model_id=model_id, sentences=["today is sunny"])
-
-    tokenizer_json_file_path = os.path.join(TEST_FOLDER, "tokenizer.json")
-    try:
-        with open(tokenizer_json_file_path, "r") as json_file:
-            tokenizer_json = json.load(json_file)
-    except Exception as exec:
-        assert (
-            False
-        ), f"Creating tokenizer.json file for tracing raised an exception {exec}"
-
-    assert (
-        tokenizer_json["truncation"]["max_length"] == expected_max_length
-    ), "max_length is not properly set"
-
-    clean_test_folder(TEST_FOLDER)
-
-
-def test_undefined_model_max_length_in_tokenizer_for_onnx():
-    # Model of which tokenizer has undefined model max length.
-    model_id = "intfloat/e5-small-v2"
-    expected_max_length = 512
-
-    clean_test_folder(TEST_FOLDER)
-    test_model14 = SentenceTransformerModel(
-        folder_path=TEST_FOLDER,
-        model_id=model_id,
-    )
-
-    test_model14.save_as_onnx(model_id=model_id)
-
-    tokenizer_json_file_path = os.path.join(TEST_FOLDER, "tokenizer.json")
-    try:
-        with open(tokenizer_json_file_path, "r") as json_file:
-            tokenizer_json = json.load(json_file)
-    except Exception as exec:
-        assert (
-            False
-        ), f"Creating tokenizer.json file for tracing raised an exception {exec}"
-
-    assert (
-        tokenizer_json["truncation"]["max_length"] == expected_max_length
     ), "max_length is not properly set"
 
     clean_test_folder(TEST_FOLDER)
