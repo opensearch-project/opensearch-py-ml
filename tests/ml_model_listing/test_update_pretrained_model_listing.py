@@ -105,9 +105,7 @@ def test_missing_config_file():
     # Delete a subfolder that contains config files
     copy_samples_folder()
     shutil.rmtree(
-        os.path.join(
-            SAMPLE_FOLDER_COPY, CONFIG_FOLDERNAME, SAMPLE_SUBFOLDERNAME
-        )
+        os.path.join(SAMPLE_FOLDER_COPY, CONFIG_FOLDERNAME, SAMPLE_SUBFOLDERNAME)
     )
 
     # Expect create_new_pretrained_model_listing to raise error
@@ -122,30 +120,31 @@ def test_missing_config_file():
 
     clean_test_file()
     clean_samples_folder_copy()
-    
+
 
 def test_missing_model_description():
     clean_test_file()
     clean_samples_folder_copy()
 
     copy_samples_folder()
-    path_to_sample_file = os.path.join(
-        SAMPLE_FOLDER_COPY, CONFIG_FOLDERNAME, sample_file_path
-    )
-    
-    # Remove description from the following model description
+
+    # Define variables related the model we want to remove its description
     sample_model_id = "sentence-transformers/clip-ViT-B-32-multilingual-v1"
     sample_model_name_in_config = f"huggingface/{sample_model_id}"
     sample_version = "1.0.1"
     sample_format = "torch_script"
     sample_file_path = f"{sample_model_id}/{sample_version}/{sample_format}/config.json"
-    
-    with open(path_to_sample_file, 'r') as f:
+
+    # Remove description from the following model description
+    path_to_sample_file = os.path.join(
+        SAMPLE_FOLDER_COPY, CONFIG_FOLDERNAME, sample_file_path
+    )
+    with open(path_to_sample_file, "r") as f:
         sample_config = json.load(f)
-    sample_config.pop('description')
-    with open(path_to_sample_file, 'w') as f:
+    sample_config.pop("description")
+    with open(path_to_sample_file, "w") as f:
         json.dump(sample_config, f)
-        
+
     # Expect create_new_pretrained_model_listing not to raise error
     try:
         create_new_pretrained_model_listing(
@@ -169,9 +168,9 @@ def test_missing_model_description():
         )
     for dict_obj in expected_pretrained_model_listing:
         if dict_obj["name"] == sample_model_name_in_config:
-            dict_obj["versions"][sample_version].pop('description')
+            dict_obj["versions"][sample_version].pop("description")
             break
-    
+
     # Compare the generated test_pretrained_model_listing with expected_pretrained_model_listing
     try:
         with open(TEST_FILE, "r") as f:
@@ -182,10 +181,10 @@ def test_missing_model_description():
     assert test_pretrained_model_listing == expected_pretrained_model_listing, print(
         "Incorrect pretrained model listing given that description is missing in some model"
     )
-    
+
     clean_test_file()
     clean_samples_folder_copy()
-        
+
 
 clean_samples_folder_copy()
 clean_test_file()
