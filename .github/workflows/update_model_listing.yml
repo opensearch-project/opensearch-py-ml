@@ -36,7 +36,13 @@ jobs:
         path_prefixes="${{ env.path_prefixes }}"
         for prefix in $path_prefixes
         do
-          aws s3api list-objects --bucket ${{ secrets.MODEL_BUCKET }} --prefix $prefix --query "Contents[].{Key: Key}" --output text | grep "/config.json$" >> config_paths.txt
+          aws s3 ls s3://${{ secrets.MODEL_BUCKET }}/$prefix > /dev/null 2>&1 || FOLDER_NOT_EXIST=true
+          if [[ -z $FOLDER_NOT_EXIST ]]
+          then
+            aws s3api list-objects --bucket ${{ secrets.MODEL_BUCKET }} --prefix $prefix --query "Contents[].{Key: Key}" --output text | grep "/config.json$" >> config_paths.txt
+          else
+            echo "Folder with prefix $prefix does not exist."
+          fi
         done
         echo $(cat config_paths.txt)
     - name: Download config files
