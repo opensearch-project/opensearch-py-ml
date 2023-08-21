@@ -11,6 +11,7 @@
 import argparse
 import json
 import os
+import sys
 from typing import Optional
 
 JSON_FILENAME = "pretrained_model_listing.json"
@@ -115,7 +116,7 @@ def create_new_pretrained_model_listing(
     print("\n=== Finished running update_pretrained_model_listing.py ===")
 
 
-if __name__ == "__main__":
+def main(args):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "config_paths_txt_filepath",
@@ -127,15 +128,27 @@ if __name__ == "__main__":
         type=str,
         help="Path to the folder that stores copies of config files from S3",
     )
+    parser.add_argument(
+        "-fp",
+        "--pretrained_model_listing_json_filepath",
+        type=str,
+        default=PRETRAINED_MODEL_LISTING_JSON_FILEPATH,
+        help="Path to the json file that stores new model listing",
+    )
 
-    args = parser.parse_args()
+    parsed_args = parser.parse_args(args)
 
-    if not args.config_paths_txt_filepath.endswith(".txt"):
+    if not parsed_args.config_paths_txt_filepath.endswith(".txt"):
         raise Exception(
             "Invalid argument: config_paths_txt_filepath should be .txt file"
         )
 
     create_new_pretrained_model_listing(
-        args.config_paths_txt_filepath,
-        args.config_folderpath,
+        parsed_args.config_paths_txt_filepath,
+        parsed_args.config_folderpath,
+        parsed_args.pretrained_model_listing_json_filepath,
     )
+
+
+if __name__ == "__main__":
+    main(sys.argv[1:])

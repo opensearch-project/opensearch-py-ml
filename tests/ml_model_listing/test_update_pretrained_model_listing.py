@@ -30,7 +30,7 @@ SAMPLE_FOLDER_COPY = os.path.join(THIS_DIR, "samples_copy")
 SAMPLE_MISSING_CONFIG_SUBFOLDERNAME = "ml-models/huggingface/sentence-transformers"
 TEST_FILE = os.path.join(THIS_DIR, "test_pretrained_model_listing.json")
 
-from update_pretrained_model_listing import create_new_pretrained_model_listing
+from update_pretrained_model_listing import main as update_pretrained_model_listing_main
 
 
 def clean_test_file():
@@ -69,10 +69,13 @@ clean_test_file()
 def test_create_new_pretrained_model_listing():
     clean_test_file()
     try:
-        create_new_pretrained_model_listing(
-            os.path.join(SAMPLE_FOLDER, CONFIG_PATHS_TXT_FILENAME),
-            os.path.join(SAMPLE_FOLDER, CONFIG_FOLDERNAME),
-            pretrained_model_listing_json_filepath=TEST_FILE,
+        update_pretrained_model_listing_main(
+            [
+                os.path.join(SAMPLE_FOLDER, CONFIG_PATHS_TXT_FILENAME),
+                os.path.join(SAMPLE_FOLDER, CONFIG_FOLDERNAME),
+                "--pretrained_model_listing_json_filepath",
+                TEST_FILE,
+            ]
         )
     except Exception as e:
         assert False, print(f"Failed while creating new pretrained model listing: {e}")
@@ -110,10 +113,13 @@ def test_missing_config_file():
     )
 
     with pytest.raises(Exception) as exc_info:
-        create_new_pretrained_model_listing(
-            os.path.join(SAMPLE_FOLDER_COPY, CONFIG_PATHS_TXT_FILENAME),
-            os.path.join(SAMPLE_FOLDER_COPY, CONFIG_FOLDERNAME),
-            pretrained_model_listing_json_filepath=TEST_FILE,
+        update_pretrained_model_listing_main(
+            [
+                os.path.join(SAMPLE_FOLDER_COPY, CONFIG_PATHS_TXT_FILENAME),
+                os.path.join(SAMPLE_FOLDER_COPY, CONFIG_FOLDERNAME),
+                "--pretrained_model_listing_json_filepath",
+                TEST_FILE,
+            ]
         )
     assert exc_info.type is Exception
     assert "Cannot open" in str(exc_info.value)
