@@ -13,6 +13,7 @@ jobs:
     env:
       bucket_model_listing_file_path: ml-models/model_listing/pre_trained_models.json
       repo_model_listing_path: ./utils/model_uploader/model_listing/pretrained_model_listing.json
+      path_prefixes: "ml-models/huggingface/ ml-models/abc/"
     steps:
     - name: Fail if branch is not main
       if: github.ref == 'refs/heads/main'
@@ -29,12 +30,20 @@ jobs:
         role-session-name: update-model-listing
     - name: List Models
       run: |
-        aws s3api list-objects --bucket ${{ secrets.MODEL_BUCKET }} --prefix "ml-models/huggingface/" --query "Contents[].{Key: Key}" --output text | grep "/config.json$" >> config_paths.txt
+        path_prefixes="${{ env.path_prefixes }}"
+        for prefix in $path_prefixes
+        do
+          aws s3api list-objects --bucket ${{ secrets.MODEL_BUCKET }} --prefix $prefix --query "Contents[].{Key: Key}" --output text | grep "/config.json$" >> config_paths.txt
+        done
         echo $(cat config_paths.txt)
     - name: Download config files
       run: |
         mkdir config_folder
-        aws s3 cp s3://${{ secrets.MODEL_BUCKET }}/ml-models/huggingface/ config_folder --recursive --exclude "*" --include "*/config.json"
+        path_prefixes="${{ env.path_prefixes }}"
+        for prefix in $path_prefixes
+        do
+          aws s3 cp s3://${{ secrets.MODEL_BUCKET }}/$prefix config_folder/$prefix --recursive --exclude "*" --include "*/config.json"
+        done
         echo $(ls config_folder)
     - name: Set Up Python
       uses: actions/setup-python@v2

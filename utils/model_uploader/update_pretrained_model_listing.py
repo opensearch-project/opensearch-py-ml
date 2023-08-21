@@ -16,7 +16,6 @@ from typing import Optional
 JSON_FILENAME = "pretrained_model_listing.json"
 JSON_DIRNAME = "utils/model_uploader/model_listing"
 PRETRAINED_MODEL_LISTING_JSON_FILEPATH = os.path.join(JSON_DIRNAME, JSON_FILENAME)
-PREFIX_HUGGINGFACE_MODEL_FILEPATH = "ml-models/huggingface/"
 TORCH_SCRIPT_FORMAT = "TORCH_SCRIPT"
 ONNX_FORMAT = "ONNX"
 TEMP_MODEL_PATH = "temp_model_path"
@@ -78,30 +77,28 @@ def create_new_pretrained_model_listing(
     print("\n---  Creating New Model Listing --- ")
     new_model_listing_dict = {}
     for config_filepath in config_paths_lst:
-        if config_filepath.startswith(PREFIX_HUGGINGFACE_MODEL_FILEPATH):
-            # (e.g. 'ml-models/huggingface/sentence-transformers/all-MiniLM-L12-v2/2.0.0/onnx/config.json')
-            model_parts = config_filepath.split("/")
-            model_name = "/".join(model_parts[1:4])
-            model_version = model_parts[4]
-            model_format = model_parts[5]
-            local_config_filepath = "/".join(model_parts[2:])
-            if model_name not in new_model_listing_dict:
-                new_model_listing_dict[model_name] = {
-                    "name": model_name,
-                    "versions": {},
-                }
-            versions_content = new_model_listing_dict[model_name]["versions"]
-            if model_version not in versions_content:
-                versions_content[model_version] = {
-                    "format": [],
-                }
-            versions_content[model_version]["format"].append(model_format)
-            if "description" not in versions_content[model_version]:
-                description = get_sentence_transformer_model_description(
-                    config_folderpath, local_config_filepath
-                )
-                if description is not None:
-                    versions_content[model_version]["description"] = description
+        # (e.g. 'ml-models/huggingface/sentence-transformers/all-MiniLM-L12-v2/2.0.0/onnx/config.json')
+        model_parts = config_filepath.split("/")
+        model_name = "/".join(model_parts[1:4])
+        model_version = model_parts[4]
+        model_format = model_parts[5]
+        if model_name not in new_model_listing_dict:
+            new_model_listing_dict[model_name] = {
+                "name": model_name,
+                "versions": {},
+            }
+        versions_content = new_model_listing_dict[model_name]["versions"]
+        if model_version not in versions_content:
+            versions_content[model_version] = {
+                "format": [],
+            }
+        versions_content[model_version]["format"].append(model_format)
+        if "description" not in versions_content[model_version]:
+            description = get_sentence_transformer_model_description(
+                config_folderpath, config_filepath
+            )
+            if description is not None:
+                versions_content[model_version]["description"] = description
 
     new_model_listing_lst = list(new_model_listing_dict.values())
     new_model_listing_lst = sorted(new_model_listing_lst, key=lambda d: d["name"])

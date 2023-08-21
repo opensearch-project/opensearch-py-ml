@@ -11,17 +11,6 @@
     }
   },
   {
-    "name": "huggingface/jhgan/ko-sroberta-multitask",
-    "versions": {
-      "1.0.1": {
-        "format": [
-          "torch_script"
-        ],
-        "description": "This is a sentence-transformers model: It maps sentences & paragraphs to a 768 dimensional dense vector space and can be used for tasks like clustering or semantic search."
-      }
-    }
-  },
-  {
     "name": "huggingface/sentence-transformers/clip-ViT-B-32-multilingual-v1",
     "versions": {
       "1.0.1": {
@@ -47,6 +36,17 @@
           "torch_script"
         ],
         "description": "This is a sentence-transformers model: It maps sentences & paragraphs to a 768 dimensional dense vector space and was designed for semantic search. It has been trained on 215M  pairs from diverse sources. (New Version)"
+      }
+    }
+  },
+  {
+    "name": "other_source/jhgan/ko-sroberta-multitask",
+    "versions": {
+      "1.0.1": {
+        "format": [
+          "torch_script"
+        ],
+        "description": "This is a sentence-transformers model: It maps sentences & paragraphs to a 768 dimensional dense vector space and can be used for tasks like clustering or semantic search."
       }
     }
   }
