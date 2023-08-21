@@ -4,8 +4,10 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [1.2.0]
 
 ### Added
+- Add workflows and scripts for automating model tracing and uploading process by @thanawan-atc in ([#209](https://github.com/opensearch-project/opensearch-py-ml/pull/209))
 
 ### Changed
+
 
 ### Fixed
 - Enable make_model_config_json to add model description to model config file by @thanawan-atc in ([#203](https://github.com/opensearch-project/opensearch-py-ml/pull/203))
