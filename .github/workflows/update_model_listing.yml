@@ -13,7 +13,10 @@ jobs:
     env:
       bucket_model_listing_file_path: ml-models/model_listing/pre_trained_models.json
       repo_model_listing_path: ./utils/model_uploader/model_listing/pretrained_model_listing.json
-      path_prefixes: "ml-models/huggingface/ ml-models/abc/"
+      path_prefixes: "ml-models/huggingface/" 
+      # If you want to the model listing to include more folders you just need to modify path_prefixes
+      # as follows: "ml-models/first_folder/ ml-models/second_folder/ ml-models/third_folder/" 
+      # (Split each folder with white space)
     steps:
     - name: Fail if branch is not main
       if: github.ref == 'refs/heads/main'
