@@ -17,13 +17,6 @@ from typing import Optional
 JSON_FILENAME = "pretrained_model_listing.json"
 JSON_DIRNAME = "utils/model_uploader/model_listing"
 PRETRAINED_MODEL_LISTING_JSON_FILEPATH = os.path.join(JSON_DIRNAME, JSON_FILENAME)
-TORCH_SCRIPT_FORMAT = "TORCH_SCRIPT"
-ONNX_FORMAT = "ONNX"
-TEMP_MODEL_PATH = "temp_model_path"
-TEST_SENTENCES = [
-    "First test sentence",
-    "Second test sentence",
-]
 
 
 def get_sentence_transformer_model_description(
