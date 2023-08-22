@@ -6,13 +6,22 @@
 # GitHub history for details.
 
 
+import json
 import time
 from typing import Any, List, Union
 
 from deprecated.sphinx import deprecated
 from opensearchpy import OpenSearch
 
-from opensearch_py_ml.ml_commons.ml_common_utils import ML_BASE_URI, TIMEOUT
+from opensearch_py_ml.ml_commons.ml_common_utils import (
+    ML_BASE_URI,
+    MODEL_FORMAT_FIELD,
+    MODEL_GROUP_ID,
+    MODEL_NAME_FIELD,
+    MODEL_VERSION_FIELD,
+    TIMEOUT,
+)
+from opensearch_py_ml.ml_commons.model_execute import ModelExecute
 from opensearch_py_ml.ml_commons.model_uploader import ModelUploader
 
 
@@ -25,6 +34,22 @@ class MLCommonClient:
     def __init__(self, os_client: OpenSearch):
         self._client = os_client
         self._model_uploader = ModelUploader(os_client)
+        self._model_execute = ModelExecute(os_client)
+
+    def execute(self, algorithm_name: str, input_json: dict) -> dict:
+        """
+        This method executes ML algorithms that can be only executed directly (i.e. do not support train and
+        predict APIs), like anomaly localization and metrics correlation. The algorithm has to be supported by ML Commons.
+        Refer to https://opensearch.org/docs/2.7/ml-commons-plugin/api/#execute
+
+        :param algorithm_name: Name of the algorithm
+        :type algorithm_name: string
+        :param input_json: Dictionary of parameters
+        :type input_json: dict
+        :return: returns the API response
+        :rtype: dict
+        """
+        return self._model_execute._execute(algorithm_name, input_json)
 
     @deprecated(
         reason="Since OpenSearch 2.7.0, you can use register_model instead",
@@ -84,6 +109,7 @@ class MLCommonClient:
         self,
         model_path: str,
         model_config_path: str,
+        model_group_id: str = "",
         isVerbose: bool = False,
         deploy_model: bool = True,
         wait_until_deployed: bool = True,
@@ -111,6 +137,8 @@ class MLCommonClient:
             refer to:
             https://opensearch.org/docs/latest/ml-commons-plugin/model-serving-framework/#upload-model-to-opensearch
         :type model_config_path: string
+        :param model_group_id: Model group id
+        :type model_group_id: string
         :param isVerbose: if isVerbose is true method will print more messages. default False
         :type isVerbose: boolean
         :param deploy_model: Whether to deploy the model using uploaded model chunks
@@ -121,7 +149,7 @@ class MLCommonClient:
         :rtype: string
         """
         model_id = self._model_uploader._register_model(
-            model_path, model_config_path, isVerbose
+            model_path, model_config_path, model_group_id, isVerbose
         )
 
         # loading the model chunks from model index
@@ -162,7 +190,7 @@ class MLCommonClient:
         """
         # creating model meta doc
         model_config_json = {
-            "name": model_name,
+            MODEL_NAME_FIELD: model_name,
             "version": model_version,
             "model_format": model_format,
         }
@@ -179,6 +207,7 @@ class MLCommonClient:
         model_name: str,
         model_version: str,
         model_format: str,
+        model_group_id: str = "",
         deploy_model: bool = True,
         wait_until_deployed: bool = True,
     ):
@@ -193,6 +222,8 @@ class MLCommonClient:
         :type model_version: string
         :param model_format: "TORCH_SCRIPT" or "ONNX"
         :type model_format: string
+        :param model_group_id: Model group id
+        :type model_group_id: string
         :param deploy_model: Whether to deploy the model using uploaded model chunks
         :type deploy_model: bool
         :param wait_until_deployed: If deploy_model is true, whether to wait until the model is deployed
@@ -202,11 +233,14 @@ class MLCommonClient:
         """
         # creating model meta doc
         model_config_json = {
-            "name": model_name,
-            "version": model_version,
-            "model_format": model_format,
+            MODEL_NAME_FIELD: model_name,
+            MODEL_VERSION_FIELD: model_version,
+            MODEL_FORMAT_FIELD: model_format,
+            MODEL_GROUP_ID: model_group_id,
         }
         model_id = self._send_model_info(model_config_json)
+
+        print(model_id)
 
         # loading the model chunks from model index
         if deploy_model:
@@ -304,6 +338,7 @@ class MLCommonClient:
             "task_id"
         ]
 
+        print(f"Task ID: {task_id}")
         if wait_until_deployed:
             # Wait until deployed
             for i in range(TIMEOUT):
@@ -357,6 +392,66 @@ class MLCommonClient:
         return self._client.transport.perform_request(
             method="GET",
             url=API_URL,
+        )
+
+    def search_task(self, input_json) -> object:
+        """
+        This method searches a task from opensearch cluster (using ml commons api)
+        :param json: json input for the search request
+        :type json: string or dict
+        :return: returns a json object, with detailed information about the searched task
+        :rtype: object
+        """
+
+        API_URL = f"{ML_BASE_URI}/tasks/_search"
+
+        if isinstance(input_json, str):
+            try:
+                json_obj = json.loads(input_json)
+                if not isinstance(json_obj, dict):
+                    return "Invalid JSON object passed as argument."
+                API_BODY = json.dumps(json_obj)
+            except json.JSONDecodeError:
+                return "Invalid JSON string passed as argument."
+        elif isinstance(input_json, dict):
+            API_BODY = json.dumps(input_json)
+        else:
+            return "Invalid JSON object passed as argument."
+
+        return self._client.transport.perform_request(
+            method="GET",
+            url=API_URL,
+            body=API_BODY,
+        )
+
+    def search_model(self, input_json) -> object:
+        """
+        This method searches a model from opensearch cluster (using ml commons api)
+        :param json: json input for the search request
+        :type json: string or dict
+        :return: returns a json object, with detailed information about the searched model
+        :rtype: object
+        """
+
+        API_URL = f"{ML_BASE_URI}/models/_search"
+
+        if isinstance(input_json, str):
+            try:
+                json_obj = json.loads(input_json)
+                if not isinstance(json_obj, dict):
+                    return "Invalid JSON object passed as argument."
+                API_BODY = json.dumps(json_obj)
+            except json.JSONDecodeError:
+                return "Invalid JSON string passed as argument."
+        elif isinstance(input_json, dict):
+            API_BODY = json.dumps(input_json)
+        else:
+            return "Invalid JSON object passed as argument."
+
+        return self._client.transport.perform_request(
+            method="POST",
+            url=API_URL,
+            body=API_BODY,
         )
 
     def get_model_info(self, model_id: str) -> object:

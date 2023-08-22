@@ -68,8 +68,132 @@ clean_test_folder(TEST_FOLDER)
 
 
 def test_init():
-    assert type(ml_client._client) == OpenSearch
-    assert type(ml_client._model_uploader) == ModelUploader
+    assert isinstance(ml_client._client, OpenSearch)
+    assert isinstance(ml_client._model_uploader, ModelUploader)
+
+
+def test_execute():
+    raised = False
+    try:
+        input_json = {"operation": "max", "input_data": [1.0, 2.0, 3.0]}
+        result = ml_client.execute(
+            algorithm_name="local_sample_calculator", input_json=input_json
+        )
+        assert result["output"]["result"] == 3
+    except:  # noqa: E722
+        raised = True
+    assert (
+        raised == False
+    ), "Raised Exception during execute API testing with dictionary"
+
+    raised = False
+    try:
+        input_json = '{"operation": "max", "input_data": [1.0, 2.0, 3.0]}'
+        result = ml_client.execute(
+            algorithm_name="local_sample_calculator", input_json=input_json
+        )
+        assert result["output"]["result"] == 3
+    except:  # noqa: E722
+        raised = True
+    assert (
+        raised == False
+    ), "Raised Exception during execute API testing with JSON string"
+
+
+def test_search():
+    # Search task cases
+    raised = False
+    try:
+        search_task_obj = ml_client.search_task(
+            input_json='{"query": {"match_all": {}},"size": 1}'
+        )
+        assert search_task_obj["hits"]["hits"] != []
+    except:  # noqa: E722
+        raised = True
+    assert raised == False, "Raised Exception in searching task"
+
+    raised = False
+    try:
+        search_task_obj = ml_client.search_task(
+            input_json={"query": {"match_all": {}}, "size": 1}
+        )
+        assert search_task_obj["hits"]["hits"] != []
+    except:  # noqa: E722
+        raised = True
+    assert raised == False, "Raised Exception in searching task"
+
+    raised = False
+    try:
+        search_task_obj = ml_client.search_task(input_json=15)
+        assert search_task_obj == "Invalid JSON object passed as argument."
+    except:  # noqa: E722
+        raised = True
+    assert raised == False, "Raised Exception in searching task"
+
+    raised = False
+    try:
+        search_task_obj = ml_client.search_task(input_json="15")
+        assert search_task_obj == "Invalid JSON object passed as argument."
+    except:  # noqa: E722
+        raised = True
+    assert raised == False, "Raised Exception in searching task"
+
+    raised = False
+    try:
+        search_task_obj = ml_client.search_task(
+            input_json='{"query": {"match_all": {}},size: 1}'
+        )
+        assert search_task_obj == "Invalid JSON string passed as argument."
+    except:  # noqa: E722
+        raised = True
+    assert raised == False, "Raised Exception in searching task"
+
+    # Search model cases
+    raised = False
+    try:
+        search_model_obj = ml_client.search_model(
+            input_json='{"query": {"match_all": {}},"size": 1}'
+        )
+        assert search_model_obj["hits"]["hits"] != []
+    except:  # noqa: E722
+        raised = True
+    assert raised == False, "Raised Exception in searching model"
+
+    raised = False
+    try:
+        search_model_obj = ml_client.search_model(
+            input_json={"query": {"match_all": {}}, "size": 1}
+        )
+        assert search_model_obj["hits"]["hits"] != []
+    except:  # noqa: E722
+        raised = True
+    assert raised == False, "Raised Exception in searching model"
+
+    raised = False
+    try:
+        search_model_obj = ml_client.search_model(input_json=15)
+        assert search_model_obj == "Invalid JSON object passed as argument."
+    except:  # noqa: E722
+        raised = True
+    assert raised == False, "Raised Exception in searching model"
+
+    raised = False
+    try:
+        search_model_obj = ml_client.search_model(input_json="15")
+        assert search_model_obj == "Invalid JSON object passed as argument."
+    except:  # noqa: E722
+        raised = True
+    assert raised == False, "Raised Exception in searching model"
+
+    raised = False
+    try:
+        search_model_obj = ml_client.search_model(
+            input_json='{"query": {"match_all": {}},size: 1}'
+        )
+        assert search_model_obj == "Invalid JSON string passed as argument."
+    except:  # noqa: E722
+        raised = True
+    assert raised == False, "Raised Exception in searching model"
 
 
 def test_DEPRECATED_integration_pretrained_model_upload_unload_delete():
@@ -275,6 +399,7 @@ def test_integration_model_train_register_full_cycle():
         zip_file_name=MODEL_FILE_ZIP_NAME,
         num_epochs=1,
         overwrite=True,
+        verbose=True,
     )
     # second generating the config file to create metadoc of the model in opensearch.
     test_model.make_model_config_json()
@@ -290,7 +415,10 @@ def test_integration_model_train_register_full_cycle():
         raised = False
         try:
             ml_client.register_model(
-                MODEL_PATH, MODEL_CONFIG_FILE_PATH, deploy_model=True, isVerbose=True
+                model_path=MODEL_PATH,
+                model_config_path=MODEL_CONFIG_FILE_PATH,
+                deploy_model=True,
+                isVerbose=True,
             )
         except:  # noqa: E722
             raised = True
@@ -299,7 +427,10 @@ def test_integration_model_train_register_full_cycle():
         raised = False
         try:
             model_id = ml_client.register_model(
-                MODEL_PATH, MODEL_CONFIG_FILE_PATH, deploy_model=False, isVerbose=True
+                model_path=MODEL_PATH,
+                model_config_path=MODEL_CONFIG_FILE_PATH,
+                deploy_model=False,
+                isVerbose=True,
             )
             print("Model_id:", model_id)
         except:  # noqa: E722
@@ -344,6 +475,7 @@ def test_integration_model_train_register_full_cycle():
                     print("Model Task Status:", ml_task_status)
                     raised = True
                 assert raised == False, "Raised Exception in pulling task info"
+
                 # This is test is being flaky. Sometimes the test is passing and sometimes showing 500 error
                 # due to memory circuit breaker.
                 # Todo: We need to revisit this test.
@@ -381,3 +513,6 @@ def test_integration_model_train_register_full_cycle():
                 except:  # noqa: E722
                     raised = True
                 assert raised == False, "Raised Exception in deleting model"
+
+
+test_integration_model_train_register_full_cycle()

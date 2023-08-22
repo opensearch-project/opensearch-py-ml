@@ -7,10 +7,8 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Add workflows and scripts for automating model tracing and uploading process by @thanawan-atc in ([#209](https://github.com/opensearch-project/opensearch-py-ml/pull/209))
 - Add workflow and scripts for automating model listing updating process by @thanawan-atc in ([#210](https://github.com/opensearch-project/opensearch-py-ml/pull/210))
 
-  
 ### Changed
 - Bump torch from 1.13.1 to 2.0.1 and add onnx dependency by  @thanawan-atc ([#237](https://github.com/opensearch-project/opensearch-py-ml/pull/237))
-
 
 ### Fixed
 - Enable make_model_config_json to add model description to model config file by @thanawan-atc in ([#203](https://github.com/opensearch-project/opensearch-py-ml/pull/203))

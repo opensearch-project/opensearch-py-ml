@@ -10,6 +10,7 @@ import os
 import pickle
 import platform
 import random
+import re
 import shutil
 import subprocess
 import time
@@ -23,7 +24,9 @@ import pandas as pd
 import torch
 import yaml
 from accelerate import Accelerator, notebook_launcher
+from mdutils.fileutils import MarkDownFile
 from sentence_transformers import SentenceTransformer
+from sentence_transformers.models import Normalize, Pooling, Transformer
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from transformers import TrainingArguments, get_linear_schedule_with_warmup
@@ -244,7 +247,7 @@ class SentenceTransformerModel:
         within synthetic_queries/ folder, output as a dataframe
 
         :param read_path:
-            required, path to the zipped file that contains generated queries, if None, raise exception
+            required, path to the zipped file that contains generated queries
         :type read_path: string
         :param overwrite:
             optional, synthetic_queries/ folder in current directory is to store unzip queries files.
@@ -254,12 +257,6 @@ class SentenceTransformerModel:
         :return: The dataframe of queries.
         :rtype: panda dataframe
         """
-
-        if read_path is None:
-            raise Exception(
-                "No file provided. Please provide the path to synthetic query zip file."
-            )
-
         # assign a local folder 'synthetic_queries/' to store the unzip file,
         # check if the folder contains sub-folders and files, remove and clean up the folder before unzip.
         # walk through the zip file and read the file paths into file_list
@@ -706,6 +703,37 @@ class SentenceTransformerModel:
             )
         print("zip file is saved to " + zip_file_path + "\n")
 
+    def _fill_null_truncation_field(
+        self,
+        save_json_folder_path: str,
+        max_length: int,
+    ) -> None:
+        """
+        Description:
+        Fill truncation field in tokenizer.json when it is null
+
+        :param save_json_folder_path:
+             path to save model json file, e.g, "home/save_pre_trained_model_json/")
+        :type save_json_folder_path: string
+        :param max_length:
+             maximum sequence length for model
+        :type max_length: int
+        :return: no return value expected
+        :rtype: None
+        """
+        tokenizer_file_path = os.path.join(save_json_folder_path, "tokenizer.json")
+        with open(tokenizer_file_path) as user_file:
+            parsed_json = json.load(user_file)
+        if "truncation" not in parsed_json or parsed_json["truncation"] is None:
+            parsed_json["truncation"] = {
+                "direction": "Right",
+                "max_length": max_length,
+                "strategy": "LongestFirst",
+                "stride": 0,
+            }
+            with open(tokenizer_file_path, "w") as file:
+                json.dump(parsed_json, file, indent=2)
+
     def save_as_pt(
         self,
         sentences: [str],
@@ -763,8 +791,19 @@ class SentenceTransformerModel:
             zip_file_name = str(model_id.split("/")[-1] + ".zip")
         zip_file_path = os.path.join(model_output_path, zip_file_name)
 
+        # handle when model_max_length is unproperly defined in model's tokenizer (e.g. "intfloat/e5-small-v2")
+        # (See PR #219 and https://github.com/huggingface/transformers/issues/14561 for more context)
+        if model.tokenizer.model_max_length > model.get_max_seq_length():
+            model.tokenizer.model_max_length = model.get_max_seq_length()
+            print(
+                f"The model_max_length is not properly defined in tokenizer_config.json. Setting it to be {model.tokenizer.model_max_length}"
+            )
+
         # save tokenizer.json in save_json_folder_name
         model.save(save_json_folder_path)
+        self._fill_null_truncation_field(
+            save_json_folder_path, model.tokenizer.model_max_length
+        )
 
         # convert to pt format will need to be in cpu,
         # set the device to cpu, convert its input_ids and attention_mask in cpu and save as .pt format
@@ -854,8 +893,19 @@ class SentenceTransformerModel:
 
         zip_file_path = os.path.join(model_output_path, zip_file_name)
 
+        # handle when model_max_length is unproperly defined in model's tokenizer (e.g. "intfloat/e5-small-v2")
+        # (See PR #219 and https://github.com/huggingface/transformers/issues/14561 for more context)
+        if model.tokenizer.model_max_length > model.get_max_seq_length():
+            model.tokenizer.model_max_length = model.get_max_seq_length()
+            print(
+                f"The model_max_length is not properly defined in tokenizer_config.json. Setting it to be {model.tokenizer.model_max_length}"
+            )
+
         # save tokenizer.json in output_path
         model.save(save_json_folder_path)
+        self._fill_null_truncation_field(
+            save_json_folder_path, model.tokenizer.model_max_length
+        )
 
         convert(
             framework="pt",
@@ -863,6 +913,8 @@ class SentenceTransformerModel:
             output=Path(model_path),
             opset=15,
         )
+
+        print("model file is saved to ", model_path)
 
         # zip model file along with tokenizer.json as output
         with ZipFile(str(zip_file_path), "w") as zipObj:
@@ -974,29 +1026,112 @@ class SentenceTransformerModel:
                 "Failed to open config file for ml common upload: " + file_path + "\n"
             )
 
+    def _get_model_description_from_readme_file(self, readme_file_path) -> str:
+        """
+        Get description of the model from README.md file in the model folder
+        after the model is saved in local directory
+
+        See example here:
+        https://huggingface.co/sentence-transformers/msmarco-distilbert-base-tas-b/blob/main/README.md)
+
+        This function assumes that the README.md has the following format:
+
+        # sentence-transformers/msmarco-distilbert-base-tas-b
+        This is [ ... further description ... ]
+
+        # [ ... Next section ...]
+        ...
+
+        :param readme_file_path: Path to README.md file
+        :type readme_file_path: string
+        :return: Description of the model
+        :rtype: string
+        """
+        readme_data = MarkDownFile.read_file(readme_file_path)
+
+        # Find the description section
+        start_str = f"\n# {self.model_id}"
+        start = readme_data.find(start_str)
+        if start == -1:
+            model_name = self.model_id.split("/")[1]
+            start_str = f"\n# {model_name}"
+            start = readme_data.find(start_str)
+        end = readme_data.find("\n#", start + len(start_str))
+
+        # If we cannot find the scope of description section, raise error.
+        if start == -1 or end == -1:
+            assert False, "Cannot find description in README.md file"
+
+        # Parse out the description section
+        description = readme_data[start + len(start_str) + 1 : end].strip()
+        description = description.split("\n")[0]
+
+        # Remove hyperlink and reformat text
+        description = re.sub(r"\(.*?\)", "", description)
+        description = re.sub(r"[\[\]]", "", description)
+        description = re.sub(r"\*", "", description)
+
+        # Remove unnecessary part if exists (i.e. " For an introduction to ...")
+        # (Found in https://huggingface.co/sentence-transformers/multi-qa-mpnet-base-dot-v1/blob/main/README.md)
+        unnecessary_part = description.find(" For an introduction to")
+        if unnecessary_part != -1:
+            description = description[:unnecessary_part]
+
+        return description
+
+    def _generate_default_model_description(self, embedding_dimension) -> str:
+        """
+        Generate default model description of the model based on embedding_dimension
+
+        ::param embedding_dimension: Embedding dimension of the model.
+        :type embedding_dimension: int
+        :return: Description of the model
+        :rtype: string
+        """
+        print(
+            "Using default description from embedding_dimension instead (You can overwrite this by specifying description parameter in make_model_config_json function"
+        )
+        description = f"This is a sentence-transformers model: It maps sentences & paragraphs to a {embedding_dimension} dimensional dense vector space."
+        return description
+
     def make_model_config_json(
         self,
         model_name: str = None,
         version_number: str = 1,
+        model_format: str = "TORCH_SCRIPT",
         embedding_dimension: int = None,
+        pooling_mode: str = None,
+        normalize_result: bool = None,
+        description: str = None,
         all_config: str = None,
         model_type: str = None,
         verbose: bool = False,
-    ) -> None:
+    ) -> str:
         """
         parse from config.json file of pre-trained hugging-face model to generate a ml-commons_model_config.json file. If all required
         fields are given by users, use the given parameters and will skip reading the config.json
-
         :param model_name:
-            Optional, The name of the model. If None, default to parse from model id, for example,
-            'msmarco-distilbert-base-tas-b'
+            Optional, The name of the model. If None, default is model id, for example,
+            'sentence-transformers/msmarco-distilbert-base-tas-b'
         :type model_name: string
+        :param model_format:
+            Optional, The format of the model. Default is "TORCH_SCRIPT".
+        :type model_format: string
         :param version_number:
-            Optional, The version number of the model. default is 1
+            Optional, The version number of the model. Default is 1
         :type version_number: string
-        :param embedding_dimension: Optional, the embedding_dimension of the model. If None, parse embedding_dimension
-            from the config file of pre-trained hugging-face model, if not found, default to be 768
+        :param embedding_dimension: Optional, the embedding dimension of the model. If None, get embedding_dimension
+            from the pre-trained hugging-face model object.
         :type embedding_dimension: int
+        :param pooling_mode: Optional, the pooling mode of the model. If None, get pooling_mode
+            from the pre-trained hugging-face model object.
+        :type pooling_mode: string
+        :param normalize_result: Optional, whether to normalize the result of the model. If None, check from the pre-trained
+        hugging-face model object.
+        :type normalize_result: bool
+        :param description: Optional, the description of the model. If None, get description from the README.md
+            file in the model folder.
+        :type description: str
         :param all_config:
             Optional, the all_config of the model. If None, parse all contents from the config file of pre-trained
             hugging-face model
@@ -1008,16 +1143,63 @@ class SentenceTransformerModel:
         :param verbose:
             optional, use printing more logs. Default as false
         :type verbose: bool
-        :return: no return value expected
-        :rtype: None
+        :return: model config file path. The file path where the model config file is being saved
+        :rtype: string
         """
         folder_path = self.folder_path
         config_json_file_path = os.path.join(folder_path, "config.json")
         if model_name is None:
             model_name = self.model_id
 
-        # if user input model_type and embedding_dimension, it will skip reading the config.json file
-        if model_type is None or embedding_dimension is None:
+        # if user input model_type/embedding_dimension/pooling_mode, it will skip this step.
+        model = SentenceTransformer(self.model_id)
+        if (
+            model_type is None
+            or embedding_dimension is None
+            or pooling_mode is None
+            or normalize_result is None
+        ):
+            try:
+                if embedding_dimension is None:
+                    embedding_dimension = model.get_sentence_embedding_dimension()
+
+                for str_idx, module in model._modules.items():
+                    if model_type is None and isinstance(module, Transformer):
+                        model_type = module.auto_model.__class__.__name__
+                        model_type = model_type.lower().rstrip("model")
+                    elif pooling_mode is None and isinstance(module, Pooling):
+                        pooling_mode = module.get_pooling_mode_str().upper()
+                    elif normalize_result is None and isinstance(module, Normalize):
+                        normalize_result = True
+                    # TODO: Support 'Dense' module
+                if normalize_result is None:
+                    normalize_result = False
+            except Exception as e:
+                raise Exception(
+                    f"Raised exception while getting model data from pre-trained hugging-face model object: {e}"
+                )
+
+        if description is None:
+            readme_file_path = os.path.join(self.folder_path, "README.md")
+            if os.path.exists(readme_file_path):
+                try:
+                    if verbose:
+                        print("reading README.md file")
+                    description = self._get_model_description_from_readme_file(
+                        readme_file_path
+                    )
+                except Exception as e:
+                    print(f"Cannot scrape model description from README.md file: {e}")
+                    description = self._generate_default_model_description(
+                        embedding_dimension
+                    )
+            else:
+                print("Cannot find README.md file to scrape model description")
+                description = self._generate_default_model_description(
+                    embedding_dimension
+                )
+
+        if all_config is None:
             if not os.path.exists(config_json_file_path):
                 raise Exception(
                     str(
@@ -1033,59 +1215,30 @@ class SentenceTransformerModel:
                     config_content = json.load(f)
                     if all_config is None:
                         all_config = config_content
-                    if model_type is None:
-                        if "model_type" in config_content.keys():
-                            model_type = config_content["model_type"]
-                        else:
-                            print(
-                                "Please check file or input model_type and embedding_dimension in the argument"
-                            )
-                            raise Exception(
-                                str(
-                                    "Cannot find model_type in config.json file"
-                                    + config_json_file_path
-                                    + ". Please check the config.son file in the path."
-                                )
-                            )
-                    if embedding_dimension is None:
-                        embedding_dimension_mapping_list = [
-                            "dim",
-                            "hidden_size",
-                            "d_model",
-                        ]
-                        for mapping_item in embedding_dimension_mapping_list:
-                            if mapping_item in config_content.keys():
-                                embedding_dimension = config_content[mapping_item]
-                                break
-                            else:
-                                print(
-                                    'Cannot find "dim" or "hidden_size" or "d_model" in config.json file at ',
-                                    config_json_file_path,
-                                )
-                                print(
-                                    "Please add in the config file or input in the argument for embedding_dimension "
-                                )
-                                embedding_dimension = 768
             except IOError:
                 print(
                     "Cannot open in config.json file at ",
                     config_json_file_path,
-                    ". Please check the config.son ",
+                    ". Please check the config.json ",
                     "file in the path.",
                 )
 
         model_config_content = {
             "name": model_name,
             "version": version_number,
-            "model_format": "TORCH_SCRIPT",
+            "description": description,
+            "model_format": model_format,
             "model_task_type": "TEXT_EMBEDDING",
             "model_config": {
                 "model_type": model_type,
                 "embedding_dimension": embedding_dimension,
                 "framework_type": "sentence_transformers",
+                "pooling_mode": pooling_mode,
+                "normalize_result": normalize_result,
                 "all_config": json.dumps(all_config),
             },
         }
+
         if verbose:
             print("generating ml-commons_model_config.json file...\n")
             print(model_config_content)
@@ -1099,6 +1252,8 @@ class SentenceTransformerModel:
         print(
             "ml-commons_model_config.json file is saved at : ", model_config_file_path
         )
+
+        return model_config_file_path
 
     # private methods
     def __qryrem(self, x):
