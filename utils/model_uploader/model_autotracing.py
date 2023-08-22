@@ -53,7 +53,6 @@ TEST_SENTENCES = [
 ]
 RTOL_TEST = 1e-03
 ATOL_TEST = 1e-05
-ML_BASE_URI = "/_plugins/_ml"
 
 
 def verify_license_in_md_file() -> bool:
