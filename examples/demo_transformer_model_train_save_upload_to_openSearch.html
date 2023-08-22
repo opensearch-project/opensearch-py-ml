@@ -13,11 +13,11 @@
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/sphinx_highlight.js"></script>
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=fc837d61"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
         <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -95,16 +95,16 @@
            <div itemprop="articleBody">
              
   <section id="Demo-Notebook-for-Sentence-Transformer-Model-Training,-Saving-and-Uploading-to-OpenSearch">
-<h1>Demo Notebook for Sentence Transformer Model Training, Saving and Uploading to OpenSearch<a class="headerlink" href="#Demo-Notebook-for-Sentence-Transformer-Model-Training,-Saving-and-Uploading-to-OpenSearch" title="Permalink to this heading"></a></h1>
+<h1>Demo Notebook for Sentence Transformer Model Training, Saving and Uploading to OpenSearch<a class="headerlink" href="#Demo-Notebook-for-Sentence-Transformer-Model-Training,-Saving-and-Uploading-to-OpenSearch" title="Link to this heading"></a></h1>
 <section id="Download-notebook">
-<h2><a class="reference external" href="https://github.com/opensearch-project/opensearch-py-ml/blob/main/docs/source/examples/demo_transformer_model_train_save_upload_to_openSearch.ipynb">Download notebook</a><a class="headerlink" href="#Download-notebook" title="Permalink to this heading"></a></h2>
+<h2><a class="reference external" href="https://github.com/opensearch-project/opensearch-py-ml/blob/main/docs/source/examples/demo_transformer_model_train_save_upload_to_openSearch.ipynb">Download notebook</a><a class="headerlink" href="#Download-notebook" title="Link to this heading"></a></h2>
 <section id="Introduction">
-<h3>Introduction<a class="headerlink" href="#Introduction" title="Permalink to this heading"></a></h3>
+<h3>Introduction<a class="headerlink" href="#Introduction" title="Link to this heading"></a></h3>
 <p>This notebook introduces the technique of synthetic data generation and how it can be used to obtain a deep learning model for Search that is custom built for a given set of documents.</p>
 <p>Deep learning models are very powerful and have been shown to improve state of the art in several disciplines and tasks. However, they need a lot of labelled training data. Such data is often hard to obtain. In this notebook, we show how pre-trained large language models can be used to circumvent this issue.</p>
 <p>We focus on the task of passage retrieval i.e the corpus consists of passages which is searched at run-time given a user query. This search can be performed by transformers such as BERT as long as BERT is trained on a labelled dataset that consists of pairs such as (queries, relevant passage). Such a BERT model can be used for semantic search.</p>
 <section id="Synthetic-query-generation">
-<h4>Synthetic query generation<a class="headerlink" href="#Synthetic-query-generation" title="Permalink to this heading"></a></h4>
+<h4>Synthetic query generation<a class="headerlink" href="#Synthetic-query-generation" title="Link to this heading"></a></h4>
 <p>In the absence of such labelled data we provide a synthetic query generator (SQG) model that can be used to create synthetic queries given a passage. The SQG model is a large transformer model that has been trained to generate human like queries given a passage. Thus it can be used to create a labelled dataset of (synthetic queries, passage). A BERT model can be trained on this synthetic data and used for semantic search. In fact, we find that such synthetically trained models beat the current
 state-of-the-art models. Note that resulting BERT model is a customized model since it has been trained on a specific corpus (and corresponding synthetic queries).</p>
 <p>This notebook provides an end-to-end guide for users to generate synthetic queries and fine-tune a sentence transformer model on it using opensearch_py_ml. It consists of the following steps,</p>
@@ -117,7 +117,7 @@ state-of-the-art models. Note that resulting BERT model is a customized model si
 </section>
 </section>
 <section id="Step-1:-Import-packages,-set-up-client-and-define-helper-functions">
-<h3>Step 1: Import packages, set up client and define helper functions<a class="headerlink" href="#Step-1:-Import-packages,-set-up-client-and-define-helper-functions" title="Permalink to this heading"></a></h3>
+<h3>Step 1: Import packages, set up client and define helper functions<a class="headerlink" href="#Step-1:-Import-packages,-set-up-client-and-define-helper-functions" title="Link to this heading"></a></h3>
 <p>Install required packages for opensearch_py_ml.sentence_transformer_model Install <code class="docutils literal notranslate"><span class="pre">opensearchpy</span></code> and <code class="docutils literal notranslate"><span class="pre">opensearch-py-ml</span></code> through pypi</p>
 <p>generate.py script is released with the Synthetic Query Generation model.</p>
 <p>Please refer <a class="reference external" href="https://pytorch.org/">https://pytorch.org/</a> to proper install torch based on your environment setting.</p>
@@ -230,7 +230,7 @@ state-of-the-art models. Note that resulting BERT model is a customized model si
 </div>
 </section>
 <section id="Step-2:-Import-the-data/passages-for-synthetic-query-generation">
-<h3>Step 2: Import the data/passages for synthetic query generation<a class="headerlink" href="#Step-2:-Import-the-data/passages-for-synthetic-query-generation" title="Permalink to this heading"></a></h3>
+<h3>Step 2: Import the data/passages for synthetic query generation<a class="headerlink" href="#Step-2:-Import-the-data/passages-for-synthetic-query-generation" title="Link to this heading"></a></h3>
 <p>There are three supported options to read datasets :</p>
 <ul class="simple">
 <li><p>Option 1: read from a local data folder in jsonl file</p></li>
@@ -240,7 +240,7 @@ state-of-the-art models. Note that resulting BERT model is a customized model si
 <p>For the purpose of this notebook we will demonstrate option 2: read from a list of passages.</p>
 <p>We take the MS Marco dataset of passages as our example dataset.</p>
 <section id="2.1)-Load-the-data-and-convert-into-a-pandas-dataframe">
-<h4>2.1) Load the data and convert into a pandas dataframe<a class="headerlink" href="#2.1)-Load-the-data-and-convert-into-a-pandas-dataframe" title="Permalink to this heading"></a></h4>
+<h4>2.1) Load the data and convert into a pandas dataframe<a class="headerlink" href="#2.1)-Load-the-data-and-convert-into-a-pandas-dataframe" title="Link to this heading"></a></h4>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
@@ -283,7 +283,7 @@ state-of-the-art models. Note that resulting BERT model is a customized model si
 <p>The MS Marco dataset has real queries for passages but we will pretend that it does not and generate synthetic queries for each passage</p>
 </section>
 <section id="2.2)-Convert-the-data-into-a-list-of-strings-and-instantiate-an-object-of-the-class-Synthetic_Query_Generation">
-<h4>2.2) Convert the data into a list of strings and instantiate an object of the class Synthetic_Query_Generation<a class="headerlink" href="#2.2)-Convert-the-data-into-a-list-of-strings-and-instantiate-an-object-of-the-class-Synthetic_Query_Generation" title="Permalink to this heading"></a></h4>
+<h4>2.2) Convert the data into a list of strings and instantiate an object of the class Synthetic_Query_Generation<a class="headerlink" href="#2.2)-Convert-the-data-into-a-list-of-strings-and-instantiate-an-object-of-the-class-Synthetic_Query_Generation" title="Link to this heading"></a></h4>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
@@ -303,7 +303,7 @@ state-of-the-art models. Note that resulting BERT model is a customized model si
 </section>
 </section>
 <section id="Step-3:-Generate-synthetic-queries">
-<h3>Step 3: Generate synthetic queries<a class="headerlink" href="#Step-3:-Generate-synthetic-queries" title="Permalink to this heading"></a></h3>
+<h3>Step 3: Generate synthetic queries<a class="headerlink" href="#Step-3:-Generate-synthetic-queries" title="Link to this heading"></a></h3>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
@@ -341,7 +341,7 @@ state-of-the-art models. Note that resulting BERT model is a customized model si
 </div>
 <p>Note – Please restart the kernel and rerun it if the notebook gives CUDA related errors.</p>
 <section id="This-is-how-the-sample-queries-look-like,">
-<h4>This is how the sample queries look like,<a class="headerlink" href="#This-is-how-the-sample-queries-look-like," title="Permalink to this heading"></a></h4>
+<h4>This is how the sample queries look like,<a class="headerlink" href="#This-is-how-the-sample-queries-look-like," title="Link to this heading"></a></h4>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
@@ -361,7 +361,7 @@ state-of-the-art models. Note that resulting BERT model is a customized model si
 </section>
 </section>
 <section id="Step-4:-Read-synthetic-queries-and-train/fine-tune-a-hugging-face-sentence-transformer-model-on-synthetic-data">
-<h3>Step 4: Read synthetic queries and train/fine-tune a hugging face sentence transformer model on synthetic data<a class="headerlink" href="#Step-4:-Read-synthetic-queries-and-train/fine-tune-a-hugging-face-sentence-transformer-model-on-synthetic-data" title="Permalink to this heading"></a></h3>
+<h3>Step 4: Read synthetic queries and train/fine-tune a hugging face sentence transformer model on synthetic data<a class="headerlink" href="#Step-4:-Read-synthetic-queries-and-train/fine-tune-a-hugging-face-sentence-transformer-model-on-synthetic-data" title="Link to this heading"></a></h3>
 <p>With a synthetic queries zip file, users can fine tune a sentence transformer model.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">SentenceTransformerModel</span></code> class will inititate an object for training, exporting and configuring the model. Plese visit the <a class="reference external" href="https://opensearch-project.github.io/opensearch-py-ml/reference/api/sentence_transformer.html#opensearch_py_ml.sentence_transformer_model.SentenceTransformerModel">SentenceTransformerModel</a> for API Reference .</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">train</span></code> function will import synthestic queries, load sentence transformer example and train the model using a hugging face sentence transformer model. Plese visit the <a class="reference external" href="https://opensearch-project.github.io/opensearch-py-ml/reference/api/sentence_transformer.html#opensearch_py_ml.sentence_transformer_model.SentenceTransformerModel.train">SentenceTransformerModel.train</a> for API Reference .</p>
@@ -402,7 +402,7 @@ state-of-the-art models. Note that resulting BERT model is a customized model si
 </ol>
 </section>
 <section id="Step-5:-Upload-the-model-to-OpenSearch-cluster">
-<h3>Step 5: Upload the model to OpenSearch cluster<a class="headerlink" href="#Step-5:-Upload-the-model-to-OpenSearch-cluster" title="Permalink to this heading"></a></h3>
+<h3>Step 5: Upload the model to OpenSearch cluster<a class="headerlink" href="#Step-5:-Upload-the-model-to-OpenSearch-cluster" title="Link to this heading"></a></h3>
 <p>After generated a model zip file, the users will need to describe model configuration in a ml-commons_model_config.json file. The <code class="docutils literal notranslate"><span class="pre">make_model_config_json</span></code> function in sentencetransformermodel class will parse the config file from hugging-face config.son file. If users would like to use a different config than the pre-trained sentence transformer, <code class="docutils literal notranslate"><span class="pre">make_model_config_json</span></code> function provide arguuments to change the configuration content and generated a ml-commons_model_config.json file. Plese
 visit the <a class="reference external" href="https://opensearch-project.github.io/opensearch-py-ml/reference/api/sentence_transformer.html#opensearch_py_ml.sentence_transformer_model.SentenceTransformerModel.make_model_config_json">SentenceTransformerModel.make_model_config_json</a> for API Reference .</p>
 <p>In general, the ml common client supports uploading sentence transformer models. With a zip file contains model in Torch Script format, and a configuration file for tokenizers in json format, the <code class="docutils literal notranslate"><span class="pre">upload_model</span></code> function connects to opensearch through ml client and upload the model. Plese visit the <a class="reference external" href="https://opensearch-project.github.io/opensearch-py-ml/reference/api/ml_commons_upload_api.html#opensearch_py_ml.ml_commons_integration.MLCommonClient.upload_model">MLCommonClient.upload_model</a>

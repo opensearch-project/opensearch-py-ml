@@ -13,11 +13,11 @@
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/sphinx_highlight.js"></script>
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=fc837d61"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
         <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -94,9 +94,9 @@
            <div itemprop="articleBody">
              
   <section id="Demo-Notebook-for-MLCommons-Integration">
-<h1>Demo Notebook for MLCommons Integration<a class="headerlink" href="#Demo-Notebook-for-MLCommons-Integration" title="Permalink to this heading"></a></h1>
+<h1>Demo Notebook for MLCommons Integration<a class="headerlink" href="#Demo-Notebook-for-MLCommons-Integration" title="Link to this heading"></a></h1>
 <section id="Download-notebook">
-<h2><a class="reference external" href="https://github.com/opensearch-project/opensearch-py-ml/blob/main/docs/source/examples/demo_ml_commons_integration.ipynb">Download notebook</a><a class="headerlink" href="#Download-notebook" title="Permalink to this heading"></a></h2>
+<h2><a class="reference external" href="https://github.com/opensearch-project/opensearch-py-ml/blob/main/docs/source/examples/demo_ml_commons_integration.ipynb">Download notebook</a><a class="headerlink" href="#Download-notebook" title="Link to this heading"></a></h2>
 <p>This notebook provides a walkthrough guidance for users to invoke MLCommons apis to upload ml models to opensearch cluster</p>
 <p>Step 0: Import packages and set up client</p>
 <p>Step 1: Upload NLP model from local file to Opensearch cluster</p>
@@ -107,7 +107,7 @@
 <p>Step 6: Unload Model</p>
 <p>Step 7: Delete Model</p>
 <section id="Step-0:-Import-packages-and-set-up-client">
-<h3>Step 0: Import packages and set up client<a class="headerlink" href="#Step-0:-Import-packages-and-set-up-client" title="Permalink to this heading"></a></h3>
+<h3>Step 0: Import packages and set up client<a class="headerlink" href="#Step-0:-Import-packages-and-set-up-client" title="Link to this heading"></a></h3>
 <p>Install required packages for opensearch_py_ml.sentence_transformer_model Install <code class="docutils literal notranslate"><span class="pre">opensearchpy</span></code> and <code class="docutils literal notranslate"><span class="pre">opensearch-py-ml</span></code> through pypi</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
@@ -198,7 +198,7 @@ Requirement already satisfied: wrapt&lt;2,&gt;=1.10 in /home/linuxbrew/.linuxbre
 </div>
 </section>
 <section id="Step-1:-Upload-NLP-model-from-local-file-to-Opensearch-cluster">
-<h3>Step 1: Upload NLP model from local file to Opensearch cluster<a class="headerlink" href="#Step-1:-Upload-NLP-model-from-local-file-to-Opensearch-cluster" title="Permalink to this heading"></a></h3>
+<h3>Step 1: Upload NLP model from local file to Opensearch cluster<a class="headerlink" href="#Step-1:-Upload-NLP-model-from-local-file-to-Opensearch-cluster" title="Link to this heading"></a></h3>
 <p>We can upload machine learning models to Opensearch cluster using MLCommons register_model api. In this demo we will show how can we upload model</p>
 <p>From Opensearch 2.8, to register a model we need to have a model group. First we need to register a model group and use the model group id to register a model. For registering a model group we can look at this doc:</p>
 <p><a class="reference external" href="https://github.com/opensearch-project/ml-commons/blob/2.x/docs/model_access_control.md#registering-a-model-group">https://github.com/opensearch-project/ml-commons/blob/2.x/docs/model_access_control.md#registering-a-model-group</a></p>
@@ -304,7 +304,7 @@ Model deployed successfully
 </div>
 </section>
 <section id="Step-2:-Load-Model">
-<h3>Step 2: Load Model<a class="headerlink" href="#Step-2:-Load-Model" title="Permalink to this heading"></a></h3>
+<h3>Step 2: Load Model<a class="headerlink" href="#Step-2:-Load-Model" title="Link to this heading"></a></h3>
 <p>In the last step we upload a model and the model id is: <code class="docutils literal notranslate"><span class="pre">t0jp24kBHUgZTTdfDMmm</span></code>. Now we will load this model in opensearch memory.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
@@ -328,7 +328,7 @@ Model deployed successfully
 </div>
 </section>
 <section id="Step-3:-Get-Task">
-<h3>Step 3: Get Task<a class="headerlink" href="#Step-3:-Get-Task" title="Permalink to this heading"></a></h3>
+<h3>Step 3: Get Task<a class="headerlink" href="#Step-3:-Get-Task" title="Link to this heading"></a></h3>
 <p>When we invoke load model api of mlcommons plugin, a task get created. We can see the task id (<code class="docutils literal notranslate"><span class="pre">uEjr24kBHUgZTTdfNskV</span></code>) from previous output. Now, we can get the detailed information of the task using this task id</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
@@ -350,7 +350,7 @@ Model deployed successfully
 </div>
 </section>
 <section id="Step-4:-Get-Model">
-<h3>Step 4: Get Model<a class="headerlink" href="#Step-4:-Get-Model" title="Permalink to this heading"></a></h3>
+<h3>Step 4: Get Model<a class="headerlink" href="#Step-4:-Get-Model" title="Link to this heading"></a></h3>
 <p>With using the model id, we can also pull information about the model metadata from the opensearch cluster.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
@@ -372,7 +372,7 @@ Model deployed successfully
 </div>
 </section>
 <section id="Step-5:-Generate-Sentence-Embedding">
-<h3>Step 5: Generate Sentence Embedding<a class="headerlink" href="#Step-5:-Generate-Sentence-Embedding" title="Permalink to this heading"></a></h3>
+<h3>Step 5: Generate Sentence Embedding<a class="headerlink" href="#Step-5:-Generate-Sentence-Embedding" title="Link to this heading"></a></h3>
 <p>Now using the loaded model in memory, we can generate embedding for sentences. We can provide a list of sentences to get a list of embedding for the sentences.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
@@ -398,7 +398,7 @@ Model deployed successfully
 </div>
 </section>
 <section id="Step-6:-Unload-Model">
-<h3>Step 6: Unload Model<a class="headerlink" href="#Step-6:-Unload-Model" title="Permalink to this heading"></a></h3>
+<h3>Step 6: Unload Model<a class="headerlink" href="#Step-6:-Unload-Model" title="Link to this heading"></a></h3>
 <p>After generating the embedding if we want we can unload the model from memory. <code class="docutils literal notranslate"><span class="pre">unload_model</span></code> method takes two input.</p>
 <ol class="arabic simple">
 <li><p>model_id –&gt; Which model we want to unload</p></li>
@@ -425,7 +425,7 @@ Model deployed successfully
 </div>
 </section>
 <section id="Step-7:-Delete-Model">
-<h3>Step 7: Delete Model<a class="headerlink" href="#Step-7:-Delete-Model" title="Permalink to this heading"></a></h3>
+<h3>Step 7: Delete Model<a class="headerlink" href="#Step-7:-Delete-Model" title="Link to this heading"></a></h3>
 <p>We can also delete the model from the index using the model id.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:

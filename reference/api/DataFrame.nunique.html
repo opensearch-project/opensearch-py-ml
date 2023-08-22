@@ -12,11 +12,11 @@
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="../../_static/jquery.js"></script>
-        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/sphinx_highlight.js"></script>
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=fc837d61"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -117,10 +117,10 @@
            <div itemprop="articleBody">
              
   <section id="dataframe-nunique">
-<h1>DataFrame.nunique<a class="headerlink" href="#dataframe-nunique" title="Permalink to this heading"></a></h1>
+<h1>DataFrame.nunique<a class="headerlink" href="#dataframe-nunique" title="Link to this heading"></a></h1>
 <dl class="py method">
 <dt class="sig sig-object py" id="opensearch_py_ml.DataFrame.nunique">
-<span class="sig-prename descclassname"><span class="pre">DataFrame.</span></span><span class="sig-name descname"><span class="pre">nunique</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Series</span></span></span><a class="headerlink" href="#opensearch_py_ml.DataFrame.nunique" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">DataFrame.</span></span><span class="sig-name descname"><span class="pre">nunique</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Series</span></span></span><a class="headerlink" href="#opensearch_py_ml.DataFrame.nunique" title="Link to this definition"></a></dt>
 <dd><p>Return cardinality of each field.</p>
 <p><strong>Note we can only do this for aggregatable OpenSearch fields - (in general) numeric and keyword
 rather than text fields</strong></p>
@@ -139,18 +139,18 @@ rather than text fields</strong></p>
 <p>we will aggregate <code class="docutils literal notranslate"><span class="pre">customer_first_name</span></code> columns using <code class="docutils literal notranslate"><span class="pre">customer_first_name.keyword</span></code>.</p>
 <p>TODO - implement remainder of pandas arguments</p>
 <section id="returns">
-<h2>Returns<a class="headerlink" href="#returns" title="Permalink to this heading"></a></h2>
+<h2>Returns<a class="headerlink" href="#returns" title="Link to this heading"></a></h2>
 <dl class="simple">
 <dt>pandas.Series</dt><dd><p>cardinality of each column</p>
 </dd>
 </dl>
 </section>
 <section id="see-also">
-<h2>See Also<a class="headerlink" href="#see-also" title="Permalink to this heading"></a></h2>
+<h2>See Also<a class="headerlink" href="#see-also" title="Link to this heading"></a></h2>
 <p><a href="#id1"><span class="problematic" id="id2">:pandas_api_docs:`pandas.DataFrame.nunique`</span></a></p>
 </section>
 <section id="examples">
-<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this heading"></a></h2>
+<h2>Examples<a class="headerlink" href="#examples" title="Link to this heading"></a></h2>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tests</span> <span class="kn">import</span> <span class="n">OPENSEARCH_TEST_CLIENT</span>
 </pre></div>
 </div>

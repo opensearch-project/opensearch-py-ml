@@ -12,11 +12,11 @@
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="../../_static/jquery.js"></script>
-        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/sphinx_highlight.js"></script>
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=fc837d61"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -99,37 +99,7 @@
            <div itemprop="articleBody">
              
   <section id="sentencetransformermodel-save-as-pt">
-<h1>SentenceTransformerModel.save_as_pt<a class="headerlink" href="#sentencetransformermodel-save-as-pt" title="Permalink to this heading"></a></h1>
-<dl class="py function">
-<dt class="sig sig-object py" id="opensearch_py_ml.ml_models.SentenceTransformerModel.save_as_pt">
-<span class="sig-prename descclassname"><span class="pre">opensearch_py_ml.ml_models.SentenceTransformerModel.</span></span><span class="sig-name descname"><span class="pre">save_as_pt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">self,</span> <span class="pre">sentences:</span> <span class="pre">[&lt;class</span> <span class="pre">'str'&gt;],</span> <span class="pre">model_id='sentence-transformers/msmarco-distilbert-base-tas-b',</span> <span class="pre">model_name:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">save_json_folder_path:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">model_output_path:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">zip_file_name:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#opensearch_py_ml.ml_models.SentenceTransformerModel.save_as_pt" title="Permalink to this definition"></a></dt>
-<dd><p>download sentence transformer model directly from huggingface, convert model to torch script format,
-zip the model file and its tokenizer.json file to prepare to upload to the Open Search cluster</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>sentences</strong> (<em>List</em><em> of </em><em>string</em><em> [</em><em>str</em><em>]</em>) – Required, for example  sentences = [‘today is sunny’]</p></li>
-<li><p><strong>model_id</strong> (<em>string</em>) – sentence transformer model id to download model from sentence transformers.
-default model_id = “sentence-transformers/msmarco-distilbert-base-tas-b”</p></li>
-<li><p><strong>model_name</strong> (<em>string</em>) – Optional, model name to name the model file, e.g, “sample_model.pt”. If None, default takes the
-model_id and add the extension with “.pt”</p></li>
-<li><p><strong>save_json_folder_path</strong> (<em>string</em>) – Optional, path to save model json file, e.g, “home/save_pre_trained_model_json/”). If None, default as
-default_folder_path from the constructor</p></li>
-<li><p><strong>model_output_path</strong> (<em>string</em>) – Optional, path to save traced model zip file. If None, default as
-default_folder_path from the constructor</p></li>
-<li><p><strong>zip_file_name</strong> (<em>string</em>) – Optional, file name for zip file. e.g, “sample_model.zip”. If None, default takes the model_id
-and add the extension with “.zip”</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>model zip file path. The file path where the zip file is being saved</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>string</p>
-</dd>
-</dl>
-</dd></dl>
-
+<h1>SentenceTransformerModel.save_as_pt<a class="headerlink" href="#sentencetransformermodel-save-as-pt" title="Link to this heading"></a></h1>
 </section>
 
 

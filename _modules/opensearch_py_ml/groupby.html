@@ -11,11 +11,11 @@
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="../../_static/jquery.js"></script>
-        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/sphinx_highlight.js"></script>
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=fc837d61"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -124,12 +124,16 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_by</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">by</span>
 
 
-<div class="viewcode-block" id="DataFrameGroupBy"><a class="viewcode-back" href="../../reference/api/groupby.DataFrameGroupBy.html#opensearch_py_ml.groupby.DataFrameGroupBy">[docs]</a><span class="k">class</span> <span class="nc">DataFrameGroupBy</span><span class="p">(</span><span class="n">GroupBy</span><span class="p">):</span>
+<div class="viewcode-block" id="DataFrameGroupBy">
+<a class="viewcode-back" href="../../reference/api/groupby.DataFrameGroupBy.html#opensearch_py_ml.groupby.DataFrameGroupBy">[docs]</a>
+<span class="k">class</span> <span class="nc">DataFrameGroupBy</span><span class="p">(</span><span class="n">GroupBy</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This holds all the groupby methods for :py:func:`opensearch_py_ml.DataFrame.groupby`</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="DataFrameGroupBy.mean"><a class="viewcode-back" href="../../reference/api/groupby.DataFrameGroupBy.mean.html#opensearch_py_ml.groupby.DataFrameGroupBy.mean">[docs]</a>    <span class="k">def</span> <span class="nf">mean</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pd.DataFrame&quot;</span><span class="p">:</span>
+<div class="viewcode-block" id="DataFrameGroupBy.mean">
+<a class="viewcode-back" href="../../reference/api/groupby.DataFrameGroupBy.mean.html#opensearch_py_ml.groupby.DataFrameGroupBy.mean">[docs]</a>
+    <span class="k">def</span> <span class="nf">mean</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pd.DataFrame&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the mean value for each group.</span>
 
@@ -182,7 +186,10 @@
             <span class="n">numeric_only</span><span class="o">=</span><span class="n">numeric_only</span><span class="p">,</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="DataFrameGroupBy.var"><a class="viewcode-back" href="../../reference/api/groupby.DataFrameGroupBy.var.html#opensearch_py_ml.groupby.DataFrameGroupBy.var">[docs]</a>    <span class="k">def</span> <span class="nf">var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pd.DataFrame&quot;</span><span class="p">:</span>
+
+<div class="viewcode-block" id="DataFrameGroupBy.var">
+<a class="viewcode-back" href="../../reference/api/groupby.DataFrameGroupBy.var.html#opensearch_py_ml.groupby.DataFrameGroupBy.var">[docs]</a>
+    <span class="k">def</span> <span class="nf">var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pd.DataFrame&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the variance value for each group.</span>
 
@@ -235,7 +242,10 @@
             <span class="n">numeric_only</span><span class="o">=</span><span class="n">numeric_only</span><span class="p">,</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="DataFrameGroupBy.std"><a class="viewcode-back" href="../../reference/api/groupby.DataFrameGroupBy.std.html#opensearch_py_ml.groupby.DataFrameGroupBy.std">[docs]</a>    <span class="k">def</span> <span class="nf">std</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pd.DataFrame&quot;</span><span class="p">:</span>
+
+<div class="viewcode-block" id="DataFrameGroupBy.std">
+<a class="viewcode-back" href="../../reference/api/groupby.DataFrameGroupBy.std.html#opensearch_py_ml.groupby.DataFrameGroupBy.std">[docs]</a>
+    <span class="k">def</span> <span class="nf">std</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pd.DataFrame&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the standard deviation value for each group.</span>
 
@@ -288,7 +298,10 @@
             <span class="n">numeric_only</span><span class="o">=</span><span class="n">numeric_only</span><span class="p">,</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="DataFrameGroupBy.mad"><a class="viewcode-back" href="../../reference/api/groupby.DataFrameGroupBy.mad.html#opensearch_py_ml.groupby.DataFrameGroupBy.mad">[docs]</a>    <span class="k">def</span> <span class="nf">mad</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pd.DataFrame&quot;</span><span class="p">:</span>
+
+<div class="viewcode-block" id="DataFrameGroupBy.mad">
+<a class="viewcode-back" href="../../reference/api/groupby.DataFrameGroupBy.mad.html#opensearch_py_ml.groupby.DataFrameGroupBy.mad">[docs]</a>
+    <span class="k">def</span> <span class="nf">mad</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pd.DataFrame&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the median absolute deviation value for each group.</span>
 
@@ -341,7 +354,10 @@
             <span class="n">numeric_only</span><span class="o">=</span><span class="n">numeric_only</span><span class="p">,</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="DataFrameGroupBy.median"><a class="viewcode-back" href="../../reference/api/groupby.DataFrameGroupBy.median.html#opensearch_py_ml.groupby.DataFrameGroupBy.median">[docs]</a>    <span class="k">def</span> <span class="nf">median</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pd.DataFrame&quot;</span><span class="p">:</span>
+
+<div class="viewcode-block" id="DataFrameGroupBy.median">
+<a class="viewcode-back" href="../../reference/api/groupby.DataFrameGroupBy.median.html#opensearch_py_ml.groupby.DataFrameGroupBy.median">[docs]</a>
+    <span class="k">def</span> <span class="nf">median</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pd.DataFrame&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the median value for each group.</span>
 
@@ -394,7 +410,10 @@
             <span class="n">numeric_only</span><span class="o">=</span><span class="n">numeric_only</span><span class="p">,</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="DataFrameGroupBy.sum"><a class="viewcode-back" href="../../reference/api/groupby.DataFrameGroupBy.sum.html#opensearch_py_ml.groupby.DataFrameGroupBy.sum">[docs]</a>    <span class="k">def</span> <span class="nf">sum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pd.DataFrame&quot;</span><span class="p">:</span>
+
+<div class="viewcode-block" id="DataFrameGroupBy.sum">
+<a class="viewcode-back" href="../../reference/api/groupby.DataFrameGroupBy.sum.html#opensearch_py_ml.groupby.DataFrameGroupBy.sum">[docs]</a>
+    <span class="k">def</span> <span class="nf">sum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pd.DataFrame&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the sum value for each group.</span>
 
@@ -447,7 +466,10 @@
             <span class="n">numeric_only</span><span class="o">=</span><span class="n">numeric_only</span><span class="p">,</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="DataFrameGroupBy.min"><a class="viewcode-back" href="../../reference/api/groupby.DataFrameGroupBy.min.html#opensearch_py_ml.groupby.DataFrameGroupBy.min">[docs]</a>    <span class="k">def</span> <span class="nf">min</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pd.DataFrame&quot;</span><span class="p">:</span>
+
+<div class="viewcode-block" id="DataFrameGroupBy.min">
+<a class="viewcode-back" href="../../reference/api/groupby.DataFrameGroupBy.min.html#opensearch_py_ml.groupby.DataFrameGroupBy.min">[docs]</a>
+    <span class="k">def</span> <span class="nf">min</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pd.DataFrame&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the min value for each group.</span>
 
@@ -500,7 +522,10 @@
             <span class="n">numeric_only</span><span class="o">=</span><span class="n">numeric_only</span><span class="p">,</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="DataFrameGroupBy.max"><a class="viewcode-back" href="../../reference/api/groupby.DataFrameGroupBy.max.html#opensearch_py_ml.groupby.DataFrameGroupBy.max">[docs]</a>    <span class="k">def</span> <span class="nf">max</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pd.DataFrame&quot;</span><span class="p">:</span>
+
+<div class="viewcode-block" id="DataFrameGroupBy.max">
+<a class="viewcode-back" href="../../reference/api/groupby.DataFrameGroupBy.max.html#opensearch_py_ml.groupby.DataFrameGroupBy.max">[docs]</a>
+    <span class="k">def</span> <span class="nf">max</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pd.DataFrame&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the max value for each group.</span>
 
@@ -553,7 +578,10 @@
             <span class="n">numeric_only</span><span class="o">=</span><span class="n">numeric_only</span><span class="p">,</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="DataFrameGroupBy.nunique"><a class="viewcode-back" href="../../reference/api/groupby.DataFrameGroupBy.nunique.html#opensearch_py_ml.groupby.DataFrameGroupBy.nunique">[docs]</a>    <span class="k">def</span> <span class="nf">nunique</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pd.DataFrame&quot;</span><span class="p">:</span>
+
+<div class="viewcode-block" id="DataFrameGroupBy.nunique">
+<a class="viewcode-back" href="../../reference/api/groupby.DataFrameGroupBy.nunique.html#opensearch_py_ml.groupby.DataFrameGroupBy.nunique">[docs]</a>
+    <span class="k">def</span> <span class="nf">nunique</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pd.DataFrame&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the nunique value for each group.</span>
 
@@ -606,7 +634,10 @@
             <span class="n">numeric_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="DataFrameGroupBy.quantile"><a class="viewcode-back" href="../../reference/api/groupby.DataFrameGroupBy.quantile.html#opensearch_py_ml.groupby.DataFrameGroupBy.quantile">[docs]</a>    <span class="k">def</span> <span class="nf">quantile</span><span class="p">(</span>
+
+<div class="viewcode-block" id="DataFrameGroupBy.quantile">
+<a class="viewcode-back" href="../../reference/api/groupby.DataFrameGroupBy.quantile.html#opensearch_py_ml.groupby.DataFrameGroupBy.quantile">[docs]</a>
+    <span class="k">def</span> <span class="nf">quantile</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="mf">0.5</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pd.DataFrame&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -688,7 +719,10 @@
             <span class="n">by</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_by</span><span class="p">,</span> <span class="n">pd_aggs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;quantile&quot;</span><span class="p">],</span> <span class="n">quantiles</span><span class="o">=</span><span class="n">q</span><span class="p">,</span> <span class="n">numeric_only</span><span class="o">=</span><span class="kc">True</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="DataFrameGroupBy.aggregate"><a class="viewcode-back" href="../../reference/api/groupby.DataFrameGroupBy.aggregate.html#opensearch_py_ml.groupby.DataFrameGroupBy.aggregate">[docs]</a>    <span class="k">def</span> <span class="nf">aggregate</span><span class="p">(</span>
+
+<div class="viewcode-block" id="DataFrameGroupBy.aggregate">
+<a class="viewcode-back" href="../../reference/api/groupby.DataFrameGroupBy.aggregate.html#opensearch_py_ml.groupby.DataFrameGroupBy.aggregate">[docs]</a>
+    <span class="k">def</span> <span class="nf">aggregate</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pd.DataFrame&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -759,9 +793,12 @@
             <span class="n">is_dataframe_agg</span><span class="o">=</span><span class="n">is_dataframe_agg</span><span class="p">,</span>
         <span class="p">)</span></div>
 
+
     <span class="n">agg</span> <span class="o">=</span> <span class="n">aggregate</span>
 
-<div class="viewcode-block" id="DataFrameGroupBy.count"><a class="viewcode-back" href="../../reference/api/groupby.DataFrameGroupBy.count.html#opensearch_py_ml.groupby.DataFrameGroupBy.count">[docs]</a>    <span class="k">def</span> <span class="nf">count</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pd.DataFrame&quot;</span><span class="p">:</span>
+<div class="viewcode-block" id="DataFrameGroupBy.count">
+<a class="viewcode-back" href="../../reference/api/groupby.DataFrameGroupBy.count.html#opensearch_py_ml.groupby.DataFrameGroupBy.count">[docs]</a>
+    <span class="k">def</span> <span class="nf">count</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;pd.DataFrame&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the count value for each group.</span>
 
@@ -807,8 +844,10 @@
             <span class="n">is_dataframe_agg</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="p">)</span></div>
 
+
     <span class="k">def</span> <span class="nf">mode</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Currently mode is not supported for groupby&quot;</span><span class="p">)</span></div>
+
 </pre></div>
 
            </div>

@@ -13,11 +13,11 @@
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/sphinx_highlight.js"></script>
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=fc837d61"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
         <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -95,11 +95,11 @@
            <div itemprop="articleBody">
              
   <section id="Demo-Notebook-for-Online-Retail-Analysis">
-<h1>Demo Notebook for Online Retail Analysis<a class="headerlink" href="#Demo-Notebook-for-Online-Retail-Analysis" title="Permalink to this heading"></a></h1>
+<h1>Demo Notebook for Online Retail Analysis<a class="headerlink" href="#Demo-Notebook-for-Online-Retail-Analysis" title="Link to this heading"></a></h1>
 <section id="download-notebook">
-<h2><a class="reference external" href="https://github.com/opensearch-project/opensearch-py-ml/blob/main/docs/source/examples/online_retail_analysis.ipynb">download notebook</a><a class="headerlink" href="#download-notebook" title="Permalink to this heading"></a></h2>
+<h2><a class="reference external" href="https://github.com/opensearch-project/opensearch-py-ml/blob/main/docs/source/examples/online_retail_analysis.ipynb">download notebook</a><a class="headerlink" href="#download-notebook" title="Link to this heading"></a></h2>
 <section id="Step-0:-Imports">
-<h3>Step 0: Imports<a class="headerlink" href="#Step-0:-Imports" title="Permalink to this heading"></a></h3>
+<h3>Step 0: Imports<a class="headerlink" href="#Step-0:-Imports" title="Link to this heading"></a></h3>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
@@ -137,7 +137,7 @@
 </div>
 </section>
 <section id="Step-1:-Setup-clients">
-<h3>Step 1: Setup clients<a class="headerlink" href="#Step-1:-Setup-clients" title="Permalink to this heading"></a></h3>
+<h3>Step 1: Setup clients<a class="headerlink" href="#Step-1:-Setup-clients" title="Link to this heading"></a></h3>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
@@ -171,7 +171,7 @@
 </div>
 </section>
 <section id="Getting-Started">
-<h3>Getting Started<a class="headerlink" href="#Getting-Started" title="Permalink to this heading"></a></h3>
+<h3>Getting Started<a class="headerlink" href="#Getting-Started" title="Link to this heading"></a></h3>
 <p>To get started, let’s create an <code class="docutils literal notranslate"><span class="pre">opensearch_py_ml.DataFrame</span></code> by reading a csv file. This creates and populates the <code class="docutils literal notranslate"><span class="pre">online-retail</span></code> index in the local Opensearch cluster.</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
@@ -293,10 +293,10 @@ Operations:
 </div>
 </section>
 <section id="Selecting-and-Indexing-Data">
-<h3>Selecting and Indexing Data<a class="headerlink" href="#Selecting-and-Indexing-Data" title="Permalink to this heading"></a></h3>
+<h3>Selecting and Indexing Data<a class="headerlink" href="#Selecting-and-Indexing-Data" title="Link to this heading"></a></h3>
 <p>Now that we understand how to create a data frame and get access to it’s underlying attributes, let’s see how we can select subsets of our data.</p>
 <section id="head-and-tail">
-<h4>head and tail<a class="headerlink" href="#head-and-tail" title="Permalink to this heading"></a></h4>
+<h4>head and tail<a class="headerlink" href="#head-and-tail" title="Link to this heading"></a></h4>
 <p>much like pandas, opensearch_py_ml data frames offer <code class="docutils literal notranslate"><span class="pre">.head(n)</span></code> and <code class="docutils literal notranslate"><span class="pre">.tail(n)</span></code> methods that return the first and last n rows, respectively.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
@@ -458,7 +458,7 @@ Operations:
 </div>
 </section>
 <section id="Selecting-columns">
-<h4>Selecting columns<a class="headerlink" href="#Selecting-columns" title="Permalink to this heading"></a></h4>
+<h4>Selecting columns<a class="headerlink" href="#Selecting-columns" title="Link to this heading"></a></h4>
 <p>you can also pass a list of columns to select columns from the data frame in a specified order.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
@@ -528,7 +528,7 @@ Operations:
 </div>
 </section>
 <section id="Boolean-Indexing">
-<h4>Boolean Indexing<a class="headerlink" href="#Boolean-Indexing" title="Permalink to this heading"></a></h4>
+<h4>Boolean Indexing<a class="headerlink" href="#Boolean-Indexing" title="Link to this heading"></a></h4>
 <p>we also allow you to filter the data frame using boolean indexing. Under the hood, a boolean index maps to a <code class="docutils literal notranslate"><span class="pre">terms</span></code> query that is then passed to opensearch to filter the index.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
@@ -805,7 +805,7 @@ Operations:
 </section>
 </section>
 <section id="Aggregation-and-Descriptive-Statistics">
-<h3>Aggregation and Descriptive Statistics<a class="headerlink" href="#Aggregation-and-Descriptive-Statistics" title="Permalink to this heading"></a></h3>
+<h3>Aggregation and Descriptive Statistics<a class="headerlink" href="#Aggregation-and-Descriptive-Statistics" title="Link to this heading"></a></h3>
 <p>Let’s begin to ask some questions of our data and use opensearch_py_ml to get the answers.</p>
 <p><strong>How many different countries are there?</strong></p>
 <div class="nbinput docutils container">
@@ -1168,7 +1168,7 @@ Operations:
 </div>
 </section>
 <section id="Arithmetic-Operations">
-<h3>Arithmetic Operations<a class="headerlink" href="#Arithmetic-Operations" title="Permalink to this heading"></a></h3>
+<h3>Arithmetic Operations<a class="headerlink" href="#Arithmetic-Operations" title="Link to this heading"></a></h3>
 <p>Numeric values</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[32]:

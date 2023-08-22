@@ -13,11 +13,11 @@
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/sphinx_highlight.js"></script>
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=fc837d61"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
         <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -94,15 +94,15 @@
            <div itemprop="articleBody">
              
   <section id="Demo-Notebook-for-Metrics-Correlation-Model-Testing">
-<h1>Demo Notebook for Metrics Correlation Model Testing<a class="headerlink" href="#Demo-Notebook-for-Metrics-Correlation-Model-Testing" title="Permalink to this heading"></a></h1>
+<h1>Demo Notebook for Metrics Correlation Model Testing<a class="headerlink" href="#Demo-Notebook-for-Metrics-Correlation-Model-Testing" title="Link to this heading"></a></h1>
 <section id="Download-notebook">
-<h2><a class="reference external" href="https://github.com/opensearch-project/opensearch-py-ml/blob/main/docs/source/examples/demo_metrics_correlation.ipynb">Download notebook</a><a class="headerlink" href="#Download-notebook" title="Permalink to this heading"></a></h2>
+<h2><a class="reference external" href="https://github.com/opensearch-project/opensearch-py-ml/blob/main/docs/source/examples/demo_metrics_correlation.ipynb">Download notebook</a><a class="headerlink" href="#Download-notebook" title="Link to this heading"></a></h2>
 <section id="Introduction">
-<h3>Introduction<a class="headerlink" href="#Introduction" title="Permalink to this heading"></a></h3>
+<h3>Introduction<a class="headerlink" href="#Introduction" title="Link to this heading"></a></h3>
 <p>This notebook contains an introduction to the <a class="reference external" href="https://opensearch.org/docs/latest/ml-commons-plugin/algorithms/#metrics-correlation">metrics correlation</a> algorithm released in OpenSearch 2.7. We will work through an example using data from the <a class="reference external" href="https://github.com/NetManAIOps/OmniAnomaly">Server Machine Dataset</a> and include commentary on the objective, configuration, and output of the algorithm itself.</p>
 </section>
 <section id="Step-0:-Imports">
-<h3>Step 0: Imports<a class="headerlink" href="#Step-0:-Imports" title="Permalink to this heading"></a></h3>
+<h3>Step 0: Imports<a class="headerlink" href="#Step-0:-Imports" title="Link to this heading"></a></h3>
 <p>Please install the following packages from the terminal if you haven’t already. They can be also installed from the notebook by uncommenting and executing the line in the second code block.</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
@@ -148,7 +148,7 @@
 </div>
 </section>
 <section id="Step-1:-Set-up-clients-and-define-helper-functions">
-<h3>Step 1: Set up clients and define helper functions<a class="headerlink" href="#Step-1:-Set-up-clients-and-define-helper-functions" title="Permalink to this heading"></a></h3>
+<h3>Step 1: Set up clients and define helper functions<a class="headerlink" href="#Step-1:-Set-up-clients-and-define-helper-functions" title="Link to this heading"></a></h3>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
@@ -193,7 +193,7 @@
 </div>
 </section>
 <section id="Step-2:-Preparing-data">
-<h3>Step 2: Preparing data<a class="headerlink" href="#Step-2:-Preparing-data" title="Permalink to this heading"></a></h3>
+<h3>Step 2: Preparing data<a class="headerlink" href="#Step-2:-Preparing-data" title="Link to this heading"></a></h3>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
@@ -351,7 +351,7 @@ Text(0.5, 0, &#39;Timestamp&#39;)
 </div>
 </section>
 <section id="Step-3:-Metrics-correlation">
-<h3>Step 3: Metrics correlation<a class="headerlink" href="#Step-3:-Metrics-correlation" title="Permalink to this heading"></a></h3>
+<h3>Step 3: Metrics correlation<a class="headerlink" href="#Step-3:-Metrics-correlation" title="Link to this heading"></a></h3>
 <p>The metrics correlation algorithm finds events in a set of metrics data, where an event is defined as a window in time where multiple metrics simultaneously display anomalous behavior. Given a time span and a total set of metrics, the metrics correlation algorithm automatically determines how many events occurred, when they occurred, and which metrics were involved in each event. This algorithm requires no prior training and minimal configuration.</p>
 <p>Let’s see how it works for the Server Machine Dataset example.</p>
 <div class="nbinput nblast docutils container">
@@ -418,7 +418,7 @@ dict_keys([&#39;event_window&#39;, &#39;event_pattern&#39;, &#39;suspected_metri
 </div>
 </section>
 <section id="Step-4:-Result-visualization">
-<h3>Step 4: Result visualization<a class="headerlink" href="#Step-4:-Result-visualization" title="Permalink to this heading"></a></h3>
+<h3>Step 4: Result visualization<a class="headerlink" href="#Step-4:-Result-visualization" title="Link to this heading"></a></h3>
 <p>Below, we implement a plotting function that uses each of these fields to visually display an event. This function plots all of the input data as above, but highlights the metrics that were involved in the event and shades the interval when the event occurred. It also plots the event pattern.</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:

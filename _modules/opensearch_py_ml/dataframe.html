@@ -11,11 +11,11 @@
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script src="../../_static/jquery.js"></script>
-        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/sphinx_highlight.js"></script>
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=fc837d61"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -132,7 +132,9 @@
     <span class="kn">from</span> <span class="nn">.query_compiler</span> <span class="kn">import</span> <span class="n">QueryCompiler</span>
 
 
-<div class="viewcode-block" id="DataFrame"><a class="viewcode-back" href="../../reference/api/DataFrame.html#opensearch_py_ml.DataFrame">[docs]</a><span class="k">class</span> <span class="nc">DataFrame</span><span class="p">(</span><span class="n">NDFrame</span><span class="p">):</span>
+<div class="viewcode-block" id="DataFrame">
+<a class="viewcode-back" href="../../reference/api/DataFrame.html#opensearch_py_ml.DataFrame">[docs]</a>
+<span class="k">class</span> <span class="nc">DataFrame</span><span class="p">(</span><span class="n">NDFrame</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Two-dimensional size-mutable, potentially heterogeneous tabular data structure with labeled axes</span>
 <span class="sd">    (rows and columns) referencing data stored in OpenSearch indices.</span>
@@ -288,7 +290,9 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
 
-<div class="viewcode-block" id="DataFrame.head"><a class="viewcode-back" href="../../reference/api/DataFrame.head.html#opensearch_py_ml.DataFrame.head">[docs]</a>    <span class="k">def</span> <span class="nf">head</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;DataFrame&quot;</span><span class="p">:</span>
+<div class="viewcode-block" id="DataFrame.head">
+<a class="viewcode-back" href="../../reference/api/DataFrame.head.html#opensearch_py_ml.DataFrame.head">[docs]</a>
+    <span class="k">def</span> <span class="nf">head</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;DataFrame&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the first n rows.</span>
 
@@ -325,7 +329,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">DataFrame</span><span class="p">(</span><span class="n">_query_compiler</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">n</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="DataFrame.tail"><a class="viewcode-back" href="../../reference/api/DataFrame.tail.html#opensearch_py_ml.DataFrame.tail">[docs]</a>    <span class="k">def</span> <span class="nf">tail</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;DataFrame&quot;</span><span class="p">:</span>
+
+<div class="viewcode-block" id="DataFrame.tail">
+<a class="viewcode-back" href="../../reference/api/DataFrame.tail.html#opensearch_py_ml.DataFrame.tail">[docs]</a>
+    <span class="k">def</span> <span class="nf">tail</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;DataFrame&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the last n rows.</span>
 
@@ -371,7 +378,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">DataFrame</span><span class="p">(</span><span class="n">_query_compiler</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">tail</span><span class="p">(</span><span class="n">n</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="DataFrame.sample"><a class="viewcode-back" href="../../reference/api/DataFrame.sample.html#opensearch_py_ml.DataFrame.sample">[docs]</a>    <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span>
+
+<div class="viewcode-block" id="DataFrame.sample">
+<a class="viewcode-back" href="../../reference/api/DataFrame.sample.html#opensearch_py_ml.DataFrame.sample">[docs]</a>
+    <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">n</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">frac</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -413,7 +423,10 @@
             <span class="p">)</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="DataFrame.drop"><a class="viewcode-back" href="../../reference/api/DataFrame.drop.html#opensearch_py_ml.DataFrame.drop">[docs]</a>    <span class="k">def</span> <span class="nf">drop</span><span class="p">(</span>
+
+<div class="viewcode-block" id="DataFrame.drop">
+<a class="viewcode-back" href="../../reference/api/DataFrame.drop.html#opensearch_py_ml.DataFrame.drop">[docs]</a>
+    <span class="k">def</span> <span class="nf">drop</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">labels</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
@@ -555,6 +568,7 @@
         <span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_or_update_from_compiler</span><span class="p">(</span><span class="n">new_query_compiler</span><span class="p">,</span> <span class="n">inplace</span><span class="p">)</span></div>
 
+
     <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getitem</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
 
@@ -639,7 +653,9 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>
 
-<div class="viewcode-block" id="DataFrame.count"><a class="viewcode-back" href="../../reference/api/DataFrame.count.html#opensearch_py_ml.DataFrame.count">[docs]</a>    <span class="k">def</span> <span class="nf">count</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+<div class="viewcode-block" id="DataFrame.count">
+<a class="viewcode-back" href="../../reference/api/DataFrame.count.html#opensearch_py_ml.DataFrame.count">[docs]</a>
+    <span class="k">def</span> <span class="nf">count</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Count non-NA cells for each column.</span>
 
@@ -675,7 +691,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">count</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="DataFrame.os_info"><a class="viewcode-back" href="../../reference/api/DataFrame.os_info.html#opensearch_py_ml.DataFrame.os_info">[docs]</a>    <span class="k">def</span> <span class="nf">os_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<div class="viewcode-block" id="DataFrame.os_info">
+<a class="viewcode-back" href="../../reference/api/DataFrame.os_info.html#opensearch_py_ml.DataFrame.os_info">[docs]</a>
+    <span class="k">def</span> <span class="nf">os_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># noinspection PyPep8</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A debug summary of an opensearch_py_ml DataFrame internals.</span>
@@ -731,7 +750,10 @@
 
         <span class="k">return</span> <span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="DataFrame.os_match"><a class="viewcode-back" href="../../reference/api/DataFrame.os_match.html#opensearch_py_ml.DataFrame.os_match">[docs]</a>    <span class="k">def</span> <span class="nf">os_match</span><span class="p">(</span>
+
+<div class="viewcode-block" id="DataFrame.os_match">
+<a class="viewcode-back" href="../../reference/api/DataFrame.os_match.html#opensearch_py_ml.DataFrame.os_match">[docs]</a>
+    <span class="k">def</span> <span class="nf">os_match</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
@@ -830,7 +852,10 @@
             <span class="nb">filter</span> <span class="o">=</span> <span class="o">~</span><span class="nb">filter</span>
         <span class="k">return</span> <span class="n">DataFrame</span><span class="p">(</span><span class="n">_query_compiler</span><span class="o">=</span><span class="n">qc</span><span class="o">.</span><span class="n">_update_query</span><span class="p">(</span><span class="nb">filter</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="DataFrame.os_query"><a class="viewcode-back" href="../../reference/api/DataFrame.os_query.html#opensearch_py_ml.DataFrame.os_query">[docs]</a>    <span class="k">def</span> <span class="nf">os_query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;DataFrame&quot;</span><span class="p">:</span>
+
+<div class="viewcode-block" id="DataFrame.os_query">
+<a class="viewcode-back" href="../../reference/api/DataFrame.os_query.html#opensearch_py_ml.DataFrame.os_query">[docs]</a>
+    <span class="k">def</span> <span class="nf">os_query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;DataFrame&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Applies an OpenSearch DSL query to the current DataFrame.</span>
 
 <span class="sd">        Parameters</span>
@@ -887,6 +912,7 @@
             <span class="n">query</span> <span class="o">=</span> <span class="n">query</span><span class="p">[</span><span class="s2">&quot;query&quot;</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">DataFrame</span><span class="p">(</span><span class="n">_query_compiler</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">os_query</span><span class="p">(</span><span class="n">query</span><span class="p">))</span></div>
 
+
     <span class="k">def</span> <span class="nf">_index_summary</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># Print index summary e.g.</span>
         <span class="c1"># Index: 103 entries, 0 to 102</span>
@@ -903,7 +929,9 @@
         <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Index&quot;</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="si">}</span><span class="s2"> entries</span><span class="si">{</span><span class="n">index_summary</span><span class="si">}</span><span class="s2">&quot;</span>
 
-<div class="viewcode-block" id="DataFrame.info"><a class="viewcode-back" href="../../reference/api/DataFrame.info.html#opensearch_py_ml.DataFrame.info">[docs]</a>    <span class="k">def</span> <span class="nf">info</span><span class="p">(</span>
+<div class="viewcode-block" id="DataFrame.info">
+<a class="viewcode-back" href="../../reference/api/DataFrame.info.html#opensearch_py_ml.DataFrame.info">[docs]</a>
+    <span class="k">def</span> <span class="nf">info</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">verbose</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">buf</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">StringIO</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1087,7 +1115,10 @@
 
         <span class="n">fmt</span><span class="o">.</span><span class="n">buffer_put_lines</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="n">lines</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="DataFrame.to_html"><a class="viewcode-back" href="../../reference/api/DataFrame.to_html.html#opensearch_py_ml.DataFrame.to_html">[docs]</a>    <span class="nd">@docstring_parameter</span><span class="p">(</span><span class="n">DEFAULT_NUM_ROWS_DISPLAYED</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DataFrame.to_html">
+<a class="viewcode-back" href="../../reference/api/DataFrame.to_html.html#opensearch_py_ml.DataFrame.to_html">[docs]</a>
+    <span class="nd">@docstring_parameter</span><span class="p">(</span><span class="n">DEFAULT_NUM_ROWS_DISPLAYED</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">to_html</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">buf</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -1190,7 +1221,10 @@
             <span class="n">result</span> <span class="o">=</span> <span class="n">_buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span>
             <span class="k">return</span> <span class="n">result</span></div>
 
-<div class="viewcode-block" id="DataFrame.to_string"><a class="viewcode-back" href="../../reference/api/DataFrame.to_string.html#opensearch_py_ml.DataFrame.to_string">[docs]</a>    <span class="nd">@docstring_parameter</span><span class="p">(</span><span class="n">DEFAULT_NUM_ROWS_DISPLAYED</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DataFrame.to_string">
+<a class="viewcode-back" href="../../reference/api/DataFrame.to_string.html#opensearch_py_ml.DataFrame.to_string">[docs]</a>
+    <span class="nd">@docstring_parameter</span><span class="p">(</span><span class="n">DEFAULT_NUM_ROWS_DISPLAYED</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">to_string</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">buf</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -1278,6 +1312,7 @@
         <span class="k">if</span> <span class="n">buf</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">result</span> <span class="o">=</span> <span class="n">_buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span>
             <span class="k">return</span> <span class="n">result</span></div>
+
 
     <span class="k">def</span> <span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;After regular attribute access, looks up the name in the columns</span>
@@ -1386,7 +1421,9 @@
     <span class="k">def</span> <span class="nf">_reduce_dimension</span><span class="p">(</span><span class="n">query_compiler</span><span class="p">:</span> <span class="s2">&quot;QueryCompiler&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">Series</span><span class="p">(</span><span class="n">_query_compiler</span><span class="o">=</span><span class="n">query_compiler</span><span class="p">)</span>
 
-<div class="viewcode-block" id="DataFrame.to_csv"><a class="viewcode-back" href="../../reference/api/DataFrame.to_csv.html#opensearch_py_ml.DataFrame.to_csv">[docs]</a>    <span class="k">def</span> <span class="nf">to_csv</span><span class="p">(</span>
+<div class="viewcode-block" id="DataFrame.to_csv">
+<a class="viewcode-back" href="../../reference/api/DataFrame.to_csv.html#opensearch_py_ml.DataFrame.to_csv">[docs]</a>
+    <span class="k">def</span> <span class="nf">to_csv</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">path_or_buf</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">,</span>
@@ -1439,7 +1476,10 @@
         <span class="p">}</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="DataFrame.to_pandas"><a class="viewcode-back" href="../../reference/api/DataFrame.to_pandas.html#opensearch_py_ml.DataFrame.to_pandas">[docs]</a>    <span class="k">def</span> <span class="nf">to_pandas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+
+<div class="viewcode-block" id="DataFrame.to_pandas">
+<a class="viewcode-back" href="../../reference/api/DataFrame.to_pandas.html#opensearch_py_ml.DataFrame.to_pandas">[docs]</a>
+    <span class="k">def</span> <span class="nf">to_pandas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Utility method to convert opensearch_py_ml.Dataframe to pandas.Dataframe</span>
 
@@ -1449,10 +1489,13 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">to_pandas</span><span class="p">(</span><span class="n">show_progress</span><span class="o">=</span><span class="n">show_progress</span><span class="p">)</span></div>
 
+
     <span class="k">def</span> <span class="nf">_empty_pd_df</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">_empty_pd_ef</span><span class="p">()</span>
 
-<div class="viewcode-block" id="DataFrame.select_dtypes"><a class="viewcode-back" href="../../reference/api/DataFrame.select_dtypes.html#opensearch_py_ml.DataFrame.select_dtypes">[docs]</a>    <span class="k">def</span> <span class="nf">select_dtypes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">include</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">exclude</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;DataFrame&quot;</span><span class="p">:</span>
+<div class="viewcode-block" id="DataFrame.select_dtypes">
+<a class="viewcode-back" href="../../reference/api/DataFrame.select_dtypes.html#opensearch_py_ml.DataFrame.select_dtypes">[docs]</a>
+    <span class="k">def</span> <span class="nf">select_dtypes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">include</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">exclude</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;DataFrame&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return a subset of the DataFrame&#39;s columns based on the column dtypes.</span>
 
@@ -1488,6 +1531,7 @@
         <span class="n">empty_df</span> <span class="o">=</span> <span class="n">empty_df</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="n">include</span><span class="o">=</span><span class="n">include</span><span class="p">,</span> <span class="n">exclude</span><span class="o">=</span><span class="n">exclude</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getitem_array</span><span class="p">(</span><span class="n">empty_df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span></div>
+
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">shape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
@@ -1535,7 +1579,9 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="mi">2</span>
 
-<div class="viewcode-block" id="DataFrame.keys"><a class="viewcode-back" href="../../reference/api/DataFrame.keys.html#opensearch_py_ml.DataFrame.keys">[docs]</a>    <span class="k">def</span> <span class="nf">keys</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">:</span>
+<div class="viewcode-block" id="DataFrame.keys">
+<a class="viewcode-back" href="../../reference/api/DataFrame.keys.html#opensearch_py_ml.DataFrame.keys">[docs]</a>
+    <span class="k">def</span> <span class="nf">keys</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return columns</span>
 
@@ -1548,7 +1594,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">columns</span></div>
 
-<div class="viewcode-block" id="DataFrame.iterrows"><a class="viewcode-back" href="../../reference/api/DataFrame.iterrows.html#opensearch_py_ml.DataFrame.iterrows">[docs]</a>    <span class="k">def</span> <span class="nf">iterrows</span><span class="p">(</span>
+
+<div class="viewcode-block" id="DataFrame.iterrows">
+<a class="viewcode-back" href="../../reference/api/DataFrame.iterrows.html#opensearch_py_ml.DataFrame.iterrows">[docs]</a>
+    <span class="k">def</span> <span class="nf">iterrows</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">sort_index</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;str&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;_doc&quot;</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]],</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1608,7 +1657,10 @@
         <span class="p">):</span>
             <span class="k">yield from</span> <span class="n">df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="DataFrame.itertuples"><a class="viewcode-back" href="../../reference/api/DataFrame.itertuples.html#opensearch_py_ml.DataFrame.itertuples">[docs]</a>    <span class="k">def</span> <span class="nf">itertuples</span><span class="p">(</span>
+
+<div class="viewcode-block" id="DataFrame.itertuples">
+<a class="viewcode-back" href="../../reference/api/DataFrame.itertuples.html#opensearch_py_ml.DataFrame.itertuples">[docs]</a>
+    <span class="k">def</span> <span class="nf">itertuples</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">index</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;opensearch_py_ml&quot;</span><span class="p">,</span>
@@ -1685,7 +1737,10 @@
         <span class="p">):</span>
             <span class="k">yield from</span> <span class="n">df</span><span class="o">.</span><span class="n">itertuples</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">index</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="DataFrame.aggregate"><a class="viewcode-back" href="../../reference/api/DataFrame.aggregate.html#opensearch_py_ml.DataFrame.aggregate">[docs]</a>    <span class="k">def</span> <span class="nf">aggregate</span><span class="p">(</span>
+
+<div class="viewcode-block" id="DataFrame.aggregate">
+<a class="viewcode-back" href="../../reference/api/DataFrame.aggregate.html#opensearch_py_ml.DataFrame.aggregate">[docs]</a>
+    <span class="k">def</span> <span class="nf">aggregate</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">func</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span>
         <span class="n">axis</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
@@ -1785,11 +1840,14 @@
             <span class="c1"># we have a list!</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">aggs</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">numeric_only</span><span class="o">=</span><span class="n">numeric_only</span><span class="p">)</span></div>
 
+
     <span class="n">agg</span> <span class="o">=</span> <span class="n">aggregate</span>
 
     <span class="n">hist</span> <span class="o">=</span> <span class="n">gfx</span><span class="o">.</span><span class="n">oml_hist_frame</span>
 
-<div class="viewcode-block" id="DataFrame.groupby"><a class="viewcode-back" href="../../reference/api/DataFrame.groupby.html#opensearch_py_ml.DataFrame.groupby">[docs]</a>    <span class="k">def</span> <span class="nf">groupby</span><span class="p">(</span>
+<div class="viewcode-block" id="DataFrame.groupby">
+<a class="viewcode-back" href="../../reference/api/DataFrame.groupby.html#opensearch_py_ml.DataFrame.groupby">[docs]</a>
+    <span class="k">def</span> <span class="nf">groupby</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">by</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">dropna</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;DataFrameGroupBy&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1884,7 +1942,10 @@
             <span class="n">by</span><span class="o">=</span><span class="n">by</span><span class="p">,</span> <span class="n">query_compiler</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">dropna</span><span class="o">=</span><span class="n">dropna</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="DataFrame.mode"><a class="viewcode-back" href="../../reference/api/DataFrame.mode.html#opensearch_py_ml.DataFrame.mode">[docs]</a>    <span class="k">def</span> <span class="nf">mode</span><span class="p">(</span>
+
+<div class="viewcode-block" id="DataFrame.mode">
+<a class="viewcode-back" href="../../reference/api/DataFrame.mode.html#opensearch_py_ml.DataFrame.mode">[docs]</a>
+    <span class="k">def</span> <span class="nf">mode</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">numeric_only</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">dropna</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -1948,7 +2009,10 @@
             <span class="n">numeric_only</span><span class="o">=</span><span class="n">numeric_only</span><span class="p">,</span> <span class="n">dropna</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">is_dataframe</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">os_size</span><span class="o">=</span><span class="n">os_size</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="DataFrame.quantile"><a class="viewcode-back" href="../../reference/api/DataFrame.quantile.html#opensearch_py_ml.DataFrame.quantile">[docs]</a>    <span class="k">def</span> <span class="nf">quantile</span><span class="p">(</span>
+
+<div class="viewcode-block" id="DataFrame.quantile">
+<a class="viewcode-back" href="../../reference/api/DataFrame.quantile.html#opensearch_py_ml.DataFrame.quantile">[docs]</a>
+    <span class="k">def</span> <span class="nf">quantile</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">q</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
         <span class="n">numeric_only</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -2002,7 +2066,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">quantiles</span><span class="o">=</span><span class="n">q</span><span class="p">,</span> <span class="n">numeric_only</span><span class="o">=</span><span class="n">numeric_only</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="DataFrame.idxmax"><a class="viewcode-back" href="../../reference/api/DataFrame.idxmax.html#opensearch_py_ml.DataFrame.idxmax">[docs]</a>    <span class="k">def</span> <span class="nf">idxmax</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+
+<div class="viewcode-block" id="DataFrame.idxmax">
+<a class="viewcode-back" href="../../reference/api/DataFrame.idxmax.html#opensearch_py_ml.DataFrame.idxmax">[docs]</a>
+    <span class="k">def</span> <span class="nf">idxmax</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return index of first occurrence of maximum over requested axis.</span>
 
@@ -2036,7 +2103,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">idx</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">,</span> <span class="n">sort_order</span><span class="o">=</span><span class="s2">&quot;desc&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="DataFrame.idxmin"><a class="viewcode-back" href="../../reference/api/DataFrame.idxmin.html#opensearch_py_ml.DataFrame.idxmin">[docs]</a>    <span class="k">def</span> <span class="nf">idxmin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+
+<div class="viewcode-block" id="DataFrame.idxmin">
+<a class="viewcode-back" href="../../reference/api/DataFrame.idxmin.html#opensearch_py_ml.DataFrame.idxmin">[docs]</a>
+    <span class="k">def</span> <span class="nf">idxmin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return index of first occurrence of minimum over requested axis.</span>
 
@@ -2070,7 +2140,10 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">idx</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">,</span> <span class="n">sort_order</span><span class="o">=</span><span class="s2">&quot;asc&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="DataFrame.query"><a class="viewcode-back" href="../../reference/api/DataFrame.query.html#opensearch_py_ml.DataFrame.query">[docs]</a>    <span class="k">def</span> <span class="nf">query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;DataFrame&quot;</span><span class="p">:</span>
+
+<div class="viewcode-block" id="DataFrame.query">
+<a class="viewcode-back" href="../../reference/api/DataFrame.query.html#opensearch_py_ml.DataFrame.query">[docs]</a>
+    <span class="k">def</span> <span class="nf">query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;DataFrame&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Query the columns of a DataFrame with a boolean expression.</span>
 
@@ -2119,7 +2192,10 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">expr</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="DataFrame.get"><a class="viewcode-back" href="../../reference/api/DataFrame.get.html#opensearch_py_ml.DataFrame.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span>
+
+<div class="viewcode-block" id="DataFrame.get">
+<a class="viewcode-back" href="../../reference/api/DataFrame.get.html#opensearch_py_ml.DataFrame.get">[docs]</a>
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">default</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="s2">&quot;Series&quot;</span><span class="p">,</span> <span class="s2">&quot;DataFrame&quot;</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -2163,7 +2239,10 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">default</span></div>
 
-<div class="viewcode-block" id="DataFrame.filter"><a class="viewcode-back" href="../../reference/api/DataFrame.filter.html#opensearch_py_ml.DataFrame.filter">[docs]</a>    <span class="k">def</span> <span class="nf">filter</span><span class="p">(</span>
+
+<div class="viewcode-block" id="DataFrame.filter">
+<a class="viewcode-back" href="../../reference/api/DataFrame.filter.html#opensearch_py_ml.DataFrame.filter">[docs]</a>
+    <span class="k">def</span> <span class="nf">filter</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">items</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">like</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -2238,6 +2317,7 @@
 
             <span class="k">return</span> <span class="bp">self</span><span class="p">[[</span><span class="n">column</span> <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">matcher</span><span class="p">(</span><span class="n">column</span><span class="p">)]]</span></div>
 
+
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">values</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -2257,7 +2337,9 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
 
-<div class="viewcode-block" id="DataFrame.to_numpy"><a class="viewcode-back" href="../../reference/api/DataFrame.to_numpy.html#opensearch_py_ml.DataFrame.to_numpy">[docs]</a>    <span class="k">def</span> <span class="nf">to_numpy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="DataFrame.to_numpy">
+<a class="viewcode-back" href="../../reference/api/DataFrame.to_numpy.html#opensearch_py_ml.DataFrame.to_numpy">[docs]</a>
+    <span class="k">def</span> <span class="nf">to_numpy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Not implemented.</span>
 
@@ -2300,7 +2382,9 @@
         <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
             <span class="s2">&quot;This method would scan/scroll the entire OpenSearch index(s) into memory. &quot;</span>
             <span class="s2">&quot;If this is explicitly required, and there is sufficient memory, call `oml.opensearch_to_pandas(oml_df).values`&quot;</span>
-        <span class="p">)</span></div></div>
+        <span class="p">)</span></div>
+</div>
+
 </pre></div>
 
            </div>
