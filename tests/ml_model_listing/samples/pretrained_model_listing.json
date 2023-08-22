@@ -1,0 +1,53 @@
+[
+  {
+    "name": "huggingface/intfloat/e5-small-v2",
+    "versions": {
+      "1.0.1": {
+        "format": [
+          "onnx"
+        ],
+        "description": "This is a sentence-transformers model: It maps sentences & paragraphs to a 384 dimensional dense vector space."
+      }
+    }
+  },
+  {
+    "name": "huggingface/sentence-transformers/clip-ViT-B-32-multilingual-v1",
+    "versions": {
+      "1.0.1": {
+        "format": [
+          "torch_script"
+        ],
+        "description": "This is a multi-lingual version of the OpenAI CLIP-ViT-B32 model. You can map text  and images to a common dense vector space such that images and the matching texts are close. This model can be used for image search  and for multi-lingual zero-shot image classification ."
+      }
+    }
+  },
+  {
+    "name": "huggingface/sentence-transformers/multi-qa-mpnet-base-cos-v1",
+    "versions": {
+      "1.0.1": {
+        "format": [
+          "onnx",
+          "torch_script"
+        ],
+        "description": "This is a sentence-transformers model: It maps sentences & paragraphs to a 768 dimensional dense vector space and was designed for semantic search. It has been trained on 215M  pairs from diverse sources."
+      },
+      "2.0.0": {
+        "format": [
+          "torch_script"
+        ],
+        "description": "This is a sentence-transformers model: It maps sentences & paragraphs to a 768 dimensional dense vector space and was designed for semantic search. It has been trained on 215M  pairs from diverse sources. (New Version)"
+      }
+    }
+  },
+  {
+    "name": "other_source/jhgan/ko-sroberta-multitask",
+    "versions": {
+      "1.0.1": {
+        "format": [
+          "torch_script"
+        ],
+        "description": "This is a sentence-transformers model: It maps sentences & paragraphs to a 768 dimensional dense vector space and can be used for tasks like clustering or semantic search."
+      }
+    }
+  }
+]
