@@ -381,7 +381,7 @@ def test_overwrite_fields_in_model_config():
 
     clean_test_folder(TEST_FOLDER)
 
-    
+
 def test_missing_readme_md_file():
     model_id = "sentence-transformers/msmarco-distilbert-base-tas-b"
     clean_test_folder(TEST_FOLDER)
@@ -539,6 +539,7 @@ def test_truncation_parameter():
 
     clean_test_folder(TEST_FOLDER)
 
+<<<<<<< HEAD
 def test_missing_readme_md_file():
     model_id = "sentence-transformers/msmarco-distilbert-base-tas-b"
     clean_test_folder(TEST_FOLDER)
