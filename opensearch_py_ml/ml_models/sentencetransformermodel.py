@@ -791,6 +791,14 @@ class SentenceTransformerModel:
             zip_file_name = str(model_id.split("/")[-1] + ".zip")
         zip_file_path = os.path.join(model_output_path, zip_file_name)
 
+        # handle when model_max_length is unproperly defined in model's tokenizer (e.g. "intfloat/e5-small-v2")
+        # (See PR #219 and https://github.com/huggingface/transformers/issues/14561 for more context)
+        if model.tokenizer.model_max_length > model.get_max_seq_length():
+            model.tokenizer.model_max_length = model.get_max_seq_length()
+            print(
+                f"The model_max_length is not properly defined in tokenizer_config.json. Setting it to be {model.tokenizer.model_max_length}"
+            )
+
         # save tokenizer.json in save_json_folder_name
         model.save(save_json_folder_path)
         self._fill_null_truncation_field(
@@ -885,6 +893,14 @@ class SentenceTransformerModel:
 
         zip_file_path = os.path.join(model_output_path, zip_file_name)
 
+        # handle when model_max_length is unproperly defined in model's tokenizer (e.g. "intfloat/e5-small-v2")
+        # (See PR #219 and https://github.com/huggingface/transformers/issues/14561 for more context)
+        if model.tokenizer.model_max_length > model.get_max_seq_length():
+            model.tokenizer.model_max_length = model.get_max_seq_length()
+            print(
+                f"The model_max_length is not properly defined in tokenizer_config.json. Setting it to be {model.tokenizer.model_max_length}"
+            )
+
         # save tokenizer.json in output_path
         model.save(save_json_folder_path)
         self._fill_null_truncation_field(
@@ -897,6 +913,8 @@ class SentenceTransformerModel:
             output=Path(model_path),
             opset=15,
         )
+
+        print("model file is saved to ", model_path)
 
         # zip model file along with tokenizer.json as output
         with ZipFile(str(zip_file_path), "w") as zipObj:
@@ -1032,11 +1050,11 @@ class SentenceTransformerModel:
         readme_data = MarkDownFile.read_file(readme_file_path)
 
         # Find the description section
-        start_str = f"# {self.model_id}"
+        start_str = f"\n# {self.model_id}"
         start = readme_data.find(start_str)
         if start == -1:
             model_name = self.model_id.split("/")[1]
-            start_str = f"# {model_name}"
+            start_str = f"\n# {model_name}"
             start = readme_data.find(start_str)
         end = readme_data.find("\n#", start + len(start_str))
 
