@@ -204,17 +204,26 @@
 <h3>Step 1: Save model in torchScript format<a class="headerlink" href="#Step-1:-Save-model-in-torchScript-format" title="Link to this heading"></a></h3>
 <p><code class="docutils literal notranslate"><span class="pre">Opensearch-py-ml</span></code> plugin provides method <code class="docutils literal notranslate"><span class="pre">save_as_pt</span></code> which will trace a model in torchScript format and save the model in a zip file in your filesystem.</p>
 <p>Detailed documentation: <a class="reference external" href="https://opensearch-project.github.io/opensearch-py-ml/reference/api/sentence_transformer.save_as_pt.html#opensearch_py_ml.ml_models.SentenceTransformerModel.save_as_pt">https://opensearch-project.github.io/opensearch-py-ml/reference/api/sentence_transformer.save_as_pt.html#opensearch_py_ml.ml_models.SentenceTransformerModel.save_as_pt</a></p>
-<p>Users need to provide a model id from sentence transformers (an example: <code class="docutils literal notranslate"><span class="pre">sentence-transformers/msmarco-distilbert-base-tas-b</span></code>). This model id is a huggingface model id. Exaample: <a class="reference external" href="https://huggingface.co/sentence-transformers/msmarco-distilbert-base-tas-b">https://huggingface.co/sentence-transformers/msmarco-distilbert-base-tas-b</a></p>
+<p>Users need to provide a model id from sentence transformers (an example: <code class="docutils literal notranslate"><span class="pre">sentence-transformers/msmarco-distilbert-base-tas-b</span></code>). This model id is a huggingface model id. Example: <a class="reference external" href="https://huggingface.co/sentence-transformers/msmarco-distilbert-base-tas-b">https://huggingface.co/sentence-transformers/msmarco-distilbert-base-tas-b</a></p>
 <p><code class="docutils literal notranslate"><span class="pre">save_as_pt</span></code> will download the model in filesystem and then trace the model with the given input strings.</p>
 <p>To get more direction about dummy input string please check this url: <a class="reference external" href="https://huggingface.co/docs/transformers/torchscript#dummy-inputs-and-standard-lengths">https://huggingface.co/docs/transformers/torchscript#dummy-inputs-and-standard-lengths</a></p>
 <p>after tracing the model (a .pt file will be generated), <code class="docutils literal notranslate"><span class="pre">save_as_pt</span></code> method zips <code class="docutils literal notranslate"><span class="pre">tokenizers.json</span></code> and torchScript (<code class="docutils literal notranslate"><span class="pre">.pt</span></code>) file and saves in the file system.</p>
 <p>User can register that model to opensearch to generate embedding.</p>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pre_trained_model</span> <span class="o">=</span> <span class="n">SentenceTransformerModel</span><span class="p">(</span><span class="n">folder_path</span><span class="o">=</span><span class="s1">&#39;sentence-transformers-torchscript/msmarco-distilbert-base-tas-b&#39;</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">model_path</span> <span class="o">=</span> <span class="n">pre_trained_model</span><span class="o">.</span><span class="n">save_as_pt</span><span class="p">(</span><span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;sentence-transformers/msmarco-distilbert-base-tas-b&quot;</span><span class="p">,</span> <span class="n">sentences</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;for example providing a small sentence&quot;</span><span class="p">,</span> <span class="s2">&quot;we can add multiple sentences&quot;</span><span class="p">])</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model_id</span> <span class="o">=</span> <span class="s2">&quot;sentence-transformers/msmarco-distilbert-base-tas-b&quot;</span>
+<span class="n">folder_path</span> <span class="o">=</span> <span class="s2">&quot;sentence-transformer-torchscript/msmarco-distilbert-base-tas-b&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pre_trained_model</span> <span class="o">=</span> <span class="n">SentenceTransformerModel</span><span class="p">(</span><span class="n">model_id</span><span class="o">=</span><span class="n">model_id</span><span class="p">,</span> <span class="n">folder_path</span><span class="o">=</span><span class="n">folder_path</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">model_path</span> <span class="o">=</span> <span class="n">pre_trained_model</span><span class="o">.</span><span class="n">save_as_pt</span><span class="p">(</span><span class="n">model_id</span><span class="o">=</span><span class="n">model_id</span><span class="p">,</span> <span class="n">sentences</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;for example providing a small sentence&quot;</span><span class="p">,</span> <span class="s2">&quot;we can add multiple sentences&quot;</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -232,8 +241,8 @@
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-model file is saved to  sentence-transformers-torchscript/msmarco-distilbert-base-tas-b/msmarco-distilbert-base-tas-b.pt
-zip file is saved to  sentence-transformers-torchscript/msmarco-distilbert-base-tas-b/msmarco-distilbert-base-tas-b.zip
+model file is saved to  sentence-transformer-torchscript/msmarco-distilbert-base-tas-b/msmarco-distilbert-base-tas-b.pt
+zip file is saved to  sentence-transformer-torchscript/msmarco-distilbert-base-tas-b/msmarco-distilbert-base-tas-b.zip
 
 </pre></div></div>
 </div>
@@ -241,18 +250,34 @@ zip file is saved to  sentence-transformers-torchscript/msmarco-distilbert-base-
 <section id="Step-2:-Register-the-saved-torchScript-model-in-Opensearch">
 <h3>Step 2: Register the saved torchScript model in Opensearch<a class="headerlink" href="#Step-2:-Register-the-saved-torchScript-model-in-Opensearch" title="Link to this heading"></a></h3>
 <p>In the last step we saved a sentence transformer model in torchScript format. Now we will register that model in opensearch cluster. To do that we can take help of <code class="docutils literal notranslate"><span class="pre">register_model</span></code> method in <code class="docutils literal notranslate"><span class="pre">opensearch-py-ml</span></code> plugin.</p>
-<p>To register model, we need the zip file we just saved in the last step and a model config file. Example of Model config file content can be:</p>
+<p>To register model, we need the zip file we just saved in the last step and a model config file. You can use <code class="docutils literal notranslate"><span class="pre">make_model_config_json</span></code> method to automatically generate the model config file and save it at <code class="docutils literal notranslate"><span class="pre">ml-commons_model_config.json</span></code> in model folder, or you can create a json file by yourself.</p>
+<p>Example of Model config file content can be:</p>
 <p>{ “name”: “sentence-transformers/msmarco-distilbert-base-tas-b”, “version”: “1.0.0”, “description”: “This is a port of the DistilBert TAS-B Model to sentence-transformers model: It maps sentences &amp; paragraphs to a 768 dimensional dense vector space and is optimized for the task of semantic search.”, “model_format”: “TORCH_SCRIPT”, “model_config”: { “model_type”: “distilbert”, “embedding_dimension”: 768, “framework_type”: “sentence_transformers” } }</p>
-<p><code class="docutils literal notranslate"><span class="pre">model_format</span></code> needs to be <code class="docutils literal notranslate"><span class="pre">TORCH_SCRIPT</span></code> so that internal system will look for the corresponding <code class="docutils literal notranslate"><span class="pre">.pt</span></code> file from the zip folder.</p>
+<p>In either approach, you have to set <code class="docutils literal notranslate"><span class="pre">model_format</span></code> to be <code class="docutils literal notranslate"><span class="pre">TORCH_SCRIPT</span></code> so that internal system will look for the corresponding <code class="docutils literal notranslate"><span class="pre">.pt</span></code> file from the zip folder.</p>
 <p>Please refer to this doc: <a class="reference external" href="https://github.com/opensearch-project/ml-commons/blob/2.x/docs/model_serving_framework/text_embedding_model_examples.md">https://github.com/opensearch-project/ml-commons/blob/2.x/docs/model_serving_framework/text_embedding_model_examples.md</a></p>
 <p>Documentation for the method: <a class="reference external" href="https://opensearch-project.github.io/opensearch-py-ml/reference/api/ml_commons_register_api.html#opensearch_py_ml.ml_commons.MLCommonClient.register_model">https://opensearch-project.github.io/opensearch-py-ml/reference/api/ml_commons_register_api.html#opensearch_py_ml.ml_commons.MLCommonClient.register_model</a></p>
 <p>Related demo notebook about ml-commons plugin integration: <a class="reference external" href="https://opensearch-project.github.io/opensearch-py-ml/examples/demo_ml_commons_integration.html">https://opensearch-project.github.io/opensearch-py-ml/examples/demo_ml_commons_integration.html</a></p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model_config_path_torch</span> <span class="o">=</span> <span class="s1">&#39;sentence-transformers-config/torchscript-config/msmarco-distilbert-base-tas-b.json&#39;</span>
-<span class="n">ml_client</span><span class="o">.</span><span class="n">register_model</span><span class="p">(</span><span class="n">model_path</span><span class="p">,</span> <span class="n">model_config_path_torch</span><span class="p">,</span> <span class="n">isVerbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model_config_path_torch</span> <span class="o">=</span> <span class="n">pre_trained_model</span><span class="o">.</span><span class="n">make_model_config_json</span><span class="p">(</span><span class="n">model_format</span><span class="o">=</span><span class="s1">&#39;TORCH_SCRIPT&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ml-commons_model_config.json file is saved at :  sentence-transformer-torchscript/msmarco-distilbert-base-tas-b/ml-commons_model_config.json
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ml_client</span><span class="o">.</span><span class="n">register_model</span><span class="p">(</span><span class="n">model_path</span><span class="p">,</span> <span class="n">model_config_path_torch</span><span class="p">,</span> <span class="n">isVerbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -262,8 +287,8 @@ zip file is saved to  sentence-transformers-torchscript/msmarco-distilbert-base-
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Total number of chunks 27
-Sha1 value of the model file:  8c178f990a03dd66921f48da40ed81d7d4d3fc170e1bb56e1f365209e9f25027
-Model meta data was created successfully. Model Id:  entcCYkB1RB1pQNOffJP
+Sha1 value of the model file:  b397ae99ef3c27ba2ea080428ba695ba732da90a9367e77383b55ec0b191903e
+Model meta data was created successfully. Model Id:  4djw4okB2Ly7dmqcT7Xp
 uploading chunk 1 of 27
 Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
 uploading chunk 2 of 27
@@ -319,16 +344,17 @@ Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
 uploading chunk 27 of 27
 Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
 Model registered successfully
+Task ID: 4tjw4okB2Ly7dmqcerVn
 Model deployed successfully
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-&#39;entcCYkB1RB1pQNOffJP&#39;
+&#39;4djw4okB2Ly7dmqcT7Xp&#39;
 </pre></div></div>
 </div>
 </section>
@@ -339,12 +365,21 @@ Model deployed successfully
 <p>Users need to provide a model id from sentence transformers (an example: <code class="docutils literal notranslate"><span class="pre">sentence-transformers/msmarco-distilbert-base-tas-b</span></code>). <code class="docutils literal notranslate"><span class="pre">save_as_onnx</span></code> will download the model in filesystem and then trace the model.</p>
 <p>after tracing the model (a .onnx file will be generated), <code class="docutils literal notranslate"><span class="pre">save_as_onnx</span></code> method zips <code class="docutils literal notranslate"><span class="pre">tokenizers.json</span></code> and torchScript (<code class="docutils literal notranslate"><span class="pre">.onnx</span></code>) file and saves in the file system.</p>
 <p>User can register that model to opensearch to generate embedding.</p>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pre_trained_model</span> <span class="o">=</span> <span class="n">SentenceTransformerModel</span><span class="p">(</span><span class="n">folder_path</span><span class="o">=</span><span class="s1">&#39;sentence-transformers-onxx/msmarco-distilbert-base-tas-b&#39;</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">model_path_onnx</span> <span class="o">=</span> <span class="n">pre_trained_model</span><span class="o">.</span><span class="n">save_as_onnx</span><span class="p">(</span><span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;sentence-transformers/msmarco-distilbert-base-tas-b&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model_id</span> <span class="o">=</span> <span class="s2">&quot;sentence-transformers/msmarco-distilbert-base-tas-b&quot;</span>
+<span class="n">folder_path</span> <span class="o">=</span> <span class="s2">&quot;sentence-transformer-onnx/msmarco-distilbert-base-tas-b&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pre_trained_model</span> <span class="o">=</span> <span class="n">SentenceTransformerModel</span><span class="p">(</span><span class="n">model_id</span><span class="o">=</span><span class="n">model_id</span><span class="p">,</span> <span class="n">folder_path</span><span class="o">=</span><span class="n">folder_path</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">model_path_onnx</span> <span class="o">=</span> <span class="n">pre_trained_model</span><span class="o">.</span><span class="n">save_as_onnx</span><span class="p">(</span><span class="n">model_id</span><span class="o">=</span><span class="n">model_id</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -355,7 +390,7 @@ Model deployed successfully
 <div class="highlight"><pre>
 ONNX opset version set to: 15
 Loading pipeline (model: sentence-transformers/msmarco-distilbert-base-tas-b, tokenizer: sentence-transformers/msmarco-distilbert-base-tas-b)
-Creating folder sentence-transformers-onxx/msmarco-distilbert-base-tas-b/onnx
+Creating folder sentence-transformer-onnx/msmarco-distilbert-base-tas-b/onnx
 Using framework PyTorch: 1.13.1+cu117
 Found input input_ids with shape: {0: &#39;batch&#39;, 1: &#39;sequence&#39;}
 Found input attention_mask with shape: {0: &#39;batch&#39;, 1: &#39;sequence&#39;}
@@ -363,7 +398,7 @@ Found output output_0 with shape: {0: &#39;batch&#39;, 1: &#39;sequence&#39;}
 Ensuring inputs are in correct order
 head_mask is not present in the generated input list.
 Generated inputs order: [&#39;input_ids&#39;, &#39;attention_mask&#39;]
-zip file is saved to  sentence-transformers-onxx/msmarco-distilbert-base-tas-b/msmarco-distilbert-base-tas-b.zip
+zip file is saved to  sentence-transformer-onnx/msmarco-distilbert-base-tas-b/msmarco-distilbert-base-tas-b.zip
 
 </pre></div></div>
 </div>
@@ -371,18 +406,33 @@ zip file is saved to  sentence-transformers-onxx/msmarco-distilbert-base-tas-b/m
 <section id="Step-4:-Register-the-saved-Onnx-model-in-Opensearch">
 <h3>Step 4: Register the saved Onnx model in Opensearch<a class="headerlink" href="#Step-4:-Register-the-saved-Onnx-model-in-Opensearch" title="Link to this heading"></a></h3>
 <p>In the last step we saved a sentence transformer model in ONNX format. Now we will register that model in opensearch cluster. To do that we can take help of <code class="docutils literal notranslate"><span class="pre">register_model</span></code> method in <code class="docutils literal notranslate"><span class="pre">opensearch-py-ml</span></code> plugin.</p>
-<p>To register model, we need the zip file we just saved in the last step and a model config file. Example of Model config file content can be:</p>
+<p>To register model, we need the zip file we just saved in the last step and a model config file. You can use <code class="docutils literal notranslate"><span class="pre">make_model_config_json</span></code> method to automatically generate the model config file and save it at <code class="docutils literal notranslate"><span class="pre">ml-commons_model_config.json</span></code> in model folder, or you can create a json file by yourself.</p>
 <p>{ “name”: “sentence-transformers/msmarco-distilbert-base-tas-b”, “version”: “1.0.0”, “description”: “This is a port of the DistilBert TAS-B Model to sentence-transformers model: It maps sentences &amp; paragraphs to a 768 dimensional dense vector space and is optimized for the task of semantic search.”, “model_format”: “ONNX”, “model_config”: { “model_type”: “distilbert”, “embedding_dimension”: 768, “framework_type”: “sentence_transformers”, “pooling_mode”:”cls”, “normalize_result”:”false” } }</p>
-<p><code class="docutils literal notranslate"><span class="pre">model_format</span></code> needs to be <code class="docutils literal notranslate"><span class="pre">ONNX</span></code> so that internal system will look for the corresponding <code class="docutils literal notranslate"><span class="pre">.onnx</span></code> file from the zip folder.</p>
+<p>In either approach, you have to set <code class="docutils literal notranslate"><span class="pre">model_format</span></code> to be <code class="docutils literal notranslate"><span class="pre">ONNX</span></code> so that internal system will look for the corresponding <code class="docutils literal notranslate"><span class="pre">.onnx</span></code> file from the zip folder.</p>
 <p>Please refer to this doc: <a class="reference external" href="https://github.com/opensearch-project/ml-commons/blob/2.x/docs/model_serving_framework/text_embedding_model_examples.md">https://github.com/opensearch-project/ml-commons/blob/2.x/docs/model_serving_framework/text_embedding_model_examples.md</a></p>
 <p>Documentation for the method: <a class="reference external" href="https://opensearch-project.github.io/opensearch-py-ml/reference/api/ml_commons_register_api.html#opensearch_py_ml.ml_commons.MLCommonClient.register_model">https://opensearch-project.github.io/opensearch-py-ml/reference/api/ml_commons_register_api.html#opensearch_py_ml.ml_commons.MLCommonClient.register_model</a></p>
 <p>Related demo notebook about ml-commons plugin integration: <a class="reference external" href="https://opensearch-project.github.io/opensearch-py-ml/examples/demo_ml_commons_integration.html">https://opensearch-project.github.io/opensearch-py-ml/examples/demo_ml_commons_integration.html</a></p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model_config_path_onnx</span> <span class="o">=</span> <span class="s1">&#39;sentence-transformers-config/onxx-config/msmarco-distilbert-base-tas-b.json&#39;</span>
-<span class="n">ml_client</span><span class="o">.</span><span class="n">register_model</span><span class="p">(</span><span class="n">model_path_onnx</span><span class="p">,</span> <span class="n">model_config_path_onnx</span><span class="p">,</span> <span class="n">isVerbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model_config_path_onnx</span> <span class="o">=</span> <span class="n">pre_trained_model</span><span class="o">.</span><span class="n">make_model_config_json</span><span class="p">(</span><span class="n">model_format</span><span class="o">=</span><span class="s1">&#39;ONNX&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ml-commons_model_config.json file is saved at :  sentence-transformer-onnx/msmarco-distilbert-base-tas-b/ml-commons_model_config.json
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ml_client</span><span class="o">.</span><span class="n">register_model</span><span class="p">(</span><span class="n">model_path_onnx</span><span class="p">,</span> <span class="n">model_config_path_onnx</span><span class="p">,</span> <span class="n">isVerbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -392,8 +442,8 @@ zip file is saved to  sentence-transformers-onxx/msmarco-distilbert-base-tas-b/m
 <div class="output_area docutils container">
 <div class="highlight"><pre>
 Total number of chunks 27
-Sha1 value of the model file:  311aea6defb713d46f692c18207aa7e993d19122d2331a8086445a74ac2ab031
-Model meta data was created successfully. Model Id:  fHtdCYkB1RB1pQNOS_LY
+Sha1 value of the model file:  81c950d07eaa21705dd94cec0f127efec42844cd1995502452764777460517d4
+Model meta data was created successfully. Model Id:  49jz4okB2Ly7dmqcNrWD
 uploading chunk 1 of 27
 Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
 uploading chunk 2 of 27
@@ -449,16 +499,17 @@ Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
 uploading chunk 27 of 27
 Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
 Model registered successfully
+Task ID: 5Njz4okB2Ly7dmqcW7XA
 Model deployed successfully
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
 </pre></div>
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-&#39;fHtdCYkB1RB1pQNOS_LY&#39;
+&#39;49jz4okB2Ly7dmqcNrWD&#39;
 </pre></div></div>
 </div>
 </section>
@@ -466,7 +517,7 @@ Model deployed successfully
 <h3>Step 5: Generate Sentence Embedding<a class="headerlink" href="#Step-5:-Generate-Sentence-Embedding" title="Link to this heading"></a></h3>
 <p>Now after loading these models in memory, we can generate embedding for sentences. We can provide a list of sentences to get a list of embedding for the sentences.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Now using this model we can generate sentence embedding.</span>
@@ -477,14 +528,14 @@ Model deployed successfully
 
 <span class="c1"># Generated embedding from torchScript</span>
 
-<span class="n">embedding_output_torch</span> <span class="o">=</span> <span class="n">ml_client</span><span class="o">.</span><span class="n">generate_embedding</span><span class="p">(</span><span class="s2">&quot;entcCYkB1RB1pQNOffJP&quot;</span><span class="p">,</span> <span class="n">input_sentences</span><span class="p">)</span>
+<span class="n">embedding_output_torch</span> <span class="o">=</span> <span class="n">ml_client</span><span class="o">.</span><span class="n">generate_embedding</span><span class="p">(</span><span class="s2">&quot;4djw4okB2Ly7dmqcT7Xp&quot;</span><span class="p">,</span> <span class="n">input_sentences</span><span class="p">)</span>
 
 <span class="c1">#just taking embedding for the first sentence</span>
 <span class="n">data_torch</span> <span class="o">=</span> <span class="n">embedding_output_torch</span><span class="p">[</span><span class="s2">&quot;inference_results&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;output&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">]</span>
 
 <span class="c1"># Generated embedding from onnx</span>
 
-<span class="n">embedding_output_onnx</span> <span class="o">=</span> <span class="n">ml_client</span><span class="o">.</span><span class="n">generate_embedding</span><span class="p">(</span><span class="s2">&quot;fHtdCYkB1RB1pQNOS_LY&quot;</span><span class="p">,</span> <span class="n">input_sentences</span><span class="p">)</span>
+<span class="n">embedding_output_onnx</span> <span class="o">=</span> <span class="n">ml_client</span><span class="o">.</span><span class="n">generate_embedding</span><span class="p">(</span><span class="s2">&quot;49jz4okB2Ly7dmqcNrWD&quot;</span><span class="p">,</span> <span class="n">input_sentences</span><span class="p">)</span>
 
 <span class="c1"># Just taking embedding for the first sentence</span>
 <span class="n">data_onnx</span> <span class="o">=</span> <span class="n">embedding_output_onnx</span><span class="p">[</span><span class="s2">&quot;inference_results&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;output&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;data&quot;</span><span class="p">]</span>
