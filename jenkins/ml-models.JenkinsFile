@@ -41,7 +41,7 @@ pipeline {
                 [key: 'VERSION', value: '$.VERSION'],
                 [key: 'FORMAT', value: '$.FORMAT']
             ],
-            token: 'JENKINS_ML_MODELS_RELEASE_GENERIC_WEBHOOK_TOKEN',
+            tokenCredentialId: 'jenkins-ml-models-webhook-token',
             causeString: 'Triggered by GitHub Actions Workflow',
             printContributedVariables: true,
             printPostContent: true
