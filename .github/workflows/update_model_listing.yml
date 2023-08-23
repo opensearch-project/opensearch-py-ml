@@ -11,7 +11,6 @@ jobs:
       pull-requests: write
     environment: opensearch-py-ml-cicd-env
     env:
-      bucket_model_listing_file_path: ml-models/model_listing/pre_trained_models.json
       repo_model_listing_path: ./utils/model_uploader/model_listing/pretrained_model_listing.json
       path_prefixes: "ml-models/huggingface/" 
       # To expand the model listing to encompass additional folders, simply adjust the path_prefixes as indicated below: 
