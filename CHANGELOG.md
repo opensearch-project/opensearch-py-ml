@@ -18,7 +18,7 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Correct demo_ml_commons_integration.ipynb by @thanawan-atc in ([#208](https://github.com/opensearch-project/opensearch-py-ml/pull/208))
 - Handle the case when the model max length is undefined in tokenizer by @thanawan-atc in ([#219](https://github.com/opensearch-project/opensearch-py-ml/pull/219))
 - Change to use tokenCredentialId for triggering ml-models-release via generic webhook by @thanawan-atc in ([#240](https://github.com/opensearch-project/opensearch-py-ml/pull/240))
-
+- Fix typo in model/model-listing workflows by @thanawan-atc in ([#244](https://github.com/opensearch-project/opensearch-py-ml/pull/244))
 
 ## [1.1.0]
 
