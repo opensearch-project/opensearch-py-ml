@@ -9,6 +9,13 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Fixed
 - Enable make_model_config_json to add model description to model config file by @thanawan-atc in ([#203](https://github.com/opensearch-project/opensearch-py-ml/pull/203))
+- Correct demo_ml_commons_integration.ipynb by @thanawan-atc in ([#208](https://github.com/opensearch-project/opensearch-py-ml/pull/208))
+- Handle the case when the model max length is undefined in tokenizer by @thanawan-atc in ([#219](https://github.com/opensearch-project/opensearch-py-ml/pull/219))
+- Change to use tokenCredentialId for triggering ml-models-release via generic webhook by @thanawan-atc in ([#240](https://github.com/opensearch-project/opensearch-py-ml/pull/240))
+- Fix typo in model/model-listing workflows by @thanawan-atc in ([#244](https://github.com/opensearch-project/opensearch-py-ml/pull/244))
+- Fix typo in model-listing workflows by @thanawan-atc in ([#246](https://github.com/opensearch-project/opensearch-py-ml/pull/246))
+- Add BUCKET_NAME to ml-models-release jenkinsfile by @thanawan-atc in ([#249](https://github.com/opensearch-project/opensearch-py-ml/pull/249))
+
 
 ## [1.1.0]
 
