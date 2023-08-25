@@ -1,0 +1,412 @@
+name: Model Auto-tracing & Uploading
+on:
+  # Step 1: Initiate the workflow
+  workflow_dispatch:
+    inputs:
+      model_source: 
+        description: "Model source (e.g. huggingface)"
+        required: true
+        type: string
+        default: "huggingface"
+      model_id:
+        description: "Model ID for auto-tracing and uploading (e.g. sentence-transformers/msmarco-distilbert-base-tas-b)"
+        required: true
+        type: string
+      model_version:
+        description: "Model version number (e.g. 1.0.1)"
+        required: true
+        type: string
+      tracing_format:
+        description: "Model format for auto-tracing (torch_script/onnx)"
+        required: true
+        type: choice
+        options:
+        - "BOTH"
+        - "TORCH_SCRIPT"
+        - "ONNX"
+      embedding_dimension:
+        description: "(Optional) Embedding Dimension (Specify here if it does not exist in original config.json file, or you want to overwrite it.)"
+        required: false
+        type: int
+      pooling_mode:
+        description: "(Optional) Pooling Mode (Specify here if it does not exist in original config.json file or you want to overwrite it.)"
+        required: false
+        type: choice
+        options:
+        - ""
+        - "CLS"
+        - "MEAN"
+        - "MAX"
+        - "MEAN_SQRT_LEN"
+      model_description:
+        description: "(Optional) Description (Specify here if you want to overwrite the default model description)"
+        required: false
+        type: string
+
+jobs:
+  # Step 2: Initiate workflow variable
+  init-workflow-var:
+    runs-on: 'ubuntu-latest'
+    steps:
+    - name: Fail if branch is not main
+      if: github.ref != 'refs/heads/main'
+      run: |
+         echo "This workflow should only be triggered on 'main' branch"
+         exit 1
+    - name: Initiate folders
+      id: init_folders
+      run: |
+        model_id=${{ github.event.inputs.model_id }}
+        echo "model_folder=ml-models/${{github.event.inputs.model_source}}/${model_id}" >> $GITHUB_OUTPUT
+        echo "sentence_transformer_folder=ml-models/${{github.event.inputs.model_source}}/${model_id%%/*}/" >> $GITHUB_OUTPUT
+    - name: Initiate workflow_info
+      id: init_workflow_info
+      run: |
+        embedding_dimension=${{ github.event.inputs.embedding_dimension }}
+        pooling_mode=${{ github.event.inputs.pooling_mode }}
+        model_description="${{ github.event.inputs.model_description }}"
+        
+        workflow_info="
+        ============= Workflow Details ==============
+        - Workflow Name: ${{ github.workflow }}
+        - Workflow Run ID: ${{ github.run_id }}
+        - Workflow Initiator: @${{ github.actor }}
+          
+        ========= Workflow Input Information =========
+        - Model ID: ${{ github.event.inputs.model_id }}
+        - Model Version: ${{ github.event.inputs.model_version }}
+        - Tracing Format: ${{ github.event.inputs.tracing_format }}
+        - Embedding Dimension: ${embedding_dimension:-N/A}
+        - Pooling Mode: ${pooling_mode:-N/A}
+        - Model Description: ${model_description:-N/A}
+        
+        ======== Workflow Output Information =========
+        - Embedding Verification: Passed"
+
+        echo "workflow_info<<EOF" >> $GITHUB_OUTPUT
+        echo "${workflow_info@E}" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+        echo "${workflow_info@E}"
+    - name: Initiate license_line
+      id: init_license_line
+      run: |
+        echo "verified=:white_check_mark: — It is verified that this model is licensed under Apache 2.0" >> $GITHUB_OUTPUT
+        echo "unverified=- [ ]  :warning: The license cannot be verified. Please confirm by yourself that the model is licensed under Apache 2.0  :warning:" >> $GITHUB_OUTPUT
+    outputs:
+      model_folder: ${{ steps.init_folders.outputs.model_folder }}
+      sentence_transformer_folder: ${{ steps.init_folders.outputs.sentence_transformer_folder }}
+      workflow_info: ${{ steps.init_workflow_info.outputs.workflow_info }}
+      verified_license_line: ${{ steps.init_license_line.outputs.verified }}
+      unverified_license_line: ${{ steps.init_license_line.outputs.unverified }}
+
+  # Step 3: Check if the model already exists in the model hub
+  checking-out-model-hub:
+    needs: init-workflow-var
+    runs-on: 'ubuntu-latest'
+    permissions:
+      id-token: write
+      contents: read
+    environment: opensearch-py-ml-cicd-env
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+      - name: Set Up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: ${{ secrets.MODEL_UPLOADER_AWS_REGION }}
+          role-to-assume: ${{ secrets.MODEL_UPLOADER_ROLE }}
+          role-session-name: checking-out-model-hub
+      - name: Check if TORCH_SCRIPT Model Exists
+        if: github.event.inputs.tracing_format == 'TORCH_SCRIPT' || github.event.inputs.tracing_format == 'BOTH'
+        run: |
+          TORCH_FILE_PATH=$(python utils/model_uploader/save_model_file_path_to_env.py \
+              ${{ needs.init-workflow-var.outputs.sentence_transformer_folder }} ${{ github.event.inputs.model_id }} \
+              ${{ github.event.inputs.model_version }} TORCH_SCRIPT)
+          aws s3api head-object --bucket ${{ secrets.MODEL_BUCKET }} --key $TORCH_FILE_PATH > /dev/null 2>&1 || TORCH_MODEL_NOT_EXIST=true
+          if [[ -z $TORCH_MODEL_NOT_EXIST ]]
+          then
+            echo "${{ github.event.inputs.model_id }} already exists on model hub for TORCH_SCRIPT format and ${{ github.event.inputs.model_version }} version."
+            exit 1
+          fi
+      - name: Check if ONNX Model Exists
+        if: github.event.inputs.tracing_format == 'ONNX' || github.event.inputs.tracing_format == 'BOTH'
+        run: |
+          ONNX_FILE_PATH=$(python utils/model_uploader/save_model_file_path_to_env.py \
+            ${{ needs.init-workflow-var.outputs.sentence_transformer_folder }} ${{ github.event.inputs.model_id }} \
+            ${{ github.event.inputs.model_version }} ONNX)
+          aws s3api head-object --bucket ${{ secrets.MODEL_BUCKET }} --key $ONNX_FILE_PATH > /dev/null 2>&1 || ONNX_MODEL_NOT_EXIST=true
+          if [[ -z $ONNX_MODEL_NOT_EXIST ]]
+          then
+            echo "${{ github.event.inputs.model_id }} already exists on model hub for ONNX format and ${{ github.event.inputs.model_version }} version."
+            exit 1
+          fi
+  
+  # Step 4: Trace the model, Verify the embeddings & Upload the model files as artifacts
+  model-auto-tracing:
+    needs: [init-workflow-var, checking-out-model-hub]
+    name: model-auto-tracing
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    environment: opensearch-py-ml-cicd-env
+    strategy:
+      matrix:
+        cluster: ["opensearch"]
+        secured: ["true"]
+        entry:
+          - { opensearch_version: 2.7.0 }
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Export Arguments
+        run: | 
+          echo "MODEL_ID=${{ github.event.inputs.model_id }}" >> $GITHUB_ENV
+          echo "MODEL_VERSION=${{ github.event.inputs.model_version }}" >> $GITHUB_ENV
+          echo "TRACING_FORMAT=${{ github.event.inputs.tracing_format }}" >> $GITHUB_ENV
+          echo "EMBEDDING_DIMENSION=${{ github.event.inputs.embedding_dimension }}" >> $GITHUB_ENV
+          echo "POOLING_MODE=${{ github.event.inputs.pooling_mode }}" >> $GITHUB_ENV     
+          echo "MODEL_DESCRIPTION=${{ github.event.inputs.model_description }}" >> $GITHUB_ENV     
+      - name: Autotracing ${{ matrix.cluster }} secured=${{ matrix.secured }} version=${{matrix.entry.opensearch_version}}
+        run: "./.ci/run-tests ${{ matrix.cluster }} ${{ matrix.secured }} ${{ matrix.entry.opensearch_version }} trace"
+      - name: License Verification
+        id: license_verification
+        run: |
+          apache_verified=$(<trace_output/apache_verified.txt)
+          if [[ $apache_verified == "True" ]]
+          then
+            echo "license_line=${{ needs.init-workflow-var.outputs.verified_license_line }}" >> $GITHUB_OUTPUT
+            echo "license_info=Automatically Verified" >> $GITHUB_OUTPUT
+          else
+            echo "license_line=${{ needs.init-workflow-var.outputs.unverified_license_line }}" >> $GITHUB_OUTPUT 
+            echo "license_info=Manually Verified" >> $GITHUB_OUTPUT
+          fi
+      - name: Model Description Info
+        id: model_description_info
+        run: |
+          model_description_info="$(<trace_output/description.txt)"
+          echo "model_description_info=- Model Description: $model_description_info" >> $GITHUB_OUTPUT
+          echo "$model_description_info"
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with: 
+          name: upload
+          path: ./upload/
+          retention-days: 5
+          if-no-files-found: error
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: ${{ secrets.MODEL_UPLOADER_AWS_REGION }}
+          role-to-assume: ${{ secrets.MODEL_UPLOADER_ROLE }}
+          role-session-name: model-auto-tracing
+      - name: Dryrun model uploading
+        id: dryrun_model_uploading
+        run: |
+          dryrun_output=$(aws s3 sync ./upload/ s3://${{ secrets.MODEL_BUCKET }}/${{ needs.init-workflow-var.outputs.sentence_transformer_folder }} --dryrun \
+            | sed 's|s3://${{ secrets.MODEL_BUCKET }}/|s3://(MODEL_BUCKET)/|' 
+          )
+          echo "dryrun_output<<EOF" >> $GITHUB_OUTPUT
+          echo "${dryrun_output@E}" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          echo "${dryrun_output@E}"
+    outputs:
+      license_line: ${{ steps.license_verification.outputs.license_line }}
+      license_info: ${{ steps.license_verification.outputs.license_info }}
+      model_description_info: ${{ steps.model_description_info.outputs.model_description_info }}
+      dryrun_output: ${{ steps.dryrun_model_uploading.outputs.dryrun_output }}
+
+  # Step 5: Ask for manual approval from the CODEOWNERS
+  manual-approval:
+    needs: [init-workflow-var, model-auto-tracing]
+    runs-on: 'ubuntu-latest'
+    permissions:
+      issues: write
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+      - name: Get Approvers
+        id: get_approvers
+        run: |
+          echo "approvers=$(cat .github/CODEOWNERS | grep @ | tr -d '* ' | sed 's/@/,/g' | sed 's/,//1')" >> $GITHUB_OUTPUT
+      - name: Create Issue Body
+        id: create_issue_body
+        run: |    
+          issue_body="Please approve or deny opensearch-py-ml model uploading:
+          
+          ${{ needs.model-auto-tracing.outputs.license_line }}
+          
+          ${{ needs.init-workflow-var.outputs.workflow_info }}
+          ${{ needs.model-auto-tracing.outputs.model_description_info }}
+          
+          ===== Dry Run of Model Uploading =====
+          ${{ needs.model-auto-tracing.outputs.dryrun_output }}"
+
+          echo "issue_body<<EOF" >> $GITHUB_OUTPUT
+          echo "${issue_body@E}" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          echo "${issue_body@E}"
+      - uses: trstringer/manual-approval@v1
+        with:
+          secret: ${{ github.TOKEN }}
+          approvers: ${{ steps.get_approvers.outputs.approvers }}
+          minimum-approvals: 1
+          issue-title: "Upload Model to OpenSearch Model Hub (${{ github.event.inputs.model_id }})"
+          issue-body: ${{ steps.create_issue_body.outputs.issue_body }}
+          exclude-workflow-initiator-as-approver: false
+      
+  # Step 6: Download the artifacts & Upload it to the S3 bucket
+  model-uploading:
+    needs: [init-workflow-var, manual-approval]
+    runs-on: 'ubuntu-latest'
+    permissions:
+      id-token: write
+      contents: read
+    environment: opensearch-py-ml-cicd-env
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: upload
+          path: ./upload/
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: ${{ secrets.MODEL_UPLOADER_AWS_REGION }}
+          role-to-assume: ${{ secrets.MODEL_UPLOADER_ROLE }}
+          role-session-name: model-uploading
+      - name: Copy Files to the Bucket
+        id: copying_to_bucket
+        run: |
+          aws s3 sync ./upload/ s3://${{ secrets.MODEL_BUCKET }}/${{ needs.init-workflow-var.outputs.sentence_transformer_folder }}
+          echo "upload_time=$(TZ='America/Los_Angeles' date "+%Y-%m-%d %T")" >> $GITHUB_OUTPUT
+    outputs:
+      upload_time: ${{ steps.copying_to_bucket.outputs.upload_time }}
+   
+  # Step 7: Update MODEL_UPLOAD_HISTORY.md & supported_models.json
+  history-update:
+    needs: [init-workflow-var, model-auto-tracing, model-uploading]
+    runs-on: 'ubuntu-latest'
+    permissions:
+      id-token: write
+      contents: write
+      pull-requests: write
+    env:
+      model_info: ${{ github.event.inputs.model_id }} (v.${{ github.event.inputs.model_version }})(${{ github.event.inputs.tracing_format }})
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+      - name: Set Up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      - name: Install Packages
+        run:
+          python -m pip install mdutils
+      - name: Update Model Upload History
+        run: |
+          model_description="${{ github.event.inputs.model_description }}"
+          python utils/model_uploader/update_models_upload_history_md.py \
+            ${{ github.event.inputs.model_id }} \
+            ${{ github.event.inputs.model_version }} \
+            ${{ github.event.inputs.tracing_format }} \
+            -ed ${{ github.event.inputs.embedding_dimension }} \
+            -pm ${{ github.event.inputs.pooling_mode }} \
+            -id ${{ github.run_id }} -u ${{ github.actor }} \
+            -t "${{ needs.model-uploading.outputs.upload_time }}"
+      - name: Create PR Body
+        id: create_pr_body
+        run: |
+          pr_body="
+          - [ ] This PR made commit to only these three files: MODEL_UPLOAD_HISTORY.md, supported_models.json, and CHANGELOG.md.
+          - [ ] CHANGELOG.md has been updated by the workflow or by you if the workflow fails to do so. 
+          - [ ] Merge conflicts have been resolved.
+          
+          ${{ needs.init-workflow-var.outputs.workflow_info }}
+          ${{ needs.model-auto-tracing.outputs.license_info }}
+          ${{ needs.model-auto-tracing.outputs.model_description_info }}"
+          
+          echo "pr_body<<EOF" >> $GITHUB_OUTPUT
+          echo "${pr_body@E}" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          echo "${pr_body@E}"
+      - name: Create a Branch & Raise a PR
+        uses: peter-evans/create-pull-request@v5
+        id: create_pr
+        with:
+          committer: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
+          commit-message: 'GitHub Actions Workflow: Update Model Upload History - ${{ env.model_info }}'
+          signoff: true
+          title: 'Update Model Upload History  - ${{ env.model_info }}'
+          body: ${{ steps.create_pr_body.outputs.pr_body }}
+          labels: ModelUploading
+          branch: model-uploader/${{ github.run_id }}
+          delete-branch: true
+          add-paths: |
+            ./utils/model_uploader/upload_history/MODEL_UPLOAD_HISTORY.md
+            ./utils/model_uploader/upload_history/supported_models.json
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          ref: model-uploader/${{ github.run_id }}
+      - name: Create a line for updating CHANGELOG.md
+        id: create_changelog_line
+        continue-on-error: true
+        run: |
+          pr_ref="([#${{ steps.create_pr.outputs.pull-request-number }}](${{ steps.create_pr.outputs.pull-request-url }}))"
+          changelog_line="Update model upload history -  ${{ env.model_info }} by @${{ github.actor }} $pr_ref"
+          echo "changelog_line=$changelog_line" >> $GITHUB_OUTPUT
+      - name: Warning Comment on PR if create_changelog_line fails
+        if: steps.create_changelog_line.outcome == 'failure'
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          pr_number: ${{ steps.create_pr.outputs.pull-request-number }}
+          message: |
+            Warning:exclamation:: The workflow failed to update CHANGELOG.md. Please update CHANGELOG.md manually. 
+      - name: Update CHANGELOG.md
+        if: steps.create_changelog_line.outcome == 'success'
+        id: update_changelog
+        continue-on-error: true
+        run: |
+          python utils/model_uploader/update_changelog_md.py "${{ steps.create_changelog_line.outputs.changelog_line }}"
+      - name: Commit Updates
+        if: steps.create_changelog_line.outcome == 'success' && steps.update_changelog.outcome == 'success'
+        uses: stefanzweifel/git-auto-commit-action@v4
+        id: commit
+        with:
+          branch: model-uploader/${{ github.run_id }}
+          commit_user_email: "github-actions[bot]@users.noreply.github.com"
+          commit_message: 'GitHub Actions Workflow: Update CHANGELOG.md - ${{ env.model_info }}'
+          commit_options: '--signoff'
+          file_pattern: CHANGELOG.md
+      - name: Warning Comment on PR if update_changelog fails
+        if: steps.create_changelog_line.outcome == 'success' && steps.update_changelog.outcome == 'failure'
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          pr_number: ${{ steps.create_pr.outputs.pull-request-number }}
+          message: |
+            Warning:exclamation:: The workflow failed to update CHANGELOG.md. Please add the following line manually.
+            >>>
+            ${{ steps.create_changelog_line.outputs.changelog_line }}
+            
+  # Step 8: Trigger Jenkins ml-models workflow
+  trigger-ml-models-release-workflow:
+    needs: [init-workflow-var, history-update]
+    runs-on: 'ubuntu-latest'
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+      - name: Trigger Jenkins Workflow with Generic Webhook
+        run: |
+          jenkins_trigger_token=${{ secrets.JENKINS_ML_MODELS_RELEASE_GENERIC_WEBHOOK_TOKEN }}
+          base_download_path=${{ needs.init-workflow-var.outputs.model_folder }}
+          version=${{ github.event.inputs.model_version }}
+          format=${{ github.event.inputs.tracing_format }}
+          jenkins_params="{\"BASE_DOWNLOAD_PATH\":\"$base_download_path\", \"VERSION\":\"$version\", \"FORMAT\":\"$format\"}"
+          sh utils/model_uploader/trigger_ml_models_release.sh $jenkins_trigger_token "$jenkins_params"

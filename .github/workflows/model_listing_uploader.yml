@@ -1,0 +1,49 @@
+name: Model Listing Uploading
+on:
+  push:
+    branches:
+     - main
+    paths: 
+     - utils/model_uploader/model_listing/pretrained_model_listing.json
+  workflow_dispatch:
+  
+jobs:
+  upload-model-listing:
+    runs-on: 'ubuntu-latest'
+    permissions:
+      id-token: write
+      contents: read
+    environment: opensearch-py-ml-cicd-env
+    env:
+      bucket_model_listing_file_path: ml-models/model_listing/pre_trained_models.json
+      repo_model_listing_path: ./utils/model_uploader/model_listing/pretrained_model_listing.json
+    steps:
+    - name: Fail if branch is not main
+      if: github.ref != 'refs/heads/main'
+      run: |
+         echo "This workflow should only be triggered on 'main' branch"
+         exit 1
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-region: ${{ secrets.MODEL_UPLOADER_AWS_REGION }}
+        role-to-assume: ${{ secrets.MODEL_UPLOADER_ROLE }}
+        role-session-name: upload-model-listing
+    - name: Update pre_trained_models.json in S3
+      run: aws s3 cp ${{ env.repo_model_listing_path }} s3://${{ secrets.MODEL_BUCKET }}/${{ env.bucket_model_listing_file_path }}
+
+  trigger-ml-models-release-workflow:
+    needs: upload-model-listing
+    runs-on: 'ubuntu-latest'
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+      - name: Trigger Jenkins Workflow with Generic Webhook
+        run: |
+          jenkins_trigger_token=${{ secrets.JENKINS_ML_MODELS_RELEASE_GENERIC_WEBHOOK_TOKEN }}
+          jenkins_params="{\"BASE_DOWNLOAD_PATH\":\"ml-models/model_listing\"}"
+          sh utils/model_uploader/trigger_ml_models_release.sh $jenkins_trigger_token $jenkins_params
