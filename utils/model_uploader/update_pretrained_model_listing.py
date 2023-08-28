@@ -14,7 +14,7 @@ import os
 import sys
 from typing import Optional
 
-JSON_FILENAME = "pretrained_model_listing.json"
+JSON_FILENAME = "pretrained_models_all_versions.json"
 JSON_DIRNAME = "utils/model_uploader/model_listing"
 PRETRAINED_MODEL_LISTING_JSON_FILEPATH = os.path.join(JSON_DIRNAME, JSON_FILENAME)
 
