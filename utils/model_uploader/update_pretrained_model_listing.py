@@ -6,7 +6,7 @@
 # GitHub history for details.
 
 # This program is run by "Model Listing Uploading" workflow
-# (See model_listing_uploader.yml) to update pretrained_model_listing.json.
+# (See model_listing_uploader.yml) to update pretrained_models_all_versions.json
 
 import argparse
 import json
