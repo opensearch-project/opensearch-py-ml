@@ -175,10 +175,10 @@ jobs:
         run: "./.ci/run-tests ${{ matrix.cluster }} ${{ matrix.secured }} ${{ matrix.entry.opensearch_version }} trace"
       - name: Limit Model Size to 2GB
         run: |
-          upload_size=$(ls -lR ./upload/ | awk '{ SUM += $5} END {print SUM}')
-          limit="2147483648" 
-          echo "Model Artifact Size: $upload_size"
-          if [ "$upload_size" -ge "$limit" ]
+          upload_size_in_binary_bytes=$(ls -lR ./upload/ | awk '{ SUM += $5} END {print SUM}')
+          size_limit_in_binary_bytes="2147483648" 
+          echo "Model Artifact Size: $upload_size binary bytes"
+          if [ "$upload_size_in_binary_bytes" -ge "$size_limit_in_binary_bytes" ]
           then
             echo "The workflow cannot upload the model artifact that is larger than 2GB."
             exit 1
