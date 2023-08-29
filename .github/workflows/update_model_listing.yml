@@ -11,7 +11,6 @@ jobs:
       pull-requests: write
     environment: opensearch-py-ml-cicd-env
     env:
-      bucket_model_listing_file_path: ml-models/model_listing/pre_trained_models.json
       repo_model_listing_path: ./utils/model_uploader/model_listing/pretrained_model_listing.json
       path_prefixes: "ml-models/huggingface/" 
       # To expand the model listing to encompass additional folders, simply adjust the path_prefixes as indicated below: 
@@ -35,7 +34,7 @@ jobs:
         path_prefixes="${{ env.path_prefixes }}"
         for prefix in $path_prefixes
         do
-          if aws s3 ls s3://${{ secrets.PERSONAL_MODEL_BUCKET }}/$prefix > /dev/null
+          if aws s3 ls s3://${{ secrets.MODEL_BUCKET }}/$prefix > /dev/null
           then
             aws s3api list-objects --bucket ${{ secrets.MODEL_BUCKET }} --prefix $prefix --query "Contents[].{Key: Key}" --output text | grep "/config.json$" >> config_paths.txt
           else
