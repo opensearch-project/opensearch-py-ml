@@ -5,7 +5,6 @@ on:
      - main
     paths: 
      - utils/model_uploader/model_listing/pretrained_models_all_versions.json
-  workflow_dispatch:
   
 jobs:
   upload-model-listing:
