@@ -11,7 +11,7 @@ jobs:
       pull-requests: write
     environment: opensearch-py-ml-cicd-env
     env:
-      repo_model_listing_path: ./utils/model_uploader/model_listing/pretrained_model_listing.json
+      repo_model_listing_path: ./utils/model_uploader/model_listing/pretrained_models_all_versions.json
       path_prefixes: "ml-models/huggingface/" 
       # To expand the model listing to encompass additional folders, simply adjust the path_prefixes as indicated below: 
       # "ml-models/first_folder/ ml-models/second_folder/ ml-models/third_folder/" (Separate each folder with a space)
@@ -55,7 +55,7 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: '3.x'
-    - name: Update pre_trained_models.json
+    - name: Update pretrained_models_all_versions.json
       run: |
         python utils/model_uploader/update_pretrained_model_listing.py "config_paths.txt" "config_folder"
     - name: Create PR Body
@@ -64,7 +64,7 @@ jobs:
         update_time=$(TZ='America/Los_Angeles' date "+%Y-%m-%d %T")
         echo "update_time=$update_time" >> $GITHUB_OUTPUT
         pr_body="
-        - [ ] This PR made commit to only these two files: pretrained_model_listing.json and CHANGELOG.md.
+        - [ ] This PR made commit to only these two files: pretrained_models_all_versions.json and CHANGELOG.md.
         - [ ] CHANGELOG.md has been updated by the workflow or by you if the workflow fails to do so. 
         - [ ] Merge conflicts have been resolved.
           
@@ -103,7 +103,7 @@ jobs:
       continue-on-error: true
       run: |
         pr_ref="([#${{ steps.create_pr.outputs.pull-request-number }}](${{ steps.create_pr.outputs.pull-request-url }}))"
-        changelog_line="Update pretrained_model_listing.json (${{ steps.create_pr_body.outputs.update_time }}) by @${{ github.actor }} $pr_ref"
+        changelog_line="Update pretrained_models_all_versions.json (${{ steps.create_pr_body.outputs.update_time }}) by @${{ github.actor }} $pr_ref"
         echo "changelog_line=$changelog_line" >> $GITHUB_OUTPUT
     - name: Warning Comment on PR if create_changelog_line fails
       if: steps.checkout_pr_branch.outcome == 'success' && steps.create_changelog_line.outcome == 'failure'
