@@ -1,4 +1,4 @@
-name: Model Listing Uploading
+name: "Model Listing Workflow II: Uploading-Releasing [Auto-triggered]"
 on:
   push:
     branches:
