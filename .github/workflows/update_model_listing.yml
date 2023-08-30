@@ -1,4 +1,4 @@
-name: Update Pretrained Model Listing
+name: "Model Listing Workflow I: Updating"
 on:
   workflow_dispatch:
   
