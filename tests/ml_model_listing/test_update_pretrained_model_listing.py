@@ -23,6 +23,7 @@ sys.path.append(UTILS_MODEL_UPLOADER_DIR)
 SAMPLE_FOLDER = os.path.join(THIS_DIR, "samples")
 CONFIG_PATHS_TXT_FILENAME = "config_paths.txt"
 CONFIG_FOLDERNAME = "config_folder"
+EXCLUDED_MODELS_TXT_FILENAME = "excluded_models.txt"
 SAMPLE_PRETRAINED_MODEL_LISTING = os.path.join(
     SAMPLE_FOLDER, "pretrained_model_listing.json"
 )
@@ -75,6 +76,8 @@ def test_create_new_pretrained_model_listing():
                 os.path.join(SAMPLE_FOLDER, CONFIG_FOLDERNAME),
                 "--pretrained_model_listing_json_filepath",
                 TEST_FILE,
+                "--excluded_models_txt_filepath",
+                os.path.join(SAMPLE_FOLDER, EXCLUDED_MODELS_TXT_FILENAME),
             ]
         )
     except Exception as e:
@@ -119,6 +122,8 @@ def test_missing_config_file():
                 os.path.join(SAMPLE_FOLDER_COPY, CONFIG_FOLDERNAME),
                 "--pretrained_model_listing_json_filepath",
                 TEST_FILE,
+                "--excluded_models_txt_filepath",
+                os.path.join(SAMPLE_FOLDER, EXCLUDED_MODELS_TXT_FILENAME),
             ]
         )
     assert exc_info.type is Exception
