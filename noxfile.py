@@ -139,11 +139,13 @@ def test(session, pandas_version: str):
     )
 
 
-@nox.session(reuse_venv=True)
-def docs(session):
+@nox.session
+@nox.parametrize("pandas_version", ["1.5.0"])
+def docs(session, pandas_version: str):
     # Run this so users get an error if they don't have Pandoc installed.
     session.install("-r", "docs/requirements-docs.txt")
     session.install(".")
+    session.run("python", "-m", "pip", "install", f"pandas~={pandas_version}")
 
     session.cd("docs")
     session.run("make", "clean", external=True)
@@ -154,7 +156,8 @@ def docs(session):
 # to automate the action workflow, leveraging its ability to set up the environment
 # required for model autotracing.
 @nox.session
-def trace(session):
+@nox.parametrize("pandas_version", ["1.5.0"])
+def trace(session, pandas_version: str):
     session.install(
         "-r",
         "requirements-dev.txt",
@@ -162,6 +165,7 @@ def trace(session):
         "1500",
     )
     session.install(".")
+    session.run("python", "-m", "pip", "install", f"pandas~={pandas_version}")
 
     session.run(
         "python",
