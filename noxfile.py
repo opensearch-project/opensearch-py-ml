@@ -139,7 +139,7 @@ def test(session, pandas_version: str):
     )
 
 
-@nox.session(reuse_venv=True)
+@nox.session(python=["3.8", "3.9", "3.10"])
 @nox.parametrize("pandas_version", ["1.5.0"])
 def docs(session):
     # Run this so users get an error if they don't have Pandoc installed.
@@ -155,7 +155,7 @@ def docs(session):
 # While nox is typically used for automating testing, in this case, we utilize it
 # to automate the action workflow, leveraging its ability to set up the environment
 # required for model autotracing.
-@nox.session(python=["3.9"])
+@nox.session(python=["3.8", "3.9", "3.10"])
 @nox.parametrize("pandas_version", ["1.5.0"])
 def trace(session):
     session.install(
