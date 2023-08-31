@@ -141,7 +141,7 @@ def test(session, pandas_version: str):
 
 @nox.session(python=["3.8", "3.9", "3.10"])
 @nox.parametrize("pandas_version", ["1.5.0"])
-def docs(session):
+def docs(session, pandas_version: str):
     # Run this so users get an error if they don't have Pandoc installed.
     session.install("-r", "docs/requirements-docs.txt")
     session.install(".")
@@ -157,7 +157,7 @@ def docs(session):
 # required for model autotracing.
 @nox.session(python=["3.8", "3.9", "3.10"])
 @nox.parametrize("pandas_version", ["1.5.0"])
-def trace(session):
+def trace(session, pandas_version: str):
     session.install(
         "-r",
         "requirements-dev.txt",
