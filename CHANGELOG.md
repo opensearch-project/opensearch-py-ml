@@ -15,6 +15,9 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Update pretrained_model_listing.json (2023-08-23 16:51:21) by @dhrubo-os ([#248](https://github.com/opensearch-project/opensearch-py-ml/pull/248))
 - Store new format of model listing at pretrained_models_all_versions.json instead of pre_trained_models.json in S3 and pretrained_model_listing.json in repo by @thanawan-atc ([#256](https://github.com/opensearch-project/opensearch-py-ml/pull/256))
 - Make the model tracing-uploading-releasing workflow fail early for ≥2GB model by @thanawan-atc ([#258](https://github.com/opensearch-project/opensearch-py-ml/pull/258))
+- Rename model/model-listing workflows by @thanawan-atc ([#260](https://github.com/opensearch-project/opensearch-py-ml/pull/260))
+- Update pretrained_models_all_versions.json (2023-08-30 14:07:38) by @dhrubo-os ([#264](https://github.com/opensearch-project/opensearch-py-ml/pull/264))
+- Have model upload workflow require approval from two code maintainers by @thanawan-atc ([#273](https://github.com/opensearch-project/opensearch-py-ml/pull/273))
 
 ### Fixed
 - Enable make_model_config_json to add model description to model config file by @thanawan-atc in ([#203](https://github.com/opensearch-project/opensearch-py-ml/pull/203))
