@@ -1,2 +1,0 @@
-ml-models/huggingface/sentence-transformers/multi-qa-mpnet-base-cos-v1/1.0.1/onnx
-ml-models/huggingface/sentence-transformers/multi-qa-mpnet-base-cos-v1/1.0.1/torch_script

@@ -22,20 +22,20 @@
     }
   },
   {
-    "name": "huggingface/sentence-transformers/multi-qa-mpnet-base-cos-v1",
+    "name": "huggingface/sentence-transformers/multi-qa-mpnet-base-dot-v1",
     "versions": {
       "2.0.0": {
         "format": [
           "torch_script"
         ],
-        "description": "This is a sentence-transformers model: It maps sentences & paragraphs to a 768 dimensional dense vector space and was designed for semantic search. It has been trained on 215M  pairs from diverse sources. (New Version)"
+        "description": "This is a sentence-transformers model: It maps sentences & paragraphs to a 768 dimensional dense vector space and was designed for semantic search. It has been trained on 215M  pairs from diverse sources. (v.2.0.0)"
       },
       "3.0.1": {
         "format": [
           "onnx",
           "torch_script"
         ],
-        "description": "This is a sentence-transformers model: It maps sentences & paragraphs to a 768 dimensional dense vector space and was designed for semantic search. It has been trained on 215M  pairs from diverse sources."
+        "description": "This is a sentence-transformers model: It maps sentences & paragraphs to a 768 dimensional dense vector space and was designed for semantic search. It has been trained on 215M  pairs from diverse sources. (v.3.0.1)"
       }
     }
   },
