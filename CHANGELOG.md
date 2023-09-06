@@ -18,6 +18,7 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Rename model/model-listing workflows by @thanawan-atc ([#260](https://github.com/opensearch-project/opensearch-py-ml/pull/260))
 - Update pretrained_models_all_versions.json (2023-08-30 14:07:38) by @dhrubo-os ([#264](https://github.com/opensearch-project/opensearch-py-ml/pull/264))
 - Enable model listing workflow to exclude old 1.0.0 models from the generated model listing by @thanawan-atc ([#265](https://github.com/opensearch-project/opensearch-py-ml/pull/265))
+- Have model upload workflow require approval from two code maintainers by @thanawan-atc ([#273](https://github.com/opensearch-project/opensearch-py-ml/pull/273))
 
 ### Fixed
 - Enable make_model_config_json to add model description to model config file by @thanawan-atc in ([#203](https://github.com/opensearch-project/opensearch-py-ml/pull/203))
@@ -28,6 +29,7 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Fix typo in model-listing workflows by @thanawan-atc in ([#246](https://github.com/opensearch-project/opensearch-py-ml/pull/246))
 - Add BUCKET_NAME to ml-models-release jenkinsfile by @thanawan-atc in ([#249](https://github.com/opensearch-project/opensearch-py-ml/pull/249))
 - Roll over pretrained_model_listing.json because of ml-commons dependency by @thanawan-atc in ([#252](https://github.com/opensearch-project/opensearch-py-ml/pull/252))
+- Fix pandas dependency issue in nox session by installing pandas package to python directly by @thanawan-atc in ([#266](https://github.com/opensearch-project/opensearch-py-ml/pull/266))
 
 ## [1.1.0]
 
