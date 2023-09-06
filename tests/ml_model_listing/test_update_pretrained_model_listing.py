@@ -94,7 +94,6 @@ def test_create_new_pretrained_model_listing():
     except Exception as e:
         assert False, print(f"Cannot open {TEST_FILE} to verify its content: {e}")
 
-    print(test_pretrained_model_listing)
     assert test_pretrained_model_listing == sample_pretrained_model_listing, print(
         "Incorrect pretrained model listing"
     )
