@@ -1,0 +1,22 @@
+[
+    {
+        "Model Uploader": "@dhrubo-os",
+        "Upload Time": "2023-08-31 15:22:19",
+        "Model ID": "sentence-transformers/msmarco-distilbert-base-tas-b",
+        "Model Version": "1.0.2",
+        "Model Format": "ONNX",
+        "Embedding Dimension": "N/A",
+        "Pooling Mode": "N/A",
+        "Workflow Run ID": "6042401385"
+    },
+    {
+        "Model Uploader": "@dhrubo-os",
+        "Upload Time": "2023-08-31 15:22:19",
+        "Model ID": "sentence-transformers/msmarco-distilbert-base-tas-b",
+        "Model Version": "1.0.2",
+        "Model Format": "TORCH_SCRIPT",
+        "Embedding Dimension": "N/A",
+        "Pooling Mode": "N/A",
+        "Workflow Run ID": "6042401385"
+    }
+]
