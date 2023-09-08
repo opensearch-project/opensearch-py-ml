@@ -18,6 +18,9 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Rename model/model-listing workflows by @thanawan-atc ([#260](https://github.com/opensearch-project/opensearch-py-ml/pull/260))
 - Update pretrained_models_all_versions.json (2023-08-30 14:07:38) by @dhrubo-os ([#264](https://github.com/opensearch-project/opensearch-py-ml/pull/264))
 - Update model upload history -  sentence-transformers/msmarco-distilbert-base-tas-b (v.1.0.2)(BOTH) by @dhrubo-os ([#272](https://github.com/opensearch-project/opensearch-py-ml/pull/272))
+- Enable model listing workflow to exclude old 1.0.0 models from the generated model listing by @thanawan-atc ([#265](https://github.com/opensearch-project/opensearch-py-ml/pull/265))
+- Have model upload workflow require approval from two code maintainers by @thanawan-atc ([#273](https://github.com/opensearch-project/opensearch-py-ml/pull/273))
+- Update pretrained_models_all_versions.json (2023-09-08 13:14:07) by @dhrubo-os ([#277](https://github.com/opensearch-project/opensearch-py-ml/pull/277))
 
 ### Fixed
 - Enable make_model_config_json to add model description to model config file by @thanawan-atc in ([#203](https://github.com/opensearch-project/opensearch-py-ml/pull/203))
