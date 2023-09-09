@@ -1,4 +1,4 @@
-name: Model Auto-tracing & Uploading
+name: "Model Upload Workflow: Tracing-Uploading-Releasing"
 on:
   # Step 1: Initiate the workflow
   workflow_dispatch:
