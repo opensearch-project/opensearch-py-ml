@@ -18,5 +18,15 @@
         "Embedding Dimension": "N/A",
         "Pooling Mode": "N/A",
         "Workflow Run ID": "6042401385"
+    },
+    {
+        "Model Uploader": "@dhrubo-os",
+        "Upload Time": "2023-09-13 18:03:32",
+        "Model ID": "sentence-transformers/distiluse-base-multilingual-cased-v1",
+        "Model Version": "1.0.1",
+        "Model Format": "TORCH_SCRIPT",
+        "Embedding Dimension": "N/A",
+        "Pooling Mode": "N/A",
+        "Workflow Run ID": "6178024517"
     }
 ]
