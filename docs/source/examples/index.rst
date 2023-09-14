@@ -20,6 +20,7 @@ Demo notebooks for Model Training and Tracing
 
    demo_transformer_model_train_save_upload_to_openSearch
    demo_tracing_model_torchscript_onnx
+   demo_deploy_cliptextmodel
 
 Demo notebooks for ML Commons plugin integration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
