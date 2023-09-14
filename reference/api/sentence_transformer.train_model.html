@@ -103,6 +103,38 @@
              
   <section id="sentencetransformermodel-train-model">
 <h1>SentenceTransformerModel.train_model<a class="headerlink" href="#sentencetransformermodel-train-model" title="Link to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="opensearch_py_ml.ml_models.SentenceTransformerModel.train_model">
+<span class="sig-prename descclassname"><span class="pre">opensearch_py_ml.ml_models.SentenceTransformerModel.</span></span><span class="sig-name descname"><span class="pre">train_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_examples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">learning_rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_epochs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_gpu</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">percentile</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">95</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#opensearch_py_ml.ml_models.SentenceTransformerModel.train_model" title="Link to this definition"></a></dt>
+<dd><p>Description:
+Takes in training data and a sentence transformer url to train a custom semantic search model</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>train_examples</strong> (<em>List</em><em> of </em><em>strings in another list</em>) – required, input for the sentence transformer model training</p></li>
+<li><p><strong>model_id</strong> (<em>string</em>) – [optional] the url to download sentence transformer model, if None,
+default as ‘sentence-transformers/msmarco-distilbert-base-tas-b’</p></li>
+<li><p><strong>output_model_name</strong> (<em>string</em>) – optional,the name of the trained custom model. If None, default as model_id + ‘.pt’</p></li>
+<li><p><strong>learning_rate</strong> (<em>float</em>) – optional, learning rate to train model, default is 2e-5</p></li>
+<li><p><strong>num_epochs</strong> (<em>int</em>) – optional, number of epochs to train model, default is 10</p></li>
+<li><p><strong>batch_size</strong> (<em>int</em>) – optional, batch size for training, default is 32</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em>) – optional, use plotting to plot the training progress and printing more logs. Default as false</p></li>
+<li><p><strong>num_gpu</strong> (<em>int</em>) – Number of gpu will be used for training. Default 0</p></li>
+<li><p><strong>percentile</strong> (<em>float</em>) – To save memory while training we truncate all passages beyond a certain max_length.
+Most middle-sized transformers have a max length limit of 512 tokens. However, certain corpora can
+have shorter documents. We find the word length of all documents, sort them in increasing order and
+take the max length of {percentile}% of the documents. Default is 95%</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>the torch script format trained model.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>.pt file</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
 

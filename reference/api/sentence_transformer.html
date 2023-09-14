@@ -99,6 +99,34 @@
              
   <section id="sentence-transformer">
 <h1>Sentence Transformer<a class="headerlink" href="#sentence-transformer" title="Link to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="opensearch_py_ml.ml_models.SentenceTransformerModel.__init__">
+<span class="sig-prename descclassname"><span class="pre">opensearch_py_ml.ml_models.SentenceTransformerModel.</span></span><span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'sentence-transformers/msmarco-distilbert-base-tas-b'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">folder_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#opensearch_py_ml.ml_models.SentenceTransformerModel.__init__" title="Link to this definition"></a></dt>
+<dd><p>Description: Initiate a sentence transformer model class object. The model id will be used to download
+pretrained model from the hugging-face and served as the default name for model files, and the folder_path
+will be the default location to store files generated in the following functions</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_id</strong> (<em>string</em>) – Optional, the huggingface mode id to download sentence transformer model,
+default model id: ‘sentence-transformers/msmarco-distilbert-base-tas-b’</p></li>
+<li><p><strong>folder_path</strong> (<em>string</em>) – Optional, the path of the folder to save output files, such as queries, pre-trained model,
+after-trained custom model and configuration files. if None, default as “/model_files/” under the current
+work directory</p></li>
+<li><p><strong>overwrite</strong> (<em>bool</em>) – Optional,  choose to overwrite the folder at folder path. Default as false. When training
+different sentence transformer models, it’s recommended to give designated folder path every time.
+Users can choose to overwrite = True to overwrite previous runs</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>no return value expected</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
 
