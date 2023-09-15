@@ -32,6 +32,10 @@ from tqdm import tqdm
 from transformers import TrainingArguments, get_linear_schedule_with_warmup
 from transformers.convert_graph_to_onnx import convert
 
+from opensearch_py_ml.ml_commons.ml_common_utils import (
+    _generate_model_content_hash_value,
+)
+
 
 class SentenceTransformerModel:
     """
@@ -86,6 +90,8 @@ class SentenceTransformerModel:
             )
 
         self.model_id = model_id
+        self.torch_script_zip_file_path = None
+        self.onnx_zip_file_path = None
 
     def train(
         self,
@@ -701,6 +707,7 @@ class SentenceTransformerModel:
                 tokenizer_json_path,
                 zip_file_name_without_extension + "/" + "tokenizer.json",
             )
+
         print("zip file is saved to " + zip_file_path + "\n")
 
     def _fill_null_truncation_field(
@@ -836,6 +843,7 @@ class SentenceTransformerModel:
                 os.path.join(save_json_folder_path, "tokenizer.json"),
                 arcname="tokenizer.json",
             )
+        self.torch_script_zip_file_path = zip_file_path
         print("zip file is saved to ", zip_file_path, "\n")
         return zip_file_path
 
@@ -926,6 +934,8 @@ class SentenceTransformerModel:
                 os.path.join(save_json_folder_path, "tokenizer.json"),
                 arcname="tokenizer.json",
             )
+
+        self.onnx_zip_file_path = zip_file_path
         print("zip file is saved to ", zip_file_path, "\n")
         return zip_file_path
 
@@ -1099,6 +1109,7 @@ class SentenceTransformerModel:
         model_name: str = None,
         version_number: str = 1,
         model_format: str = "TORCH_SCRIPT",
+        model_zip_file_path: str = None,
         embedding_dimension: int = None,
         pooling_mode: str = None,
         normalize_result: bool = None,
@@ -1238,6 +1249,24 @@ class SentenceTransformerModel:
                 "all_config": json.dumps(all_config),
             },
         }
+
+        if model_zip_file_path is None:
+            model_zip_file_path = (
+                self.torch_script_zip_file_path
+                if model_format == "TORCH_SCRIPT"
+                else self.onnx_zip_file_path
+            )
+            if model_zip_file_path is None:
+                print(
+                    "Set model_zip_file_path parameter to add the field 'model_content_size_in_bytes' and 'model_content_hash_value' to model config json file."
+                )
+            else:
+                model_config_content["model_content_size_in_bytes"] = os.stat(
+                    model_zip_file_path
+                ).st_size
+                model_config_content[
+                    "model_content_hash_value"
+                ] = _generate_model_content_hash_value(model_zip_file_path)
 
         if verbose:
             print("generating ml-commons_model_config.json file...\n")

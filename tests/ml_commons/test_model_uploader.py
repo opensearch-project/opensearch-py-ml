@@ -8,6 +8,9 @@
 import pytest
 from opensearchpy.client import OpenSearch
 
+from opensearch_py_ml.ml_commons.ml_common_utils import (
+    _generate_model_content_hash_value,
+)
 from opensearch_py_ml.ml_commons.model_uploader import ModelUploader
 from tests import FLIGHTS_SMALL_FILE_NAME
 
@@ -88,8 +91,8 @@ def test_check_mandatory_field():
         model_uploader._check_mandatory_field(model_meta)
 
 
-def test_generate_hash():
+def test_generate_model_content_hash_value():
     assert (
         "18521f420cf85149025b75df329689c416be0ce3fc78b2afdfdf177654b77b34"
-        == model_uploader._generate_hash(FLIGHTS_SMALL_FILE_NAME)
+        == _generate_model_content_hash_value(FLIGHTS_SMALL_FILE_NAME)
     )

@@ -5,6 +5,8 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
+import hashlib
+
 ML_BASE_URI = "/_plugins/_ml"
 MODEL_CHUNK_MAX_SIZE = 10_000_000
 MODEL_MAX_SIZE = 4_000_000_000
@@ -22,3 +24,31 @@ EMBEDDING_DIMENSION = "embedding_dimension"
 FRAMEWORK_TYPE = "framework_type"
 MODEL_CONTENT_HASH_VALUE = "model_content_hash_value"
 MODEL_GROUP_ID = "model_group_id"
+
+
+def _generate_model_content_hash_value(self, model_file_path: str) -> str:
+    """
+    Generate sha1 hash value for the model zip file.
+
+    Parameters
+    ----------
+    :param model_file_path: file path of the model file
+    :type model_file_path: string
+
+
+    Returns
+    -------
+    :return: sha256 hash
+    :rtype: string
+
+    """
+
+    sha256 = hashlib.sha256()
+    with open(model_file_path, "rb") as file:
+        while True:
+            chunk = file.read(BUF_SIZE)
+            if not chunk:
+                break
+            sha256.update(chunk)
+    sha256_value = sha256.hexdigest()
+    return sha256_value

@@ -5,7 +5,6 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
-import hashlib
 import json
 import os
 from math import ceil
@@ -14,7 +13,6 @@ from typing import Any, Iterable, Union
 from opensearchpy import OpenSearch
 
 from opensearch_py_ml.ml_commons.ml_common_utils import (
-    BUF_SIZE,
     EMBEDDING_DIMENSION,
     FRAMEWORK_TYPE,
     META_API_ENDPOINT,
@@ -30,6 +28,7 @@ from opensearch_py_ml.ml_commons.ml_common_utils import (
     MODEL_TYPE,
     MODEL_VERSION_FIELD,
     TOTAL_CHUNKS_FIELD,
+    _generate_model_content_hash_value,
 )
 
 
@@ -86,7 +85,7 @@ class ModelUploader:
         total_num_chunks: int = ceil(model_content_size_in_bytes / MODEL_CHUNK_MAX_SIZE)
 
         # we are generating the sha1 hash for the model zip file
-        hash_val_model_file = self._generate_hash(model_path)
+        hash_val_model_file = _generate_model_content_hash_value(model_path)
 
         if isVerbose:
             print("Total number of chunks", total_num_chunks)
@@ -189,30 +188,3 @@ class ModelUploader:
             return True
         else:
             raise ValueError("Model metadata can't be empty")
-
-    def _generate_hash(self, model_file_path: str) -> str:
-        """
-        Generate sha1 hash value for the model zip file.
-
-        Parameters
-        ----------
-        :param model_file_path: file path of the model file
-        :type model_file_path: string
-
-
-        Returns
-        -------
-        :return: sha256 hash
-        :rtype: string
-
-        """
-
-        sha256 = hashlib.sha256()
-        with open(model_file_path, "rb") as file:
-            while True:
-                chunk = file.read(BUF_SIZE)
-                if not chunk:
-                    break
-                sha256.update(chunk)
-        sha256_value = sha256.hexdigest()
-        return sha256_value
