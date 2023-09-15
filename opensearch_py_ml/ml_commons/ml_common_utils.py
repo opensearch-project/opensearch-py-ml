@@ -26,7 +26,7 @@ MODEL_CONTENT_HASH_VALUE = "model_content_hash_value"
 MODEL_GROUP_ID = "model_group_id"
 
 
-def _generate_model_content_hash_value(self, model_file_path: str) -> str:
+def _generate_model_content_hash_value(model_file_path: str) -> str:
     """
     Generate sha1 hash value for the model zip file.
 

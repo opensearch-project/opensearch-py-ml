@@ -1258,7 +1258,7 @@ class SentenceTransformerModel:
             )
             if model_zip_file_path is None:
                 print(
-                    "Set model_zip_file_path parameter to add the field 'model_content_size_in_bytes' and 'model_content_hash_value' to model config json file."
+                    "The field 'model_content_size_in_bytes' and 'model_content_hash_value' are currently missing in model config json file. You can add these by specifying model_zip_file_path parameter. Else, the model registration might fail."
                 )
             else:
                 model_config_content["model_content_size_in_bytes"] = os.stat(
