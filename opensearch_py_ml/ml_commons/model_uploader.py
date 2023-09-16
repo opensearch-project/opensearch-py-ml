@@ -100,7 +100,7 @@ class ModelUploader:
             # Generate the sha1 hash for the model zip file
             hash_val_model_file = _generate_model_content_hash_value(model_path)
             model_meta_json[MODEL_CONTENT_HASH_VALUE] = hash_val_model_file
-            if verbose:
+            if isVerbose:
                 print("Sha1 value of the model file: ", hash_val_model_file)
         
         model_meta_json[MODEL_GROUP_ID] = model_group_id
