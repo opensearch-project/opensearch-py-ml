@@ -83,7 +83,7 @@ class ModelUploader:
 
         model_content_size_in_bytes = os.stat(model_path).st_size
         total_num_chunks: int = ceil(model_content_size_in_bytes / MODEL_CHUNK_MAX_SIZE)
-            
+
         if isVerbose:
             print("Total number of chunks", total_num_chunks)
 
@@ -93,16 +93,18 @@ class ModelUploader:
             model_meta_json_file
         )
         model_meta_json[TOTAL_CHUNKS_FIELD] = total_num_chunks
-        
+
         if MODEL_CONTENT_SIZE_IN_BYTES_FIELD not in model_meta_json:
-            model_meta_json[MODEL_CONTENT_SIZE_IN_BYTES_FIELD] = model_content_size_in_bytes
+            model_meta_json[
+                MODEL_CONTENT_SIZE_IN_BYTES_FIELD
+            ] = model_content_size_in_bytes
         if MODEL_CONTENT_HASH_VALUE not in model_meta_json:
             # Generate the sha1 hash for the model zip file
             hash_val_model_file = _generate_model_content_hash_value(model_path)
             model_meta_json[MODEL_CONTENT_HASH_VALUE] = hash_val_model_file
             if isVerbose:
                 print("Sha1 value of the model file: ", hash_val_model_file)
-        
+
         model_meta_json[MODEL_GROUP_ID] = model_group_id
 
         if self._check_mandatory_field(model_meta_json):
