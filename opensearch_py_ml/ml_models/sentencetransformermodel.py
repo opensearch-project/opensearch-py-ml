@@ -13,6 +13,7 @@ import random
 import re
 import shutil
 import subprocess
+import sys
 import time
 from pathlib import Path
 from typing import List
@@ -35,6 +36,14 @@ from transformers.convert_graph_to_onnx import convert
 from opensearch_py_ml.ml_commons.ml_common_utils import (
     _generate_model_content_hash_value,
 )
+
+# We need to append ROOT_DIR path so that we can import LICENSE file
+# since this python script is not in the root directory.
+THIS_DIR = os.path.dirname(__file__)
+ROOT_DIR = os.path.join(THIS_DIR, "../..")
+sys.path.append(ROOT_DIR)
+
+APACHE_LICENSE_PATH = "LICENSE"
 
 
 class SentenceTransformerModel:
@@ -644,6 +653,7 @@ class SentenceTransformerModel:
         model_path: str = None,
         model_name: str = None,
         zip_file_name: str = None,
+        license_to_be_zipped: str = None,
         verbose: bool = False,
     ) -> None:
         """
@@ -660,6 +670,10 @@ class SentenceTransformerModel:
         :param zip_file_name: str =None
             Optional, file name for zip file. if None, default as concatenate model_id and '.zip'
         :type zip_file_name: string
+        :param license_to_be_zipped:
+            Optional, license to be zipped. e.g, "apache-2.0". If None, the model zip file will not include
+            license file (Currently support only "apache-2.0")
+        :type license_to_be_zipped: string
         :param verbose:
             optional, use to print more logs. Default as false
         :type verbose: bool
@@ -707,6 +721,8 @@ class SentenceTransformerModel:
                 tokenizer_json_path,
                 zip_file_name_without_extension + "/" + "tokenizer.json",
             )
+            if license_to_be_zipped == "apache-2.0":
+                zipObj.write(APACHE_LICENSE_PATH, arcname="LICENSE")
 
         print("zip file is saved to " + zip_file_path + "\n")
 
@@ -749,6 +765,7 @@ class SentenceTransformerModel:
         save_json_folder_path: str = None,
         model_output_path: str = None,
         zip_file_name: str = None,
+        license_to_be_zipped: str = None,
     ) -> str:
         """
         download sentence transformer model directly from huggingface, convert model to torch script format,
@@ -777,6 +794,10 @@ class SentenceTransformerModel:
             Optional, file name for zip file. e.g, "sample_model.zip". If None, default takes the model_id
             and add the extension with ".zip"
         :type zip_file_name: string
+        :param license_to_be_zipped:
+            Optional, license to be zipped. e.g, "apache-2.0". If None, the model zip file will not include
+            license file (Currently support only "apache-2.0")
+        :type license_to_be_zipped: string
         :return: model zip file path. The file path where the zip file is being saved
         :rtype: string
         """
@@ -833,7 +854,7 @@ class SentenceTransformerModel:
         torch.jit.save(compiled_model, model_path)
         print("model file is saved to ", model_path)
 
-        # zip model file along with tokenizer.json as output
+        # zip model file along with tokenizer.json (and license file) as output
         with ZipFile(str(zip_file_path), "w") as zipObj:
             zipObj.write(
                 model_path,
@@ -843,6 +864,9 @@ class SentenceTransformerModel:
                 os.path.join(save_json_folder_path, "tokenizer.json"),
                 arcname="tokenizer.json",
             )
+            if license_to_be_zipped == "apache-2.0":
+                zipObj.write(APACHE_LICENSE_PATH, arcname="LICENSE")
+
         self.torch_script_zip_file_path = zip_file_path
         print("zip file is saved to ", zip_file_path, "\n")
         return zip_file_path
@@ -854,6 +878,7 @@ class SentenceTransformerModel:
         save_json_folder_path: str = None,
         model_output_path: str = None,
         zip_file_name: str = None,
+        license_to_be_zipped: str = None,
     ) -> str:
         """
         download sentence transformer model directly from huggingface, convert model to onnx format,
@@ -879,6 +904,10 @@ class SentenceTransformerModel:
             Optional, file name for zip file. e.g, "sample_model.zip". If None, default takes the model_id
             and add the extension with ".zip"
         :type zip_file_name: string
+        :param license_to_be_zipped:
+            Optional, license to be zipped. e.g, "apache-2.0". If None, the model zip file will not include
+            license file (Currently support only "apache-2.0")
+        :type license_to_be_zipped: string
         :return: model zip file path. The file path where the zip file is being saved
         :rtype: string
         """
@@ -924,7 +953,7 @@ class SentenceTransformerModel:
 
         print("model file is saved to ", model_path)
 
-        # zip model file along with tokenizer.json as output
+        # zip model file along with tokenizer.json (and license file) as output
         with ZipFile(str(zip_file_path), "w") as zipObj:
             zipObj.write(
                 model_path,
@@ -934,6 +963,8 @@ class SentenceTransformerModel:
                 os.path.join(save_json_folder_path, "tokenizer.json"),
                 arcname="tokenizer.json",
             )
+            if license_to_be_zipped == "apache-2.0":
+                zipObj.write(APACHE_LICENSE_PATH, arcname="LICENSE")
 
         self.onnx_zip_file_path = zip_file_path
         print("zip file is saved to ", zip_file_path, "\n")
@@ -1270,14 +1301,14 @@ class SentenceTransformerModel:
 
         if verbose:
             print("generating ml-commons_model_config.json file...\n")
-            print(model_config_content)
+            print(json.dumps(model_config_content, indent=4))
 
         model_config_file_path = os.path.join(
             folder_path, "ml-commons_model_config.json"
         )
         os.makedirs(os.path.dirname(model_config_file_path), exist_ok=True)
         with open(model_config_file_path, "w") as file:
-            json.dump(model_config_content, file)
+            json.dump(model_config_content, file, indent=4)
         print(
             "ml-commons_model_config.json file is saved at : ", model_config_file_path
         )

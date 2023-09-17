@@ -8,6 +8,7 @@
 import json
 import os
 import shutil
+from zipfile import ZipFile
 
 import pytest
 
@@ -224,6 +225,14 @@ def test_make_model_config_json_for_torch_script():
             and not v
         )
 
+    assert (
+        "model_content_size_in_bytes" in model_config_data_torch
+    ), "Missing 'model_content_size_in_bytes' in torch script model config file"
+
+    assert (
+        "model_content_hash_value" in model_config_data_torch
+    ), "Missing 'model_content_hash_value' in torch script model config file"
+
     clean_test_folder(TEST_FOLDER)
 
 
@@ -277,6 +286,14 @@ def test_make_model_config_json_for_onnx():
             and not v
         )
 
+    assert (
+        "model_content_size_in_bytes" in model_config_data_onnx
+    ), "Missing 'model_content_size_in_bytes' in onnx model config file"
+
+    assert (
+        "model_content_hash_value" in model_config_data_onnx
+    ), "Missing 'model_content_hash_value' in onnx model config file"
+
     clean_test_folder(TEST_FOLDER)
 
 
@@ -320,7 +337,7 @@ def test_overwrite_fields_in_model_config():
     assert (
         "model_format" in model_config_data_torch
         and model_config_data_torch["model_format"] == "TORCH_SCRIPT"
-    ), "Missing or Wrong model_format in onnx model config file"
+    ), "Missing or Wrong model_format in torch script model config file"
     assert (
         "model_config" in model_config_data_torch
     ), "Missing 'model_config' in torch script model config file"
@@ -378,6 +395,14 @@ def test_overwrite_fields_in_model_config():
             and k == "normalize_result"
             and not v
         )
+
+    assert (
+        "model_content_size_in_bytes" in model_config_data_torch
+    ), "Missing 'model_content_size_in_bytes' in torch script model config file"
+
+    assert (
+        "model_content_hash_value" in model_config_data_torch
+    ), "Missing 'model_content_hash_value' in torch script model config file"
 
     clean_test_folder(TEST_FOLDER)
 
@@ -595,6 +620,85 @@ def test_undefined_model_max_length_in_tokenizer_for_onnx():
         tokenizer_json["truncation"]["max_length"] == expected_max_length
     ), "max_length is not properly set"
 
+    clean_test_folder(TEST_FOLDER)
+
+
+def test_save_as_pt_with_license():
+    model_id = "sentence-transformers/all-MiniLM-L6-v2"
+    torch_script_zip_file_path = os.path.join(TEST_FOLDER, "all-MiniLM-L6-v2.zip")
+    torch_script_expected_filenames = {
+        "all-MiniLM-L6-v2.pt",
+        "tokenizer.json",
+        "LICENSE",
+    }
+
+    clean_test_folder(TEST_FOLDER)
+    test_model15 = SentenceTransformerModel(
+        folder_path=TEST_FOLDER,
+        model_id=model_id,
+    )
+
+    test_model15.save_as_pt(model_id=model_id, license_to_be_zipped="apache-2.0")
+    with ZipFile(torch_script_zip_file_path, "r") as f:
+        filenames = set(f.namelist())
+        assert (
+            filenames == torch_script_expected_filenames
+        ), f"The content in the torch script model zip file does not match the expected content: {filenames} != {torch_script_expected_filenames}"
+    clean_test_folder(TEST_FOLDER)
+
+
+def test_save_as_onnx_with_license():
+    model_id = "sentence-transformers/all-distilroberta-v1"
+    onnx_zip_file_path = os.path.join(TEST_FOLDER, "all-distilroberta-v1.zip")
+    onnx_expected_filenames = {"all-distilroberta-v1.onnx", "tokenizer.json", "LICENSE"}
+
+    clean_test_folder(TEST_FOLDER)
+    test_model16 = SentenceTransformerModel(
+        folder_path=TEST_FOLDER,
+        model_id=model_id,
+    )
+
+    test_model16.save_as_onnx(model_id=model_id, license_to_be_zipped="apache-2.0")
+    with ZipFile(onnx_zip_file_path, "r") as f:
+        filenames = set(f.namelist())
+        assert (
+            filenames == onnx_expected_filenames
+        ), f"The content in the onnx model zip file does not match the expected content: {filenames} != {onnx_expected_filenames}"
+    clean_test_folder(TEST_FOLDER)
+
+
+def test_zip_model_with_license():
+    model_id = "sentence-transformers/msmarco-distilbert-base-tas-b"
+    zip_file_path = os.path.join(TEST_FOLDER, "msmarco-distilbert-base-tas-b.zip")
+    expected_filenames_wo_license = {
+        "msmarco-distilbert-base-tas-b.pt",
+        "tokenizer.json",
+    }
+    expected_filenames_with_license = {
+        "msmarco-distilbert-base-tas-b.pt",
+        "tokenizer.json",
+        "LICENSE",
+    }
+
+    clean_test_folder(TEST_FOLDER)
+    test_model17 = SentenceTransformerModel(
+        folder_path=TEST_FOLDER,
+        model_id=model_id,
+    )
+
+    test_model17.save_as_pt(model_id=model_id)
+    with ZipFile(zip_file_path, "r") as f:
+        filenames = set(f.namelist())
+        assert (
+            filenames == expected_filenames_wo_license
+        ), f"The content in the model zip file does not match the expected content: {filenames} != {expected_filenames_wo_license}"
+
+    test_model17.zip_model(license_to_be_zipped="apache-2.0")
+    with ZipFile(zip_file_path, "r") as f:
+        filenames = set(f.namelist())
+        assert (
+            filenames == expected_filenames_with_license
+        ), f"The content in the model zip file does not match the expected content: {filenames} != {expected_filenames_with_license}"
     clean_test_folder(TEST_FOLDER)
 
 

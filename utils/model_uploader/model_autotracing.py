@@ -16,7 +16,6 @@ import shutil
 import sys
 import warnings
 from typing import List, Optional, Tuple
-from zipfile import ZipFile
 
 import numpy as np
 from mdutils.fileutils import MarkDownFile
@@ -30,7 +29,6 @@ THIS_DIR = os.path.dirname(__file__)
 ROOT_DIR = os.path.join(THIS_DIR, "../..")
 sys.path.append(ROOT_DIR)
 
-LICENSE_PATH = "LICENSE"
 from opensearch_py_ml.ml_commons import MLCommonClient
 from opensearch_py_ml.ml_models.sentencetransformermodel import SentenceTransformerModel
 from tests import OPENSEARCH_TEST_CLIENT
@@ -142,22 +140,29 @@ def trace_sentence_transformer_model(
         assert False, f"Raised Exception during saving model as {model_format}: {e}"
 
     # 3.) Create a model config json file
+    model_config_path = None
     try:
-        pre_trained_model.make_model_config_json(
-            version_number=model_version,
-            model_format=model_format,
-            embedding_dimension=embedding_dimension,
-            pooling_mode=pooling_mode,
-            description=model_description,
+        model_config_path = pre_trained_model.make_model_config_json(
+                version_number=model_version,
+                model_format=model_format,
+                embedding_dimension=embedding_dimension,
+                pooling_mode=pooling_mode,
+                description=model_description,
         )
     except Exception as e:
         assert (
             False
         ), f"Raised Exception during making model config file for {model_format} model: {e}"
 
-    # 4.) Return model_path & model_config_path for model registration
-    model_config_path = folder_path + MODEL_CONFIG_FILE_NAME
+    
+    # 4.) Preview model config
+    print(f"\n+++++ {model_format} Model Config +++++\n")
+    with open(model_config_path, "r") as f:
+        model_config = json.load(f)
+        print(json.dumps(model_config, indent=4))
+    print(f"\n+++++++++++++++++++++++++++++++++++++++\n")
 
+    # 5.) Return model_path & model_config_path for model registration
     return model_path, model_config_path
 
 
@@ -322,8 +327,6 @@ def prepare_files_for_uploading(
             f"{model_type}_{model_name}-{model_version}-{model_format}.zip"
         )
         dst_model_path = dst_model_dir + "/" + dst_model_filename
-        with ZipFile(src_model_path, "a") as zipObj:
-            zipObj.write(filename=LICENSE_PATH, arcname="LICENSE")
         shutil.copy(src_model_path, dst_model_path)
         print(f"\nCopied {src_model_path} to {dst_model_path}")
 
