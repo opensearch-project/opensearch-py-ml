@@ -24,7 +24,6 @@ TESTDATA_UNZIP_FOLDER = os.path.join(
     os.path.dirname(os.path.abspath("__file__")), "tests", "sample_zip"
 )
 
-
 def clean_test_folder(TEST_FOLDER):
     if os.path.exists(TEST_FOLDER):
         for files in os.listdir(TEST_FOLDER):
@@ -156,7 +155,6 @@ def test_missing_files():
         test_model4.make_model_config_json()
         clean_test_folder(temp_path)
     assert "Cannot find config.json" in str(exc_info.value)
-
 
 def test_save_as_pt():
     try:
@@ -295,7 +293,6 @@ def test_make_model_config_json_for_onnx():
     ), "Missing 'model_content_hash_value' in onnx model config file"
 
     clean_test_folder(TEST_FOLDER)
-
 
 def test_overwrite_fields_in_model_config():
     model_id = "sentence-transformers/all-distilroberta-v1"
@@ -638,7 +635,7 @@ def test_save_as_pt_with_license():
         model_id=model_id,
     )
 
-    test_model15.save_as_pt(model_id=model_id, license_to_be_zipped="apache-2.0")
+    test_model15.save_as_pt(model_id=model_id, sentences=["today is sunny"], license_to_be_zipped="apache-2.0")
     with ZipFile(torch_script_zip_file_path, "r") as f:
         filenames = set(f.namelist())
         assert (
@@ -686,7 +683,7 @@ def test_zip_model_with_license():
         model_id=model_id,
     )
 
-    test_model17.save_as_pt(model_id=model_id)
+    test_model17.save_as_pt(model_id=model_id, sentences=["today is sunny"])
     with ZipFile(zip_file_path, "r") as f:
         filenames = set(f.namelist())
         assert (
@@ -700,7 +697,6 @@ def test_zip_model_with_license():
             filenames == expected_filenames_with_license
         ), f"The content in the model zip file does not match the expected content: {filenames} != {expected_filenames_with_license}"
     clean_test_folder(TEST_FOLDER)
-
 
 clean_test_folder(TEST_FOLDER)
 clean_test_folder(TESTDATA_UNZIP_FOLDER)

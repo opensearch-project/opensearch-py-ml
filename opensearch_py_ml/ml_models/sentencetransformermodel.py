@@ -13,7 +13,6 @@ import random
 import re
 import shutil
 import subprocess
-import sys
 import time
 from pathlib import Path
 from typing import List
@@ -37,13 +36,8 @@ from opensearch_py_ml.ml_commons.ml_common_utils import (
     _generate_model_content_hash_value,
 )
 
-# We need to append ROOT_DIR path so that we can import LICENSE file
-# since this python script is not in the root directory.
 THIS_DIR = os.path.dirname(__file__)
-ROOT_DIR = os.path.join(THIS_DIR, "../..")
-sys.path.append(ROOT_DIR)
-
-APACHE_LICENSE_PATH = "LICENSE"
+APACHE_LICENSE_PATH = os.path.join(THIS_DIR, "../../LICENSE")
 
 
 class SentenceTransformerModel:
@@ -658,7 +652,7 @@ class SentenceTransformerModel:
     ) -> None:
         """
         Description:
-        zip the model file and its tokenizer.json file to prepare to upload to the Open Search cluster
+        zip the model file and its tokenizer.json file to prepare to upload to the OpenSearch cluster
 
         :param model_path:
             Optional, path to find the model file, if None, default as concatenate model_id and
@@ -692,8 +686,10 @@ class SentenceTransformerModel:
             print("model path is: ", model_path)
 
         if zip_file_name is None:
-            zip_file_name = str(model_name + ".zip")
-
+            zip_file_name = str(self.model_id.split("/")[-1] + ".zip")
+            
+            
+        zip_file_path = os.path.join(self.folder_path, zip_file_name)
         zip_file_name_without_extension = zip_file_name.split(".")[0]
 
         if verbose:
@@ -701,8 +697,7 @@ class SentenceTransformerModel:
 
         tokenizer_json_path = os.path.join(self.folder_path, "tokenizer.json")
         print("tokenizer_json_path: ", tokenizer_json_path)
-
-        zip_file_path = os.path.join(self.folder_path, zip_file_name)
+        
 
         if not os.path.exists(tokenizer_json_path):
             raise Exception(
@@ -715,16 +710,17 @@ class SentenceTransformerModel:
             )
 
         # Create a ZipFile Object
-        with ZipFile(zip_file_path, "w") as zipObj:
-            zipObj.write(model_path, zip_file_name_without_extension + "/" + model_name)
+        with ZipFile(str(zip_file_path), "w") as zipObj:
+            zipObj.write(model_path, arcname=str(model_name))
             zipObj.write(
                 tokenizer_json_path,
-                zip_file_name_without_extension + "/" + "tokenizer.json",
+                arcname="tokenizer.json",
             )
             if license_to_be_zipped == "apache-2.0":
                 zipObj.write(APACHE_LICENSE_PATH, arcname="LICENSE")
 
         print("zip file is saved to " + zip_file_path + "\n")
+        
 
     def _fill_null_truncation_field(
         self,
