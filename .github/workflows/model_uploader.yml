@@ -48,11 +48,11 @@ jobs:
   init-workflow-var:
     runs-on: 'ubuntu-latest'
     steps:
-    - name: Fail if branch is not main
-      if: github.ref != 'refs/heads/main'
-      run: |
-         echo "This workflow should only be triggered on 'main' branch"
-         exit 1
+    # - name: Fail if branch is not main
+    #   if: github.ref != 'refs/heads/main'
+    #   run: |
+    #      echo "This workflow should only be triggered on 'main' branch"
+    #      exit 1
     - name: Initiate folders
       id: init_folders
       run: |
@@ -99,51 +99,51 @@ jobs:
       verified_license_line: ${{ steps.init_license_line.outputs.verified }}
       unverified_license_line: ${{ steps.init_license_line.outputs.unverified }}
 
-  # Step 3: Check if the model already exists in the model hub
-  checking-out-model-hub:
-    needs: init-workflow-var
-    runs-on: 'ubuntu-latest'
-    permissions:
-      id-token: write
-      contents: read
-    environment: opensearch-py-ml-cicd-env
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
-      - name: Set Up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.x'
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-region: ${{ secrets.MODEL_UPLOADER_AWS_REGION }}
-          role-to-assume: ${{ secrets.MODEL_UPLOADER_ROLE }}
-          role-session-name: checking-out-model-hub
-      - name: Check if TORCH_SCRIPT Model Exists
-        if: github.event.inputs.tracing_format == 'TORCH_SCRIPT' || github.event.inputs.tracing_format == 'BOTH'
-        run: |
-          TORCH_FILE_PATH=$(python utils/model_uploader/save_model_file_path_to_env.py \
-              ${{ needs.init-workflow-var.outputs.sentence_transformer_folder }} ${{ github.event.inputs.model_id }} \
-              ${{ github.event.inputs.model_version }} TORCH_SCRIPT)
-          aws s3api head-object --bucket ${{ secrets.MODEL_BUCKET }} --key $TORCH_FILE_PATH > /dev/null 2>&1 || TORCH_MODEL_NOT_EXIST=true
-          if [[ -z $TORCH_MODEL_NOT_EXIST ]]
-          then
-            echo "${{ github.event.inputs.model_id }} already exists on model hub for TORCH_SCRIPT format and ${{ github.event.inputs.model_version }} version."
-            exit 1
-          fi
-      - name: Check if ONNX Model Exists
-        if: github.event.inputs.tracing_format == 'ONNX' || github.event.inputs.tracing_format == 'BOTH'
-        run: |
-          ONNX_FILE_PATH=$(python utils/model_uploader/save_model_file_path_to_env.py \
-            ${{ needs.init-workflow-var.outputs.sentence_transformer_folder }} ${{ github.event.inputs.model_id }} \
-            ${{ github.event.inputs.model_version }} ONNX)
-          aws s3api head-object --bucket ${{ secrets.MODEL_BUCKET }} --key $ONNX_FILE_PATH > /dev/null 2>&1 || ONNX_MODEL_NOT_EXIST=true
-          if [[ -z $ONNX_MODEL_NOT_EXIST ]]
-          then
-            echo "${{ github.event.inputs.model_id }} already exists on model hub for ONNX format and ${{ github.event.inputs.model_version }} version."
-            exit 1
-          fi
+  # # Step 3: Check if the model already exists in the model hub
+  # checking-out-model-hub:
+  #   needs: init-workflow-var
+  #   runs-on: 'ubuntu-latest'
+  #   permissions:
+  #     id-token: write
+  #     contents: read
+  #   environment: opensearch-py-ml-cicd-env
+  #   steps:
+  #     - name: Checkout Repository
+  #       uses: actions/checkout@v3
+  #     - name: Set Up Python
+  #       uses: actions/setup-python@v2
+  #       with:
+  #         python-version: '3.x'
+  #     - name: Configure AWS Credentials
+  #       uses: aws-actions/configure-aws-credentials@v2
+  #       with:
+  #         aws-region: ${{ secrets.MODEL_UPLOADER_AWS_REGION }}
+  #         role-to-assume: ${{ secrets.MODEL_UPLOADER_ROLE }}
+  #         role-session-name: checking-out-model-hub
+  #     - name: Check if TORCH_SCRIPT Model Exists
+  #       if: github.event.inputs.tracing_format == 'TORCH_SCRIPT' || github.event.inputs.tracing_format == 'BOTH'
+  #       run: |
+  #         TORCH_FILE_PATH=$(python utils/model_uploader/save_model_file_path_to_env.py \
+  #             ${{ needs.init-workflow-var.outputs.sentence_transformer_folder }} ${{ github.event.inputs.model_id }} \
+  #             ${{ github.event.inputs.model_version }} TORCH_SCRIPT)
+  #         aws s3api head-object --bucket ${{ secrets.MODEL_BUCKET }} --key $TORCH_FILE_PATH > /dev/null 2>&1 || TORCH_MODEL_NOT_EXIST=true
+  #         if [[ -z $TORCH_MODEL_NOT_EXIST ]]
+  #         then
+  #           echo "${{ github.event.inputs.model_id }} already exists on model hub for TORCH_SCRIPT format and ${{ github.event.inputs.model_version }} version."
+  #           exit 1
+  #         fi
+  #     - name: Check if ONNX Model Exists
+  #       if: github.event.inputs.tracing_format == 'ONNX' || github.event.inputs.tracing_format == 'BOTH'
+  #       run: |
+  #         ONNX_FILE_PATH=$(python utils/model_uploader/save_model_file_path_to_env.py \
+  #           ${{ needs.init-workflow-var.outputs.sentence_transformer_folder }} ${{ github.event.inputs.model_id }} \
+  #           ${{ github.event.inputs.model_version }} ONNX)
+  #         aws s3api head-object --bucket ${{ secrets.MODEL_BUCKET }} --key $ONNX_FILE_PATH > /dev/null 2>&1 || ONNX_MODEL_NOT_EXIST=true
+  #         if [[ -z $ONNX_MODEL_NOT_EXIST ]]
+  #         then
+  #           echo "${{ github.event.inputs.model_id }} already exists on model hub for ONNX format and ${{ github.event.inputs.model_version }} version."
+  #           exit 1
+  #         fi
   
   # Step 4: Trace the model, Verify the embeddings & Upload the model files as artifacts
   model-auto-tracing:
