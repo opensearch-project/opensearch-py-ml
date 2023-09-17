@@ -132,10 +132,14 @@ def trace_sentence_transformer_model(
     try:
         if model_format == TORCH_SCRIPT_FORMAT:
             model_path = pre_trained_model.save_as_pt(
-                model_id=model_id, sentences=TEST_SENTENCES
+                model_id=model_id,
+                sentences=TEST_SENTENCES,
+                license_to_be_zipped="apache-2.0",
             )
         else:
-            model_path = pre_trained_model.save_as_onnx(model_id=model_id)
+            model_path = pre_trained_model.save_as_onnx(
+                model_id=model_id, license_to_be_zipped="apache-2.0"
+            )
     except Exception as e:
         assert False, f"Raised Exception during saving model as {model_format}: {e}"
 
