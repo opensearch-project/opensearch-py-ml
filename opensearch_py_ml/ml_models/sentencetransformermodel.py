@@ -36,8 +36,7 @@ from opensearch_py_ml.ml_commons.ml_common_utils import (
     _generate_model_content_hash_value,
 )
 
-THIS_DIR = os.path.dirname(__file__)
-APACHE_LICENSE_PATH = os.path.join(THIS_DIR, "../../LICENSE")
+APACHE_LICENSE_PATH = os.path.join(os.path.dirname(__file__), "LICENSE")
 
 
 class SentenceTransformerModel:
@@ -857,6 +856,7 @@ class SentenceTransformerModel:
                 os.path.join(save_json_folder_path, "tokenizer.json"),
                 arcname="tokenizer.json",
             )
+            print(APACHE_LICENSE_PATH)
             if license_to_be_zipped == "apache-2.0":
                 zipObj.write(APACHE_LICENSE_PATH, arcname="LICENSE")
 

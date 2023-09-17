@@ -75,10 +75,10 @@ def verify_license_in_md_file() -> bool:
         return False
     metadata_info = readme_data[start + 3 : end]
     if "apache-2.0" in metadata_info.lower():
-        print("\nFound apache-2.0 license at " + TEMP_MODEL_PATH + "README.md")
+        print("\nFound apache-2.0 license at " + TEMP_MODEL_PATH + "/README.md")
         return True
     else:
-        print("\nDid not find apache-2.0 license at " + TEMP_MODEL_PATH + "README.md")
+        print("\nDid not find apache-2.0 license at " + TEMP_MODEL_PATH + "/README.md")
         return False
 
 

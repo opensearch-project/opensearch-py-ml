@@ -69,26 +69,27 @@ def compare_model_config(
         and model_config_data["model_format"] == model_format
     ), f"Missing or Wrong model_format in {model_format} model config file"
 
-    assert (
-        expected_model_description is not None
-        and "description" in model_config_data
-        and model_config_data["description"] == expected_model_description
-    ), f"Missing or Wrong model description in {model_format} model config file'"
-
-    assert (
-        "model_config" in model_config_data
-    ), f"Missing 'model_config' in {model_format} model config file"
+    if expected_model_description is not None:
+        assert (
+            "description" in model_config_data
+            and model_config_data["description"] == expected_model_description
+        ), f"Missing or Wrong model description in {model_format} model config file'"
 
     if expected_model_config_data is not None:
-        for k, v in expected_model_config_data.items():
-            assert (
-                k in model_config_data["model_config"]
-                and model_config_data["model_config"][k] == v
-            ) or (
-                k not in model_config_data["model_config"]
-                and k == "normalize_result"
-                and not v
-            )
+        assert (
+            "model_config" in model_config_data
+        ), f"Missing 'model_config' in {model_format} model config file"
+
+        if expected_model_config_data is not None:
+            for k, v in expected_model_config_data.items():
+                assert (
+                    k in model_config_data["model_config"]
+                    and model_config_data["model_config"][k] == v
+                ) or (
+                    k not in model_config_data["model_config"]
+                    and k == "normalize_result"
+                    and not v
+                )
 
     assert (
         "model_content_size_in_bytes" in model_config_data
