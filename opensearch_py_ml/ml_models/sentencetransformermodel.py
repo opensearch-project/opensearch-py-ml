@@ -687,8 +687,7 @@ class SentenceTransformerModel:
 
         if zip_file_name is None:
             zip_file_name = str(self.model_id.split("/")[-1] + ".zip")
-            
-            
+
         zip_file_path = os.path.join(self.folder_path, zip_file_name)
         zip_file_name_without_extension = zip_file_name.split(".")[0]
 
@@ -697,7 +696,6 @@ class SentenceTransformerModel:
 
         tokenizer_json_path = os.path.join(self.folder_path, "tokenizer.json")
         print("tokenizer_json_path: ", tokenizer_json_path)
-        
 
         if not os.path.exists(tokenizer_json_path):
             raise Exception(
@@ -720,7 +718,6 @@ class SentenceTransformerModel:
                 zipObj.write(APACHE_LICENSE_PATH, arcname="LICENSE")
 
         print("zip file is saved to " + zip_file_path + "\n")
-        
 
     def _fill_null_truncation_field(
         self,

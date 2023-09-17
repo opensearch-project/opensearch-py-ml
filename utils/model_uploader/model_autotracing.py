@@ -143,24 +143,23 @@ def trace_sentence_transformer_model(
     model_config_path = None
     try:
         model_config_path = pre_trained_model.make_model_config_json(
-                version_number=model_version,
-                model_format=model_format,
-                embedding_dimension=embedding_dimension,
-                pooling_mode=pooling_mode,
-                description=model_description,
+            version_number=model_version,
+            model_format=model_format,
+            embedding_dimension=embedding_dimension,
+            pooling_mode=pooling_mode,
+            description=model_description,
         )
     except Exception as e:
         assert (
             False
         ), f"Raised Exception during making model config file for {model_format} model: {e}"
 
-    
     # 4.) Preview model config
     print(f"\n+++++ {model_format} Model Config +++++\n")
     with open(model_config_path, "r") as f:
         model_config = json.load(f)
         print(json.dumps(model_config, indent=4))
-    print(f"\n+++++++++++++++++++++++++++++++++++++++\n")
+    print("\n+++++++++++++++++++++++++++++++++++++++\n")
 
     # 5.) Return model_path & model_config_path for model registration
     return model_path, model_config_path
