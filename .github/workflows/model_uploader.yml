@@ -147,7 +147,7 @@ jobs:
   
   # Step 4: Trace the model, Verify the embeddings & Upload the model files as artifacts
   model-auto-tracing:
-    needs: [init-workflow-var, checking-out-model-hub]
+    needs: [init-workflow-var] #, checking-out-model-hub]
     name: model-auto-tracing
     runs-on: ubuntu-latest
     permissions:
