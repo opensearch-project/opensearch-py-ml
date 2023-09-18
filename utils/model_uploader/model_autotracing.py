@@ -224,7 +224,7 @@ def register_and_deploy_sentence_transformer_model(
     # 3.) Generate embeddings
     try:
         embedding_output = ml_client.generate_embedding(model_id, TEST_SENTENCES)
-        assert len(embedding_output.get("inference_results")) == 2
+        assert len(embedding_output.get("inference_results")) == len(TEST_SENTENCES)
         embedding_data = [
             embedding_output["inference_results"][i]["output"][0]["data"]
             for i in range(len(TEST_SENTENCES))
