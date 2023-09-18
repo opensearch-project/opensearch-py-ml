@@ -654,7 +654,7 @@ class SentenceTransformerModel:
         r = requests.get(LICENSE_URL)
         assert r.status_code == 200, "Failed to add license file to the model zip file"
 
-        with ZipFile(str(model_zip_file_path), "w") as zipObj:
+        with ZipFile(str(model_zip_file_path), "a") as zipObj:
             zipObj.writestr("LICENSE", r.content)
 
     def zip_model(
