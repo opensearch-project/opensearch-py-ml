@@ -47,8 +47,9 @@ on:
         required: true
         type: choice
         options:
-        - "YES"
         - "NO"
+        - "YES"
+        
 
 jobs:
   # Step 2: Initiate workflow variable
@@ -157,6 +158,7 @@ jobs:
   # Step 4: Trace the model, Verify the embeddings & Upload the model files as artifacts
   model-auto-tracing:
     needs: [init-workflow-var, checking-out-model-hub]
+    if:  always() && needs.init-workflow-var.result == 'success' && (needs.checking-out-model-hub.result == 'success' || needs.checking-out-model-hub.result == 'skipped')
     name: model-auto-tracing
     runs-on: ubuntu-latest
     permissions:
