@@ -600,7 +600,7 @@ def test_save_as_pt_with_license():
     test_model15.save_as_pt(
         model_id=model_id,
         sentences=["today is sunny"],
-        license_to_be_zipped="apache-2.0",
+        add_apache_license=True,
     )
 
     compare_model_zip_file(
@@ -622,7 +622,7 @@ def test_save_as_onnx_with_license():
         model_id=model_id,
     )
 
-    test_model16.save_as_onnx(model_id=model_id, license_to_be_zipped="apache-2.0")
+    test_model16.save_as_onnx(model_id=model_id, add_apache_license=True)
 
     compare_model_zip_file(onnx_zip_file_path, onnx_expected_filenames, model_format)
 
@@ -652,7 +652,7 @@ def test_zip_model_with_license():
     test_model17.save_as_pt(model_id=model_id, sentences=["today is sunny"])
     compare_model_zip_file(zip_file_path, expected_filenames_wo_license, model_format)
 
-    test_model17.zip_model(license_to_be_zipped="apache-2.0")
+    test_model17.zip_model(add_apache_license=True)
     compare_model_zip_file(zip_file_path, expected_filenames_with_license, model_format)
 
     clean_test_folder(TEST_FOLDER)

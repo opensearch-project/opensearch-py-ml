@@ -21,6 +21,7 @@ from zipfile import ZipFile
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import requests
 import torch
 import yaml
 from accelerate import Accelerator, notebook_launcher
@@ -36,7 +37,7 @@ from opensearch_py_ml.ml_commons.ml_common_utils import (
     _generate_model_content_hash_value,
 )
 
-APACHE_LICENSE_PATH = os.path.join(os.path.dirname(__file__), "LICENSE")
+LICENSE_URL = "https://github.com/opensearch-project/opensearch-py-ml/blob/main/LICENSE"
 
 
 class SentenceTransformerModel:
@@ -54,7 +55,7 @@ class SentenceTransformerModel:
         overwrite: bool = False,
     ) -> None:
         """
-        Description: Initiate a sentence transformer model class object. The model id will be used to download
+        Initiate a sentence transformer model class object. The model id will be used to download
         pretrained model from the hugging-face and served as the default name for model files, and the folder_path
         will be the default location to store files generated in the following functions
 
@@ -380,7 +381,6 @@ class SentenceTransformerModel:
         percentile: float = 95,
     ):
         """
-        Description:
         Takes in training data and a sentence transformer url to train a custom semantic search model
 
         :param train_examples:
@@ -641,17 +641,32 @@ class SentenceTransformerModel:
         print("Model saved to path: " + self.folder_path + "\n")
         return traced_cpu
 
+    def _add_apache_license_to_model_zip_file(self, model_zip_file_path: str):
+        """
+        Add Apache-2.0 license file to the model zip file at model_zip_file_path
+
+        :param model_zip_file_path:
+            Path to the model zip file
+        :type model_zip_file_path: string
+        :return: no return value expected
+        :rtype: None
+        """
+        r = requests.get(LICENSE_URL)
+        assert r.status_code == 200, "Failed to add license file to the model zip file"
+
+        with ZipFile(str(model_zip_file_path), "w") as zipObj:
+            zipObj.writestr("LICENSE", r.content)
+
     def zip_model(
         self,
         model_path: str = None,
         model_name: str = None,
         zip_file_name: str = None,
-        license_to_be_zipped: str = None,
+        add_apache_license: bool = False,
         verbose: bool = False,
     ) -> None:
         """
-        Description:
-        zip the model file and its tokenizer.json file to prepare to upload to the OpenSearch cluster
+        Zip the model file and its tokenizer.json file to prepare to upload to the OpenSearch cluster
 
         :param model_path:
             Optional, path to find the model file, if None, default as concatenate model_id and
@@ -663,10 +678,9 @@ class SentenceTransformerModel:
         :param zip_file_name: str =None
             Optional, file name for zip file. if None, default as concatenate model_id and '.zip'
         :type zip_file_name: string
-        :param license_to_be_zipped:
-            Optional, license to be zipped. e.g, "apache-2.0". If None, the model zip file will not include
-            license file (Currently support only "apache-2.0")
-        :type license_to_be_zipped: string
+        :param add_apache_license:
+            Optional, whether to add a Apache-2.0 license file to model zip file
+        :type add_apache_license: string
         :param verbose:
             optional, use to print more logs. Default as false
         :type verbose: bool
@@ -713,8 +727,8 @@ class SentenceTransformerModel:
                 tokenizer_json_path,
                 arcname="tokenizer.json",
             )
-            if license_to_be_zipped == "apache-2.0":
-                zipObj.write(APACHE_LICENSE_PATH, arcname="LICENSE")
+        if add_apache_license:
+            self._add_apache_license_to_model_zip_file(zip_file_path)
 
         print("zip file is saved to " + zip_file_path + "\n")
 
@@ -724,7 +738,6 @@ class SentenceTransformerModel:
         max_length: int,
     ) -> None:
         """
-        Description:
         Fill truncation field in tokenizer.json when it is null
 
         :param save_json_folder_path:
@@ -757,10 +770,10 @@ class SentenceTransformerModel:
         save_json_folder_path: str = None,
         model_output_path: str = None,
         zip_file_name: str = None,
-        license_to_be_zipped: str = None,
+        add_apache_license: bool = False,
     ) -> str:
         """
-        download sentence transformer model directly from huggingface, convert model to torch script format,
+        Download sentence transformer model directly from huggingface, convert model to torch script format,
         zip the model file and its tokenizer.json file to prepare to upload to the Open Search cluster
 
         :param sentences:
@@ -786,10 +799,9 @@ class SentenceTransformerModel:
             Optional, file name for zip file. e.g, "sample_model.zip". If None, default takes the model_id
             and add the extension with ".zip"
         :type zip_file_name: string
-        :param license_to_be_zipped:
-            Optional, license to be zipped. e.g, "apache-2.0". If None, the model zip file will not include
-            license file (Currently support only "apache-2.0")
-        :type license_to_be_zipped: string
+        :param add_apache_license:
+            Optional, whether to add a Apache-2.0 license file to model zip file
+        :type add_apache_license: string
         :return: model zip file path. The file path where the zip file is being saved
         :rtype: string
         """
@@ -856,9 +868,8 @@ class SentenceTransformerModel:
                 os.path.join(save_json_folder_path, "tokenizer.json"),
                 arcname="tokenizer.json",
             )
-            print(APACHE_LICENSE_PATH)
-            if license_to_be_zipped == "apache-2.0":
-                zipObj.write(APACHE_LICENSE_PATH, arcname="LICENSE")
+        if add_apache_license:
+            self._add_apache_license_to_model_zip_file(zip_file_path)
 
         self.torch_script_zip_file_path = zip_file_path
         print("zip file is saved to ", zip_file_path, "\n")
@@ -871,10 +882,10 @@ class SentenceTransformerModel:
         save_json_folder_path: str = None,
         model_output_path: str = None,
         zip_file_name: str = None,
-        license_to_be_zipped: str = None,
+        add_apache_license: bool = False,
     ) -> str:
         """
-        download sentence transformer model directly from huggingface, convert model to onnx format,
+        Download sentence transformer model directly from huggingface, convert model to onnx format,
         zip the model file and its tokenizer.json file to prepare to upload to the Open Search cluster
 
         :param model_id:
@@ -897,10 +908,9 @@ class SentenceTransformerModel:
             Optional, file name for zip file. e.g, "sample_model.zip". If None, default takes the model_id
             and add the extension with ".zip"
         :type zip_file_name: string
-        :param license_to_be_zipped:
-            Optional, license to be zipped. e.g, "apache-2.0". If None, the model zip file will not include
-            license file (Currently support only "apache-2.0")
-        :type license_to_be_zipped: string
+        :param add_apache_license:
+            Optional, whether to add a Apache-2.0 license file to model zip file
+        :type add_apache_license: string
         :return: model zip file path. The file path where the zip file is being saved
         :rtype: string
         """
@@ -956,8 +966,8 @@ class SentenceTransformerModel:
                 os.path.join(save_json_folder_path, "tokenizer.json"),
                 arcname="tokenizer.json",
             )
-            if license_to_be_zipped == "apache-2.0":
-                zipObj.write(APACHE_LICENSE_PATH, arcname="LICENSE")
+        if add_apache_license:
+            self._add_apache_license_to_model_zip_file(zip_file_path)
 
         self.onnx_zip_file_path = zip_file_path
         print("zip file is saved to ", zip_file_path, "\n")
@@ -971,7 +981,7 @@ class SentenceTransformerModel:
         verbose: bool = False,
     ) -> None:
         """
-        get default config setting based on the number of GPU on the machine
+        Get default config setting based on the number of GPU on the machine
         if users require other configs, users can run !acclerate config for more options
 
         :param compute_environment:
@@ -1143,15 +1153,21 @@ class SentenceTransformerModel:
         verbose: bool = False,
     ) -> str:
         """
-        parse from config.json file of pre-trained hugging-face model to generate a ml-commons_model_config.json file. If all required
-        fields are given by users, use the given parameters and will skip reading the config.json
+        Parse from config.json file of pre-trained hugging-face model to generate a ml-commons_model_config.json file.
+        If all required fields are given by users, use the given parameters and will skip reading the config.json
+
         :param model_name:
             Optional, The name of the model. If None, default is model id, for example,
             'sentence-transformers/msmarco-distilbert-base-tas-b'
         :type model_name: string
         :param model_format:
-            Optional, The format of the model. Default is "TORCH_SCRIPT".
+            Optional, the format of the model. Default is "TORCH_SCRIPT".
         :type model_format: string
+        :param model_zip_file_path:
+            Optional, path to the model zip file. Default is the zip file path used in save_as_pt or save_as_onnx
+            depending on model_format. This zip file is used to compute model_content_size_in_bytes and
+            model_content_hash_value.
+        :type model_zip_file_path: string
         :param version_number:
             Optional, The version number of the model. Default is 1
         :type version_number: string
@@ -1282,7 +1298,7 @@ class SentenceTransformerModel:
             )
             if model_zip_file_path is None:
                 print(
-                    "The field 'model_content_size_in_bytes' and 'model_content_hash_value' are currently missing in model config json file. You can add these by specifying model_zip_file_path parameter. Else, the model registration might fail."
+                    "The model configuration JSON file currently lacks the 'model_content_size_in_bytes' and 'model_content_hash_value' fields. You can include these fields by specifying the 'model_zip_file_path' parameter. Failure to do so may result in the model registration process encountering issues."
                 )
             else:
                 model_config_content["model_content_size_in_bytes"] = os.stat(

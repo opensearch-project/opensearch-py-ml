@@ -47,7 +47,8 @@ LICENSE_VAR_FILE = "apache_verified.txt"
 DESCRIPTION_VAR_FILE = "description.txt"
 TEST_SENTENCES = [
     "First test sentence",
-    "This is a very long sentence used for testing model embedding outputs.",
+    "This is another sentence used for testing model embedding outputs.",
+    "OpenSearch is a scalable, flexible, and extensible open-source software suite for search, analytics, and observability applications licensed under Apache 2.0. Powered by Apache Lucene and driven by the OpenSearch Project community, OpenSearch offers a vendor-agnostic toolset you can use to build secure, high-performance, cost-efficient applications. Use OpenSearch as an end-to-end solution or connect it with your preferred open-source tools or partner projects.",
 ]
 RTOL_TEST = 1e-03
 ATOL_TEST = 1e-05
@@ -134,11 +135,11 @@ def trace_sentence_transformer_model(
             model_path = pre_trained_model.save_as_pt(
                 model_id=model_id,
                 sentences=TEST_SENTENCES,
-                license_to_be_zipped="apache-2.0",
+                add_apache_license=True,
             )
         else:
             model_path = pre_trained_model.save_as_onnx(
-                model_id=model_id, license_to_be_zipped="apache-2.0"
+                model_id=model_id, add_apache_license=True
             )
     except Exception as e:
         assert False, f"Raised Exception during saving model as {model_format}: {e}"
