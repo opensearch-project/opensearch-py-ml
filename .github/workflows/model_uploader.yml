@@ -42,6 +42,14 @@ on:
         description: "(Optional) Description (Specify here if you want to overwrite the default model description)"
         required: false
         type: string
+      allow_overwrite:
+        description: "Allow the workflow to overwrite model in model hub"
+        required: true
+        type: choice
+        options:
+        - "NO"
+        - "YES"
+        
 
 jobs:
   # Step 2: Initiate workflow variable
@@ -71,6 +79,7 @@ jobs:
         - Workflow Name: ${{ github.workflow }}
         - Workflow Run ID: ${{ github.run_id }}
         - Workflow Initiator: @${{ github.actor }}
+        - Aloow Overwrite:  ${{ github.event.inputs.allow_overwrite }}
           
         ========= Workflow Input Information =========
         - Model ID: ${{ github.event.inputs.model_id }}
@@ -102,6 +111,7 @@ jobs:
   # Step 3: Check if the model already exists in the model hub
   checking-out-model-hub:
     needs: init-workflow-var
+    if: github.event.inputs.allow_overwrite == 'NO'
     runs-on: 'ubuntu-latest'
     permissions:
       id-token: write
@@ -148,6 +158,7 @@ jobs:
   # Step 4: Trace the model, Verify the embeddings & Upload the model files as artifacts
   model-auto-tracing:
     needs: [init-workflow-var, checking-out-model-hub]
+    if:  always() && needs.init-workflow-var.result == 'success' && (needs.checking-out-model-hub.result == 'success' || needs.checking-out-model-hub.result == 'skipped')
     name: model-auto-tracing
     runs-on: ubuntu-latest
     permissions:
