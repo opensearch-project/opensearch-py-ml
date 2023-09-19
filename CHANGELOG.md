@@ -23,6 +23,7 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Update pretrained_models_all_versions.json (2023-09-08 13:14:07) by @dhrubo-os ([#277](https://github.com/opensearch-project/opensearch-py-ml/pull/277))
 - Update model upload history -  sentence-transformers/distiluse-base-multilingual-cased-v1 (v.1.0.1)(TORCH_SCRIPT) by @dhrubo-os ([#281](https://github.com/opensearch-project/opensearch-py-ml/pull/281))
 - Update pretrained_models_all_versions.json (2023-09-14 10:28:41) by @dhrubo-os ([#282](https://github.com/opensearch-project/opensearch-py-ml/pull/282))
+- Enable the model upload workflow to add model_content_size_in_bytes & model_content_hash_value to model config automatically @thanawan-atc ([#291](https://github.com/opensearch-project/opensearch-py-ml/pull/291))
 
 ### Fixed
 - Enable make_model_config_json to add model description to model config file by @thanawan-atc in ([#203](https://github.com/opensearch-project/opensearch-py-ml/pull/203))
@@ -34,6 +35,7 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Add BUCKET_NAME to ml-models-release jenkinsfile by @thanawan-atc in ([#249](https://github.com/opensearch-project/opensearch-py-ml/pull/249))
 - Roll over pretrained_model_listing.json because of ml-commons dependency by @thanawan-atc in ([#252](https://github.com/opensearch-project/opensearch-py-ml/pull/252))
 - Fix pandas dependency issue in nox session by installing pandas package to python directly by @thanawan-atc in ([#266](https://github.com/opensearch-project/opensearch-py-ml/pull/266))
+- Fix conditional job execution issue in model upload workflow by @thanawan-atc in ([#294](https://github.com/opensearch-project/opensearch-py-ml/pull/294))
 
 ## [1.1.0]
 

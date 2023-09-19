@@ -42,6 +42,14 @@ on:
         description: "(Optional) Description (Specify here if you want to overwrite the default model description)"
         required: false
         type: string
+      allow_overwrite:
+        description: "Allow the workflow to overwrite model in model hub"
+        required: true
+        type: choice
+        options:
+        - "NO"
+        - "YES"
+        
 
 jobs:
   # Step 2: Initiate workflow variable
@@ -71,6 +79,7 @@ jobs:
         - Workflow Name: ${{ github.workflow }}
         - Workflow Run ID: ${{ github.run_id }}
         - Workflow Initiator: @${{ github.actor }}
+        - Aloow Overwrite:  ${{ github.event.inputs.allow_overwrite }}
           
         ========= Workflow Input Information =========
         - Model ID: ${{ github.event.inputs.model_id }}
@@ -121,7 +130,7 @@ jobs:
           role-to-assume: ${{ secrets.MODEL_UPLOADER_ROLE }}
           role-session-name: checking-out-model-hub
       - name: Check if TORCH_SCRIPT Model Exists
-        if: github.event.inputs.tracing_format == 'TORCH_SCRIPT' || github.event.inputs.tracing_format == 'BOTH'
+        if: github.event.inputs.allow_overwrite == 'NO' && (github.event.inputs.tracing_format == 'TORCH_SCRIPT' || github.event.inputs.tracing_format == 'BOTH')
         run: |
           TORCH_FILE_PATH=$(python utils/model_uploader/save_model_file_path_to_env.py \
               ${{ needs.init-workflow-var.outputs.sentence_transformer_folder }} ${{ github.event.inputs.model_id }} \
@@ -133,7 +142,7 @@ jobs:
             exit 1
           fi
       - name: Check if ONNX Model Exists
-        if: github.event.inputs.tracing_format == 'ONNX' || github.event.inputs.tracing_format == 'BOTH'
+        if: github.event.inputs.allow_overwrite == 'NO' && (github.event.inputs.tracing_format == 'ONNX' || github.event.inputs.tracing_format == 'BOTH')
         run: |
           ONNX_FILE_PATH=$(python utils/model_uploader/save_model_file_path_to_env.py \
             ${{ needs.init-workflow-var.outputs.sentence_transformer_folder }} ${{ github.event.inputs.model_id }} \
