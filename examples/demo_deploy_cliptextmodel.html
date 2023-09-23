@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Demo Notebook for deploying CLIPTextModel to OpenSearch &mdash; Opensearch-py-ml 1.1.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/plot_directive.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/nbsphinx-code-cells.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=fc837d61"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Demo Notebook for MLCommons Integration" href="demo_ml_commons_integration.html" />
+    <link rel="prev" title="Demo Notebook to trace Sentence Transformers model" href="demo_tracing_model_torchscript_onnx.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Opensearch-py-ml
+          </a>
+              <div class="version">
+                1.1.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">API Reference</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html#demo-notebooks-for-data-exploration-panda-like-dataframe">Demo notebooks for Data Exploration Panda like DataFrame</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#demo-notebooks-for-model-training-and-tracing">Demo notebooks for Model Training and Tracing</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="demo_transformer_model_train_save_upload_to_openSearch.html">Demo Notebook for Sentence Transformer Model Training, Saving and Uploading to OpenSearch</a></li>
+<li class="toctree-l3"><a class="reference internal" href="demo_tracing_model_torchscript_onnx.html">Demo Notebook to trace Sentence Transformers model</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Demo Notebook for deploying CLIPTextModel to OpenSearch</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Download-notebook">Download notebook</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#demo-notebooks-for-ml-commons-plugin-integration">Demo notebooks for ML Commons plugin integration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#demo-notebooks-for-in-house-python-based-models">Demo Notebooks for In-house python based models</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/pre_trained_models.html">Pre-trained models</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Opensearch-py-ml</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Examples</a></li>
+      <li class="breadcrumb-item active">Demo Notebook for deploying CLIPTextModel to OpenSearch</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/examples/demo_deploy_cliptextmodel.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Demo-Notebook-for-deploying-CLIPTextModel-to-OpenSearch">
+<h1>Demo Notebook for deploying CLIPTextModel to OpenSearch<a class="headerlink" href="#Demo-Notebook-for-deploying-CLIPTextModel-to-OpenSearch" title="Link to this heading"></a></h1>
+<section id="Download-notebook">
+<h2><a class="reference external" href="placeholder_for_url">Download notebook</a><a class="headerlink" href="#Download-notebook" title="Link to this heading"></a></h2>
+<p>Related Docs: * <a class="reference external" href="https://opensearch.org/docs/latest/ml-commons-plugin/ml-framework/">OpenSearch ML Framework</a> * <a class="reference external" href="https://huggingface.co/docs/transformers/model_doc/clip">Huggingface - CLIP</a> * <a class="reference external" href="https://huggingface.co/docs/transformers/torchscript">Huggingface - export to torchscript</a></p>
+<p>This notebook provides a walkthrough for users to trace, register, and deploy a CLIPTextModel from a local file. CLIPTextModel can be used with the <a class="reference external" href="https://opensearch.org/docs/latest/search-plugins/neural-search/">Neural Search</a> plugin to generate embeddings of documents and ingest time and of user queries at search time.</p>
+<p>Step 0: Import packages and set up client</p>
+<p>Step 1: Trace CLIPTextModel and export to TorchScript</p>
+<p>Step 2: Prep files for registration</p>
+<p>Step 3: Register model to OpenSearch</p>
+<p>Step 4: Deploy model</p>
+<section id="Step-0:-Import-packages-and-set-up-client">
+<h3>Step 0: Import packages and set up client<a class="headerlink" href="#Step-0:-Import-packages-and-set-up-client" title="Link to this heading"></a></h3>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">transformers</span> <span class="kn">import</span> <span class="n">CLIPProcessor</span><span class="p">,</span> <span class="n">CLIPTextModel</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+
+<span class="kn">import</span> <span class="nn">opensearch_py_ml</span> <span class="k">as</span> <span class="nn">oml</span>
+<span class="kn">from</span> <span class="nn">opensearch_py_ml.ml_commons</span> <span class="kn">import</span> <span class="n">MLCommonClient</span>
+<span class="kn">from</span> <span class="nn">opensearchpy</span> <span class="kn">import</span> <span class="n">OpenSearch</span>
+
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Unverified HTTPS request&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Connect to OpenSearch cluster</span>
+<span class="n">host</span> <span class="o">=</span> <span class="s1">&#39;localhost&#39;</span>
+<span class="n">port</span> <span class="o">=</span> <span class="mi">9200</span>
+<span class="n">auth</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;admin&#39;</span><span class="p">,</span> <span class="s1">&#39;admin&#39;</span><span class="p">)</span> <span class="c1"># For testing only. Don&#39;t store credentials in code.</span>
+
+<span class="k">def</span> <span class="nf">get_os_client</span><span class="p">(</span><span class="n">host</span> <span class="o">=</span> <span class="n">host</span><span class="p">,</span> <span class="n">port</span> <span class="o">=</span> <span class="n">port</span><span class="p">,</span> <span class="n">auth</span> <span class="o">=</span> <span class="n">auth</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Get OpenSearch client</span>
+<span class="sd">    :param cluster_url: cluster URL like https://ml-te-netwo-1s12ba42br23v-ff1736fa7db98ff2.elb.us-west-2.amazonaws.com:443</span>
+<span class="sd">    :return: OpenSearch client</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">OpenSearch</span><span class="p">(</span>
+        <span class="n">hosts</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;host&#39;</span><span class="p">:</span> <span class="n">host</span><span class="p">,</span> <span class="s1">&#39;port&#39;</span><span class="p">:</span> <span class="n">port</span><span class="p">}],</span>
+        <span class="n">http_compress</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="c1"># enables gzip compression for request bodies</span>
+        <span class="n">http_auth</span> <span class="o">=</span> <span class="n">auth</span><span class="p">,</span>
+        <span class="n">use_ssl</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">verify_certs</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">ssl_assert_hostname</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">ssl_show_warn</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">client</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">client</span> <span class="o">=</span> <span class="n">get_os_client</span><span class="p">()</span>
+<span class="n">ml_client</span> <span class="o">=</span> <span class="n">MLCommonClient</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Step-1:-Trace-CLIPTextModel-and-export-to-TorchScript">
+<h3>Step 1: Trace CLIPTextModel and export to TorchScript<a class="headerlink" href="#Step-1:-Trace-CLIPTextModel-and-export-to-TorchScript" title="Link to this heading"></a></h3>
+<p>To use a model in OpenSearch, you’ll need to export the model into a portable format. As of Version 2.5, OpenSearch only supports the TorchScript and ONNX formats.</p>
+<p>Exporting a model to TorchScript requires two things:</p>
+<ul class="simple">
+<li><p>model instantiation with the torchscript flag</p></li>
+<li><p>a forward pass with dummy inputs</p></li>
+</ul>
+<p>The dummy inputs are used for a model’s forward pass. While the inputs’ values are propagated through the layers, PyTorch keeps track of the different operations executed on each tensor. These recorded operations are then used to create the trace of the model.</p>
+<p>As of OpenSearch 2.6, the ML Framework supports text-embedding models only. CLIP is multi-modal, but we will use CLIPTextModel only here.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model_name</span> <span class="o">=</span> <span class="s2">&quot;openai/clip-vit-base-patch32&quot;</span> <span class="c1">#See https://huggingface.co/models for other options</span>
+<span class="n">text_to_encode</span> <span class="o">=</span> <span class="s2">&quot;example search query&quot;</span> <span class="c1">#See https://huggingface.co/docs/transformers/torchscript for more info on dummy inputs</span>
+
+<span class="c1"># Instantiate CLIPTextModel and CLIPProcessor with pretrained weights</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">CLIPTextModel</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">model_name</span><span class="p">,</span> <span class="n">torchscript</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">return_dict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">processor</span> <span class="o">=</span> <span class="n">CLIPProcessor</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">model_name</span><span class="p">)</span>
+
+<span class="c1"># Use processor to generate tensors and create dummy input</span>
+<span class="n">text_inputs</span> <span class="o">=</span><span class="n">processor</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">text_to_encode</span><span class="p">,</span> <span class="n">return_tensors</span><span class="o">=</span><span class="s2">&quot;pt&quot;</span><span class="p">,</span><span class="n">max_length</span><span class="o">=</span><span class="mi">77</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="s2">&quot;max_length&quot;</span><span class="p">,</span> <span class="n">truncation</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">dummy_input</span> <span class="o">=</span> <span class="p">[</span><span class="n">text_inputs</span><span class="p">[</span><span class="s1">&#39;input_ids&#39;</span><span class="p">],</span> <span class="n">text_inputs</span><span class="p">[</span><span class="s1">&#39;attention_mask&#39;</span><span class="p">]]</span>
+
+<span class="c1"># Trace model and convert to torchscript object</span>
+<span class="n">traced_model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">dummy_input</span><span class="p">)</span>
+
+<span class="c1"># Save model in portable format</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">traced_model</span><span class="p">,</span> <span class="s2">&quot;traced_model_example.pt&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Step-2:-Prep-files-for-registration">
+<h3>Step 2: Prep files for registration<a class="headerlink" href="#Step-2:-Prep-files-for-registration" title="Link to this heading"></a></h3>
+<p>OpenSearch requires two files zipped together for registration: * Model in TorchScript format * tokenizor.json file</p>
+<p>The tokenizor for the model used in this example can be found <a class="reference external" href="https://huggingface.co/openai/clip-vit-base-patch32/tree/main">here</a></p>
+<p>Additionally, a config.json file with the following details must be passed with the .zip. More info on <a class="reference external" href="clip-vit-base-patch32">model config</a></p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># config.json sample contents</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">{</span>
+<span class="sd">    &quot;name&quot;: &quot;clip-vit-base-patch32&quot;,</span>
+<span class="sd">    &quot;version&quot;: &#39;1.0.0&#39;,</span>
+<span class="sd">    &quot;model_format&quot;: &quot;TORCH_SCRIPT&quot;,</span>
+<span class="sd">    &quot;model_config&quot;: {</span>
+<span class="sd">        &quot;model_type&quot;: &quot;clip&quot;,</span>
+<span class="sd">        &quot;embedding_dimension&quot;: 512,</span>
+<span class="sd">        &quot;framework_type&quot;: &quot;huggingface_transformers&quot;</span>
+<span class="sd">    }</span>
+<span class="sd">}</span>
+<span class="sd">&quot;&quot;&quot;</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Step-3:-Register-model-to-OpenSearch">
+<h3>Step 3: Register model to OpenSearch<a class="headerlink" href="#Step-3:-Register-model-to-OpenSearch" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Model name in config.json should match .pt torchscript file name</p></li>
+<li><p>Record the model ID from the output of the next cell</p></li>
+</ul>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model_path</span> <span class="o">=</span> <span class="s2">&quot;&lt;your_path&gt;/traced_model_example.zip&quot;</span>
+<span class="n">model_config_path</span> <span class="o">=</span> <span class="s2">&quot;&lt;your_path&gt;/config.json&quot;</span>
+
+<span class="n">model_id_file_system</span> <span class="o">=</span> <span class="n">ml_client</span><span class="o">.</span><span class="n">register_model</span><span class="p">(</span><span class="n">model_path</span><span class="p">,</span> <span class="n">model_config_path</span><span class="p">,</span> <span class="n">isVerbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">deploy_model</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Total number of chunks 19
+Sha1 value of the model file:  62f4786ef2d546180dbbaf8fe6b5be218243c8b806e6623840b1fe9d11bcad4a
+Model meta data was created successfully. Model Id:  -uy7rooBhmcN7ynH0lgK
+uploading chunk 1 of 19
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 2 of 19
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 3 of 19
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 4 of 19
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 5 of 19
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 6 of 19
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 7 of 19
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 8 of 19
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 9 of 19
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 10 of 19
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 11 of 19
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 12 of 19
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 13 of 19
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 14 of 19
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 15 of 19
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 16 of 19
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 17 of 19
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 18 of 19
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+uploading chunk 19 of 19
+Model id: {&#39;status&#39;: &#39;Uploaded&#39;}
+Model registered successfully
+</pre></div></div>
+</div>
+</section>
+<section id="Step-4:-Deploy-model">
+<h3>Step 4: Deploy model<a class="headerlink" href="#Step-4:-Deploy-model" title="Link to this heading"></a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model_id</span> <span class="o">=</span> <span class="s1">&#39;-uy7rooBhmcN7ynH0lgK&#39;</span> <span class="c1">#your model ID from previous step</span>
+<span class="n">ml_client</span><span class="o">.</span><span class="n">deploy_model</span><span class="p">(</span><span class="n">model_id</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+task_id: --y8rooBhmcN7ynHYFg6
+Model deployed successfully
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;model_id&#39;: &#39;-uy7rooBhmcN7ynH0lgK&#39;,
+ &#39;task_type&#39;: &#39;DEPLOY_MODEL&#39;,
+ &#39;function_name&#39;: &#39;TEXT_EMBEDDING&#39;,
+ &#39;state&#39;: &#39;COMPLETED&#39;,
+ &#39;worker_node&#39;: [&#39;4K6CeIPPTkKiwZMplvJ6CQ&#39;],
+ &#39;create_time&#39;: 1695148695608,
+ &#39;last_update_time&#39;: 1695148703362,
+ &#39;is_async&#39;: True}
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Check model status</span>
+<span class="n">ml_client</span><span class="o">.</span><span class="n">get_model_info</span><span class="p">(</span><span class="n">model_id</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;name&#39;: &#39;traced_model_example3&#39;,
+ &#39;model_group_id&#39;: &#39;-ey7rooBhmcN7ynH0Vji&#39;,
+ &#39;algorithm&#39;: &#39;TEXT_EMBEDDING&#39;,
+ &#39;model_version&#39;: &#39;1&#39;,
+ &#39;model_format&#39;: &#39;TORCH_SCRIPT&#39;,
+ &#39;model_state&#39;: &#39;DEPLOYED&#39;,
+ &#39;model_content_size_in_bytes&#39;: 186945250,
+ &#39;model_content_hash_value&#39;: &#39;62f4786ef2d546180dbbaf8fe6b5be218243c8b806e6623840b1fe9d11bcad4a&#39;,
+ &#39;model_config&#39;: {&#39;model_type&#39;: &#39;clip&#39;,
+  &#39;embedding_dimension&#39;: 512,
+  &#39;framework_type&#39;: &#39;HUGGINGFACE_TRANSFORMERS&#39;},
+ &#39;created_time&#39;: 1695148659209,
+ &#39;last_updated_time&#39;: 1695148703362,
+ &#39;last_deployed_time&#39;: 1695148703362,
+ &#39;total_chunks&#39;: 19,
+ &#39;planning_worker_node_count&#39;: 1,
+ &#39;current_worker_node_count&#39;: 1,
+ &#39;planning_worker_nodes&#39;: [&#39;4K6CeIPPTkKiwZMplvJ6CQ&#39;],
+ &#39;deploy_to_all_nodes&#39;: True}
+</pre></div></div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="demo_tracing_model_torchscript_onnx.html" class="btn btn-neutral float-left" title="Demo Notebook to trace Sentence Transformers model" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="demo_ml_commons_integration.html" class="btn btn-neutral float-right" title="Demo Notebook for MLCommons Integration" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Opensearch.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
