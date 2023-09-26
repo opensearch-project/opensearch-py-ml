@@ -264,7 +264,7 @@ class MLCommonClient:
         )
         end = time.time() + TIMEOUT  # timeout seconds
         task_flag = False
-        while not task_flag or time.time() < end:
+        while not task_flag and time.time() < end:
             time.sleep(1)
             status = self._get_task_info(output["task_id"])
             if status["state"] != "CREATED":
@@ -375,7 +375,7 @@ class MLCommonClient:
         if wait_until_task_done:
             end = time.time() + TIMEOUT  # timeout seconds
             task_flag = False
-            while not task_flag or time.time() < end:
+            while not task_flag and time.time() < end:
                 time.sleep(1)
                 output = self._get_task_info(task_id)
                 if (
