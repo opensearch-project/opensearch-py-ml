@@ -30,7 +30,7 @@ clusters using the [ml-commons](https://github.com/opensearch-project/ml-commons
 For more information, see [opensearch.org](https://opensearch.org/docs/latest/clients/opensearch-py-ml/) and the [API Doc](https://opensearch-project.github.io/opensearch-py-ml/index.html).
 
 
-##Installing Opensearch-py-ml
+## Installing Opensearch-py-ml
 
 
 Opensearch-py-ml can be installed from [PyPI](https://pypi.org/project/opensearch-py-ml) via pip:
