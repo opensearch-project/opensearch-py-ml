@@ -8,7 +8,7 @@
 
 import json
 import time
-from typing import Any, List, Union
+from typing import Any, List, Optional, Union
 
 from deprecated.sphinx import deprecated
 from opensearchpy import OpenSearch
@@ -22,6 +22,7 @@ from opensearch_py_ml.ml_commons.ml_common_utils import (
     TIMEOUT,
 )
 from opensearch_py_ml.ml_commons.model_execute import ModelExecute
+from opensearch_py_ml.ml_commons.model_train import ModelTrain
 from opensearch_py_ml.ml_commons.model_uploader import ModelUploader
 
 
@@ -35,6 +36,7 @@ class MLCommonClient:
         self._client = os_client
         self._model_uploader = ModelUploader(os_client)
         self._model_execute = ModelExecute(os_client)
+        self._model_train = ModelTrain(os_client)
 
     def execute(self, algorithm_name: str, input_json: dict) -> dict:
         """
@@ -580,3 +582,12 @@ class MLCommonClient:
             method="DELETE",
             url=API_URL,
         )
+
+    def train_model(
+        self, algorithm_name: str, input_json: dict, is_async: Optional[bool] = True
+    ) -> dict:
+        """
+        This method trains an ML model
+        """
+
+        return self._model_train._train(algorithm_name, input_json, is_async)
