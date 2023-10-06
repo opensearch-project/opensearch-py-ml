@@ -34,7 +34,7 @@ class ModelTrain:
         if not isinstance(input_json, dict):
             input_json = json.loads(input_json)
         if is_async:
-            params["async"] = is_async
+            params["async"] = "true"
 
         return self._client.transport.perform_request(
             method="POST",
