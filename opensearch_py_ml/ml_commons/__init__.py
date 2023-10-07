@@ -10,5 +10,6 @@
 from opensearch_py_ml.ml_commons.ml_commons_client import MLCommonClient
 from opensearch_py_ml.ml_commons.model_execute import ModelExecute
 from opensearch_py_ml.ml_commons.model_uploader import ModelUploader
+from opensearch_py_ml.ml_commons.model_train import ModelTrain
 
-__all__ = ["MLCommonClient", "ModelExecute", "ModelUploader"]
+__all__ = ["MLCommonClient", "ModelExecute", "ModelUploader", "ModelTrain"]
