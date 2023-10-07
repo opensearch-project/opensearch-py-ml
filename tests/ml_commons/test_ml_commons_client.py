@@ -67,8 +67,7 @@ def clean_test_folder(TEST_FOLDER):
 clean_test_folder(TEST_FOLDER)
 
 
-def test_train():
-    pass
+
 
 def test_init():
     assert isinstance(ml_client._client, OpenSearch)
