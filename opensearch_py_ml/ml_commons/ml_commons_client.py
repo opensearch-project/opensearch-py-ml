@@ -584,7 +584,7 @@ class MLCommonClient:
         )
 
     def train_model(
-        self, algorithm_name: str, input_json: dict, is_async: Optional[bool] = True
+        self, algorithm_name: str, input_json: dict, is_async: Optional[bool] = False
     ) -> dict:
         """
         This method trains an ML model

@@ -1,7 +1,7 @@
 import pytest
-
+import time
 import os
-from opensearchpy import OpenSearch
+from opensearchpy import OpenSearch, helpers
 from sklearn.datasets import load_iris
 
 @pytest.fixture
@@ -34,6 +34,7 @@ def iris_index_client(opensearch_client: OpenSearch):
             }
         }
     }
+    
     if opensearch_client.indices.exists(index=index_name):
         opensearch_client.indices.delete(index=index_name)
     opensearch_client.indices.create(index=index_name, body=index_mapping)
@@ -56,8 +57,8 @@ def iris_index_client(opensearch_client: OpenSearch):
         for (sepal_length, sepal_width, petal_length, petal_width), species in zip(iris_data, iris_species)
     ]
 
-
-    opensearch_client.bulk(actions)
+    helpers.bulk(opensearch_client, actions)
+    time.sleep(2)
 
     yield opensearch_client, index_name
 

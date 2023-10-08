@@ -27,7 +27,7 @@ def test_train(iris_index_client):
     input_json_sync = {
         "parameters": {"centroids": 3, "iterations": 10, "distance_type": "COSINE"},
         "input_query": {
-            "_source": ["petal_length_in_cm", "petal_width_in_cm"],
+            "_source": ["petal_length", "petal_width"],
             "size": 10000,
         },
         "input_index": [test_index_name],
@@ -41,7 +41,7 @@ def test_train(iris_index_client):
     input_json_async = {
         "parameters": {"centroids": 3, "iterations": 10, "distance_type": "COSINE"},
         "input_query": {
-            "_source": ["petal_length_in_cm", "petal_width_in_cm"],
+            "_source": ["petal_length", "petal_width"],
             "size": 10000,
         },
         "input_index": [test_index_name],
