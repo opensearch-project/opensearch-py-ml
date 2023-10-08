@@ -6,12 +6,11 @@
 # GitHub history for details.
 
 import json
-import pytest
 
+import pytest
 from opensearchpy import OpenSearch
 
-from opensearch_py_ml.ml_commons import MLCommonClient
-from opensearch_py_ml.ml_commons import ModelTrain
+from opensearch_py_ml.ml_commons import MLCommonClient, ModelTrain
 
 
 def test_init(opensearch_client):
@@ -51,4 +50,4 @@ def test_train(iris_index_client):
     assert isinstance(response, dict)
     assert "task_id" in response
     assert "status" in response
-    assert response['status'] == "CREATED"
+    assert response["status"] == "CREATED"
