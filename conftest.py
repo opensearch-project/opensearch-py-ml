@@ -58,6 +58,7 @@ def iris_index_client(opensearch_client: OpenSearch):
     ]
 
     helpers.bulk(opensearch_client, actions)
+    # without the sleep, test is failing.
     time.sleep(2)
 
     yield opensearch_client, index_name
