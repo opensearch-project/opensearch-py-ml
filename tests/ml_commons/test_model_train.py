@@ -5,9 +5,7 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
-import json
 
-import pytest
 from opensearchpy import OpenSearch
 
 from opensearch_py_ml.ml_commons import MLCommonClient, ModelTrain
