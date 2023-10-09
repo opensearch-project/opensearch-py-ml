@@ -97,7 +97,8 @@ You should paste this settings in the `Dev Tools` window and run it:
      "plugins.ml_commons.native_memory_threshold" : 100, 
      "plugins.ml_commons.max_model_on_node": 20,
      "plugins.ml_commons.enable_inhouse_python_model": true,
-     "plugins.ml_commons.allow_registering_model_via_local_file": true
+     "plugins.ml_commons.allow_registering_model_via_local_file": true,
+     "plugins.ml_commons.allow_registering_model_via_url": true
    }
  }
 ```
