@@ -89,6 +89,23 @@ After navigating to OpenSearch Dashboards you should update the persistent setti
 
 You should paste this settings in the `Dev Tools` window and run it:
 
+
+For OpenSearch versions below 2.7
+
+```yml
+ PUT /_cluster/settings
+ {
+   "persistent" : {
+     "plugins.ml_commons.only_run_on_ml_node" : false, 
+     "plugins.ml_commons.native_memory_threshold" : 100, 
+     "plugins.ml_commons.max_model_on_node": 20,
+     "plugins.ml_commons.enable_inhouse_python_model": true
+   }
+ }
+```
+
+For OpenSearch versions 2.8 and above
+
 ```yml
  PUT /_cluster/settings
  {
