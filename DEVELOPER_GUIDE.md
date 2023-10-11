@@ -104,7 +104,7 @@ For OpenSearch versions below 2.7
  }
 ```
 
-For OpenSearch versions 2.8 and above
+For OpenSearch versions 2.8 or above
 
 ```yml
  PUT /_cluster/settings
