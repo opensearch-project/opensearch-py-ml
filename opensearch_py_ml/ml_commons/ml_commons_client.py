@@ -361,14 +361,14 @@ class MLCommonClient:
 
     def train_and_predict(self, algorithm_name: str, input_json):
         """
-        This method trains a model with dataset and makes a prediction with the same dataset 
+        This method trains a model with dataset and makes a prediction with the same dataset
         using ml commons train and predict api
 
         :param algorithm_name: name of algorithm used to train model ("BATCH_RCF", "FIT_RCF", or "kmeans")
         :type algorithm_name: str
         :param input_json: json input for train and predict dataset
         :type input_json: str or dict
-        
+
         :return: returns a json object with task status and prediction results
         :rtype: object
         """
@@ -391,13 +391,11 @@ class MLCommonClient:
         else:
             return "Invalid JSON object passed as argument."
 
-
-        res = self._client.transport.perform_request(
-            method="POST", 
-            url=API_URL, 
-            body=API_BODY, 
+        return self._client.transport.perform_request(
+            method="POST",
+            url=API_URL,
+            body=API_BODY,
         )
-
 
     def get_task_info(self, task_id: str, wait_until_task_done: bool = False) -> object:
         """
@@ -425,7 +423,6 @@ class MLCommonClient:
                 ):
                     task_flag = True
         return self._get_task_info(task_id)
-
 
     def _get_task_info(self, task_id: str):
         API_URL = f"{ML_BASE_URI}/tasks/{task_id}"

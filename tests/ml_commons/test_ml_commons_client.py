@@ -5,11 +5,10 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
+import json
 import os
 import shutil
 from os.path import exists
-
-import json
 
 from opensearchpy import OpenSearch
 
@@ -197,99 +196,54 @@ def test_search():
         raised = True
     assert raised == False, "Raised Exception in searching model"
 
+
 def test_train_and_predict():
     input_json = {
-        "parameters": {
-            "centroids": 2,
-            "iterations": 1,
-            "distance_type": "EUCLIDEAN"
-        },
+        "parameters": {"centroids": 2, "iterations": 1, "distance_type": "EUCLIDEAN"},
         "input_data": {
             "column_metas": [
-                {
-                    "name": "k1",
-                    "column_type": "DOUBLE"
-                },
-                {
-                    "name": "k2",
-                    "column_type": "DOUBLE"
-                }
+                {"name": "k1", "column_type": "DOUBLE"},
+                {"name": "k2", "column_type": "DOUBLE"},
             ],
             "rows": [
                 {
                     "values": [
-                        {
-                            "column_type": "DOUBLE",
-                            "value": 1.00
-                        },
-                        {
-                            "column_type": "DOUBLE",
-                            "value": 2.00
-                        }
+                        {"column_type": "DOUBLE", "value": 1.00},
+                        {"column_type": "DOUBLE", "value": 2.00},
                     ]
                 },
                 {
                     "values": [
-                        {
-                            "column_type": "DOUBLE",
-                            "value": 1.00
-                        },
-                        {
-                            "column_type": "DOUBLE",
-                            "value": 4.00
-                        }
+                        {"column_type": "DOUBLE", "value": 1.00},
+                        {"column_type": "DOUBLE", "value": 4.00},
                     ]
                 },
                 {
                     "values": [
-                        {
-                            "column_type": "DOUBLE",
-                            "value": 1.00
-                        },
-                        {
-                            "column_type": "DOUBLE",
-                            "value": 0.00
-                        }
+                        {"column_type": "DOUBLE", "value": 1.00},
+                        {"column_type": "DOUBLE", "value": 0.00},
                     ]
                 },
                 {
                     "values": [
-                        {
-                            "column_type": "DOUBLE",
-                            "value": 10.00
-                        },
-                        {
-                            "column_type": "DOUBLE",
-                            "value": 2.00
-                        }
+                        {"column_type": "DOUBLE", "value": 10.00},
+                        {"column_type": "DOUBLE", "value": 2.00},
                     ]
                 },
                 {
                     "values": [
-                        {
-                            "column_type": "DOUBLE",
-                            "value": 10.00
-                        },
-                        {
-                            "column_type": "DOUBLE",
-                            "value": 4.00
-                        }
+                        {"column_type": "DOUBLE", "value": 10.00},
+                        {"column_type": "DOUBLE", "value": 4.00},
                     ]
                 },
                 {
                     "values": [
-                        {
-                            "column_type": "DOUBLE",
-                            "value": 10.00
-                        },
-                        {
-                            "column_type": "DOUBLE",
-                            "value": 0.00
-                        }
+                        {"column_type": "DOUBLE", "value": 10.00},
+                        {"column_type": "DOUBLE", "value": 0.00},
                     ]
-                }
-            ]
-        }
+                },
+            ],
+        },
     }
 
     input_str = json.dumps(input_json)
@@ -297,66 +251,64 @@ def test_train_and_predict():
     raised = False
     try:
         train_and_predict_obj = ml_client.train_and_predict(
-            algorithm_name="kmeans",
-            input_json=input_json
+            algorithm_name="kmeans", input_json=input_json
         )
-        assert (train_and_predict_obj["status"] == "Completed" and isinstance(train_and_predict_obj["prediction_result"], dict))
-    except:
+        assert train_and_predict_obj["status"] == "Completed" and isinstance(
+            train_and_predict_obj["prediction_result"], dict
+        )
+    except:  # noqa: E722
         raised = True
     assert raised == False, "Raised Exception in training and predicting task"
 
     raised = False
     try:
         train_and_predict_obj = ml_client.train_and_predict(
-            algorithm_name="kmeans",
-            input_json=input_str
+            algorithm_name="kmeans", input_json=input_str
         )
-        assert (train_and_predict_obj["status"] == "Completed" and isinstance(train_and_predict_obj["prediction_result"], dict))
-    except:
+        assert train_and_predict_obj["status"] == "Completed" and isinstance(
+            train_and_predict_obj["prediction_result"], dict
+        )
+    except:  # noqa: E722
         raised = True
     assert raised == False, "Raised Exception in training and predicting task"
 
     raised = False
     try:
         train_and_predict_obj = ml_client.train_and_predict(
-            algorithm_name="not an alg",
-            input_json=input_json
+            algorithm_name="not an alg", input_json=input_json
         )
         assert train_and_predict_obj == "Invalid algorithm name passed as argument."
-    except:
+    except:  # noqa: E722
         raised = True
     assert raised == False, "Raised Exception in training and predicting task"
 
     raised = False
     try:
         train_and_predict_obj = ml_client.train_and_predict(
-            algorithm_name="kmeans",
-            input_json=input_str + " invalid json"
+            algorithm_name="kmeans", input_json=input_str + " invalid json"
         )
         assert train_and_predict_obj == "Invalid JSON string passed as argument."
-    except:
+    except:  # noqa: E722
         raised = True
     assert raised == False, "Raised Exception in training and predicting task"
 
     raised = False
     try:
         train_and_predict_obj = ml_client.train_and_predict(
-            algorithm_name="kmeans",
-            input_json="15"
+            algorithm_name="kmeans", input_json="15"
         )
         assert train_and_predict_obj == "Invalid JSON object passed as argument."
-    except:
+    except:  # noqa: E722
         raised = True
     assert raised == False, "Raised Exception in training and predicting task"
 
     raised = False
     try:
         train_and_predict_obj = ml_client.train_and_predict(
-            algorithm_name="kmeans",
-            input_json=15
+            algorithm_name="kmeans", input_json=15
         )
         assert train_and_predict_obj == "Invalid JSON object passed as argument."
-    except:
+    except:  # noqa: E722
         raised = True
     assert raised == False, "Raised Exception in training and predicting task"
 
