@@ -26,8 +26,10 @@ import inspect
 
 import pandas as pd
 import pytest
+import os
 
 import opensearch_py_ml as oml
+from opensearchpy import OpenSearch
 
 from .common import (
     TestData,
@@ -162,3 +164,21 @@ def df():
 @pytest.fixture(scope="session")
 def testdata():
     return TestData()
+
+@pytest.fixture
+def opensearch_client():
+    opensearch_host = os.environ.get("OPENSEARCH_HOST", "https://localhost:9200")
+    opensearch_admin_user = os.environ.get("OPENSEARCH_ADMIN_USER", "admin")
+    opensearch_admin_password = os.environ.get("OPENSEARCH_ADMIN_PASSWORD", "admin")
+    client = OpenSearch(
+        hosts=[opensearch_host],
+        http_auth=(opensearch_admin_user, opensearch_admin_password),
+        verify_certs=False,
+    )
+    yield client
+
+    # tear down
+    client.transport.close()
+
+
+
