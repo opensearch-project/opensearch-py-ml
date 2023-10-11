@@ -45,6 +45,10 @@ from .common import (
     assert_series_equal,
 )
 
+pytest_plugins = [
+    "tests.fixtures.index_fixtures"
+]
+
 
 class SymmetricAPIChecker:
     def __init__(self, oml_obj, pd_obj):
