@@ -375,7 +375,7 @@ class MLCommonClient:
         API_URL = f"{ML_BASE_URI}/_train_predict/{algorithm_name}"
         API_BODY = ""
 
-        if algorithm_name in ["BATCH_RCF", "FIT_RCF", "kmeans"]:
+        if not algorithm_name in ["BATCH_RCF", "FIT_RCF", "kmeans"]:
             return "Invalid algorithm name passed as argument."
 
         if isinstance(input_json, str):

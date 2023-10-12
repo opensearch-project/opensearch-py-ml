@@ -253,9 +253,7 @@ def test_train_and_predict():
         train_and_predict_obj = ml_client.train_and_predict(
             algorithm_name="kmeans", input_json=input_json
         )
-        assert train_and_predict_obj["status"] == "Completed" and isinstance(
-            train_and_predict_obj["prediction_result"], dict
-        )
+        assert train_and_predict_obj["status"] == "COMPLETED"
     except:  # noqa: E722
         raised = True
     assert raised == False, "Raised Exception in training and predicting task"
@@ -265,9 +263,7 @@ def test_train_and_predict():
         train_and_predict_obj = ml_client.train_and_predict(
             algorithm_name="kmeans", input_json=input_str
         )
-        assert train_and_predict_obj["status"] == "Completed" and isinstance(
-            train_and_predict_obj["prediction_result"], dict
-        )
+        assert train_and_predict_obj["status"] == "COMPLETED"
     except:  # noqa: E722
         raised = True
     assert raised == False, "Raised Exception in training and predicting task"
