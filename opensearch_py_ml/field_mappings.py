@@ -91,7 +91,9 @@ class Field(NamedTuple):
 
     @property
     def is_timestamp(self) -> bool:
-        return is_datetime64_any_dtype(self.pd_dtype) or is_timedelta64_dtype(self.pd_dtype)
+        return is_datetime64_any_dtype(self.pd_dtype) or is_timedelta64_dtype(
+            self.pd_dtype
+        )
 
     @property
     def is_bool(self) -> bool:
@@ -794,7 +796,9 @@ class FieldMappings:
                 pd_dtypes.append(np.dtype(pd_dtype))
                 os_field_names.append(os_field_name)
                 os_date_formats.append(os_date_format)
-            elif include_timestamp and (is_datetime64_any_dtype(pd_dtype) or is_timedelta64_dtype(pd_dtype)):
+            elif include_timestamp and (
+                is_datetime64_any_dtype(pd_dtype) or is_timedelta64_dtype(pd_dtype)
+            ):
                 pd_dtypes.append(np.dtype(pd_dtype))
                 os_field_names.append(os_field_name)
                 os_date_formats.append(os_date_format)
