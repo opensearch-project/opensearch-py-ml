@@ -23,13 +23,13 @@
 #  under the License.
 
 import inspect
+import os
 
 import pandas as pd
 import pytest
-import os
+from opensearchpy import OpenSearch
 
 import opensearch_py_ml as oml
-from opensearchpy import OpenSearch
 
 from .common import (
     TestData,
