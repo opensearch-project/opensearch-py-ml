@@ -45,9 +45,7 @@ from .common import (
     assert_series_equal,
 )
 
-pytest_plugins = [
-    "tests.fixtures.index_fixtures"
-]
+pytest_plugins = ["tests.fixtures.index_fixtures"]
 
 
 class SymmetricAPIChecker:
@@ -169,6 +167,7 @@ def df():
 def testdata():
     return TestData()
 
+
 @pytest.fixture
 def opensearch_client():
     opensearch_host = os.environ.get("OPENSEARCH_HOST", "https://localhost:9200")
@@ -183,6 +182,3 @@ def opensearch_client():
 
     # tear down
     client.transport.close()
-
-
-
