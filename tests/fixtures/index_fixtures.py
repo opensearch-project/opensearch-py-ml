@@ -23,9 +23,10 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-import pytest
-import time
 import os
+import time
+
+import pytest
 from opensearchpy import OpenSearch, helpers
 from sklearn.datasets import load_iris
 
