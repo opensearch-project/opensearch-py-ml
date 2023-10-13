@@ -43,10 +43,10 @@ import pandas as pd  # type: ignore
 from pandas.core.dtypes.common import is_bool_dtype  # type: ignore
 from pandas.core.dtypes.common import (
     is_datetime64_any_dtype,
-    is_timedelta64_dtype,
     is_float_dtype,
     is_integer_dtype,
     is_string_dtype,
+    is_timedelta64_dtype,
 )
 from pandas.core.dtypes.inference import is_list_like
 
