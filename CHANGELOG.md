@@ -26,6 +26,7 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Update pretrained_models_all_versions.json (2023-09-14 10:28:41) by @dhrubo-os ([#282](https://github.com/opensearch-project/opensearch-py-ml/pull/282))
 - Enable the model upload workflow to add model_content_size_in_bytes & model_content_hash_value to model config automatically @thanawan-atc ([#291](https://github.com/opensearch-project/opensearch-py-ml/pull/291))
 - Update pretrained_models_all_versions.json (2023-10-18 18:11:34) by @dhrubo-os ([#322](https://github.com/opensearch-project/opensearch-py-ml/pull/322))
+- Update model upload history -  sentence-transformers/paraphrase-mpnet-base-v2 (v.1.0.0)(BOTH) by @dhrubo-os ([#321](https://github.com/opensearch-project/opensearch-py-ml/pull/321))
 
 ### Fixed
 - Enable make_model_config_json to add model description to model config file by @thanawan-atc in ([#203](https://github.com/opensearch-project/opensearch-py-ml/pull/203))
