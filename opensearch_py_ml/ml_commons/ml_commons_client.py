@@ -496,7 +496,7 @@ class MLCommonClient:
 
     def predict(self, model_id: str, algo_name: str, input_json):
 
-        API_URL = f"{ML_BASE_URI}/_predict/{algo_name}/{model_id}/_deploy"
+        API_URL = f"{ML_BASE_URI}/_predict/{algo_name}/{model_id}"
 
         if isinstance(input_json, str):
             try:
