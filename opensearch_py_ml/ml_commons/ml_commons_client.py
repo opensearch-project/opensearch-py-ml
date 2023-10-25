@@ -580,3 +580,64 @@ class MLCommonClient:
             method="DELETE",
             url=API_URL,
         )
+    
+    def create_connector(self, connector_payload: dict) -> dict:
+        """
+        This method creates a connector in the OpenSearch cluster using the ml-common plugin's API.
+
+        :param connector_payload: Dictionary containing the details of the connector.
+        :type connector_payload: dict
+        :return: API response
+        :rtype: dict
+        """
+        API_URL = f"{ML_BASE_URI}/connectors/_create"
+        return self._client.transport.perform_request(
+            method="POST",
+            url=API_URL,
+            body=connector_payload,
+        )
+    
+    def delete_connector(self, connector_id: str) -> dict:
+        """
+        This method deletes a specific connector using its ID.
+
+        :param connector_id: ID of the connector to be deleted.
+        :type connector_id: str
+        :return: API response
+        :rtype: dict
+        """
+        API_URL = f"{ML_BASE_URI}/connectors/{connector_id}"
+        return self._client.transport.perform_request(
+            method="DELETE",
+            url=API_URL,
+        )
+
+    def list_connectors(self) -> dict:
+        """
+        This method lists all connectors in the OpenSearch cluster.
+
+        :return: API response containing a list of connectors.
+        :rtype: dict
+        """
+        API_URL = f"{ML_BASE_URI}/connectors"
+        return self._client.transport.perform_request(
+            method="GET",
+            url=API_URL,
+        )
+
+
+    def search_connectors(self, search_payload: dict) -> dict:
+        """
+        This method searches for connectors based on specific criteria.
+
+        :param search_payload: Dictionary containing search criteria.
+        :type search_payload: dict
+        :return: API response containing search results.
+        :rtype: dict
+        """
+        API_URL = f"{ML_BASE_URI}/connectors/_search"
+        return self._client.transport.perform_request(
+            method="POST",
+            url=API_URL,
+            body=search_payload,
+        )
