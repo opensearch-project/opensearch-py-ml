@@ -23,11 +23,9 @@
 #  under the License.
 
 import inspect
-import os
 
 import pandas as pd
 import pytest
-from opensearchpy import OpenSearch
 
 import opensearch_py_ml as oml
 
@@ -44,8 +42,6 @@ from .common import (
     assert_pandas_opensearch_py_ml_series_equal,
     assert_series_equal,
 )
-
-pytest_plugins = ["tests.fixtures.index_fixtures"]
 
 
 class SymmetricAPIChecker:
@@ -166,19 +162,3 @@ def df():
 @pytest.fixture(scope="session")
 def testdata():
     return TestData()
-
-
-@pytest.fixture
-def opensearch_client():
-    opensearch_host = os.environ.get("OPENSEARCH_HOST", "https://localhost:9200")
-    opensearch_admin_user = os.environ.get("OPENSEARCH_ADMIN_USER", "admin")
-    opensearch_admin_password = os.environ.get("OPENSEARCH_ADMIN_PASSWORD", "admin")
-    client = OpenSearch(
-        hosts=[opensearch_host],
-        http_auth=(opensearch_admin_user, opensearch_admin_password),
-        verify_certs=False,
-    )
-    yield client
-
-    # tear down
-    client.transport.close()

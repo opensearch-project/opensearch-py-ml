@@ -18,7 +18,7 @@ class ModelTrain:
     Class for training models using ML Commons train API.
     """
 
-    API_ENDPOINT = "models/_train"
+    API_ENDPOINT = "_train"
 
     def __init__(self, os_client: OpenSearch):
         self._client = os_client
@@ -38,7 +38,7 @@ class ModelTrain:
 
         return self._client.transport.perform_request(
             method="POST",
-            url=f"{ML_BASE_URI}/_train/{algorithm_name}",
+            url=f"{ML_BASE_URI}/{API_ENDPOINT}/{algorithm_name}",
             body=input_json,
             params=params,
         )
