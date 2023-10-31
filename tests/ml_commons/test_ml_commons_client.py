@@ -515,4 +515,3 @@ def test_integration_model_train_register_full_cycle():
                 assert raised == False, "Raised Exception in deleting model"
 
 
-test_integration_model_train_register_full_cycle()

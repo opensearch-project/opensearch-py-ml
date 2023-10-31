@@ -38,7 +38,7 @@ class ModelTrain:
 
         return self._client.transport.perform_request(
             method="POST",
-            url=f"{ML_BASE_URI}/{API_ENDPOINT}/{algorithm_name}",
+            url=f"{ML_BASE_URI}/{ModelTrain.API_ENDPOINT}/{algorithm_name}",
             body=input_json,
             params=params,
         )
