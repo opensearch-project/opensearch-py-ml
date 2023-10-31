@@ -61,7 +61,9 @@ def iris_index():
     # without the sleep, test is failing.
     time.sleep(2)
 
-    return index_name
+    yield index_name
+
+    ml_client._client.indices.delete(index=index_name)
 
 
 def test_init():
