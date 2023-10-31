@@ -420,7 +420,7 @@ def test_integration_model_train_register_full_cycle():
 
 
 def test_search():
-    # Search task cases
+    # Search tasks
     raised = False
     try:
         search_task_obj = ml_client.search_task(
