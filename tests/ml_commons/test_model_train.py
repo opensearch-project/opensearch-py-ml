@@ -5,10 +5,12 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
+import time
+
 import pytest
 from opensearchpy import OpenSearch, helpers
 from sklearn.datasets import load_iris
-import time
+
 from opensearch_py_ml.ml_commons import MLCommonClient, ModelTrain
 from tests import OPENSEARCH_TEST_CLIENT
 
