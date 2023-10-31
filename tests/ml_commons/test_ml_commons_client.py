@@ -100,9 +100,6 @@ def test_execute():
     ), "Raised Exception during execute API testing with JSON string"
 
 
-
-
-
 def test_DEPRECATED_integration_pretrained_model_upload_unload_delete():
     raised = False
     try:
@@ -420,6 +417,7 @@ def test_integration_model_train_register_full_cycle():
                 except:  # noqa: E722
                     raised = True
                 assert raised == False, "Raised Exception in deleting model"
+
 
 def test_search():
     # Search task cases
