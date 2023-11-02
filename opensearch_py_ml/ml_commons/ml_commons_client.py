@@ -580,7 +580,7 @@ class MLCommonClient:
             method="DELETE",
             url=API_URL,
         )
-    
+
     def create_connector(self, connector_payload: dict) -> dict:
         """
         This method creates a connector in the OpenSearch cluster using the ml-common plugin's API.
@@ -596,7 +596,7 @@ class MLCommonClient:
             url=API_URL,
             body=connector_payload,
         )
-    
+
     def delete_connector(self, connector_id: str) -> dict:
         """
         This method deletes a specific connector using its ID.
@@ -624,7 +624,6 @@ class MLCommonClient:
             method="GET",
             url=API_URL,
         )
-
 
     def search_connectors(self, search_payload: dict) -> dict:
         """
