@@ -8,11 +8,12 @@
 import os
 import shutil
 import time
-from os.path import exists
 from json import JSONDecodeError
-from opensearchpy.exceptions import RequestError
+from os.path import exists
+
 import pytest
 from opensearchpy import OpenSearch, helpers
+from opensearchpy.exceptions import RequestError
 from sklearn.datasets import load_iris
 
 from opensearch_py_ml.ml_commons import MLCommonClient
