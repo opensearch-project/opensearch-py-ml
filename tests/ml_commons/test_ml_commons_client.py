@@ -7,9 +7,14 @@
 
 import os
 import shutil
+import time
+from json import JSONDecodeError
 from os.path import exists
 
-from opensearchpy import OpenSearch
+import pytest
+from opensearchpy import OpenSearch, helpers
+from opensearchpy.exceptions import RequestError
+from sklearn.datasets import load_iris
 
 from opensearch_py_ml.ml_commons import MLCommonClient
 from opensearch_py_ml.ml_commons.model_uploader import ModelUploader
@@ -44,6 +49,55 @@ PRETRAINED_MODEL_VERSION = "1.0.1"
 PRETRAINED_MODEL_FORMAT = "TORCH_SCRIPT"
 
 
+@pytest.fixture
+def iris_index():
+    index_name = "test__index__iris_data"
+    index_mapping = {
+        "mappings": {
+            "properties": {
+                "sepal_length": {"type": "float"},
+                "sepal_width": {"type": "float"},
+                "petal_length": {"type": "float"},
+                "petal_width": {"type": "float"},
+                "species": {"type": "keyword"},
+            }
+        }
+    }
+
+    if ml_client._client.indices.exists(index=index_name):
+        ml_client._client.indices.delete(index=index_name)
+    ml_client._client.indices.create(index=index_name, body=index_mapping)
+
+    iris = load_iris()
+    iris_data = iris.data
+    iris_target = iris.target
+    iris_species = [iris.target_names[i] for i in iris_target]
+
+    actions = [
+        {
+            "_index": index_name,
+            "_source": {
+                "sepal_length": sepal_length,
+                "sepal_width": sepal_width,
+                "petal_length": petal_length,
+                "petal_width": petal_width,
+                "species": species,
+            },
+        }
+        for (sepal_length, sepal_width, petal_length, petal_width), species in zip(
+            iris_data, iris_species
+        )
+    ]
+
+    helpers.bulk(ml_client._client, actions)
+    # without the sleep, test is failing.
+    time.sleep(2)
+
+    yield index_name
+
+    ml_client._client.indices.delete(index=index_name)
+
+
 def clean_test_folder(TEST_FOLDER):
     if os.path.exists(TEST_FOLDER):
         for files in os.listdir(TEST_FOLDER):
@@ -70,6 +124,44 @@ clean_test_folder(TEST_FOLDER)
 def test_init():
     assert isinstance(ml_client._client, OpenSearch)
     assert isinstance(ml_client._model_uploader, ModelUploader)
+
+
+def test_train(iris_index):
+    algorithm_name = "kmeans"
+    input_json_sync = {
+        "parameters": {"centroids": 3, "iterations": 10, "distance_type": "COSINE"},
+        "input_query": {
+            "_source": ["petal_length", "petal_width"],
+            "size": 10000,
+        },
+        "input_index": [iris_index],
+    }
+    response = ml_client.train_model(algorithm_name, input_json_sync)
+    assert isinstance(response, dict)
+    assert "model_id" in response
+    assert "status" in response
+    assert response["status"] == "COMPLETED"
+
+    input_json_async = {
+        "parameters": {"centroids": 3, "iterations": 10, "distance_type": "COSINE"},
+        "input_query": {
+            "_source": ["petal_length", "petal_width"],
+            "size": 10000,
+        },
+        "input_index": [iris_index],
+    }
+    response = ml_client.train_model(algorithm_name, input_json_async, is_async=True)
+
+    assert isinstance(response, dict)
+    assert "task_id" in response
+    assert "status" in response
+    assert response["status"] == "CREATED"
+
+    with pytest.raises(JSONDecodeError):
+        ml_client.train_model(algorithm_name, "", is_async=True)
+
+    with pytest.raises(RequestError):
+        ml_client.train_model(algorithm_name, {}, is_async=True)
 
 
 def test_execute():
