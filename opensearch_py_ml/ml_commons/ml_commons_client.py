@@ -107,6 +107,26 @@ class MLCommonClient:
 
         return model_id
 
+    def train_model(
+        self, algorithm_name: str, input_json: dict, is_async: Optional[bool] = False
+    ) -> dict:
+        """
+        This method trains an ML Model
+        """
+
+        params = {}
+        if not isinstance(input_json, dict):
+            input_json = json.loads(input_json)
+        if is_async:
+            params["async"] = "true"
+
+        return self._client.transport.perform_request(
+            method="POST",
+            url=f"{ML_BASE_URI}/_train/{algorithm_name}",
+            body=input_json,
+            params=params,
+        )
+
     def register_model(
         self,
         model_path: str,
@@ -582,12 +602,3 @@ class MLCommonClient:
             method="DELETE",
             url=API_URL,
         )
-
-    def train_model(
-        self, algorithm_name: str, input_json: dict, is_async: Optional[bool] = False
-    ) -> dict:
-        """
-        This method trains an ML model
-        """
-
-        return self._model_train._train(algorithm_name, input_json, is_async)
