@@ -22,7 +22,6 @@ from opensearch_py_ml.ml_commons.ml_common_utils import (
     TIMEOUT,
 )
 from opensearch_py_ml.ml_commons.model_execute import ModelExecute
-from opensearch_py_ml.ml_commons.model_train import ModelTrain
 from opensearch_py_ml.ml_commons.model_uploader import ModelUploader
 
 

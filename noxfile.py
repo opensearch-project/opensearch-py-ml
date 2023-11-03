@@ -101,7 +101,7 @@ def lint(session):
     #     if errors:
     #         session.error("\n" + "\n".join(sorted(set(errors))))
 
-
+@nox.session(reuse_venv=True)
 @nox.session(python=["3.8", "3.9", "3.10"])
 @nox.parametrize("pandas_version", ["1.5.0"])
 def test(session, pandas_version: str):
