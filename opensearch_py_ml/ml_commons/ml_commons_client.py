@@ -23,6 +23,7 @@ from opensearch_py_ml.ml_commons.ml_common_utils import (
 )
 from opensearch_py_ml.ml_commons.model_execute import ModelExecute
 from opensearch_py_ml.ml_commons.model_uploader import ModelUploader
+from opensearch_py_ml.ml_commons.model_access_control import ModelAccessControl
 
 
 class MLCommonClient:
@@ -35,6 +36,7 @@ class MLCommonClient:
         self._client = os_client
         self._model_uploader = ModelUploader(os_client)
         self._model_execute = ModelExecute(os_client)
+        self.model_access_control = ModelAccessControl(os_client)
 
     def execute(self, algorithm_name: str, input_json: dict) -> dict:
         """
