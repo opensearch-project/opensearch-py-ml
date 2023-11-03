@@ -9,7 +9,8 @@ import os
 import shutil
 import time
 from os.path import exists
-
+from json import JSONDecodeError
+from opensearchpy.exceptions import RequestError
 import pytest
 from opensearchpy import OpenSearch, helpers
 from sklearn.datasets import load_iris
@@ -154,6 +155,12 @@ def test_train(iris_index):
     assert "task_id" in response
     assert "status" in response
     assert response["status"] == "CREATED"
+    
+    with pytest.raises(JSONDecodeError):
+        ml_client.train_model(algorithm_name, "", is_async=True)
+    
+    with pytest.raises(RequestError):
+        ml_client.train_model(algorithm_name, {}, is_async=True)
 
 
 def test_execute():
