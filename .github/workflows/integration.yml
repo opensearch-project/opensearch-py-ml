@@ -6,6 +6,9 @@ jobs:
   integration:
     name: Integ
     runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-${{ matrix.cluster }}
+      cancel-in-progress: true
     strategy:
       fail-fast: false
       matrix:
