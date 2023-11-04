@@ -56,8 +56,17 @@ class ModelAccessControl:
     ):
         
         validate_update_model_group_parameters(update_query, model_group_id, model_group_name)
+        if model_group_name:
+            model_group = self.search_model_group_by_name(model_group_name)
+            try:
+                if len(model_group["hits"]["hits"]) > 0:
+                    model_group_id = model_group["hits"]["hits"][0]["_id"]
+                else:
+                    raise Exception
+            except Exception:
+                raise Exception(f"Model group with name: {model_group_name} not found")
         return self.client.transport.perform_request(
-            method="PUT", url=f"{ML_BASE_URI}/{self.API_ENDPOINT}/", body=update_query
+            method="PUT", url=f"{ML_BASE_URI}/{self.API_ENDPOINT}/{model_group_id}", body=update_query
         )
 
     def search_model_group(self, query: dict):
