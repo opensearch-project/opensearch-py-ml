@@ -5,24 +5,28 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
-import pytest
+import os
 import time
-from unittest import TestCase
-from opensearch_py_ml.ml_commons.model_access_control import ModelAccessControl
-from tests import OPENSEARCH_TEST_CLIENT
+import warnings
+
+import pytest
 from opensearchpy.exceptions import RequestError
 from packaging.version import parse as parse_version
-import os
-import warnings
+
+from opensearch_py_ml.ml_commons.model_access_control import ModelAccessControl
+from tests import OPENSEARCH_TEST_CLIENT
+
 warnings.filterwarnings("ignore")
 
-OPENSEARCH_VERSION = parse_version(os.environ['OPENSEARCH_VERSION'])
+OPENSEARCH_VERSION = parse_version(os.environ["OPENSEARCH_VERSION"])
 MAC_MIN_VERSION = parse_version("2.8.0")
 MAC_UPDATE_MIN_VERSION = parse_version("2.11.0")
+
 
 @pytest.fixture
 def client():
     return ModelAccessControl(OPENSEARCH_TEST_CLIENT)
+
 
 @pytest.fixture
 def test_model_group(client):
@@ -38,10 +42,11 @@ def test_model_group(client):
     client.delete_model_group(model_group_name=model_group_name)
 
 
-
-@pytest.mark.skipif(OPENSEARCH_VERSION < MAC_MIN_VERSION, reason="Model groups are supported in OpenSearch 2.8.0 and above")
+@pytest.mark.skipif(
+    OPENSEARCH_VERSION < MAC_MIN_VERSION,
+    reason="Model groups are supported in OpenSearch 2.8.0 and above",
+)
 def test_register_model_group(client):
-    
     model_group_name1 = "__test__model_group_A"
     # import pdb;pdb.set_trace()
     try:
@@ -51,12 +56,12 @@ def test_register_model_group(client):
         assert isinstance(res, dict)
         assert "model_group_id" in res
         assert "status" in res
-        assert res['status'] == "CREATED"
+        assert res["status"] == "CREATED"
     except Exception as ex:
-        assert False,f"Failed to register model group due to {ex}"
-    
+        assert False, f"Failed to register model group due to {ex}"
+
     model_group_name2 = "__test__model_group_B"
-    
+
     try:
         _ = client.delete_model_group(model_group_name=model_group_name2)
         time.sleep(2)
@@ -65,13 +70,13 @@ def test_register_model_group(client):
             description="test",
             access_mode="restricted",
             backend_roles=["admin"],
-            )
+        )
         assert "model_group_id" in res
         assert "status" in res
-        assert res['status'] == "CREATED"
+        assert res["status"] == "CREATED"
     except Exception as ex:
-        assert False,f"Failed to register restricted model group due to {ex}"
-    
+        assert False, f"Failed to register restricted model group due to {ex}"
+
     model_group_name3 = "__test__model_group_C"
     with pytest.raises(RequestError) as exec_info:
         _ = client.delete_model_group(model_group_name=model_group_name3)
@@ -80,18 +85,23 @@ def test_register_model_group(client):
             name=model_group_name3,
             description="test",
             access_mode="restricted",
-            add_all_backend_roles=True
-            )
+            add_all_backend_roles=True,
+        )
     assert exec_info.value.status_code == 400
     assert exec_info.match("Admin users cannot add all backend roles to a model group")
-    
+
     with pytest.raises(RequestError) as exec_info:
         client.register_model_group(name=model_group_name2)
     assert exec_info.value.status_code == 400
-    assert exec_info.match("The name you provided is already being used by a model group")
+    assert exec_info.match(
+        "The name you provided is already being used by a model group"
+    )
 
 
-@pytest.mark.skipif(OPENSEARCH_VERSION < MAC_UPDATE_MIN_VERSION, reason="Model groups updates are supported in OpenSearch 2.11.0 and above")
+@pytest.mark.skipif(
+    OPENSEARCH_VERSION < MAC_UPDATE_MIN_VERSION,
+    reason="Model groups updates are supported in OpenSearch 2.11.0 and above",
+)
 def test_update_model_group(client, test_model_group):
     # update model group name and description
     update_query = {
@@ -101,93 +111,98 @@ def test_update_model_group(client, test_model_group):
         res = client.update_model_group(update_query, model_group_name=test_model_group)
         assert isinstance(res, dict)
         assert "status" in res
-        assert res['status'] == "Updated"
+        assert res["status"] == "Updated"
     except Exception as ex:
-        assert False,f"Failed to search model group due to unhandled error: {ex}"
+        assert False, f"Failed to search model group due to unhandled error: {ex}"
 
 
-    
-
-
-
-@pytest.mark.skipif(OPENSEARCH_VERSION < MAC_MIN_VERSION, reason="Model groups are supported in OpenSearch 2.8.0 and above")
+@pytest.mark.skipif(
+    OPENSEARCH_VERSION < MAC_MIN_VERSION,
+    reason="Model groups are supported in OpenSearch 2.8.0 and above",
+)
 def test_search_model_group(client, test_model_group):
     query1 = {"query": {"match": {"name": test_model_group}}, "size": 1}
     try:
         res = client.search_model_group(query1)
         assert isinstance(res, dict)
         assert "hits" in res and "hits" in res["hits"]
-        assert len(res['hits']['hits']) == 1
-        assert "_source" in res['hits']['hits'][0]
-        assert "name" in res['hits']['hits'][0]['_source']
-        assert test_model_group == res['hits']['hits'][0]['_source']['name']
+        assert len(res["hits"]["hits"]) == 1
+        assert "_source" in res["hits"]["hits"][0]
+        assert "name" in res["hits"]["hits"][0]["_source"]
+        assert test_model_group == res["hits"]["hits"][0]["_source"]["name"]
     except Exception as ex:
-        assert False,f"Failed to search model group due to unhandled error: {ex}"
-    
+        assert False, f"Failed to search model group due to unhandled error: {ex}"
+
     query2 = {"query": {"match": {"name": "test-unknown"}}, "size": 1}
     try:
         res = client.search_model_group(query2)
         assert isinstance(res, dict)
         assert "hits" in res and "hits" in res["hits"]
-        assert len(res['hits']['hits']) == 0
+        assert len(res["hits"]["hits"]) == 0
     except Exception as ex:
-        assert False,f"Failed to search model group due to unhandled error: {ex}"
+        assert False, f"Failed to search model group due to unhandled error: {ex}"
 
-@pytest.mark.skipif(OPENSEARCH_VERSION < MAC_MIN_VERSION, reason="Model groups are supported in OpenSearch 2.8.0 and above")
+
+@pytest.mark.skipif(
+    OPENSEARCH_VERSION < MAC_MIN_VERSION,
+    reason="Model groups are supported in OpenSearch 2.8.0 and above",
+)
 def test_search_model_group_by_name(client, test_model_group):
-    
     try:
         res = client.search_model_group_by_name(model_group_name=test_model_group)
         assert isinstance(res, dict)
         assert "hits" in res and "hits" in res["hits"]
-        assert len(res['hits']['hits']) == 1
-        assert "_source" in res['hits']['hits'][0]
-        assert len(res['hits']['hits'][0]['_source']) > 1
-        assert "name" in res['hits']['hits'][0]['_source']
-        assert test_model_group == res['hits']['hits'][0]['_source']['name']
+        assert len(res["hits"]["hits"]) == 1
+        assert "_source" in res["hits"]["hits"][0]
+        assert len(res["hits"]["hits"][0]["_source"]) > 1
+        assert "name" in res["hits"]["hits"][0]["_source"]
+        assert test_model_group == res["hits"]["hits"][0]["_source"]["name"]
     except Exception as ex:
-        assert False,f"Failed to search model group due to unhandled error: {ex}"
-    
-    
+        assert False, f"Failed to search model group due to unhandled error: {ex}"
+
     try:
-        res = client.search_model_group_by_name(model_group_name=test_model_group, _source="name")
+        res = client.search_model_group_by_name(
+            model_group_name=test_model_group, _source="name"
+        )
         assert isinstance(res, dict)
         assert "hits" in res and "hits" in res["hits"]
-        assert len(res['hits']['hits']) == 1
-        assert "_source" in res['hits']['hits'][0]
-        assert len(res['hits']['hits'][0]['_source']) == 1
-        assert "name" in res['hits']['hits'][0]['_source']
+        assert len(res["hits"]["hits"]) == 1
+        assert "_source" in res["hits"]["hits"][0]
+        assert len(res["hits"]["hits"][0]["_source"]) == 1
+        assert "name" in res["hits"]["hits"][0]["_source"]
     except Exception as ex:
-        assert False,f"Failed to search model group due to unhandled error: {ex}"
-    
+        assert False, f"Failed to search model group due to unhandled error: {ex}"
+
     try:
         res = client.search_model_group_by_name(model_group_name="test-unknown")
         assert isinstance(res, dict)
         assert "hits" in res and "hits" in res["hits"]
-        assert len(res['hits']['hits']) == 0
+        assert len(res["hits"]["hits"]) == 0
     except Exception as ex:
-        assert False,f"Failed to search model group due to unhandled error: {ex}"
+        assert False, f"Failed to search model group due to unhandled error: {ex}"
 
 
-
-@pytest.mark.skipif(OPENSEARCH_VERSION < MAC_MIN_VERSION, reason="Model groups are supported in OpenSearch 2.8.0 and above")
+@pytest.mark.skipif(
+    OPENSEARCH_VERSION < MAC_MIN_VERSION,
+    reason="Model groups are supported in OpenSearch 2.8.0 and above",
+)
 def test_delete_model_group(client, test_model_group):
     # create a test model group
-    
+
     for each in "AB":
         model_group_name = f"__test__model_group_{each}"
         res = client.delete_model_group(model_group_name=model_group_name)
         assert res is None or isinstance(res, dict)
         if isinstance(res, dict):
-            assert 'result' in res
-            assert res['result'] in ['not_found', 'deleted']
-    
+            assert "result" in res
+            assert res["result"] in ["not_found", "deleted"]
+
     res = client.delete_model_group(model_group_id="test-unknown")
     assert isinstance(res, dict)
     assert "result" in res
-    assert res['result'] == 'not_found'
-    
+    assert res["result"] == "not_found"
+
     res = client.delete_model_group(model_group_name=test_model_group)
     assert isinstance(res, dict)
     assert "result" in res
-    assert res['result'] == 'deleted'
+    assert res["result"] == "deleted"

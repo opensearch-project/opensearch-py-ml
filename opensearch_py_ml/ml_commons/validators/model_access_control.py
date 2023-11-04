@@ -12,6 +12,7 @@ ACCESS_MODES = ["public", "private", "restricted"]
 
 NoneType = type(None)
 
+
 def _validate_model_group_name(name):
     if not name or not isinstance(name, str):
         raise ValueError("name is required and needs to be a string")
@@ -36,13 +37,13 @@ def _validate_model_group_add_all_backend_roles(add_all_backend_roles):
     if not isinstance(add_all_backend_roles, bool):
         raise ValueError("add_all_backend_roles should be a boolean")
 
+
 def _validate_model_group_query(query, operation=None):
     if not isinstance(query, dict):
         raise ValueError("query needs to be a dictionary")
 
     if operation and not isinstance(operation, str):
         raise ValueError("operation needs to be a string")
-        
 
 
 def validate_create_model_group_parameters(
@@ -76,18 +77,22 @@ def validate_create_model_group_parameters(
             )
 
 
-def validate_update_model_group_parameters(update_query, model_group_id, model_group_name):
+def validate_update_model_group_parameters(
+    update_query, model_group_id, model_group_name
+):
     if model_group_id and model_group_name:
         raise ValueError(
             "You cannot specify both model_group_id and model_group_name at the same time"
         )
-    
+
     if not isinstance(model_group_id, (NoneType, str)):
         raise ValueError("Invalid model_group_id. model_group_id needs to be a string")
-    
+
     if not isinstance(model_group_name, (NoneType, str)):
-        raise ValueError("Invalid model_group_name. model_group_name needs to be a string")
-    
+        raise ValueError(
+            "Invalid model_group_name. model_group_name needs to be a string"
+        )
+
     if not isinstance(update_query, dict):
         raise ValueError("Invalid update_query. update_query needs to be a dictionary")
 
@@ -97,12 +102,14 @@ def validate_delete_model_group_parameters(model_group_id, model_group_name):
         raise ValueError(
             "You cannot specify both model_group_id and model_group_name at the same time"
         )
-    
+
     if not isinstance(model_group_id, (NoneType, str)):
         raise ValueError("Invalid model_group_id. model_group_id needs to be a string")
-    
+
     if not isinstance(model_group_name, (NoneType, str)):
-        raise ValueError("Invalid model_group_name. model_group_name needs to be a string")
+        raise ValueError(
+            "Invalid model_group_name. model_group_name needs to be a string"
+        )
 
 
 def validate_search_model_group_parameters(query):
