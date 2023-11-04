@@ -31,6 +31,9 @@ from pandas.testing import assert_frame_equal, assert_series_equal
 import opensearch_py_ml as oml
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+TEST_PREFIX = "oml_test__"
+INDEX_PREFIX = f"{TEST_PREFIX}_index_"
+MODEL_GROUP_PREFIX = f"{TEST_PREFIX}_model_group_"
 
 # Create pandas and opensearch_py_ml data frames
 from tests import (

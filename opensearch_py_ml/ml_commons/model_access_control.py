@@ -6,6 +6,7 @@
 # GitHub history for details.
 
 from opensearchpy import OpenSearch
+from opensearchpy.exceptions import RequestError
 import json
 from typing import List, Optional
 from opensearch_py_ml.ml_commons.ml_common_utils import ML_BASE_URI
@@ -28,12 +29,11 @@ class ModelAccessControl:
         description: Optional[str] = None,
         access_mode: Optional[str] = "private",
         backend_roles: Optional[List[str]] = None,
-        add_all_backend_roles: Optional[bool] = False,
+        add_all_backend_roles: Optional[bool] = False
     ):
         validate_create_model_group_parameters(
             name, description, access_mode, backend_roles, add_all_backend_roles
         )
-        # import pdb;pdb.set_trace()
 
         body = {"name": name, "add_all_backend_roles": add_all_backend_roles}
         if description:
@@ -79,20 +79,22 @@ class ModelAccessControl:
         )
 
     def search_model_group_by_name(self, model_group_name, _source=None, size=1):
-        query = {"query": {"term": {"name": model_group_name}}, "size": size}
+        query = {"query": {"match": {"name": model_group_name}}, "size": size}
         if _source:
             query["_source"] = _source
         return self.search_model_group(query)
 
     def delete_model_group(
-        self, model_group_id: str = None, model_group_name: str = None
+        self, model_group_id: str = None, model_group_name: str = None, ignore_if_not_exists=True
     ):
-        validate_delete_model_group_parameters(model_group_name, model_group_id)
+        validate_delete_model_group_parameters(model_group_id, model_group_name)
         if model_group_name:
             model_group = self.search_model_group_by_name(model_group_name)
             try:
-                model_group_id = model_group["hits"]["hits"][0]["_source"]["name"]
-            except KeyError:
+                model_group_id = model_group["hits"]["hits"][0]["_id"]
+            except (KeyError, IndexError):
+                if ignore_if_not_exists:
+                    return None
                 raise Exception(f"Model group with name: {model_group_name} not found")
         return self.client.transport.perform_request(
             method="DELETE", url=f"{ML_BASE_URI}/{self.API_ENDPOINT}/{model_group_id}"
