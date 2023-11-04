@@ -14,6 +14,7 @@ from opensearch_py_ml.ml_commons.validators.model_access_control import (
     validate_create_model_group_parameters,
     validate_update_model_group_parameters,
     validate_delete_model_group_parameters,
+    validate_search_model_group_parameters
 )
 
 
@@ -49,31 +50,18 @@ class ModelAccessControl:
 
     def update_model_group(
         self,
-        name: str,
-        description: str,
-        access_mode: str,
-        backend_roles: List[str],
-        add_all_backend_roles=False,
+        update_query: dict,
+        model_group_id: Optional[str]=None,
+        model_group_name: Optional[str]=None,
     ):
-        validate_update_model_group_parameters(
-            name, description, access_mode, backend_roles, add_all_backend_roles
-        )
-        body = {"name": name, "add_all_backend_roles": add_all_backend_roles}
-        if description:
-            body["description"] = description
-        if access_mode:
-            body["access_mode"] = access_mode
-        if backend_roles:
-            body["backend_roles"] = backend_roles
-
+        
+        validate_update_model_group_parameters(update_query, model_group_id, model_group_name)
         return self.client.transport.perform_request(
-            method="PUT", url=f"{ML_BASE_URI}/{self.API_ENDPOINT}/_update", body=body
+            method="PUT", url=f"{ML_BASE_URI}/{self.API_ENDPOINT}/", body=update_query
         )
 
-    def search_model_group(self, query):
-        if isinstance(query, str):
-            query = json.loads(query)
-
+    def search_model_group(self, query: dict):
+        validate_search_model_group_parameters(query)
         return self.client.transport.perform_request(
             method="GET", url=f"{ML_BASE_URI}/{self.API_ENDPOINT}/_search", body=query
         )
