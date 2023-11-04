@@ -1,13 +1,23 @@
-from opensearchpy import OpenSearch
-from typing import List
-from opensearch_py_ml.ml_commons.ml_common_utils import ML_BASE_URI
-from opensearch_py_ml.exceptions.ml_commons import InvalidParameterError
+# SPDX-License-Identifier: Apache-2.0
+# The OpenSearch Contributors require contributions made to
+# this file be licensed under the Apache-2.0 license or a
+# compatible open source license.
+# Any modifications Copyright OpenSearch Contributors. See
+# GitHub history for details.
 
-ACCESS_MODES = ["public", "private", "restricted"]
+from opensearchpy import OpenSearch
+import json
+from typing import List, Optional
+from opensearch_py_ml.ml_commons.ml_common_utils import ML_BASE_URI
+from opensearch_py_ml.ml_commons.validators.model_access_control import (
+    validate_create_model_group_parameters,
+    validate_update_model_group_parameters,
+    validate_delete_model_group_parameters,
+)
 
 
 class ModelAccessControl:
-    API_ENDPOINT = "model_group"
+    API_ENDPOINT = "model_groups"
 
     def __init__(self, os_client: OpenSearch):
         self.client = os_client
@@ -15,50 +25,28 @@ class ModelAccessControl:
     def register_model_group(
         self,
         name: str,
-        description: str,
-        access_mode: str,
-        backend_roles: List[str],
-        add_all_backend_roles=False,
+        description: Optional[str] = None,
+        access_mode: Optional[str] = "private",
+        backend_roles: Optional[List[str]] = None,
+        add_all_backend_roles: Optional[bool] = False,
     ):
-        # if not isinstance(name, str):
-        #     raise TypeError(f"name should be of type string. Not {type(name)}")
+        validate_create_model_group_parameters(
+            name, description, access_mode, backend_roles, add_all_backend_roles
+        )
+        # import pdb;pdb.set_trace()
 
-        # if not isinstance(description, str):
-        #     raise TypeError(
-        #         f"description should be of type string. Not {type(description)}"
-        #     )
-
-        # if not isinstance(access_mode, str):
-        #     if not access_mode in ACCESS_MODES:
-        #         raise InvalidParameterError(
-        #             "access_mode", "unexpected value", ACCESS_MODES, access_mode
-        #         )
-        #     if access_mode == "restricted":
-        #         if add_all_backend_roles:
-        #             if isinstance(backend_roles, list) and len(backend_roles) > 0:
-        #                 raise Exception(
-        #                     "If access_mode is restricted and add_all_backend_roles is True,"
-        #                     "backend_roles should not be given"
-        #                 )
-        #         else:
-        #             if isinstance(backend_roles, list) and len(backend_roles) == 0:
-        #                 raise Exception(
-        #                     "If access_mode is restricted and add_all_backend_roles is False,"
-        #                     "backend_roles parameter is mandatory"
-        #                 )
-
-        body = {
-            "name": name,
-            "description": description,
-            "access_mode": access_mode,
-            "backend_roles": backend_roles,
-            "add_all_backend_roles": add_all_backend_roles
-        }
+        body = {"name": name, "add_all_backend_roles": add_all_backend_roles}
+        if description:
+            body["description"] = description
+        if access_mode:
+            body["access_mode"] = access_mode
+        if backend_roles:
+            body["backend_roles"] = backend_roles
 
         return self.client.transport.perform_request(
             method="POST", url=f"{ML_BASE_URI}/{self.API_ENDPOINT}/_register", body=body
         )
-    
+
     def update_model_group(
         self,
         name: str,
@@ -67,21 +55,45 @@ class ModelAccessControl:
         backend_roles: List[str],
         add_all_backend_roles=False,
     ):
-        
-        body = {
-            "name": name,
-            "description": description,
-            "access_mode": access_mode,
-            "backend_roles": backend_roles,
-            "add_all_backend_roles": add_all_backend_roles
-        }
+        validate_update_model_group_parameters(
+            name, description, access_mode, backend_roles, add_all_backend_roles
+        )
+        body = {"name": name, "add_all_backend_roles": add_all_backend_roles}
+        if description:
+            body["description"] = description
+        if access_mode:
+            body["access_mode"] = access_mode
+        if backend_roles:
+            body["backend_roles"] = backend_roles
 
         return self.client.transport.perform_request(
             method="PUT", url=f"{ML_BASE_URI}/{self.API_ENDPOINT}/_update", body=body
         )
-    
-    def delete_model_group(self, model_group_id):
 
+    def search_model_group(self, query):
+        if isinstance(query, str):
+            query = json.loads(query)
+
+        return self.client.transport.perform_request(
+            method="GET", url=f"{ML_BASE_URI}/{self.API_ENDPOINT}/_search", body=query
+        )
+
+    def search_model_group_by_name(self, model_group_name, _source=None, size=1):
+        query = {"query": {"term": {"name": model_group_name}}, "size": size}
+        if _source:
+            query["_source"] = _source
+        return self.search_model_group(query)
+
+    def delete_model_group(
+        self, model_group_id: str = None, model_group_name: str = None
+    ):
+        validate_delete_model_group_parameters(model_group_name, model_group_id)
+        if model_group_name:
+            model_group = self.search_model_group_by_name(model_group_name)
+            try:
+                model_group_id = model_group["hits"]["hits"][0]["_source"]["name"]
+            except KeyError:
+                raise Exception(f"Model group with name: {model_group_name} not found")
         return self.client.transport.perform_request(
             method="DELETE", url=f"{ML_BASE_URI}/{self.API_ENDPOINT}/{model_group_id}"
         )
