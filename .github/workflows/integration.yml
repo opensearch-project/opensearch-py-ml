@@ -7,7 +7,7 @@ jobs:
     name: Integ
     runs-on: ubuntu-latest
     concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}
+      group: ${{ github.ref }}
       cancel-in-progress: true
     strategy:
       fail-fast: false
