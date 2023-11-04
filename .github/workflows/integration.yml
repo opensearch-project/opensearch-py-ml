@@ -7,7 +7,7 @@ jobs:
     name: Integ
     runs-on: ubuntu-latest
     concurrency:
-      group: ${{ github.workflow }}-${{ matrix.cluster }}
+      group: ${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: true
     strategy:
       fail-fast: false
