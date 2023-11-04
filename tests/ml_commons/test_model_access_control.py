@@ -12,7 +12,7 @@ from opensearch_py_ml.ml_commons.model_access_control import ModelAccessControl
 from tests import OPENSEARCH_TEST_CLIENT
 from opensearchpy.exceptions import RequestError
 
-
+OPENSEARCH_VERSION = OPENSEARCH_TEST_CLIENT.info()['version']['number']
 @pytest.fixture
 def client():
     return ModelAccessControl(OPENSEARCH_TEST_CLIENT)
@@ -85,13 +85,15 @@ def test_register_model_group(client):
         client.delete_model_group(model_group_name=f"__test__model_group_{each}")
 
 
-def test_update_model_group(client, test_model_group):
-    pass
+def test_update_model_group():
+    import os
+    env_data = os.environ
+    print("Environ data = ", env_data)
+    assert False, "!@#"
 
-
+@pytest.mark.skipif(OPENSEARCH_VERSION >= "2.8.0")
 def test_delete_model_group(client):
-    pass
-
+    assert Fail
 
 def test_search_model_group(client):
     pass
