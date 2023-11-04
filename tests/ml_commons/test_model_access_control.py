@@ -93,7 +93,7 @@ def test_update_model_group():
 
 @pytest.mark.skipif(OPENSEARCH_VERSION >= "2.8.0")
 def test_delete_model_group(client):
-    assert Fail
+    assert False
 
 def test_search_model_group(client):
     pass
