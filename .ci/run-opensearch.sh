@@ -87,6 +87,7 @@ END
       --name "$node_name" \
       --network "$network_name" \
       --env "ES_JAVA_OPTS=-Xms1g -Xmx1g" \
+      --env "OPENSEARCH_VERSION=$OPENSEARCH_VERSION" \
       "${environment[@]}" \
       "${volumes[@]}" \
       "${security[@]}" \
