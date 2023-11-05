@@ -28,6 +28,7 @@ source $script_path/imports.sh
 set -euo pipefail
 
 echo -e "\033[1m>>>>> Start server container >>>>>>>>>>>>>>>>>>>>>>>>>>>>>\033[0m"
+echo $OPENSEARCH_VERSION
 DETACH=true bash $script_path/run-opensearch.sh
 
 echo -e "\033[1m>>>>> Repository specific tests >>>>>>>>>>>>>>>>>>>>>>>>>>>>>\033[0m"

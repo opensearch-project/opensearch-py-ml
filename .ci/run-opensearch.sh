@@ -4,7 +4,7 @@
 # to form a cluster suitable for running the REST API tests.
 #
 # Export the NUMBER_OF_NODES variable to start more than 1 node
-
+printenv
 script_path=$(dirname $(realpath -s $0))
 source $script_path/imports.sh
 set -euo pipefail
@@ -87,7 +87,6 @@ END
       --name "$node_name" \
       --network "$network_name" \
       --env "ES_JAVA_OPTS=-Xms1g -Xmx1g" \
-      --env OPENSEARCH_VERSION=$OPENSEARCH_VERSION \
       "${environment[@]}" \
       "${volumes[@]}" \
       "${security[@]}" \
