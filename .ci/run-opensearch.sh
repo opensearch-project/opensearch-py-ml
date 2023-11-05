@@ -76,7 +76,6 @@ END
       --file=.ci/$CLUSTER/Dockerfile \
       --build-arg SECURE_INTEGRATION=$SECURE_INTEGRATION \
       --build-arg OPENSEARCH_VERSION=$OPENSEARCH_VERSION \
-      --build-arg OS_VERSION=$OPENSEARCH_VERSION \
       --tag=$CLUSTER_TAG \
       .
   else
