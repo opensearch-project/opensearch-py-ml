@@ -7,9 +7,10 @@
 
 import os
 import time
+from unittest.mock import patch
 
 import pytest
-from opensearchpy.exceptions import RequestError
+from opensearchpy.exceptions import NotFoundError, RequestError
 from packaging.version import parse as parse_version
 
 from opensearch_py_ml.ml_commons.model_access_control import ModelAccessControl
@@ -119,6 +120,11 @@ def test_get_model_group_id_by_name(client, test_model_group):
 
     model_group_id = client.get_model_group_id_by_name("test-unknown")
     assert model_group_id is None
+
+    # Mock NotFoundError as it only happens when index isn't created
+    with patch.object(client, "search_model_group_by_name", side_effect=NotFoundError):
+        model_group_id = client.get_model_group_id_by_name(test_model_group)
+        assert model_group_id is None
 
 
 @pytest.mark.skipif(

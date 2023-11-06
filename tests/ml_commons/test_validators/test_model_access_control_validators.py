@@ -101,6 +101,9 @@ def test_validate_model_group_query():
     res = _validate_model_group_query({"query": {"match": {"name": "test"}}})
     assert res is None
 
+    with pytest.raises(ValueError):
+        _validate_model_group_query({}, 123)
+
 
 def test_validate_create_model_group_parameters():
     with pytest.raises(ValueError):
