@@ -2,6 +2,7 @@ ARG OPENSEARCH_VERSION=latest
 FROM opensearchproject/opensearch:$OPENSEARCH_VERSION
 
 # OPENSEARCH_VERSION needs to be redefined as any arg before FROM is outside build scope.
+# Reference: https://docs.docker.com/engine/reference/builder/#understand-how-arg-and-from-interact
 ARG OPENSEARCH_VERSION=latest
 ARG opensearch_path=/usr/share/opensearch
 ARG opensearch_yml=$opensearch_path/config/opensearch.yml
