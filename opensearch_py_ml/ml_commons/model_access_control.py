@@ -67,13 +67,18 @@ class ModelAccessControl:
             method="GET", url=f"{ML_BASE_URI}/{self.API_ENDPOINT}/_search", body=query
         )
 
-    def search_model_group_by_name(self, model_group_name, _source=None, size=1):
+    def search_model_group_by_name(
+        self,
+        model_group_name: str,
+        _source: Optional[List] = None,
+        size: Optional[int] = 1,
+    ):
         query = {"query": {"match": {"name": model_group_name}}, "size": size}
         if _source:
             query["_source"] = _source
         return self.search_model_group(query)
 
-    def get_model_group_id_by_name(self, model_group_name):
+    def get_model_group_id_by_name(self, model_group_name: str):
         try:
             res = self.search_model_group_by_name(model_group_name)
             if res["hits"]["hits"]:
@@ -82,17 +87,17 @@ class ModelAccessControl:
                 return None
         except NotFoundError:
             return None
+        except Exception as ex:
+            print(f"Error in get_model_group_id_by_name: {ex}")
+            return None
 
-    def delete_model_group(
-        self,
-        model_group_id: str = None,
-    ):
+    def delete_model_group(self, model_group_id: str):
         validate_delete_model_group_parameters(model_group_id)
         return self.client.transport.perform_request(
             method="DELETE", url=f"{ML_BASE_URI}/{self.API_ENDPOINT}/{model_group_id}"
         )
 
-    def delete_model_group_by_name(self, model_group_name):
+    def delete_model_group_by_name(self, model_group_name: str):
         model_group_id = self.get_model_group_id_by_name(model_group_name)
         if model_group_id is None:
             return

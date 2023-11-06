@@ -17,7 +17,10 @@ from opensearch_py_ml.ml_commons.model_access_control import ModelAccessControl
 from tests import OPENSEARCH_TEST_CLIENT
 
 OPENSEARCH_VERSION = parse_version(os.environ.get("OPENSEARCH_VERSION", "2.7.0"))
+# MAC = Model Access Control
+# Minimum opensearch version that supports Model Access Control.
 MAC_MIN_VERSION = parse_version("2.8.0")
+# Minimum Opensearch version that supports Model group updates
 MAC_UPDATE_MIN_VERSION = parse_version("2.11.0")
 
 
@@ -60,7 +63,6 @@ def test_model_group2(client):
 )
 def test_register_model_group(client):
     model_group_name1 = "__test__model_group_A"
-    # import pdb;pdb.set_trace()
     try:
         _ = client.delete_model_group_by_name(model_group_name=model_group_name1)
         time.sleep(2)
