@@ -13,7 +13,6 @@ from opensearchpy.exceptions import RequestError
 from packaging.version import parse as parse_version
 
 from opensearch_py_ml.ml_commons.model_access_control import ModelAccessControl
-from opensearch_py_ml.ml_commons.validators.model_access_control import *
 from tests import OPENSEARCH_TEST_CLIENT
 
 OPENSEARCH_VERSION = parse_version(os.environ.get("OPENSEARCH_VERSION", "2.7.0"))

@@ -8,6 +8,7 @@
 from typing import List, Optional
 
 from opensearchpy import OpenSearch
+from opensearchpy.exceptions import NotFoundError
 
 from opensearch_py_ml.ml_commons.ml_common_utils import ML_BASE_URI
 from opensearch_py_ml.ml_commons.validators.model_access_control import (
@@ -71,7 +72,7 @@ class ModelAccessControl:
         if _source:
             query["_source"] = _source
         return self.search_model_group(query)
-    
+
     def get_model_group_id_by_name(self, model_group_name):
         try:
             res = self.search_model_group_by_name(model_group_name)
@@ -86,7 +87,7 @@ class ModelAccessControl:
         self,
         model_group_id: str = None,
     ):
-        validate_delete_model_group_parameters(model_group_id, model_group_name)
+        validate_delete_model_group_parameters(model_group_id)
         return self.client.transport.perform_request(
             method="DELETE", url=f"{ML_BASE_URI}/{self.API_ENDPOINT}/{model_group_id}"
         )

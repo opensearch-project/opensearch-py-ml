@@ -41,7 +41,7 @@ def _validate_model_group_add_all_backend_roles(add_all_backend_roles: Optional[
         raise ValueError("add_all_backend_roles should be a boolean")
 
 
-def _validate_model_group_query(query: dict, operation: Optional[str]=None):
+def _validate_model_group_query(query: dict, operation: Optional[str] = None):
     if not isinstance(query, dict):
         raise ValueError("query needs to be a dictionary")
 
@@ -80,10 +80,7 @@ def validate_create_model_group_parameters(
             )
 
 
-def validate_update_model_group_parameters(
-    update_query: dict, model_group_id: str
-):
-
+def validate_update_model_group_parameters(update_query: dict, model_group_id: str):
     if not isinstance(model_group_id, str):
         raise ValueError("Invalid model_group_id. model_group_id needs to be a string")
 
@@ -92,7 +89,6 @@ def validate_update_model_group_parameters(
 
 
 def validate_delete_model_group_parameters(model_group_id: str):
-
     if not isinstance(model_group_id, str):
         raise ValueError("Invalid model_group_id. model_group_id needs to be a string")
 
