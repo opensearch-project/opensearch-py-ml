@@ -7,7 +7,6 @@
 
 import os
 import time
-import warnings
 
 import pytest
 from opensearchpy.exceptions import RequestError
@@ -16,7 +15,6 @@ from packaging.version import parse as parse_version
 from opensearch_py_ml.ml_commons.model_access_control import ModelAccessControl
 from tests import OPENSEARCH_TEST_CLIENT
 
-warnings.filterwarnings("ignore")
 
 OPENSEARCH_VERSION = parse_version(os.environ["OPENSEARCH_VERSION"])
 MAC_MIN_VERSION = parse_version("2.8.0")
