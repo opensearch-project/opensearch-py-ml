@@ -231,7 +231,10 @@ def test_delete_model_group(client, test_model_group):
     assert "result" in res
     assert res["result"] == "not_found"
 
-
+@pytest.mark.skipif(
+    OPENSEARCH_VERSION < MAC_MIN_VERSION,
+    reason="Model groups are supported in OpenSearch 2.8.0 and above",
+)
 def test_delete_model_group_by_name(client, test_model_group2):
     res = client.delete_model_group_by_name(model_group_name="test-unknown")
     assert res is None
