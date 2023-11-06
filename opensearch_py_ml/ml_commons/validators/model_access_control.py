@@ -7,38 +7,41 @@
 
 """ Module for validating model access control parameters """
 
+from typing import List, Optional
 
 ACCESS_MODES = ["public", "private", "restricted"]
 
 NoneType = type(None)
 
 
-def _validate_model_group_name(name):
+def _validate_model_group_name(name: str):
     if not name or not isinstance(name, str):
         raise ValueError("name is required and needs to be a string")
 
 
-def _validate_model_group_description(description):
+def _validate_model_group_description(description: Optional[str]):
     if not isinstance(description, (NoneType, str)):
         raise ValueError("description needs to be a string")
 
 
-def _validate_model_group_access_mode(access_mode):
+def _validate_model_group_access_mode(access_mode: Optional[str]):
+    if access_mode is None:
+        return
     if access_mode not in ACCESS_MODES:
-        raise ValueError(f"access_mode must be in {ACCESS_MODES}")
+        raise ValueError(f"access_mode can must be in {ACCESS_MODES} or None")
 
 
-def _validate_model_group_backend_roles(backend_roles):
+def _validate_model_group_backend_roles(backend_roles: Optional[List[str]]):
     if not isinstance(backend_roles, (NoneType, list)):
         raise ValueError("backend_roles should either be None or a list of roles names")
 
 
-def _validate_model_group_add_all_backend_roles(add_all_backend_roles):
-    if not isinstance(add_all_backend_roles, bool):
+def _validate_model_group_add_all_backend_roles(add_all_backend_roles: Optional[bool]):
+    if not isinstance(add_all_backend_roles, (NoneType, bool)):
         raise ValueError("add_all_backend_roles should be a boolean")
 
 
-def _validate_model_group_query(query, operation=None):
+def _validate_model_group_query(query: dict, operation: Optional[str]=None):
     if not isinstance(query, dict):
         raise ValueError("query needs to be a dictionary")
 
@@ -47,11 +50,11 @@ def _validate_model_group_query(query, operation=None):
 
 
 def validate_create_model_group_parameters(
-    name,
-    description,
-    access_mode,
-    backend_roles,
-    add_all_backend_roles,
+    name: str,
+    description: Optional[str] = None,
+    access_mode: Optional[str] = "private",
+    backend_roles: Optional[List[str]] = None,
+    add_all_backend_roles: Optional[bool] = False,
 ):
     _validate_model_group_name(name)
     _validate_model_group_description(description)
@@ -78,39 +81,21 @@ def validate_create_model_group_parameters(
 
 
 def validate_update_model_group_parameters(
-    update_query, model_group_id, model_group_name
+    update_query: dict, model_group_id: str
 ):
-    if model_group_id and model_group_name:
-        raise ValueError(
-            "You cannot specify both model_group_id and model_group_name at the same time"
-        )
 
-    if not isinstance(model_group_id, (NoneType, str)):
+    if not isinstance(model_group_id, str):
         raise ValueError("Invalid model_group_id. model_group_id needs to be a string")
-
-    if not isinstance(model_group_name, (NoneType, str)):
-        raise ValueError(
-            "Invalid model_group_name. model_group_name needs to be a string"
-        )
 
     if not isinstance(update_query, dict):
         raise ValueError("Invalid update_query. update_query needs to be a dictionary")
 
 
-def validate_delete_model_group_parameters(model_group_id, model_group_name):
-    if model_group_id and model_group_name:
-        raise ValueError(
-            "You cannot specify both model_group_id and model_group_name at the same time"
-        )
+def validate_delete_model_group_parameters(model_group_id: str):
 
-    if not isinstance(model_group_id, (NoneType, str)):
+    if not isinstance(model_group_id, str):
         raise ValueError("Invalid model_group_id. model_group_id needs to be a string")
 
-    if not isinstance(model_group_name, (NoneType, str)):
-        raise ValueError(
-            "Invalid model_group_name. model_group_name needs to be a string"
-        )
 
-
-def validate_search_model_group_parameters(query):
+def validate_search_model_group_parameters(query: dict):
     _validate_model_group_query(query)

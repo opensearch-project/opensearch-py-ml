@@ -13,9 +13,10 @@ from opensearchpy.exceptions import RequestError
 from packaging.version import parse as parse_version
 
 from opensearch_py_ml.ml_commons.model_access_control import ModelAccessControl
+from opensearch_py_ml.ml_commons.validators.model_access_control import *
 from tests import OPENSEARCH_TEST_CLIENT
 
-OPENSEARCH_VERSION = parse_version(os.environ["OPENSEARCH_VERSION"])
+OPENSEARCH_VERSION = parse_version(os.environ.get("OPENSEARCH_VERSION", "2.7.0"))
 MAC_MIN_VERSION = parse_version("2.8.0")
 MAC_UPDATE_MIN_VERSION = parse_version("2.11.0")
 
@@ -96,6 +97,18 @@ def test_register_model_group(client):
 
 
 @pytest.mark.skipif(
+    OPENSEARCH_VERSION < MAC_MIN_VERSION,
+    reason="Model groups are supported in OpenSearch 2.8.0 and above",
+)
+def test_get_model_group_id_by_name(client, test_model_group):
+    model_group_id = client.get_model_group_id_by_name(test_model_group)
+    assert model_group_id is not None
+
+    model_group_id = client.get_model_group_id_by_name("test-unknown")
+    assert model_group_id is None
+
+
+@pytest.mark.skipif(
     OPENSEARCH_VERSION < MAC_UPDATE_MIN_VERSION,
     reason="Model groups updates are supported in OpenSearch 2.11.0 and above",
 )
@@ -105,7 +118,10 @@ def test_update_model_group(client, test_model_group):
         "description": "updated description",
     }
     try:
-        res = client.update_model_group(update_query, model_group_name=test_model_group)
+        model_group_id = client.get_model_group_id_by_name(test_model_group)
+        if model_group_id is None:
+            raise Exception(f"No model group found with the name: {test_model_group}")
+        res = client.update_model_group(update_query, model_group_id=model_group_id)
         assert isinstance(res, dict)
         assert "status" in res
         assert res["status"] == "Updated"
@@ -188,7 +204,10 @@ def test_delete_model_group(client, test_model_group):
 
     for each in "AB":
         model_group_name = f"__test__model_group_{each}"
-        res = client.delete_model_group(model_group_name=model_group_name)
+        model_group_id = client.get_model_group_id_by_name(model_group_name)
+        if model_group_id is None:
+            continue
+        res = client.delete_model_group(model_group_id=model_group_id)
         assert res is None or isinstance(res, dict)
         if isinstance(res, dict):
             assert "result" in res
