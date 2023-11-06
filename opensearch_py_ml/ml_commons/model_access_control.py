@@ -91,3 +91,9 @@ class ModelAccessControl:
         return self.client.transport.perform_request(
             method="DELETE", url=f"{ML_BASE_URI}/{self.API_ENDPOINT}/{model_group_id}"
         )
+
+    def delete_model_group_by_name(self, model_group_name):
+        model_group_id = self.get_model_group_id_by_name(model_group_name)
+        if model_group_id is None:
+            return
+        return self.delete_model_group(model_group_id=model_group_id)

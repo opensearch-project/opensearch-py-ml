@@ -28,7 +28,7 @@ def client():
 @pytest.fixture
 def test_model_group(client):
     model_group_name = "__test__model_group_1"
-    client.delete_model_group(model_group_name=model_group_name)
+    client.delete_model_group_by_name(model_group_name=model_group_name)
     time.sleep(2)
     client.register_model_group(
         name=model_group_name,
@@ -36,7 +36,21 @@ def test_model_group(client):
     )
     yield model_group_name
 
-    client.delete_model_group(model_group_name=model_group_name)
+    client.delete_model_group_by_name(model_group_name=model_group_name)
+
+
+@pytest.fixture
+def test_model_group2(client):
+    model_group_name = "__test__model_group_2"
+    client.delete_model_group_by_name(model_group_name=model_group_name)
+    time.sleep(2)
+    client.register_model_group(
+        name=model_group_name,
+        description="test model group for opensearch-py-ml test cases",
+    )
+    yield model_group_name
+
+    client.delete_model_group_by_name(model_group_name=model_group_name)
 
 
 @pytest.mark.skipif(
@@ -47,7 +61,7 @@ def test_register_model_group(client):
     model_group_name1 = "__test__model_group_A"
     # import pdb;pdb.set_trace()
     try:
-        _ = client.delete_model_group(model_group_name=model_group_name1)
+        _ = client.delete_model_group_by_name(model_group_name=model_group_name1)
         time.sleep(2)
         res = client.register_model_group(name=model_group_name1)
         assert isinstance(res, dict)
@@ -60,7 +74,7 @@ def test_register_model_group(client):
     model_group_name2 = "__test__model_group_B"
 
     try:
-        _ = client.delete_model_group(model_group_name=model_group_name2)
+        _ = client.delete_model_group_by_name(model_group_name=model_group_name2)
         time.sleep(2)
         res = client.register_model_group(
             name=model_group_name2,
@@ -76,7 +90,7 @@ def test_register_model_group(client):
 
     model_group_name3 = "__test__model_group_C"
     with pytest.raises(RequestError) as exec_info:
-        _ = client.delete_model_group(model_group_name=model_group_name3)
+        _ = client.delete_model_group_by_name(model_group_name=model_group_name3)
         time.sleep(2)
         res = client.register_model_group(
             name=model_group_name3,
@@ -217,7 +231,12 @@ def test_delete_model_group(client, test_model_group):
     assert "result" in res
     assert res["result"] == "not_found"
 
-    res = client.delete_model_group(model_group_name=test_model_group)
+
+def test_delete_model_group_by_name(client, test_model_group2):
+    res = client.delete_model_group_by_name(model_group_name="test-unknown")
+    assert res is None
+
+    res = client.delete_model_group_by_name(model_group_name=test_model_group2)
     assert isinstance(res, dict)
     assert "result" in res
     assert res["result"] == "deleted"
