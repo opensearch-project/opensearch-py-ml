@@ -15,7 +15,6 @@ from packaging.version import parse as parse_version
 from opensearch_py_ml.ml_commons.model_access_control import ModelAccessControl
 from tests import OPENSEARCH_TEST_CLIENT
 
-
 OPENSEARCH_VERSION = parse_version(os.environ["OPENSEARCH_VERSION"])
 MAC_MIN_VERSION = parse_version("2.8.0")
 MAC_UPDATE_MIN_VERSION = parse_version("2.11.0")
