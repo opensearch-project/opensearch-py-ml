@@ -98,7 +98,7 @@ class MLCommonClient:
         model_id = self._model_uploader._register_model(
             model_path=model_path,
             model_meta_path=model_config_path,
-            isVerbose=isVerbose
+            isVerbose=isVerbose,
         )
 
         # loading the model chunks from model index
