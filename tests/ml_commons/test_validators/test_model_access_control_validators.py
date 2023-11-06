@@ -125,6 +125,9 @@ def test_validate_update_model_group_parameters():
     with pytest.raises(ValueError):
         validate_update_model_group_parameters(123, 123)
 
+    with pytest.raises(ValueError):
+        validate_update_model_group_parameters(123, "id")
+
     res = validate_update_model_group_parameters({"query": {}}, "test")
     assert res is None
 
