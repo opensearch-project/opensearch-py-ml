@@ -8,7 +8,7 @@
 
 import json
 import time
-from typing import Any, List, Union
+from typing import Any, List, Optional, Union
 
 from deprecated.sphinx import deprecated
 from opensearchpy import OpenSearch
@@ -104,6 +104,26 @@ class MLCommonClient:
             self.load_model(model_id, wait_until_loaded=wait_until_loaded)
 
         return model_id
+
+    def train_model(
+        self, algorithm_name: str, input_json: dict, is_async: Optional[bool] = False
+    ) -> dict:
+        """
+        This method trains an ML Model
+        """
+
+        params = {}
+        if not isinstance(input_json, dict):
+            input_json = json.loads(input_json)
+        if is_async:
+            params["async"] = "true"
+
+        return self._client.transport.perform_request(
+            method="POST",
+            url=f"{ML_BASE_URI}/_train/{algorithm_name}",
+            body=input_json,
+            params=params,
+        )
 
     def register_model(
         self,
