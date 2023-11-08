@@ -6,8 +6,10 @@
 # GitHub history for details.
 
 import os
+import subprocess
 import shutil
 from os.path import exists
+import sys
 
 from opensearchpy import OpenSearch
 
@@ -389,7 +391,7 @@ def test_DEPRECATED_integration_model_train_upload_full_cycle():
                 except:  # noqa: E722
                     raised = True
                 assert raised == False, "Raised Exception in deleting model"
-
+    
 
 def test_integration_model_train_register_full_cycle():
     # first training the model with small epoch
@@ -514,5 +516,8 @@ def test_integration_model_train_register_full_cycle():
                     raised = True
                 assert raised == False, "Raised Exception in deleting model"
 
+    
+
 
 test_integration_model_train_register_full_cycle()
+
