@@ -87,7 +87,6 @@ setup(
         "pandas>=1.5,<3",
         "matplotlib>=3.6.0,<4",
         "numpy>=1.24.0,<2",
-        
         "deprecated",
     ],
     python_requires=">=3.8",
