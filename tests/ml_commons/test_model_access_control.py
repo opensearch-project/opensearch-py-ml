@@ -28,11 +28,13 @@ MAC_UPDATE_MIN_VERSION = parse_version("2.11.0")
 def client():
     return ModelAccessControl(OPENSEARCH_TEST_CLIENT)
 
+
 def _safe_delete_model_group(client, model_group_name):
     try:
         client.delete_model_group_by_name(model_group_name=model_group_name)
     except NotFoundError:
         pass
+
 
 @pytest.fixture
 def test_model_group(client):
@@ -46,7 +48,6 @@ def test_model_group(client):
     yield model_group_name
 
     _safe_delete_model_group(client, model_group_name)
-
 
 
 @pytest.mark.skipif(
