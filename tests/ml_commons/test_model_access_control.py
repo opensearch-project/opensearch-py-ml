@@ -237,11 +237,14 @@ def test_delete_model_group(client, test_model_group):
     OPENSEARCH_VERSION < MAC_MIN_VERSION,
     reason="Model groups are supported in OpenSearch 2.8.0 and above",
 )
-def test_delete_model_group_by_name(client, test_model_group2):
-    res = client.delete_model_group_by_name(model_group_name="test-unknown")
-    assert res is None
+def test_delete_model_group_by_name(client):
+    with pytest.raises(NotFoundError):
+        client.delete_model_group_by_name(model_group_name="test-unknown")
 
-    res = client.delete_model_group_by_name(model_group_name=test_model_group2)
+    model_group = "__test__model_group_5"
+    client.register_model_group(name=model_group)
+    time.sleep(2)
+    res = client.delete_model_group_by_name(model_group_name=model_group)
     assert isinstance(res, dict)
     assert "result" in res
     assert res["result"] == "deleted"
