@@ -28,11 +28,16 @@ MAC_UPDATE_MIN_VERSION = parse_version("2.11.0")
 def client():
     return ModelAccessControl(OPENSEARCH_TEST_CLIENT)
 
+def _safe_delete_model_group(client, model_group_name):
+    try:
+        client.delete_model_group_by_name(model_group_name=model_group_name)
+    except NotFoundError:
+        pass
 
 @pytest.fixture
 def test_model_group(client):
     model_group_name = "__test__model_group_1"
-    client.delete_model_group_by_name(model_group_name=model_group_name)
+    _safe_delete_model_group(client, model_group_name)
     time.sleep(2)
     client.register_model_group(
         name=model_group_name,
@@ -40,21 +45,8 @@ def test_model_group(client):
     )
     yield model_group_name
 
-    client.delete_model_group_by_name(model_group_name=model_group_name)
+    _safe_delete_model_group(client, model_group_name)
 
-
-@pytest.fixture
-def test_model_group2(client):
-    model_group_name = "__test__model_group_2"
-    client.delete_model_group_by_name(model_group_name=model_group_name)
-    time.sleep(2)
-    client.register_model_group(
-        name=model_group_name,
-        description="test model group for opensearch-py-ml test cases",
-    )
-    yield model_group_name
-
-    client.delete_model_group_by_name(model_group_name=model_group_name)
 
 
 @pytest.mark.skipif(
@@ -64,7 +56,7 @@ def test_model_group2(client):
 def test_register_model_group(client):
     model_group_name1 = "__test__model_group_A"
     try:
-        _ = client.delete_model_group_by_name(model_group_name=model_group_name1)
+        _safe_delete_model_group(client, model_group_name1)
         time.sleep(2)
         res = client.register_model_group(name=model_group_name1)
         assert isinstance(res, dict)
@@ -77,7 +69,7 @@ def test_register_model_group(client):
     model_group_name2 = "__test__model_group_B"
 
     try:
-        _ = client.delete_model_group_by_name(model_group_name=model_group_name2)
+        _safe_delete_model_group(client, model_group_name2)
         time.sleep(2)
         res = client.register_model_group(
             name=model_group_name2,
@@ -93,7 +85,7 @@ def test_register_model_group(client):
 
     model_group_name3 = "__test__model_group_C"
     with pytest.raises(RequestError) as exec_info:
-        _ = client.delete_model_group_by_name(model_group_name=model_group_name3)
+        _safe_delete_model_group(client, model_group_name3)
         time.sleep(2)
         res = client.register_model_group(
             name=model_group_name3,

@@ -100,5 +100,5 @@ class ModelAccessControl:
     def delete_model_group_by_name(self, model_group_name: str):
         model_group_id = self.get_model_group_id_by_name(model_group_name)
         if model_group_id is None:
-            return
+            raise NotFoundError(f"Model group {model_group_name} not found")
         return self.delete_model_group(model_group_id=model_group_id)
