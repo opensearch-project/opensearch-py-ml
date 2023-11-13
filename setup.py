@@ -87,7 +87,7 @@ setup(
         "pandas>=1.5,<3",
         "matplotlib>=3.6.0,<4",
         "numpy>=1.24.0,<2",
-        "deprecated>=1.2.14",
+        "deprecated>=1.2.14,<2",
     ],
     python_requires=">=3.8",
     package_data={"opensearch_py_ml": ["py.typed"]},
