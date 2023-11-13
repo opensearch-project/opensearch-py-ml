@@ -84,8 +84,9 @@ class ModelAccessControl:
             if res["hits"]["hits"]:
                 return res["hits"]["hits"][0]["_id"]
             else:
-                return None
+                raise NotFoundError
         except NotFoundError:
+            print(f"No model group found with name:{model_group_name}")
             return None
         except Exception as ex:
             print(f"Error in get_model_group_id_by_name: {ex}")
