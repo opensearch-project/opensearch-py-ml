@@ -103,8 +103,7 @@ def lint(session):
 
 
 @nox.session(python=["3.8", "3.9", "3.10"])
-@nox.parametrize("pandas_version", ["1.5.0"])
-def test(session, pandas_version: str):
+def test(session):
     session.install(
         "-r",
         "requirements-dev.txt",
@@ -112,7 +111,7 @@ def test(session, pandas_version: str):
         "1500",
     )
     session.install(".")
-    session.run("python", "-m", "pip", "install", f"pandas~={pandas_version}")
+    session.run("python", "-m", "pip", "install", "-r", "requirements.txt")
     session.run("python", "-m", "setup_tests")
 
     junit_xml = join(abspath(dirname(__file__)), "junit", "opensearch-py-ml-junit.xml")
@@ -131,6 +130,7 @@ def test(session, pandas_version: str):
         "--nbval",
         f"--junitxml={junit_xml}",
         f"--cov-report=xml:{codecov_xml}",
+        "tests/",
     )
 
     session.run(
@@ -138,14 +138,12 @@ def test(session, pandas_version: str):
         *(session.posargs or ("opensearch_py_ml/", "tests/")),
     )
 
-
 @nox.session(python=["3.9"])
-@nox.parametrize("pandas_version", ["1.5.0"])
-def docs(session, pandas_version: str):
+def docs(session):
     # Run this so users get an error if they don't have Pandoc installed.
     session.install("-r", "docs/requirements-docs.txt")
     session.install(".")
-    session.run("python", "-m", "pip", "install", f"pandas~={pandas_version}")
+    session.run("python", "-m", "pip", "install", "-r", "requirements.txt")
 
     session.cd("docs")
     session.run("make", "clean", external=True)
@@ -156,8 +154,7 @@ def docs(session, pandas_version: str):
 # to automate the action workflow, leveraging its ability to set up the environment
 # required for model autotracing.
 @nox.session(python=["3.9"])
-@nox.parametrize("pandas_version", ["1.5.0"])
-def trace(session, pandas_version: str):
+def trace(session):
     session.install(
         "-r",
         "requirements-dev.txt",
@@ -165,7 +162,7 @@ def trace(session, pandas_version: str):
         "1500",
     )
     session.install(".")
-    session.run("python", "-m", "pip", "install", f"pandas~={pandas_version}")
+    session.run("python", "-m", "pip", "install", "-r", "requirements.txt")
 
     session.run(
         "python",
