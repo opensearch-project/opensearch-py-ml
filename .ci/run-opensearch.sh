@@ -4,7 +4,6 @@
 # to form a cluster suitable for running the REST API tests.
 #
 # Export the NUMBER_OF_NODES variable to start more than 1 node
-
 script_path=$(dirname $(realpath -s $0))
 source $script_path/imports.sh
 set -euo pipefail

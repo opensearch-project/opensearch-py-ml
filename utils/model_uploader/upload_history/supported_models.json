@@ -28,5 +28,25 @@
         "Embedding Dimension": "N/A",
         "Pooling Mode": "N/A",
         "Workflow Run ID": "6178024517"
+    },
+    {
+        "Model Uploader": "@dhrubo-os",
+        "Upload Time": "2023-10-18 18:06:15",
+        "Model ID": "sentence-transformers/paraphrase-mpnet-base-v2",
+        "Model Version": "1.0.0",
+        "Model Format": "ONNX",
+        "Embedding Dimension": "N/A",
+        "Pooling Mode": "N/A",
+        "Workflow Run ID": "6568285400"
+    },
+    {
+        "Model Uploader": "@dhrubo-os",
+        "Upload Time": "2023-10-18 18:06:15",
+        "Model ID": "sentence-transformers/paraphrase-mpnet-base-v2",
+        "Model Version": "1.0.0",
+        "Model Format": "TORCH_SCRIPT",
+        "Embedding Dimension": "N/A",
+        "Pooling Mode": "N/A",
+        "Workflow Run ID": "6568285400"
     }
 ]

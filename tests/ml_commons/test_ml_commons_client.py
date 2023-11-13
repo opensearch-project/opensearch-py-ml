@@ -7,9 +7,14 @@
 
 import os
 import shutil
+import time
+from json import JSONDecodeError
 from os.path import exists
 
-from opensearchpy import OpenSearch
+import pytest
+from opensearchpy import OpenSearch, helpers
+from opensearchpy.exceptions import RequestError
+from sklearn.datasets import load_iris
 
 from opensearch_py_ml.ml_commons import MLCommonClient
 from opensearch_py_ml.ml_commons.model_uploader import ModelUploader
@@ -44,6 +49,55 @@ PRETRAINED_MODEL_VERSION = "1.0.1"
 PRETRAINED_MODEL_FORMAT = "TORCH_SCRIPT"
 
 
+@pytest.fixture
+def iris_index():
+    index_name = "test__index__iris_data"
+    index_mapping = {
+        "mappings": {
+            "properties": {
+                "sepal_length": {"type": "float"},
+                "sepal_width": {"type": "float"},
+                "petal_length": {"type": "float"},
+                "petal_width": {"type": "float"},
+                "species": {"type": "keyword"},
+            }
+        }
+    }
+
+    if ml_client._client.indices.exists(index=index_name):
+        ml_client._client.indices.delete(index=index_name)
+    ml_client._client.indices.create(index=index_name, body=index_mapping)
+
+    iris = load_iris()
+    iris_data = iris.data
+    iris_target = iris.target
+    iris_species = [iris.target_names[i] for i in iris_target]
+
+    actions = [
+        {
+            "_index": index_name,
+            "_source": {
+                "sepal_length": sepal_length,
+                "sepal_width": sepal_width,
+                "petal_length": petal_length,
+                "petal_width": petal_width,
+                "species": species,
+            },
+        }
+        for (sepal_length, sepal_width, petal_length, petal_width), species in zip(
+            iris_data, iris_species
+        )
+    ]
+
+    helpers.bulk(ml_client._client, actions)
+    # without the sleep, test is failing.
+    time.sleep(2)
+
+    yield index_name
+
+    ml_client._client.indices.delete(index=index_name)
+
+
 def clean_test_folder(TEST_FOLDER):
     if os.path.exists(TEST_FOLDER):
         for files in os.listdir(TEST_FOLDER):
@@ -72,6 +126,44 @@ def test_init():
     assert isinstance(ml_client._model_uploader, ModelUploader)
 
 
+def test_train(iris_index):
+    algorithm_name = "kmeans"
+    input_json_sync = {
+        "parameters": {"centroids": 3, "iterations": 10, "distance_type": "COSINE"},
+        "input_query": {
+            "_source": ["petal_length", "petal_width"],
+            "size": 10000,
+        },
+        "input_index": [iris_index],
+    }
+    response = ml_client.train_model(algorithm_name, input_json_sync)
+    assert isinstance(response, dict)
+    assert "model_id" in response
+    assert "status" in response
+    assert response["status"] == "COMPLETED"
+
+    input_json_async = {
+        "parameters": {"centroids": 3, "iterations": 10, "distance_type": "COSINE"},
+        "input_query": {
+            "_source": ["petal_length", "petal_width"],
+            "size": 10000,
+        },
+        "input_index": [iris_index],
+    }
+    response = ml_client.train_model(algorithm_name, input_json_async, is_async=True)
+
+    assert isinstance(response, dict)
+    assert "task_id" in response
+    assert "status" in response
+    assert response["status"] == "CREATED"
+
+    with pytest.raises(JSONDecodeError):
+        ml_client.train_model(algorithm_name, "", is_async=True)
+
+    with pytest.raises(RequestError):
+        ml_client.train_model(algorithm_name, {}, is_async=True)
+
+
 def test_execute():
     raised = False
     try:
@@ -98,102 +190,6 @@ def test_execute():
     assert (
         raised == False
     ), "Raised Exception during execute API testing with JSON string"
-
-
-def test_search():
-    # Search task cases
-    raised = False
-    try:
-        search_task_obj = ml_client.search_task(
-            input_json='{"query": {"match_all": {}},"size": 1}'
-        )
-        assert search_task_obj["hits"]["hits"] != []
-    except:  # noqa: E722
-        raised = True
-    assert raised == False, "Raised Exception in searching task"
-
-    raised = False
-    try:
-        search_task_obj = ml_client.search_task(
-            input_json={"query": {"match_all": {}}, "size": 1}
-        )
-        assert search_task_obj["hits"]["hits"] != []
-    except:  # noqa: E722
-        raised = True
-    assert raised == False, "Raised Exception in searching task"
-
-    raised = False
-    try:
-        search_task_obj = ml_client.search_task(input_json=15)
-        assert search_task_obj == "Invalid JSON object passed as argument."
-    except:  # noqa: E722
-        raised = True
-    assert raised == False, "Raised Exception in searching task"
-
-    raised = False
-    try:
-        search_task_obj = ml_client.search_task(input_json="15")
-        assert search_task_obj == "Invalid JSON object passed as argument."
-    except:  # noqa: E722
-        raised = True
-    assert raised == False, "Raised Exception in searching task"
-
-    raised = False
-    try:
-        search_task_obj = ml_client.search_task(
-            input_json='{"query": {"match_all": {}},size: 1}'
-        )
-        assert search_task_obj == "Invalid JSON string passed as argument."
-    except:  # noqa: E722
-        raised = True
-    assert raised == False, "Raised Exception in searching task"
-
-    # Search model cases
-    raised = False
-    try:
-        search_model_obj = ml_client.search_model(
-            input_json='{"query": {"match_all": {}},"size": 1}'
-        )
-        assert search_model_obj["hits"]["hits"] != []
-    except:  # noqa: E722
-        raised = True
-    assert raised == False, "Raised Exception in searching model"
-
-    raised = False
-    try:
-        search_model_obj = ml_client.search_model(
-            input_json={"query": {"match_all": {}}, "size": 1}
-        )
-        assert search_model_obj["hits"]["hits"] != []
-    except:  # noqa: E722
-        raised = True
-    assert raised == False, "Raised Exception in searching model"
-
-    raised = False
-    try:
-        search_model_obj = ml_client.search_model(input_json=15)
-        assert search_model_obj == "Invalid JSON object passed as argument."
-    except:  # noqa: E722
-        raised = True
-    assert raised == False, "Raised Exception in searching model"
-
-    raised = False
-    try:
-        search_model_obj = ml_client.search_model(input_json="15")
-        assert search_model_obj == "Invalid JSON object passed as argument."
-    except:  # noqa: E722
-        raised = True
-    assert raised == False, "Raised Exception in searching model"
-
-    raised = False
-    try:
-        search_model_obj = ml_client.search_model(
-            input_json='{"query": {"match_all": {}},size: 1}'
-        )
-        assert search_model_obj == "Invalid JSON string passed as argument."
-    except:  # noqa: E722
-        raised = True
-    assert raised == False, "Raised Exception in searching model"
 
 
 def test_DEPRECATED_integration_pretrained_model_upload_unload_delete():
@@ -304,7 +300,6 @@ def test_DEPRECATED_integration_model_train_upload_full_cycle():
     assert model_file_exists == True
     assert model_config_file_exists == True
     if model_file_exists and model_config_file_exists:
-        raised = False
         model_id = ""
         task_id = ""
         try:
@@ -312,12 +307,10 @@ def test_DEPRECATED_integration_model_train_upload_full_cycle():
                 MODEL_PATH, MODEL_CONFIG_FILE_PATH, load_model=False, isVerbose=True
             )
             print("Model_id:", model_id)
-        except:  # noqa: E722
-            raised = True
-        assert raised == False, "Raised Exception during model registration"
+        except Exception as ex:  # noqa: E722
+            assert False, f"Exception occurred when uploading model: {ex}"
 
         if model_id:
-            raised = False
             try:
                 ml_load_status = ml_client.load_model(model_id, wait_until_loaded=False)
                 task_id = ml_load_status.get("task_id")
@@ -325,21 +318,17 @@ def test_DEPRECATED_integration_model_train_upload_full_cycle():
 
                 ml_model_status = ml_client.get_model_info(model_id)
                 assert ml_model_status.get("model_state") != "DEPLOY_FAILED"
-            except:  # noqa: E722
-                raised = True
-            assert raised == False, "Raised Exception in model deployment"
+            except Exception as ex:  # noqa: E722
+                assert False, f"Exception occurred when loading model: {ex}"
 
-            raised = False
             try:
                 ml_model_status = ml_client.get_model_info(model_id)
                 assert ml_model_status.get("model_format") == "TORCH_SCRIPT"
                 assert ml_model_status.get("algorithm") == "TEXT_EMBEDDING"
-            except:  # noqa: E722
-                raised = True
-            assert raised == False, "Raised Exception in getting model info"
+            except Exception as ex:  # noqa: E722
+                assert False, f"Exception occurred when getting model info: {ex}"
 
             if task_id:
-                raised = False
                 ml_task_status = None
                 try:
                     ml_task_status = ml_client.get_task_info(
@@ -348,47 +337,39 @@ def test_DEPRECATED_integration_model_train_upload_full_cycle():
                     assert ml_task_status.get("task_type") == "DEPLOY_MODEL"
                     print("State:", ml_task_status.get("state"))
                     assert ml_task_status.get("state") != "FAILED"
-                except:  # noqa: E722
-                    print("Model Task Status:", ml_task_status)
-                    raised = True
-                assert raised == False, "Raised Exception in pulling task info"
+                except Exception as ex:  # noqa: E722
+                    assert False, f"Exception occurred when getting task info: {ex}"
                 # This is test is being flaky. Sometimes the test is passing and sometimes showing 500 error
                 # due to memory circuit breaker.
                 # Todo: We need to revisit this test.
                 try:
-                    raised = False
                     sentences = ["First test sentence", "Second test sentence"]
                     embedding_result = ml_client.generate_embedding(model_id, sentences)
                     print(embedding_result)
                     assert len(embedding_result.get("inference_results")) == 2
-                except:  # noqa: E722
-                    raised = True
-                assert (
-                    raised == False
-                ), "Raised Exception in generating sentence embedding"
+                except Exception as ex:  # noqa: E722
+                    assert False, f"Exception occurred when generating embedding: {ex}"
 
                 try:
                     delete_task_obj = ml_client.delete_task(task_id)
                     assert delete_task_obj.get("result") == "deleted"
-                except:  # noqa: E722
-                    raised = True
-                assert raised == False, "Raised Exception in deleting task"
+                except Exception as ex:  # noqa: E722
+                    assert False, f"Exception occurred when deleting task: {ex}"
 
                 try:
                     ml_client.unload_model(model_id)
                     ml_model_status = ml_client.get_model_info(model_id)
                     assert ml_model_status.get("model_state") != "UNDEPLOY_FAILED"
-                except:  # noqa: E722
-                    raised = True
-                assert raised == False, "Raised Exception in model undeployment"
+                except Exception as ex:  # noqa: E722
+                    assert (
+                        False
+                    ), f"Exception occurred when pretrained model undeployment : {ex}"
 
-                raised = False
                 try:
                     delete_model_obj = ml_client.delete_model(model_id)
                     assert delete_model_obj.get("result") == "deleted"
-                except:  # noqa: E722
-                    raised = True
-                assert raised == False, "Raised Exception in deleting model"
+                except Exception as ex:  # noqa: E722
+                    assert False, f"Exception occurred when deleting model: {ex}"
 
 
 def test_integration_model_train_register_full_cycle():
@@ -412,7 +393,6 @@ def test_integration_model_train_register_full_cycle():
         task_id = ""
 
         # Testing deploy_model = True for codecov/patch
-        raised = False
         try:
             ml_client.register_model(
                 model_path=MODEL_PATH,
@@ -420,11 +400,9 @@ def test_integration_model_train_register_full_cycle():
                 deploy_model=True,
                 isVerbose=True,
             )
-        except:  # noqa: E722
-            raised = True
-        assert raised == False, "Raised Exception during first model registration"
+        except Exception as ex:  # noqa: E722
+            assert False, f"Exception occurred during first model registration: {ex}"
 
-        raised = False
         try:
             model_id = ml_client.register_model(
                 model_path=MODEL_PATH,
@@ -433,12 +411,10 @@ def test_integration_model_train_register_full_cycle():
                 isVerbose=True,
             )
             print("Model_id:", model_id)
-        except:  # noqa: E722
-            raised = True
-        assert raised == False, "Raised Exception during second model registration"
+        except Exception as ex:  # noqa: E722
+            assert False, f"Exception occurred during second model registration: {ex}"
 
         if model_id:
-            raised = False
             try:
                 ml_load_status = ml_client.deploy_model(
                     model_id, wait_until_deployed=False
@@ -448,21 +424,17 @@ def test_integration_model_train_register_full_cycle():
 
                 ml_model_status = ml_client.get_model_info(model_id)
                 assert ml_model_status.get("model_state") != "DEPLOY_FAILED"
-            except:  # noqa: E722
-                raised = True
-            assert raised == False, "Raised Exception in model deployment"
+            except Exception as ex:  # noqa: E722
+                assert False, f"Exception occurred during model deployment: {ex}"
 
-            raised = False
             try:
                 ml_model_status = ml_client.get_model_info(model_id)
                 assert ml_model_status.get("model_format") == "TORCH_SCRIPT"
                 assert ml_model_status.get("algorithm") == "TEXT_EMBEDDING"
-            except:  # noqa: E722
-                raised = True
-            assert raised == False, "Raised Exception in getting model info"
+            except Exception as ex:  # noqa: E722
+                assert False, f"Exception occurred when getting model info: {ex}"
 
             if task_id:
-                raised = False
                 ml_task_status = None
                 try:
                     ml_task_status = ml_client.get_task_info(
@@ -471,48 +443,133 @@ def test_integration_model_train_register_full_cycle():
                     assert ml_task_status.get("task_type") == "DEPLOY_MODEL"
                     print("State:", ml_task_status.get("state"))
                     assert ml_task_status.get("state") != "FAILED"
-                except:  # noqa: E722
-                    print("Model Task Status:", ml_task_status)
-                    raised = True
-                assert raised == False, "Raised Exception in pulling task info"
+                except Exception as ex:  # noqa: E722
+                    assert False, f"Exception occurred in pulling task info: {ex}"
 
                 # This is test is being flaky. Sometimes the test is passing and sometimes showing 500 error
                 # due to memory circuit breaker.
                 # Todo: We need to revisit this test.
                 try:
-                    raised = False
                     sentences = ["First test sentence", "Second test sentence"]
                     embedding_result = ml_client.generate_embedding(model_id, sentences)
                     print(embedding_result)
                     assert len(embedding_result.get("inference_results")) == 2
-                except:  # noqa: E722
-                    raised = True
-                assert (
-                    raised == False
-                ), "Raised Exception in generating sentence embedding"
+                except Exception as ex:  # noqa: E722
+                    assert (
+                        False
+                    ), f"Exception occurred when generating sentence embedding: {ex}"
 
                 try:
                     delete_task_obj = ml_client.delete_task(task_id)
                     assert delete_task_obj.get("result") == "deleted"
-                except:  # noqa: E722
-                    raised = True
-                assert raised == False, "Raised Exception in deleting task"
+                except Exception as ex:  # noqa: E722
+                    assert False, f"Exception occurred when deleting task: {ex}"
 
                 try:
                     ml_client.undeploy_model(model_id)
                     ml_model_status = ml_client.get_model_info(model_id)
                     assert ml_model_status.get("model_state") != "UNDEPLOY_FAILED"
-                except:  # noqa: E722
-                    raised = True
-                assert raised == False, "Raised Exception in model undeployment"
+                except Exception as ex:  # noqa: E722
+                    assert False, f"Exception occurred during model undeployment : {ex}"
 
-                raised = False
                 try:
                     delete_model_obj = ml_client.delete_model(model_id)
                     assert delete_model_obj.get("result") == "deleted"
-                except:  # noqa: E722
-                    raised = True
-                assert raised == False, "Raised Exception in deleting model"
+                except Exception as ex:  # noqa: E722
+                    assert False, f"Exception occurred during model deletion : {ex}"
 
 
-test_integration_model_train_register_full_cycle()
+def test_search():
+    # Search task cases
+    raised = False
+    try:
+        search_task_obj = ml_client.search_task(
+            input_json='{"query": {"match_all": {}},"size": 1}'
+        )
+        assert search_task_obj["hits"]["hits"] != []
+    except:  # noqa: E722
+        raised = True
+    assert raised == False, "Raised Exception in searching task"
+
+    raised = False
+    try:
+        search_task_obj = ml_client.search_task(
+            input_json={"query": {"match_all": {}}, "size": 1}
+        )
+        assert search_task_obj["hits"]["hits"] != []
+    except:  # noqa: E722
+        raised = True
+    assert raised == False, "Raised Exception in searching task"
+
+    raised = False
+    try:
+        search_task_obj = ml_client.search_task(input_json=15)
+        assert search_task_obj == "Invalid JSON object passed as argument."
+    except:  # noqa: E722
+        raised = True
+    assert raised == False, "Raised Exception in searching task"
+
+    raised = False
+    try:
+        search_task_obj = ml_client.search_task(input_json="15")
+        assert search_task_obj == "Invalid JSON object passed as argument."
+    except:  # noqa: E722
+        raised = True
+    assert raised == False, "Raised Exception in searching task"
+
+    raised = False
+    try:
+        search_task_obj = ml_client.search_task(
+            input_json='{"query": {"match_all": {}},size: 1}'
+        )
+        assert search_task_obj == "Invalid JSON string passed as argument."
+    except:  # noqa: E722
+        raised = True
+    assert raised == False, "Raised Exception in searching task"
+
+    # Search model cases
+    raised = False
+    try:
+        search_model_obj = ml_client.search_model(
+            input_json='{"query": {"match_all": {}},"size": 1}'
+        )
+        assert search_model_obj["hits"]["hits"] != []
+    except:  # noqa: E722
+        raised = True
+    assert raised == False, "Raised Exception in searching model"
+
+    raised = False
+    try:
+        search_model_obj = ml_client.search_model(
+            input_json={"query": {"match_all": {}}, "size": 1}
+        )
+        assert search_model_obj["hits"]["hits"] != []
+    except:  # noqa: E722
+        raised = True
+    assert raised == False, "Raised Exception in searching model"
+
+    raised = False
+    try:
+        search_model_obj = ml_client.search_model(input_json=15)
+        assert search_model_obj == "Invalid JSON object passed as argument."
+    except:  # noqa: E722
+        raised = True
+    assert raised == False, "Raised Exception in searching model"
+
+    raised = False
+    try:
+        search_model_obj = ml_client.search_model(input_json="15")
+        assert search_model_obj == "Invalid JSON object passed as argument."
+    except:  # noqa: E722
+        raised = True
+    assert raised == False, "Raised Exception in searching model"
+
+    raised = False
+    try:
+        search_model_obj = ml_client.search_model(
+            input_json='{"query": {"match_all": {}},size: 1}'
+        )
+        assert search_model_obj == "Invalid JSON string passed as argument."
+    except:  # noqa: E722
+        raised = True
+    assert raised == False, "Raised Exception in searching model"

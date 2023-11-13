@@ -19,3 +19,5 @@ The following table shows sentence transformer model upload history.
 |2023-08-31 15:22:19|@dhrubo-os|`sentence-transformers/msmarco-distilbert-base-tas-b`|1.0.2|ONNX|N/A|N/A|6042401385|
 |2023-08-31 15:22:19|@dhrubo-os|`sentence-transformers/msmarco-distilbert-base-tas-b`|1.0.2|TORCH_SCRIPT|N/A|N/A|6042401385|
 |2023-09-13 18:03:32|@dhrubo-os|`sentence-transformers/distiluse-base-multilingual-cased-v1`|1.0.1|TORCH_SCRIPT|N/A|N/A|6178024517|
+|2023-10-18 18:06:15|@dhrubo-os|`sentence-transformers/paraphrase-mpnet-base-v2`|1.0.0|ONNX|N/A|N/A|6568285400|
+|2023-10-18 18:06:15|@dhrubo-os|`sentence-transformers/paraphrase-mpnet-base-v2`|1.0.0|TORCH_SCRIPT|N/A|N/A|6568285400|
