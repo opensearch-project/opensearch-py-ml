@@ -100,7 +100,7 @@ class QuestionAnsweringModel:
     
     def save_as_pt(
         self,
-        sentences: [str],
+        sentences: [str] = ["today is sunny"],
         model_id="distilbert-base-cased-distilled-squad",
         model_name: str = None,
         save_json_folder_path: str = None,
