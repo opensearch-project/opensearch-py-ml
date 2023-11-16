@@ -30,7 +30,7 @@ from mdutils.fileutils import MarkDownFile
 # from sentence_transformers.models import Normalize, Pooling, Transformer
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-from transformers import DistilBertTokenizer, DistilBertForQuestionAnswering
+from transformers import AutoTokenizer, AutoModelForQuestionAnswering
 import transformers
 
 
@@ -142,8 +142,8 @@ class QuestionAnsweringModel:
         :rtype: string
         """
 
-        tokenizer = DistilBertTokenizer.from_pretrained('distilbert-base-cased-distilled-squad')
-        model = DistilBertForQuestionAnswering.from_pretrained('distilbert-base-cased-distilled-squad')
+        tokenizer = AutoTokenizer.from_pretrained(model_id)
+        model = AutoModelForQuestionAnswering.from_pretrained(model_id)
 
         if model_name is None:
             model_name = str(model_id.split("/")[-1] + ".pt")
@@ -170,14 +170,11 @@ class QuestionAnsweringModel:
 
         # save tokenizer.json in save_json_folder_name
         # max_position_embeddings
-        tokenizer.save_pretrained(save_json_folder_path)
-        
-        # Find the tokenizer.json file path in cache: /Users/faradawn/.cache/huggingface/hub/models/...
-        config_json_path = os.path.join(save_json_folder_path, "tokenizer_config.json")
-        with open(config_json_path) as f:
-            config_json = json.load(f)
-            tokenizer_file_path = config_json["tokenizer_file"]
 
+        # AutoTokenizer will save tokenizer.json in save_json_folder_name
+        # DistilBertTokenizer will save it in cache: /Users/faradawn/.cache/huggingface/hub/models/...
+        tokenizer.save_pretrained(save_json_folder_path)
+        tokenizer_file_path = os.path.join(save_json_folder_path, "tokenizer.json")
         # Open the tokenizer.json and replace the truncation field
         with open(tokenizer_file_path) as user_file:
             parsed_json = json.load(user_file)
@@ -268,8 +265,8 @@ class QuestionAnsweringModel:
         :rtype: string
         """
 
-        tokenizer = DistilBertTokenizer.from_pretrained('distilbert-base-cased-distilled-squad')
-        model = DistilBertForQuestionAnswering.from_pretrained('distilbert-base-cased-distilled-squad')
+        tokenizer = AutoTokenizer.from_pretrained(model_id)
+        model = AutoModelForQuestionAnswering.from_pretrained(model_id)
 
         if model_name is None:
             model_name = str(model_id.split("/")[-1] + ".onnx")
@@ -290,10 +287,7 @@ class QuestionAnsweringModel:
         tokenizer.save_pretrained(save_json_folder_path)
         
         # Find the tokenizer.json file path in cache: /Users/faradawn/.cache/huggingface/hub/models/...
-        config_json_path = os.path.join(save_json_folder_path, "tokenizer_config.json")
-        with open(config_json_path) as f:
-            config_json = json.load(f)
-            tokenizer_file_path = config_json["tokenizer_file"]
+        tokenizer_file_path = os.path.join(save_json_folder_path, "tokenizer.json")
 
         # Open the tokenizer.json and replace the truncation field
         with open(tokenizer_file_path) as user_file:
@@ -411,7 +405,7 @@ class QuestionAnsweringModel:
             model_name = self.model_id
 
         # if user input model_type/embedding_dimension/pooling_mode, it will skip this step.
-        model = DistilBertForQuestionAnswering.from_pretrained(self.model_id)
+        model = AutoModelForQuestionAnswering.from_pretrained(self.model_id)
         model.save_pretrained(self.folder_path)
 
         
