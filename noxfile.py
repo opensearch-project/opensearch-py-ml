@@ -111,6 +111,7 @@ def test(session):
         "1500",
     )
     session.install(".")
+    session.run("python", "-m", "pip", "install", "-r", "requirements.txt")
     session.run("python", "-m", "setup_tests")
 
     junit_xml = join(abspath(dirname(__file__)), "junit", "opensearch-py-ml-junit.xml")
@@ -129,6 +130,7 @@ def test(session):
         "--nbval",
         f"--junitxml={junit_xml}",
         f"--cov-report=xml:{codecov_xml}",
+        "tests/",
     )
 
     session.run(
@@ -142,6 +144,7 @@ def docs(session):
     # Run this so users get an error if they don't have Pandoc installed.
     session.install("-r", "docs/requirements-docs.txt")
     session.install(".")
+    session.run("python", "-m", "pip", "install", "-r", "requirements.txt")
 
     session.cd("docs")
     session.run("make", "clean", external=True)
@@ -160,6 +163,7 @@ def trace(session):
         "1500",
     )
     session.install(".")
+    session.run("python", "-m", "pip", "install", "-r", "requirements.txt")
 
     session.run(
         "python",
