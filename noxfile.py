@@ -103,7 +103,8 @@ def lint(session):
 
 
 @nox.session(python=["3.8", "3.9", "3.10"])
-def test(session):
+@nox.parametrize("pandas_version", ["1.5.0"])
+def test(session, pandas_version: str):
     session.install(
         "-r",
         "requirements-dev.txt",
@@ -111,7 +112,7 @@ def test(session):
         "1500",
     )
     session.install(".")
-    session.run("python", "-m", "pip", "install", "-r", "requirements.txt")
+    session.run("python", "-m", "pip", "install", f"pandas~={pandas_version}")
     session.run("python", "-m", "setup_tests")
 
     junit_xml = join(abspath(dirname(__file__)), "junit", "opensearch-py-ml-junit.xml")
@@ -130,7 +131,6 @@ def test(session):
         "--nbval",
         f"--junitxml={junit_xml}",
         f"--cov-report=xml:{codecov_xml}",
-        "tests/",
     )
 
     session.run(
@@ -138,12 +138,14 @@ def test(session):
         *(session.posargs or ("opensearch_py_ml/", "tests/")),
     )
 
+
 @nox.session(python=["3.9"])
-def docs(session):
+@nox.parametrize("pandas_version", ["1.5.0"])
+def docs(session, pandas_version: str):
     # Run this so users get an error if they don't have Pandoc installed.
     session.install("-r", "docs/requirements-docs.txt")
     session.install(".")
-    session.run("python", "-m", "pip", "install", "-r", "requirements.txt")
+    session.run("python", "-m", "pip", "install", f"pandas~={pandas_version}")
 
     session.cd("docs")
     session.run("make", "clean", external=True)
@@ -154,7 +156,8 @@ def docs(session):
 # to automate the action workflow, leveraging its ability to set up the environment
 # required for model autotracing.
 @nox.session(python=["3.9"])
-def trace(session):
+@nox.parametrize("pandas_version", ["1.5.0"])
+def trace(session, pandas_version: str):
     session.install(
         "-r",
         "requirements-dev.txt",
@@ -162,7 +165,7 @@ def trace(session):
         "1500",
     )
     session.install(".")
-    session.run("python", "-m", "pip", "install", "-r", "requirements.txt")
+    session.run("python", "-m", "pip", "install", f"pandas~={pandas_version}")
 
     session.run(
         "python",
