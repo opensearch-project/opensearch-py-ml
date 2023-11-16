@@ -138,7 +138,6 @@ def test(session):
         *(session.posargs or ("opensearch_py_ml/", "tests/")),
     )
 
-
 @nox.session(python=["3.9"])
 def docs(session):
     # Run this so users get an error if they don't have Pandoc installed.
