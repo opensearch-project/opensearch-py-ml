@@ -25,6 +25,7 @@ TESTDATA_UNZIP_FOLDER = os.path.join(
     os.path.dirname(os.path.abspath("__file__")), "tests", "sample_zip"
 )
 
+default_model_id = "distilbert-base-cased-distilled-squad"
 
 def clean_test_folder(TEST_FOLDER):
     if os.path.exists(TEST_FOLDER):
@@ -109,12 +110,11 @@ def compare_model_zip_file(zip_file_path, expected_filenames, model_format):
         ), f"The content in the {model_format} model zip file does not match the expected content: {filenames} != {expected_filenames}"
 
 
-default_model_id = "distilbert-base-cased-distilled-squad"
-clean_test_folder(TEST_FOLDER)
-test_model = QuestionAnsweringModel(folder_path=TEST_FOLDER)
+
 
 
 def test_check_attribute():
+    test_model = QuestionAnsweringModel(folder_path=TEST_FOLDER)
     try:
         check_attribute = getattr(test_model, "model_id", "folder_path")
     except AttributeError:
@@ -149,75 +149,106 @@ def test_folder_path():
     assert "The default folder path already exists" in exc_info.value.args[0]
 
 
+# New tests for save_as_pt and save_as_onnx
 
-# New unit test to compare output of our model with official model
-# def get_output_similarity():
-#     questions = ["Who was Jim Henson?", "Where do I live?", "What's my name?", "Which name is also used to describe the Amazon rainforest in English?"]
-#     contexts = ["Jim Henson was a nice puppet", "My name is Sarah and I live in London", "My name is Clara and I live in Berkeley.", "The Amazon rainforest (Portuguese: Floresta Amazônica or Amazônia; Spanish: Selva Amazónica, Amazonía or usually Amazonia; French: Forêt amazonienne; Dutch: Amazoneregenwoud), also known in English as Amazonia or the Amazon Jungle, is a moist broadleaf forest that covers most of the Amazon basin of South America. This basin encompasses 7,000,000 square kilometres (2,700,000 sq mi), of which 5,500,000 square kilometres (2,100,000 sq mi) are covered by the rainforest. This region includes territory belonging to nine nations. The majority of the forest is contained within Brazil, with 60% of the rainforest, followed by Peru with 13%, Colombia with 10%, and with minor amounts in Venezuela, Ecuador, Bolivia, Guyana, Suriname and French Guiana. States or departments in four nations contain 'Amazonas' in their names. The Amazon represents over half of the planet's remaining rainforests, and comprises the largest and most biodiverse tract of tropical rainforest in the world, with an estimated 390 billion individual trees divided into 16,000 species."]
+test_cases = [
+    {
+        "question": "Who was Jim Henson?",
+        "context": "Jim Henson was a nice puppet"
+    },
+    {
+        "question": "Where do I live?",
+        "context": "My name is Sarah and I live in London"
+    },
+    {
+        "question": "What's my name?",
+        "context": "My name is Clara and I live in Berkeley."
+    },
+    {
+        "question": "Which name is also used to describe the Amazon rainforest in English?",
+        "context": "The Amazon rainforest (Portuguese: Floresta Amazônica or Amazônia; Spanish: Selva Amazónica, Amazonía or usually Amazonia; French: Forêt amazonienne; Dutch: Amazoneregenwoud), also known in English as Amazonia or the Amazon Jungle, is a moist broadleaf forest that covers most of the Amazon basin of South America. This basin encompasses 7,000,000 square kilometres (2,700,000 sq mi), of which 5,500,000 square kilometres (2,100,000 sq mi) are covered by the rainforest. This region includes territory belonging to nine nations. The majority of the forest is contained within Brazil, with 60% of the rainforest, followed by Peru with 13%, Colombia with 10%, and with minor amounts in Venezuela, Ecuador, Bolivia, Guyana, Suriname and French Guiana. States or departments in four nations contain 'Amazonas' in their names. The Amazon represents over half of the planet's remaining rainforests, and comprises the largest and most biodiverse tract of tropical rainforest in the world, with an estimated 390 billion individual trees divided into 16,000 species."
+    }
+]
 
-#     # Obtain pytorch's official model
-#     from transformers import AutoTokenizer, AutoModelForQuestionAnswering
-#     import torch
-#     tokenizer = AutoTokenizer.from_pretrained('distilbert-base-cased-distilled-squad')
-#     official_model = AutoModelForQuestionAnswering.from_pretrained('distilbert-base-cased-distilled-squad')
+def get_official_answer(test_cases):
+    # Obtain pytorch's official model
+    from transformers import AutoTokenizer, AutoModelForQuestionAnswering
+    import torch
+    tokenizer = AutoTokenizer.from_pretrained('distilbert-base-cased-distilled-squad')
+    official_model = AutoModelForQuestionAnswering.from_pretrained('distilbert-base-cased-distilled-squad')
 
-#     # Official model's answer
-#     def official_model_answer(question, context):
-#         inputs = tokenizer(question, context, return_tensors="pt")
-#         with torch.no_grad():
-#             outputs = official_model(**inputs)
-#         answer_start_index = torch.argmax(outputs.start_logits, dim=-1).item()
-#         answer_end_index = torch.argmax(outputs.end_logits, dim=-1).item()
-#         predict_answer_tokens = inputs['input_ids'][0, answer_start_index : answer_end_index + 1]
-#         official_answer = tokenizer.decode(predict_answer_tokens)
-#         return official_answer
+    results = []
 
-#     # Test onnx's answer
-#     def test_onnx():
-#         from transformers import AutoTokenizer
-#         from onnxruntime import InferenceSession
-#         import numpy as np
-#         session = InferenceSession(f"{folder_path}/{model_id}.onnx")
-
-#         for i in range(len(questions)):
-#             question = questions[i]
-#             context = contexts[i]
-#             inputs = tokenizer(question, context, return_tensors="pt")
-#             print(f"=== test {i}, question: {question}, context: {context}")
-
-#             inputs = tokenizer(question, context, return_tensors="np")
-#             outputs = session.run(output_names=["start_logits", "end_logits"], input_feed=dict(inputs))
-
-#             answer_start_index = np.argmax(outputs[0], axis=-1).item()
-#             answer_end_index = np.argmax(outputs[1], axis=-1).item()
-#             predict_answer_tokens = inputs['input_ids'][0, answer_start_index : answer_end_index + 1]
-#             answer = tokenizer.decode(predict_answer_tokens)
-#             official_answer = official_model_answer(question, context)
-
-#             assert answer == official_answer, f"FAILED: traced model answer [{answer}] != [{official_answer}]"
-            
-#             print(f"    Official answer: {official_answer}")
-#             print(f"    Our answer: {answer}")
+    for case in test_cases:
+        question, context = case["question"], case["context"]
+        inputs = tokenizer(question, context, return_tensors="pt")
+        with torch.no_grad():
+            outputs = official_model(**inputs)
+        answer_start_index = torch.argmax(outputs.start_logits, dim=-1).item()
+        answer_end_index = torch.argmax(outputs.end_logits, dim=-1).item()
+        results.append([answer_start_index, answer_end_index])
     
-#     # Test torchscript model's answer
-#     def test_pt():
-#         traced_model = torch.jit.load(f"{folder_path}/{model_id}.pt")
+    return results
 
-#         for i in range(len(questions)):
-#             question = questions[i]
-#             context = contexts[i]
-#             inputs = tokenizer(question, context, return_tensors="pt")
-#             print(f"=== test {i}, question: {question}, context: {context}")
+def get_pt_answer(test_cases, folder_path, model_id):
+    from transformers import AutoTokenizer, AutoModelForQuestionAnswering
+    import torch
+    tokenizer = AutoTokenizer.from_pretrained(model_id)
+    traced_model = torch.jit.load(f"{folder_path}/{model_id}.pt")
 
-#             with torch.no_grad():
-#                 outputs = traced_model(**inputs)
-#             answer_start_index = torch.argmax(outputs["start_logits"], dim=-1).item()
-#             answer_end_index = torch.argmax(outputs["end_logits"], dim=-1).item()
-#             predict_answer_tokens = inputs['input_ids'][0, answer_start_index : answer_end_index + 1]
-#             answer = tokenizer.decode(predict_answer_tokens)
+    results = []
 
-#             print(f"    Official answer: {official_model_answer(question, context)}")
-#             print(f"    Our answer: {answer}")
+    for case in test_cases:
+        question, context = case["question"], case["context"]
+        inputs = tokenizer(question, context, return_tensors="pt")
+
+        with torch.no_grad():
+            outputs = traced_model(**inputs)
+        answer_start_index = torch.argmax(outputs["start_logits"], dim=-1).item()
+        answer_end_index = torch.argmax(outputs["end_logits"], dim=-1).item()
+        results.append([answer_start_index, answer_end_index])
+        
+    return results
+
+
+def get_onnx_answer(test_cases, folder_path, model_id):
+    from transformers import AutoTokenizer
+    from onnxruntime import InferenceSession
+    import numpy as np
+    session = InferenceSession(f"{folder_path}/{model_id}.onnx")
+    tokenizer = AutoTokenizer.from_pretrained(model_id)
+
+    results = []
+
+    for case in test_cases:
+        question, context = case["question"], case["context"]
+        inputs = tokenizer(question, context, return_tensors="pt")
+
+        inputs = tokenizer(question, context, return_tensors="np")
+        outputs = session.run(output_names=["start_logits", "end_logits"], input_feed=dict(inputs))
+
+        answer_start_index = np.argmax(outputs[0], axis=-1).item()
+        answer_end_index = np.argmax(outputs[1], axis=-1).item()
+        results.append([answer_start_index, answer_end_index])
+        
+    return results
+
+
+def test_pt_answer():
+    test_model = QuestionAnsweringModel(folder_path=TEST_FOLDER, overwrite=True)
+    test_model.save_as_pt(default_model_id)
+    pt_results = get_pt_answer(test_cases, TEST_FOLDER, default_model_id)
+    official_results = get_official_answer(test_cases)
+    for i in range(len(pt_results)):
+        assert pt_results[i] == official_results[i], f"Failed at index {i}: pt_results[{i}] ({pt_results[i]}) != official_results[{i}] ({official_results[i]})"
+
+def test_onnx_answer():
+    test_model = QuestionAnsweringModel(folder_path=TEST_FOLDER, overwrite=True)
+    test_model.save_as_onnx(default_model_id)
+    onnx_results = get_onnx_answer(test_cases, TEST_FOLDER, default_model_id)
+    official_results = get_official_answer(test_cases)
+    for i in range(len(onnx_results)):
+        assert onnx_results[i] == official_results[i], f"Failed at index {i}: onnx_results[{i}] ({onnx_results[i]}) != official_results[{i}] ({official_results[i]})"
 
 clean_test_folder(TEST_FOLDER)
 clean_test_folder(TESTDATA_UNZIP_FOLDER)
