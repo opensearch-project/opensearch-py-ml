@@ -2,6 +2,10 @@ name: Integration tests
 
 on: [push, pull_request]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   integration:
     name: Integ
@@ -13,6 +17,7 @@ jobs:
         secured: ["true"]
         entry:
           - { opensearch_version: 2.7.0 }
+          - { opensearch_version: 2.11.0 }
 
     steps:
       - name: Checkout

@@ -43,10 +43,10 @@ import pandas as pd  # type: ignore
 from pandas.core.dtypes.common import is_bool_dtype  # type: ignore
 from pandas.core.dtypes.common import (
     is_datetime64_any_dtype,
-    is_datetime_or_timedelta_dtype,
     is_float_dtype,
     is_integer_dtype,
     is_string_dtype,
+    is_timedelta64_dtype,
 )
 from pandas.core.dtypes.inference import is_list_like
 
@@ -91,7 +91,9 @@ class Field(NamedTuple):
 
     @property
     def is_timestamp(self) -> bool:
-        return is_datetime_or_timedelta_dtype(self.pd_dtype)
+        return is_datetime64_any_dtype(self.pd_dtype) or is_timedelta64_dtype(
+            self.pd_dtype
+        )
 
     @property
     def is_bool(self) -> bool:
@@ -509,7 +511,7 @@ class FieldMappings:
             os_dtype = "boolean"
         elif is_string_dtype(pd_dtype):
             os_dtype = "keyword"
-        elif is_datetime_or_timedelta_dtype(pd_dtype):
+        elif is_datetime64_any_dtype(pd_dtype) or is_timedelta64_dtype(pd_dtype):
             os_dtype = "date"
         elif is_datetime64_any_dtype(pd_dtype):
             os_dtype = "date"
@@ -794,7 +796,9 @@ class FieldMappings:
                 pd_dtypes.append(np.dtype(pd_dtype))
                 os_field_names.append(os_field_name)
                 os_date_formats.append(os_date_format)
-            elif include_timestamp and is_datetime_or_timedelta_dtype(pd_dtype):
+            elif include_timestamp and (
+                is_datetime64_any_dtype(pd_dtype) or is_timedelta64_dtype(pd_dtype)
+            ):
                 pd_dtypes.append(np.dtype(pd_dtype))
                 os_field_names.append(os_field_name)
                 os_date_formats.append(os_date_format)
