@@ -9,7 +9,7 @@ from opensearchpy import OpenSearch
 from opensearch_py_ml.ml_commons.ml_common_utils import ML_BASE_URI
 
 
-class Connectors:
+class Connector:
     def __init__(self, os_client: OpenSearch):
         self.client = os_client
 
