@@ -1,10 +1,18 @@
-from opensearch_py_ml.ml_commons.connectors import Connector
-from opensearchpy.exceptions import NotFoundError, RequestError
-from tests import OPENSEARCH_TEST_CLIENT
-from packaging.version import parse as parse_version
-import os
-import pytest
+# SPDX-License-Identifier: Apache-2.0
+# The OpenSearch Contributors require contributions made to
+# this file be licensed under the Apache-2.0 license or a
+# compatible open source license.
+# Any modifications Copyright OpenSearch Contributors. See
+# GitHub history for details.
 
+import os
+
+import pytest
+from opensearchpy.exceptions import NotFoundError, RequestError
+from packaging.version import parse as parse_version
+
+from opensearch_py_ml.ml_commons.connector import Connector
+from tests import OPENSEARCH_TEST_CLIENT
 
 OPENSEARCH_VERSION = parse_version(os.environ.get("OPENSEARCH_VERSION", "2.11.0"))
 CONNECTOR_MIN_VERSION = parse_version("2.11.0")
@@ -41,13 +49,12 @@ def test_connector(client: Connector):
             }
         ],
     }
-    
-    res = client.create_standalone_connector(payload)
-    connector_id = res['connector_id']
-    yield connector_id
-    
-    _safe_delete_connector(client, connector_id)
 
+    res = client.create_standalone_connector(payload)
+    connector_id = res["connector_id"]
+    yield connector_id
+
+    _safe_delete_connector(client, connector_id)
 
 
 @pytest.mark.skipif(

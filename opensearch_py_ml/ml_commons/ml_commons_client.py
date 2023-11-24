@@ -13,6 +13,7 @@ from typing import Any, List, Optional, Union
 from deprecated.sphinx import deprecated
 from opensearchpy import OpenSearch
 
+from opensearch_py_ml.ml_commons.connector import Connector
 from opensearch_py_ml.ml_commons.ml_common_utils import (
     ML_BASE_URI,
     MODEL_FORMAT_FIELD,
@@ -24,7 +25,7 @@ from opensearch_py_ml.ml_commons.ml_common_utils import (
 from opensearch_py_ml.ml_commons.model_access_control import ModelAccessControl
 from opensearch_py_ml.ml_commons.model_execute import ModelExecute
 from opensearch_py_ml.ml_commons.model_uploader import ModelUploader
-from opensearch_py_ml.ml_commons.connector import Connector
+
 
 class MLCommonClient:
     """
