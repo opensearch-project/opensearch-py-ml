@@ -11,7 +11,7 @@ import pytest
 from opensearchpy.exceptions import NotFoundError, RequestError
 from packaging.version import parse as parse_version
 
-from opensearch_py_ml.ml_commons.connector import Connector
+from opensearch_py_ml.ml_commons.model_connector import Connector
 from tests import OPENSEARCH_TEST_CLIENT
 
 OPENSEARCH_VERSION = parse_version(os.environ.get("OPENSEARCH_VERSION", "2.11.0"))
