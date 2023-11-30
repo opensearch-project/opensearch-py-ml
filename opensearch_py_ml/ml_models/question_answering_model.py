@@ -7,32 +7,11 @@
 
 import json
 import os
-import pickle
-import platform
-import random
-import re
-import shutil
-import subprocess
-import time
 from pathlib import Path
-from typing import List
 from zipfile import ZipFile
-
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-import requests
 import torch
-import yaml
-from accelerate import Accelerator, notebook_launcher
-from mdutils.fileutils import MarkDownFile
-# from sentence_transformers import SentenceTransformer
-# from sentence_transformers.models import Normalize, Pooling, Transformer
-from torch.utils.data import DataLoader
-from tqdm import tqdm
 from transformers import AutoTokenizer, AutoModelForQuestionAnswering
 import transformers
-
 
 from opensearch_py_ml.ml_commons.ml_common_utils import (
     _generate_model_content_hash_value,
@@ -160,19 +139,7 @@ class QuestionAnsweringModel:
             zip_file_name = str(model_id.split("/")[-1] + ".zip")
         zip_file_path = os.path.join(model_output_path, zip_file_name)
 
-        # handle when model_max_length is unproperly defined in model's tokenizer (e.g. "intfloat/e5-small-v2")
-        # MODEL_MAX_SEQ_LENGTH = 512
-        # if tokenizer.model_max_length > model.get_max_seq_length():
-        #     tokenizer.model_max_length = model.get_max_seq_length()
-        #     print(
-        #         f"The model_max_length is not properly defined in tokenizer_config.json. Setting it to be {tokenizer.model_max_length}"
-        #     )
-
-        # save tokenizer.json in save_json_folder_name
-        # max_position_embeddings
-
-        # AutoTokenizer will save tokenizer.json in save_json_folder_name
-        # DistilBertTokenizer will save it in cache: /Users/faradawn/.cache/huggingface/hub/models/...
+        
         tokenizer.save_pretrained(save_json_folder_path)
         tokenizer_file_path = os.path.join(save_json_folder_path, "tokenizer.json")
         # Open the tokenizer.json and replace the truncation field
@@ -425,17 +392,6 @@ class QuestionAnsweringModel:
                     pooling_mode = "CLS"
                 if normalize_result is None:
                     normalize_result = False
-                
-                # for str_idx, module in model._modules.items():
-                    # print(f"=== idx {str_idx}, module name {module.__class__.__name__}, module {module}")
-                    # if model_type is None and isinstance(module, Transformer):
-                    #     model_type = module.auto_model.__class__.__name__
-                    #     model_type = model_type.lower().rstrip("model")
-                    # elif pooling_mode is None and isinstance(module, Pooling):
-                    #     pooling_mode = module.get_pooling_mode_str().upper()
-                    # elif normalize_result is None and isinstance(module, Normalize):
-                    #     normalize_result = True
-                    # TODO: Support 'Dense' module
                 
             except Exception as e:
                 raise Exception(

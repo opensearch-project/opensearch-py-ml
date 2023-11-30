@@ -9,4 +9,4 @@ from .metrics_correlation.mcorr import MCorr
 from .sentencetransformermodel import SentenceTransformerModel
 from .question_answering_model import QuestionAnsweringModel
 
-__all__ = ["SentenceTransformerModel", "SentenceTransformerModel", "MCorr"]
+__all__ = ["SentenceTransformerModel", "QuestionAnsweringModel", "MCorr"]
