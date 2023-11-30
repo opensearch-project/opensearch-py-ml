@@ -466,8 +466,6 @@ class QuestionAnsweringModel:
                 else self.onnx_zip_file_path
             )
 
-            # model_zip_file_path = '/Users/faradawn/CS/opensearch-py-ml/opensearch_py_ml/ml_models/question-model-folder/distilbert-base-cased-distilled-squad.zip'
-
             if model_zip_file_path is None:
                 print(
                     "The model configuration JSON file currently lacks the 'model_content_size_in_bytes' and 'model_content_hash_value' fields. You can include these fields by specifying the 'model_zip_file_path' parameter. Failure to do so may result in the model registration process encountering issues."
