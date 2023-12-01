@@ -15,9 +15,8 @@ from opensearch_py_ml.ml_commons.model_connector import Connector
 from tests import OPENSEARCH_TEST_CLIENT
 
 OPENSEARCH_VERSION = parse_version(os.environ.get("OPENSEARCH_VERSION", "2.11.0"))
-CONNECTOR_MIN_VERSION = parse_version("2.11.0")
+CONNECTOR_MIN_VERSION = parse_version("2.9.0")
 
-print("!@#", OPENSEARCH_VERSION < CONNECTOR_MIN_VERSION)
 @pytest.fixture
 def client():
     return Connector(OPENSEARCH_TEST_CLIENT)
