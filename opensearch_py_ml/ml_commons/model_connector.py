@@ -22,13 +22,6 @@ class Connector:
             method="POST", url=f"{ML_BASE_URI}/connectors/_create", body=payload
         )
 
-    def create_internal_connector(self, payload: dict):
-        if not isinstance(payload, dict):
-            raise ValueError("payload needs to be a dictionary")
-
-        return self.client.transport.perform_request(
-            method="POST", url=f"{ML_BASE_URI}/models/_register", body=payload
-        )
 
     def list_connectors(self):
         search_query = {"query": {"match_all": {}}}
