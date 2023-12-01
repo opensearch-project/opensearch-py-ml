@@ -77,7 +77,7 @@ def test_create_standalone_connector(client: Connector, connector_payload: dict)
     OPENSEARCH_VERSION < CONNECTOR_MIN_VERSION,
     reason="Connectors are supported in OpenSearch 2.9.0 and above",
 )
-def test_list_connector(client, test_connector):
+def test_list_connectors(client, test_connector):
     try:
         res = client.list_connectors()
         assert len(res["hits"]["hits"]) > 0
@@ -90,17 +90,17 @@ def test_list_connector(client, test_connector):
                 break
         assert found, "Test connector not found in list connectors response"
     except Exception as ex:
-        assert False, "Failed to list connectors due to {ex}"
+        assert False, f"Failed to list connectors due to {ex}"
 
 
 @pytest.mark.skipif(
     OPENSEARCH_VERSION < CONNECTOR_MIN_VERSION,
     reason="Connectors are supported in OpenSearch 2.9.0 and above",
 )
-def test_search_connector(client, test_connector):
+def test_search_connectors(client, test_connector):
     try:
         query = {"query": {"match": {"name": "Test Connector"}}}
-        res = client.search_connector(query)
+        res = client.search_connectors(query)
         assert len(res["hits"]["hits"]) > 0
 
         # check if test_connector id is in the response
@@ -111,7 +111,7 @@ def test_search_connector(client, test_connector):
                 break
         assert found, "Test connector not found in search connectors response"
     except Exception as ex:
-        assert False, "Failed to search connectors due to {ex}"
+        assert False, f"Failed to search connectors due to {ex}"
 
 
 @pytest.mark.skipif(
@@ -121,9 +121,9 @@ def test_search_connector(client, test_connector):
 def test_get_connector(client, test_connector):
     try:
         res = client.get_connector(connector_id=test_connector)
-        assert res["connector_id"] == test_connector
+        assert res["name"] == "Test Connector"
     except Exception as ex:
-        assert False, "Failed to get connector due to {ex}"
+        assert False, f"Failed to get connector due to {ex}"
 
     with pytest.raises(ValueError):
         client.get_connector(connector_id=None)
@@ -142,10 +142,10 @@ def test_delete_connector(client, test_connector):
         res = client.delete_connector(connector_id=test_connector)
         assert res["result"] == "deleted"
     except Exception as ex:
-        assert False, "Failed to delete connector due to {ex}"
+        assert False, f"Failed to delete connector due to {ex}"
 
     try:
         res = client.delete_connector(connector_id="unknown")
         assert res["result"] == "not_found"
     except Exception as ex:
-        assert False, "Failed to delete connector due to {ex}"
+        assert False, f"Failed to delete connector due to {ex}"
