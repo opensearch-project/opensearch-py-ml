@@ -22,7 +22,6 @@ class Connector:
             method="POST", url=f"{ML_BASE_URI}/connectors/_create", body=payload
         )
 
-
     def list_connectors(self):
         search_query = {"query": {"match_all": {}}}
         return self.search_connectors(search_query)

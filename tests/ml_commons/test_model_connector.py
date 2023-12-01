@@ -17,6 +17,7 @@ from tests import OPENSEARCH_TEST_CLIENT
 OPENSEARCH_VERSION = parse_version(os.environ.get("OPENSEARCH_VERSION", "2.11.0"))
 CONNECTOR_MIN_VERSION = parse_version("2.9.0")
 
+
 @pytest.fixture
 def client():
     return Connector(OPENSEARCH_TEST_CLIENT)
