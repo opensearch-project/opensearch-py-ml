@@ -114,6 +114,9 @@ def test_search_connectors(client, test_connector):
     except Exception as ex:
         assert False, f"Failed to search connectors due to {ex}"
 
+    with pytest.raises(ValueError):
+        client.search_connectors("test")
+
 
 @pytest.mark.skipif(
     OPENSEARCH_VERSION < CONNECTOR_MIN_VERSION,
@@ -150,3 +153,6 @@ def test_delete_connector(client, test_connector):
         assert res["result"] == "not_found"
     except Exception as ex:
         assert False, f"Failed to delete connector due to {ex}"
+
+    with pytest.raises(ValueError):
+        client.delete_connector(connector_id={"test": "fail"})
