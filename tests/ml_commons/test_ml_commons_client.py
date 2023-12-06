@@ -18,6 +18,7 @@ from sklearn.datasets import load_iris
 
 from opensearch_py_ml.ml_commons import MLCommonClient
 from opensearch_py_ml.ml_commons.model_uploader import ModelUploader
+from opensearch_py_ml.ml_commons.model_profile import ModelProfile
 from opensearch_py_ml.ml_models.sentencetransformermodel import SentenceTransformerModel
 from tests import OPENSEARCH_TEST_CLIENT
 
@@ -573,3 +574,47 @@ def test_search():
     except:  # noqa: E722
         raised = True
     assert raised == False, "Raised Exception in searching model"
+
+# Model Profile Tests. These will need some model train/predict data. Hence, need to be
+# at the end after the training/prediction tests are done.
+
+def profile_client():
+    client = ModelProfile(OPENSEARCH_TEST_CLIENT)
+    return client
+
+def test_get_profile(profile_client):
+    
+    with pytest.raises(ValueError):
+        profile_client.get_profile("")
+    
+    result = profile_client.get_profile()
+    assert isinstance(result, dict)
+    if len(result) > 0:
+        assert "nodes" in result
+
+
+def test_get_models_profile(profile_client):
+    
+    with pytest.raises(ValueError):
+        profile_client.get_models_profile("")
+    
+    result = profile_client.get_models_profile()
+    assert isinstance(result, dict)
+    if len(result) > 0:
+        assert "nodes" in result
+        for node_id, node_val in result['nodes']:
+            assert "models" in node_val
+            
+
+
+def test_get_tasks_profile(profile_client):
+    
+    with pytest.raises(ValueError):
+        profile_client.get_tasks_profile("")
+    
+    result = profile_client.get_tasks_profile()
+    if len(result) > 0:
+        assert "nodes" in result
+        for node_id, node_val in result['nodes']:
+            assert "tasks" in node_val
+    
