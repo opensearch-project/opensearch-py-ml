@@ -22,6 +22,7 @@ from opensearch_py_ml.ml_commons.ml_common_utils import (
     TIMEOUT,
 )
 from opensearch_py_ml.ml_commons.model_access_control import ModelAccessControl
+from opensearch_py_ml.ml_commons.model_connector import Connector
 from opensearch_py_ml.ml_commons.model_execute import ModelExecute
 from opensearch_py_ml.ml_commons.model_uploader import ModelUploader
 
@@ -37,6 +38,7 @@ class MLCommonClient:
         self._model_uploader = ModelUploader(os_client)
         self._model_execute = ModelExecute(os_client)
         self.model_access_control = ModelAccessControl(os_client)
+        self.connector = Connector(os_client)
 
     def execute(self, algorithm_name: str, input_json: dict) -> dict:
         """
