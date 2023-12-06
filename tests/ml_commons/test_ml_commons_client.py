@@ -602,7 +602,7 @@ def test_get_models_profile(profile_client):
     assert isinstance(result, dict)
     if len(result) > 0:
         assert "nodes" in result
-        for node_id, node_val in result['nodes']:
+        for _, node_val in result['nodes']:
             assert "models" in node_val
             
 
@@ -615,6 +615,6 @@ def test_get_tasks_profile(profile_client):
     result = profile_client.get_tasks_profile()
     if len(result) > 0:
         assert "nodes" in result
-        for node_id, node_val in result['nodes']:
+        for _, node_val in result['nodes']:
             assert "tasks" in node_val
     
