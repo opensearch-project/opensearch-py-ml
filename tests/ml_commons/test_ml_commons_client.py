@@ -576,8 +576,8 @@ def test_search():
     assert raised == False, "Raised Exception in searching model"
 
 
-# Model Profile Tests. These will need some model train/predict data. Hence, need to be
-# at the end after the training/prediction tests are done.
+# Model Profile Tests. These tests will need some model train/predict run data. Hence, need
+#  to be run at the end after the training/prediction tests are done.
 
 
 @pytest.fixture
