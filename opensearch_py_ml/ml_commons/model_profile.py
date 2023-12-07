@@ -20,14 +20,13 @@ class ModelProfile:
 
     def _validate_input(self, path_parameter, payload):
         if path_parameter is not None and not isinstance(path_parameter, str):
-            raise ValueError("payload needs to be a dictionary or None")
-
-        if payload is not None and not isinstance(payload, dict):
             raise ValueError("path_parameter needs to be a string or None")
 
-    def get_profile(self, payload: Optional[dict] = None):
         if payload is not None and not isinstance(payload, dict):
             raise ValueError("payload needs to be a dictionary or None")
+
+    def get_profile(self, payload: Optional[dict] = None):
+        self._validate_input(None, payload)
         return self.client.transport.perform_request(
             method="GET", url=f"{ML_BASE_URI}/{self.API_ENDPOINT}", body=payload
         )
