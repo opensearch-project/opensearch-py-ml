@@ -578,6 +578,7 @@ def test_search():
 # Model Profile Tests. These will need some model train/predict data. Hence, need to be
 # at the end after the training/prediction tests are done.
 
+@pytest.fixture
 def profile_client():
     client = ModelProfile(OPENSEARCH_TEST_CLIENT)
     return client
@@ -596,13 +597,16 @@ def test_get_profile(profile_client):
 def test_get_models_profile(profile_client):
     
     with pytest.raises(ValueError):
-        profile_client.get_models_profile("")
+        profile_client.get_models_profile(10)
+    
+    with pytest.raises(ValueError):
+        profile_client.get_models_profile("", 10)
     
     result = profile_client.get_models_profile()
     assert isinstance(result, dict)
     if len(result) > 0:
         assert "nodes" in result
-        for _, node_val in result['nodes']:
+        for _, node_val in result['nodes'].items():
             assert "models" in node_val
             
 
@@ -610,11 +614,14 @@ def test_get_models_profile(profile_client):
 def test_get_tasks_profile(profile_client):
     
     with pytest.raises(ValueError):
-        profile_client.get_tasks_profile("")
+        profile_client.get_tasks_profile(10)
+    
+    with pytest.raises(ValueError):
+        profile_client.get_tasks_profile("", 10)
     
     result = profile_client.get_tasks_profile()
     if len(result) > 0:
         assert "nodes" in result
-        for _, node_val in result['nodes']:
+        for _, node_val in result['nodes'].items():
             assert "tasks" in node_val
     
