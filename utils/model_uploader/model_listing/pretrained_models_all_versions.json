@@ -114,6 +114,18 @@
     }
   },
   {
+    "name": "huggingface/sentence-transformers/paraphrase-mpnet-base-v2",
+    "versions": {
+      "1.0.0": {
+        "format": [
+          "onnx",
+          "torch_script"
+        ],
+        "description": "This is a sentence-transformers model: It maps sentences & paragraphs to a 768 dimensional dense vector space and can be used for tasks like clustering or semantic search."
+      }
+    }
+  },
+  {
     "name": "huggingface/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
     "versions": {
       "1.0.1": {
@@ -124,5 +136,15 @@
         "description": "This is a sentence-transformers model: It maps sentences & paragraphs to a 384 dimensional dense vector space and can be used for tasks like clustering or semantic search."
       }
     }
-  }
+  },
+  {
+    "name": "amazon/neural-sparse/opensearch-neural-sparse-encoding-doc-v1",
+    "versions": {
+      "1.0.1": {
+        "format": [
+          "torch_script"
+        ],
+        "description": "This is a neural sparse encoding model: It transfers text into sparse vector, and then extract nonzero index and value to entry and weights. It serves only in ingestion and customer should use tokenizer model in query."
+      }
+    },
 ]

@@ -8,7 +8,7 @@
 
 import json
 import time
-from typing import Any, List, Union
+from typing import Any, List, Optional, Union
 
 from deprecated.sphinx import deprecated
 from opensearchpy import OpenSearch
@@ -21,6 +21,8 @@ from opensearch_py_ml.ml_commons.ml_common_utils import (
     MODEL_VERSION_FIELD,
     TIMEOUT,
 )
+from opensearch_py_ml.ml_commons.model_access_control import ModelAccessControl
+from opensearch_py_ml.ml_commons.model_connector import Connector
 from opensearch_py_ml.ml_commons.model_execute import ModelExecute
 from opensearch_py_ml.ml_commons.model_uploader import ModelUploader
 
@@ -35,6 +37,8 @@ class MLCommonClient:
         self._client = os_client
         self._model_uploader = ModelUploader(os_client)
         self._model_execute = ModelExecute(os_client)
+        self.model_access_control = ModelAccessControl(os_client)
+        self.connector = Connector(os_client)
 
     def execute(self, algorithm_name: str, input_json: dict) -> dict:
         """
@@ -96,7 +100,9 @@ class MLCommonClient:
         :rtype: string
         """
         model_id = self._model_uploader._register_model(
-            model_path, model_config_path, isVerbose
+            model_path=model_path,
+            model_meta_path=model_config_path,
+            isVerbose=isVerbose,
         )
 
         # loading the model chunks from model index
@@ -104,6 +110,26 @@ class MLCommonClient:
             self.load_model(model_id, wait_until_loaded=wait_until_loaded)
 
         return model_id
+
+    def train_model(
+        self, algorithm_name: str, input_json: dict, is_async: Optional[bool] = False
+    ) -> dict:
+        """
+        This method trains an ML Model
+        """
+
+        params = {}
+        if not isinstance(input_json, dict):
+            input_json = json.loads(input_json)
+        if is_async:
+            params["async"] = "true"
+
+        return self._client.transport.perform_request(
+            method="POST",
+            url=f"{ML_BASE_URI}/_train/{algorithm_name}",
+            body=input_json,
+            params=params,
+        )
 
     def register_model(
         self,
