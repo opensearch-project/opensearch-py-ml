@@ -5,7 +5,6 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
-import json
 import os
 import shutil
 import time
