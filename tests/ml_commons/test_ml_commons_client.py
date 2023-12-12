@@ -573,3 +573,7 @@ def test_search():
     except:  # noqa: E722
         raised = True
     assert raised == False, "Raised Exception in searching model"
+
+
+def test_stats():
+    pass

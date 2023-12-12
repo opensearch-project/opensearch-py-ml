@@ -606,3 +606,29 @@ class MLCommonClient:
             method="DELETE",
             url=API_URL,
         )
+    
+    def get_stats(self, stat_id: Optional[str]="", node_id: Optional[str]=""):
+        
+        """
+        GET /_plugins/_ml/stats
+        GET /_plugins/_ml/stats/<stat>
+        GET /_plugins/_ml/<nodeId>/stats/
+        GET /_plugins/_ml/<nodeId>/stats/<stat>
+        """
+        
+        
+        if node_id and stat_id:
+            url = f"{ML_BASE_URI}/stats/{node_id}/stats/{stat_id}"
+        elif node_id:
+            url = f"{ML_BASE_URI}/stats/{node_id}/stats"
+        elif stat_id:
+            url = f"{ML_BASE_URI}/stats/{stat_id}"
+        else:
+            url = f"{ML_BASE_URI}/stats"
+            
+        return self._client.transport.perform_request(
+            method="GET",
+            url=url
+        )
+        
+        
