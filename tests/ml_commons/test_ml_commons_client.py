@@ -577,6 +577,8 @@ def test_search():
 
 def test_stats():
     res = ml_client.get_stats()
+    print("!@#", res)
+    assert res == {}
 
     assert isinstance(res, dict)
     assert "nodes" in res
