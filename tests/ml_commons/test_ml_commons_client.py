@@ -583,7 +583,7 @@ def test_stats():
     assert len(res["nodes"]) > 0
 
     node_id = list(res["nodes"].keys())[0]
-    stat_id = "ml_jvm_heap_usage"
+    stat_id = "ml_executing_task_count"
 
     res = ml_client.get_stats(node_id, stat_id)
 
