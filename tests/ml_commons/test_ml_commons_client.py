@@ -14,6 +14,7 @@ from os.path import exists
 import pytest
 from opensearchpy import OpenSearch, helpers
 from opensearchpy.exceptions import RequestError
+from packaging.version import parse as parse_version
 from sklearn.datasets import load_iris
 
 from opensearch_py_ml.ml_commons import MLCommonClient
@@ -47,6 +48,9 @@ test_model = SentenceTransformerModel(folder_path=TEST_FOLDER, overwrite=True)
 PRETRAINED_MODEL_NAME = "huggingface/sentence-transformers/all-MiniLM-L12-v2"
 PRETRAINED_MODEL_VERSION = "1.0.1"
 PRETRAINED_MODEL_FORMAT = "TORCH_SCRIPT"
+
+OPENSEARCH_VERSION = parse_version(os.environ.get("OPENSEARCH_VERSION", "2.11.0"))
+STATS_MIN_VERSION = parse_version("2.11.0")
 
 
 @pytest.fixture
@@ -575,10 +579,12 @@ def test_search():
     assert raised == False, "Raised Exception in searching model"
 
 
+@pytest.mark.skipif(
+    OPENSEARCH_VERSION < STATS_MIN_VERSION,
+    reason="Stats API is supported in OpenSearch 2.8.0 and above",
+)
 def test_stats():
     res = ml_client.get_stats()
-    print("!@#", res)
-    assert res == {}
 
     assert isinstance(res, dict)
     assert "nodes" in res
