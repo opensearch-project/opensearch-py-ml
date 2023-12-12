@@ -576,4 +576,32 @@ def test_search():
 
 
 def test_stats():
-    pass
+    res = ml_client.get_stats()
+
+    assert isinstance(res, dict)
+    assert "nodes" in res
+    assert len(res["nodes"]) > 0
+
+    node_id = list(res["nodes"].keys())[0]
+    stat_id = "ml_jvm_heap_usage"
+
+    res = ml_client.get_stats(node_id, stat_id)
+
+    assert isinstance(res, dict)
+    assert "nodes" in res
+    assert node_id in res["nodes"]
+    assert stat_id in res["nodes"][node_id]
+
+    res = ml_client.get_stats(node_id=node_id)
+
+    assert isinstance(res, dict)
+    assert "nodes" in res
+    assert node_id in res["nodes"]
+
+    res = ml_client.get_stats(stat_id=stat_id)
+    assert isinstance(res, dict)
+    assert "nodes" in res
+    assert node_id in res["nodes"]
+
+    for k, v in res["nodes"].items():
+        assert stat_id in v
