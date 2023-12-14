@@ -346,6 +346,118 @@ class MLCommonClient:
 
         return self._get_task_info(task_id)
 
+    def test_train_and_predict():
+        input_json = {
+            "parameters": {"centroids": 2, "iterations": 1, "distance_type": "EUCLIDEAN"},
+            "input_data": {
+                "column_metas": [
+                    {"name": "k1", "column_type": "DOUBLE"},
+                    {"name": "k2", "column_type": "DOUBLE"},
+                ],
+                "rows": [
+                    {
+                        "values": [
+                            {"column_type": "DOUBLE", "value": 1.00},
+                            {"column_type": "DOUBLE", "value": 2.00},
+                        ]
+                    },
+                    {
+                        "values": [
+                            {"column_type": "DOUBLE", "value": 1.00},
+                            {"column_type": "DOUBLE", "value": 4.00},
+                        ]
+                    },
+                    {
+                        "values": [
+                            {"column_type": "DOUBLE", "value": 1.00},
+                            {"column_type": "DOUBLE", "value": 0.00},
+                        ]
+                    },
+                    {
+                        "values": [
+                            {"column_type": "DOUBLE", "value": 10.00},
+                            {"column_type": "DOUBLE", "value": 2.00},
+                        ]
+                    },
+                    {
+                        "values": [
+                            {"column_type": "DOUBLE", "value": 10.00},
+                            {"column_type": "DOUBLE", "value": 4.00},
+                        ]
+                    },
+                    {
+                        "values": [
+                            {"column_type": "DOUBLE", "value": 10.00},
+                            {"column_type": "DOUBLE", "value": 0.00},
+                        ]
+                    },
+                ],
+            },
+        }
+
+        input_str = json.dumps(input_json)
+
+        raised = False
+        try:
+            train_and_predict_obj = ml_client.train_and_predict(
+                algorithm_name="kmeans", input_json=input_json
+            )
+            assert train_and_predict_obj["status"] == "COMPLETED"
+        except:  # noqa: E722
+            raised = True
+        assert raised == False, "Raised Exception in training and predicting task"
+
+        raised = False
+        try:
+            train_and_predict_obj = ml_client.train_and_predict(
+                algorithm_name="kmeans", input_json=input_str
+            )
+            assert train_and_predict_obj["status"] == "COMPLETED"
+        except:  # noqa: E722
+            raised = True
+        assert raised == False, "Raised Exception in training and predicting task"
+
+        raised = False
+        try:
+            train_and_predict_obj = ml_client.train_and_predict(
+                algorithm_name="not an alg", input_json=input_json
+            )
+            assert train_and_predict_obj == "Invalid algorithm name passed as argument."
+        except:  # noqa: E722
+            raised = True
+        assert raised == False, "Raised Exception in training and predicting task"
+
+        raised = False
+        try:
+            train_and_predict_obj = ml_client.train_and_predict(
+                algorithm_name="kmeans", input_json=input_str + " invalid json"
+            )
+            assert train_and_predict_obj == "Invalid JSON string passed as argument."
+        except:  # noqa: E722
+            raised = True
+        assert raised == False, "Raised Exception in training and predicting task"
+
+        raised = False
+        try:
+            train_and_predict_obj = ml_client.train_and_predict(
+                algorithm_name="kmeans", input_json="15"
+            )
+            assert train_and_predict_obj == "Invalid JSON object passed as argument."
+        except:  # noqa: E722
+            raised = True
+        assert raised == False, "Raised Exception in training and predicting task"
+
+        raised = False
+        try:
+            train_and_predict_obj = ml_client.train_and_predict(
+                algorithm_name="kmeans", input_json=15
+            )
+            assert train_and_predict_obj == "Invalid JSON object passed as argument."
+        except:  # noqa: E722
+            raised = True
+        assert raised == False, "Raised Exception in training and predicting task"
+
+
     def deploy_model(self, model_id: str, wait_until_deployed: bool = True) -> object:
         """
         This method deploys a model in the opensearch cluster using ml-common plugin's deploy model api
@@ -384,6 +496,44 @@ class MLCommonClient:
                 raise Exception("Model deployment failed")
 
         return self._get_task_info(task_id)
+
+    def train_and_predict(self, algorithm_name: str, input_json):
+        """
+        This method trains a model with dataset and makes a prediction with the same dataset
+        using ml commons train and predict api
+
+        :param algorithm_name: name of algorithm used to train model ("BATCH_RCF", "FIT_RCF", or "kmeans")
+        :type algorithm_name: str
+        :param input_json: json input for train and predict dataset
+        :type input_json: str or dict
+
+        :return: returns a json object with task status and prediction results
+        :rtype: object
+        """
+        API_URL = f"{ML_BASE_URI}/_train_predict/{algorithm_name}"
+        API_BODY = ""
+
+        if algorithm_name not in ["BATCH_RCF", "FIT_RCF", "kmeans"]:
+            return "Invalid algorithm name passed as argument."
+
+        if isinstance(input_json, str):
+            try:
+                json_obj = json.loads(input_json)
+                if not isinstance(json_obj, dict):
+                    return "Invalid JSON object passed as argument."
+                API_BODY = json.dumps(json_obj)
+            except json.JSONDecodeError:
+                return "Invalid JSON string passed as argument."
+        elif isinstance(input_json, dict):
+            API_BODY = json.dumps(input_json)
+        else:
+            return "Invalid JSON object passed as argument."
+
+        return self._client.transport.perform_request(
+            method="POST",
+            url=API_URL,
+            body=API_BODY,
+        )
 
     def get_task_info(self, task_id: str, wait_until_task_done: bool = False) -> object:
         """
