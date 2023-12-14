@@ -98,6 +98,19 @@ def iris_index():
     ml_client._client.indices.delete(index=index_name)
 
 
+# traverse the json object to find the key and return the value
+def find_key_value(obj, key_to_find):
+    if isinstance(obj, dict):
+        for key, value in obj.items():
+            if key == key_to_find:
+                return value
+            elif isinstance(value, dict):
+                result = find_key_value(value, key_to_find)
+                if result is not None:
+                    return result
+    return None
+
+
 def clean_test_folder(TEST_FOLDER):
     if os.path.exists(TEST_FOLDER):
         for files in os.listdir(TEST_FOLDER):
@@ -327,6 +340,18 @@ def test_DEPRECATED_integration_model_train_upload_full_cycle():
                 assert ml_model_status.get("algorithm") == "TEXT_EMBEDDING"
             except Exception as ex:  # noqa: E722
                 assert False, f"Exception occurred when getting model info: {ex}"
+
+            try:
+                get_profile_obj = ml_client.get_profiles()
+                get_profile_models = ml_client.get_profiles(model_ids=[model_id])
+                get_profile_tasks = ml_client.get_profiles(task_ids=[task_id])
+                assert find_key_value(get_profile_obj, "model_id") == model_id
+                assert find_key_value(get_profile_obj, "task_id") == task_id
+                assert find_key_value(get_profile_models, "model_id") == model_id
+                assert find_key_value(get_profile_tasks, "task_id") == task_id
+            except:  # noqa: E722
+                raised = True
+            assert raised == False, "Raised Exception in getting profile"
 
             if task_id:
                 ml_task_status = None

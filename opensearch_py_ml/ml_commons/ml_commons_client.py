@@ -606,3 +606,67 @@ class MLCommonClient:
             method="DELETE",
             url=API_URL,
         )
+
+    def get_profiles(
+        self,
+        node_ids: List[str] = [],
+        model_ids: List[str] = [],
+        task_ids: List[str] = [],
+        return_all_tasks: bool = True,
+        return_all_models: bool = True,
+    ) -> object:
+        """
+        This method retrieves the profile of one or more machine learning nodes, models, or tasks from OpenSearch cluster (using ml commons api)
+
+        :param node_ids: A list of node ids to retrieve profiles for (default: [])
+        :type node_ids: List[str]
+        :param model_ids: A list of model ids to retrieve profiles for (default: [])
+        :type model_ids: List[str]
+        :param task_ids: A list of task ids to retrieve profiles for (default: [])
+        :type task_ids: List[str]
+        :param return_all_tasks: a flag to indicate whether all tasks associated with the profiles should be returned (default: True)
+        :type return_all_tasks: bool
+        :param return_all_models: a flag to indicate whether all models associated with the profiles should be returned (default: True)
+        :type return_all_models: bool
+        :return: returns a json object containing the profile information of the specified nodes, models, or tasks from the OpenSearch cluster
+        :rtype: object
+        """
+
+        if model_ids and len(model_ids) == 1:
+            API_URL = f"{ML_BASE_URI}/profile/models/{model_ids[0]}"
+            return self._client.transport.perform_request(
+                method="GET",
+                url=API_URL,
+            )
+
+        if task_ids and len(model_ids) == 1:
+            API_URL = f"{ML_BASE_URI}/profile/models/{model_ids[0]}"
+            return self._client.transport.perform_request(
+                method="GET",
+                url=API_URL,
+            )
+
+        API_URL = f"{ML_BASE_URI}/profile"
+
+        API_BODY = {
+            "return_all_tasks": return_all_tasks,
+            "return_all_models": return_all_models,
+        }
+
+        if len(node_ids) > 0:
+            API_BODY["node_ids"] = node_ids
+        if len(model_ids) > 0:
+            API_BODY["model_ids"] = model_ids
+        if len(task_ids) > 0:
+            API_BODY["task_ids"] = task_ids
+
+        try:
+            API_BODY = json.dumps(API_BODY)
+        except json.JSONDecodeError:
+            raise Exception("Invalid request body")
+
+        return self._client.transport.perform_request(
+            method="GET",
+            url=API_URL,
+            body=API_BODY,
+        )
