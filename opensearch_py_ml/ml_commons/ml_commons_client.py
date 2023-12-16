@@ -21,6 +21,7 @@ from opensearch_py_ml.ml_commons.ml_common_utils import (
     MODEL_VERSION_FIELD,
     TIMEOUT,
 )
+from opensearch_py_ml.ml_commons.validators.profile import validate_profile_input
 from opensearch_py_ml.ml_commons.model_access_control import ModelAccessControl
 from opensearch_py_ml.ml_commons.model_connector import Connector
 from opensearch_py_ml.ml_commons.model_execute import ModelExecute
@@ -608,3 +609,41 @@ class MLCommonClient:
             method="DELETE",
             url=API_URL,
         )
+
+    def _get_profile(self, payload: Optional[dict] = None):
+        validate_profile_input(None, payload)
+        return self.client.transport.perform_request(
+            method="GET", url=f"{ML_BASE_URI}/{self.API_ENDPOINT}", body=payload
+        )
+
+    def _get_models_profile(
+        self, path_parameter: Optional[str] = "", payload: Optional[dict] = None
+    ):
+        self._validate_input(path_parameter, payload)
+
+        url = f"{ML_BASE_URI}/{self.API_ENDPOINT}/models/{path_parameter if path_parameter else ''}"
+        return self.client.transport.perform_request(
+            method="GET", url=url, body=payload
+        )
+
+    def _get_tasks_profile(
+        self, path_parameter: Optional[str] = "", payload: Optional[dict] = None
+    ):
+        self._validate_input(path_parameter, payload)
+
+        url = f"{ML_BASE_URI}/{self.API_ENDPOINT}/tasks/{path_parameter if path_parameter else ''}"
+        return self.client.transport.perform_request(
+            method="GET", url=url, body=payload
+        )
+
+    def get_profile(self, profile_type="all", id=None, request_body=None):
+        if profile_type == "all":
+            return self._get_profile(request_body)
+        elif profile_type == "model":
+            return self._get_models_profile(id, request_body)
+        elif profile_type == "task":
+            pass
+        else:
+            raise ValueError(
+                "Invalid profile type. Profile type must be 'all', 'model' or 'task'."
+            )
