@@ -668,32 +668,32 @@ class MLCommonClient:
             method="GET", url=url, body=payload
         )
 
-def get_profile(self, profile_type: str = "all", ids: Optional[List[str]] = None, request_body: Optional[dict] = None) -> dict:
-    """
-    Get profile information based on the profile type.
+    def get_profile(self, profile_type: str = "all", ids: Optional[List[str]] = None, request_body: Optional[dict] = None) -> dict:
+        """
+        Get profile information based on the profile type.
 
-    Args:
-        profile_type: The type of profile to retrieve. Valid values are 'all', 'model', or 'task'. Default is 'all'.
-        ids: A list of profile IDs to retrieve. Default is None.
-        request_body: The request body containing additional information. Default is None.
+        Args:
+            profile_type: The type of profile to retrieve. Valid values are 'all', 'model', or 'task'. Default is 'all'.
+            ids: A list of profile IDs to retrieve. Default is None.
+            request_body: The request body containing additional information. Default is None.
 
-    Returns:
-        The profile information.
+        Returns:
+            The profile information.
 
-    Raises:
-        ValueError: If the profile_type is not 'all', 'model', or 'task'.
-    """
-    if profile_type == "all":
-        return self._get_profile(request_body)
-    elif profile_type == "model":
-        if ids:
-            ids = ",".join(ids)
-        return self._get_models_profile(ids, request_body)
-    elif profile_type == "task":
-        if ids:
-            ids = ",".join(ids)
-        return self._get_tasks_profile(ids, request_body)
-    else:
-        raise ValueError(
-            "Invalid profile type. Profile type must be 'all', 'model' or 'task'."
-        )
+        Raises:
+            ValueError: If the profile_type is not 'all', 'model', or 'task'.
+        """
+        if profile_type == "all":
+            return self._get_profile(request_body)
+        elif profile_type == "model":
+            if ids:
+                ids = ",".join(ids)
+            return self._get_models_profile(ids, request_body)
+        elif profile_type == "task":
+            if ids:
+                ids = ",".join(ids)
+            return self._get_tasks_profile(ids, request_body)
+        else:
+            raise ValueError(
+                "Invalid profile type. Profile type must be 'all', 'model' or 'task'."
+            )
