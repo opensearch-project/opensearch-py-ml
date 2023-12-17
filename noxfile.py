@@ -103,7 +103,7 @@ def lint(session):
 
 
 @nox.session(python=["3.8", "3.9", "3.10"])
-@nox.parametrize("pandas_version", ["1.5.0"])
+@nox.parametrize("pandas_version", ["1.5.2"])
 def test(session, pandas_version: str):
     session.install(
         "-r",
@@ -140,7 +140,7 @@ def test(session, pandas_version: str):
 
 
 @nox.session(python=["3.9"])
-@nox.parametrize("pandas_version", ["1.5.0"])
+@nox.parametrize("pandas_version", ["1.5.2"])
 def docs(session, pandas_version: str):
     # Run this so users get an error if they don't have Pandoc installed.
     session.install("-r", "docs/requirements-docs.txt")
@@ -156,7 +156,7 @@ def docs(session, pandas_version: str):
 # to automate the action workflow, leveraging its ability to set up the environment
 # required for model autotracing.
 @nox.session(python=["3.9"])
-@nox.parametrize("pandas_version", ["1.5.0"])
+@nox.parametrize("pandas_version", ["1.5.2"])
 def trace(session, pandas_version: str):
     session.install(
         "-r",
