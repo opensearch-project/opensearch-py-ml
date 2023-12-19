@@ -678,8 +678,5 @@ def test_init():
     assert model.model_id == "test-model"
 
 
-
-
-
 clean_test_folder(TEST_FOLDER)
 clean_test_folder(TESTDATA_UNZIP_FOLDER)
