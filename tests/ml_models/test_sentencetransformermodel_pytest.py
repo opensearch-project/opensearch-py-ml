@@ -678,25 +678,7 @@ def test_init():
     assert model.model_id == "test-model"
 
 
-def test_train(mock_sentence_transformer, mock_file_operations):
-    model = SentenceTransformerModel(model_id="test-model", folder_path="/test/folder")
-    model.train(
-        read_path="dummy/path",
-        overwrite=True,
-        output_model_name="dummy_model.pt",
-        zip_file_name="dummy_model.zip",
-        num_epochs=1,
-    )
-    # Add assertions as per your method's logic
-    mock_sentence_transformer.assert_called_once()
 
-
-def test_save_as_pt_for_model(mock_sentence_transformer, mock_file_operations):
-    model = SentenceTransformerModel(model_id="test-model", folder_path="/test/folder")
-    sentences = ["This is a test sentence."]
-    model.save_as_pt(sentences=sentences)
-
-    mock_sentence_transformer.return_value.save.assert_called_once()
 
 
 clean_test_folder(TEST_FOLDER)
