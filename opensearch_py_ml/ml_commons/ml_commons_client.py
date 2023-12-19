@@ -666,7 +666,12 @@ class MLCommonClient:
             method="GET", url=url, body=payload
         )
 
-    def get_profile(self, profile_type: str = "all", ids: Optional[List[str]] = None, request_body: Optional[dict] = None) -> dict:
+    def get_profile(
+        self,
+        profile_type: str = "all",
+        ids: Optional[List[str]] = None,
+        request_body: Optional[dict] = None,
+    ) -> dict:
         """
         Get profile information based on the profile type.
 
@@ -681,12 +686,12 @@ class MLCommonClient:
         Raises:
             ValueError: If the profile_type is not 'all', 'model', or 'task'.
         """
-        
+
         if profile_type == "all":
             return self._get_profile(request_body)
         elif profile_type == "model":
             if ids and isinstance(ids, list):
-                    ids = ",".join(ids)
+                ids = ",".join(ids)
             return self._get_models_profile(ids, request_body)
         elif profile_type == "task":
             if ids and isinstance(ids, list):

@@ -585,58 +585,53 @@ def test_get_profile():
     assert "nodes" in res
     test_model_id = None
     test_task_id = None
-    for node_id, val in res['nodes'].items():
+    for node_id, val in res["nodes"].items():
         if test_model_id is None and "models" in val:
-            for model_id, model_val in val['models'].items():
-                test_model_id = {"node_id":node_id, "model_id":model_id}
+            for model_id, model_val in val["models"].items():
+                test_model_id = {"node_id": node_id, "model_id": model_id}
                 break
         if test_task_id is None and "tasks" in val:
-            for task_id, task_val in val['tasks'].items():
-                test_task_id = {"node_id":node_id, "task_id":task_id}
+            for task_id, task_val in val["tasks"].items():
+                test_task_id = {"node_id": node_id, "task_id": task_id}
                 break
-    
-    res = ml_client.get_profile(profile_type='model')
+
+    res = ml_client.get_profile(profile_type="model")
     assert isinstance(res, dict)
     assert "nodes" in res
-    for node_id, node_val in res['nodes'].items():
-        assert "models" in node_val    
-        
-    
-    res = ml_client.get_profile(profile_type='model', ids=[test_model_id['model_id']])
+    for node_id, node_val in res["nodes"].items():
+        assert "models" in node_val
+
+    res = ml_client.get_profile(profile_type="model", ids=[test_model_id["model_id"]])
     assert isinstance(res, dict)
     assert "nodes" in res
-    assert test_model_id['model_id'] in res['nodes'][test_model_id["node_id"]]['models']
-    
-    res = ml_client.get_profile(profile_type='model', ids=['randomid1', 'random_id2'])
+    assert test_model_id["model_id"] in res["nodes"][test_model_id["node_id"]]["models"]
+
+    res = ml_client.get_profile(profile_type="model", ids=["randomid1", "random_id2"])
     assert isinstance(res, dict)
     assert len(res) == 0
-    
-    
-    res = ml_client.get_profile(profile_type='task')
+
+    res = ml_client.get_profile(profile_type="task")
     assert isinstance(res, dict)
     if len(res) > 0:
         assert "nodes" in res
-        for node_id, node_val in res['nodes'].items():
+        for node_id, node_val in res["nodes"].items():
             assert "tasks" in node_val
-    
-    res = ml_client.get_profile(profile_type='task', ids=['random1', 'random2'])
+
+    res = ml_client.get_profile(profile_type="task", ids=["random1", "random2"])
     assert isinstance(res, dict)
     assert len(res) == 0
-    
-        
+
     with pytest.raises(ValueError):
-        ml_client.get_profile(profile_type='test')
-    
+        ml_client.get_profile(profile_type="test")
+
     with pytest.raises(ValueError):
-        ml_client.get_profile(profile_type='model', ids=1)
-    
+        ml_client.get_profile(profile_type="model", ids=1)
+
     with pytest.raises(ValueError):
-        ml_client.get_profile(profile_type='model', request_body=10)
-    
+        ml_client.get_profile(profile_type="model", request_body=10)
+
     with pytest.raises(ValueError):
-        ml_client.get_profile(profile_type='task', ids=1)
-    
+        ml_client.get_profile(profile_type="task", ids=1)
+
     with pytest.raises(ValueError):
-        ml_client.get_profile(profile_type='task', request_body=10)
-    
-    
+        ml_client.get_profile(profile_type="task", request_body=10)
