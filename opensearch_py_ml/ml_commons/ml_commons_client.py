@@ -41,7 +41,6 @@ class MLCommonClient:
         self._model_execute = ModelExecute(os_client)
         self.model_access_control = ModelAccessControl(os_client)
         self.connector = Connector(os_client)
-        self.model_profile = ModelProfile(os_client)
 
     def execute(self, algorithm_name: str, input_json: dict) -> dict:
         """
