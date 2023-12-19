@@ -25,7 +25,6 @@ from opensearch_py_ml.ml_commons.validators.profile import validate_profile_inpu
 from opensearch_py_ml.ml_commons.model_access_control import ModelAccessControl
 from opensearch_py_ml.ml_commons.model_connector import Connector
 from opensearch_py_ml.ml_commons.model_execute import ModelExecute
-from opensearch_py_ml.ml_commons.model_profile import ModelProfile
 from opensearch_py_ml.ml_commons.model_uploader import ModelUploader
 
 
@@ -619,8 +618,8 @@ class MLCommonClient:
         :rtype: Any
         """
         validate_profile_input(None, payload)
-        return self.client.transport.perform_request(
-            method="GET", url=f"{ML_BASE_URI}/{self.API_ENDPOINT}", body=payload
+        return self._client.transport.perform_request(
+            method="GET", url=f"{ML_BASE_URI}/profile", body=payload
         )
 
     def _get_models_profile(
@@ -636,10 +635,10 @@ class MLCommonClient:
         Returns:
             dict: The response from the API.
         """
-        self._validate_input(model_id, payload)
+        validate_profile_input(model_id, payload)
 
-        url = f"{ML_BASE_URI}/{self.API_ENDPOINT}/models/{model_id if model_id else ''}"
-        return self.client.transport.perform_request(
+        url = f"{ML_BASE_URI}/profile/models/{model_id if model_id else ''}"
+        return self._client.transport.perform_request(
             method="GET", url=url, body=payload
         )
 
@@ -660,10 +659,10 @@ class MLCommonClient:
             ValueError: If the input validation fails.
 
         """
-        self._validate_input(task_id, payload)
+        validate_profile_input(task_id, payload)
 
-        url = f"{ML_BASE_URI}/{self.API_ENDPOINT}/tasks/{task_id if task_id else ''}"
-        return self.client.transport.perform_request(
+        url = f"{ML_BASE_URI}/profile/tasks/{task_id if task_id else ''}"
+        return self._client.transport.perform_request(
             method="GET", url=url, body=payload
         )
 
@@ -682,14 +681,15 @@ class MLCommonClient:
         Raises:
             ValueError: If the profile_type is not 'all', 'model', or 'task'.
         """
+        
         if profile_type == "all":
             return self._get_profile(request_body)
         elif profile_type == "model":
-            if ids:
-                ids = ",".join(ids)
+            if ids and isinstance(ids, list):
+                    ids = ",".join(ids)
             return self._get_models_profile(ids, request_body)
         elif profile_type == "task":
-            if ids:
+            if ids and isinstance(ids, list):
                 ids = ",".join(ids)
             return self._get_tasks_profile(ids, request_body)
         else:
