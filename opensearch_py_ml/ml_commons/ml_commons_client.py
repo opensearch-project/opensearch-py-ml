@@ -669,7 +669,7 @@ class MLCommonClient:
     def get_profile(
         self,
         profile_type: str = "all",
-        ids: Optional[List[str]] = None,
+        ids: Optional[Union[str, List[str]]] = None,
         request_body: Optional[dict] = None,
     ) -> dict:
         """
@@ -677,7 +677,7 @@ class MLCommonClient:
 
         Args:
             profile_type: The type of profile to retrieve. Valid values are 'all', 'model', or 'task'. Default is 'all'.
-            ids: A list of profile IDs to retrieve. Default is None.
+            ids: Either a single profile ID as a string, or a list of profile IDs to retrieve. Default is None.
             request_body: The request body containing additional information. Default is None.
 
         Returns:
@@ -685,6 +685,17 @@ class MLCommonClient:
 
         Raises:
             ValueError: If the profile_type is not 'all', 'model', or 'task'.
+
+        Example:
+            get_profile()
+
+            get_profile(profile_type='model', ids='model1')
+
+            get_profile(profile_type='model', ids=['model1', 'model2'])
+
+            get_profile(profile_type='task', ids='task1', request_body={"node_ids": ["KzONM8c8T4Od-NoUANQNGg"],"return_all_tasks": true,"return_all_models": true})
+
+            get_profile(profile_type='task', ids=['task1', 'task2'], request_body={'additional': 'info'})
         """
 
         if profile_type == "all":
