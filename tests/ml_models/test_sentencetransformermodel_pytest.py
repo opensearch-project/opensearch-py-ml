@@ -13,6 +13,7 @@ from zipfile import ZipFile
 
 import pytest
 
+from opensearch_py_ml.ml_commons import MLCommonClient
 from opensearch_py_ml.ml_models.sentencetransformermodel import SentenceTransformerModel
 
 TEST_FOLDER = os.path.join(
@@ -657,6 +658,7 @@ def test_zip_model_with_license():
     compare_model_zip_file(zip_file_path, expected_filenames_with_license, model_format)
 
     clean_test_folder(TEST_FOLDER)
+
 
 @pytest.fixture
 def mock_opensearch_client():
