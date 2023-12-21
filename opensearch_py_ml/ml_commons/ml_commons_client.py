@@ -677,6 +677,9 @@ class MLCommonClient:
 
         Args:
             profile_type: The type of profile to retrieve. Valid values are 'all', 'model', or 'task'. Default is 'all'.
+                'all': Retrieves all profiles available.
+                'model': Retrieves the profile(s) of the specified model(s). The model(s) to retrieve are specified by the 'ids' parameter.
+                'task': Retrieves the profile(s) of the specified task(s). The task(s) to retrieve are specified by the 'ids' parameter.
             ids: Either a single profile ID as a string, or a list of profile IDs to retrieve. Default is None.
             request_body: The request body containing additional information. Default is None.
 
