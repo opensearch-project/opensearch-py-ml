@@ -5,10 +5,14 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
+# for generating config 
 import json
 import os
 from pathlib import Path
 from zipfile import ZipFile
+import requests
+
+# for torch
 import torch
 from transformers import AutoTokenizer, AutoModelForQuestionAnswering
 import transformers
@@ -76,7 +80,22 @@ class QuestionAnsweringModel:
         self.torch_script_zip_file_path = None
         self.onnx_zip_file_path = None
     
-    
+    def _add_apache_license_to_model_zip_file(self, model_zip_file_path: str):
+        """
+        Add Apache-2.0 license file to the model zip file at model_zip_file_path
+
+        :param model_zip_file_path:
+            Path to the model zip file
+        :type model_zip_file_path: string
+        :return: no return value expected
+        :rtype: None
+        """
+        r = requests.get(LICENSE_URL)
+        assert r.status_code == 200, "Failed to add license file to the model zip file"
+
+        with ZipFile(str(model_zip_file_path), "a") as zipObj:
+            zipObj.writestr("LICENSE", r.content)
+
     def save_as_pt(
         self,
         sentences: [str] = ["today is sunny"],
@@ -89,13 +108,13 @@ class QuestionAnsweringModel:
     ) -> str:
         """
         Download the model directly from huggingface, convert model to torch script format,
-        zip the model file and its tokenizer.json file to prepare to upload to the Open Search cluster
+        zip the model file and its tokenizer.json file to prepare to upload to the OpenSearch cluster
 
         :param sentences:
-            Required, for example  sentences = ['today is sunny']
+            Optional, for example  sentences = ['today is sunny']
         :type sentences: List of string [str]
         :param model_id:
-            question answering model id to download model from question answerings.
+            Optional, question answering model id to download model from Huggingface.
             default model_id = "distilbert-base-cased-distilled-squad"
         :type model_id: string
         :param model_name:
@@ -203,10 +222,10 @@ class QuestionAnsweringModel:
     ) -> str:
         """
         Download question answering model directly from huggingface, convert model to onnx format,
-        zip the model file and its tokenizer.json file to prepare to upload to the Open Search cluster
+        zip the model file and its tokenizer.json file to prepare to upload to the OpenSearch cluster
 
         :param model_id:
-            question answering model id to download model from question answerings.
+            Optional, question answering model id to download model from Huggingface.
             default model_id = "distilbert-base-cased-distilled-squad"
         :type model_id: string
         :param model_name:
@@ -305,8 +324,6 @@ class QuestionAnsweringModel:
         print("zip file is saved to ", zip_file_path, "\n")
         return zip_file_path
 
-
-
     def make_model_config_json(
         self,
         model_name: str = None,
@@ -349,7 +366,7 @@ class QuestionAnsweringModel:
         :param normalize_result: Optional, whether to normalize the result of the model. If None, check from the pre-trained
         hugging-face model object.
         :type normalize_result: bool
-        :param description: Optional, the description of the model. If None, get description from the README.md
+        :param description: Optional, the description of the model. If None, use the default description.
             file in the model folder.
         :type description: str
         :param all_config:
@@ -385,7 +402,11 @@ class QuestionAnsweringModel:
         ):
             try:
                 if embedding_dimension is None:
-                    embedding_dimension = model.config.dim
+                    try:
+                        embedding_dimension = model.config.dim
+                    except Exception as e:
+                        embedding_dimension = 768
+
                 if model_type is None:
                     model_type = "distilbert"
                 if pooling_mode is None:
@@ -400,23 +421,8 @@ class QuestionAnsweringModel:
 
         # fill the description
         if description is None:
-            readme_file_path = os.path.join(self.folder_path, "README.md")
-            if os.path.exists(readme_file_path):
-                try:
-                    if verbose:
-                        print("reading README.md file")
-                    description = self._get_model_description_from_readme_file(
-                        readme_file_path
-                    )
-                except Exception as e:
-                    print(f"Cannot scrape model description from README.md file: {e}")
-                    description = self._generate_default_model_description(
-                        embedding_dimension
-                    )
-            else:
-                print("Using default model description")
-                description = "This is a question-answering model: it provides answers to a question and context."
-
+            description = "This is a question-answering model: it provides answers to a question and context."
+            
         # dump the config.json file
         if all_config is None:
             if not os.path.exists(config_json_file_path):
