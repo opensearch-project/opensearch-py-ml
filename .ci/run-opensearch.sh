@@ -20,6 +20,7 @@ environment=($(cat <<-END
   --env cluster.name=$cluster_name
   --env discovery.type=single-node
   --env discovery.seed_hosts=$master_node_name
+  --env OPENSEARCH_INITIAL_ADMIN_PASSWORD=myStrongPassword123!
   --env cluster.routing.allocation.disk.threshold_enabled=false
   --env bootstrap.memory_lock=true
   --env node.attr.testattr=test
@@ -62,10 +63,16 @@ END
   local_detach="true"
   if [[ "$i" == "$((NUMBER_OF_NODES-1))" ]]; then local_detach=$DETACH; fi
 
+  password="admin"
+  # OpenSearch 2.12 onwards security plugins requires a password to be set to setup admin user
+  if [ "$(echo "${OPENSEARCH_VERSION} 2.12" | awk '{print ($1 >= $2)}')" -eq 1 ]; then
+    password="myStrongPassword123!"
+  fi
+
   set -x
   healthcmd="curl -vvv -s --fail http://localhost:9200/_cluster/health || exit 1"
   if [[ "$SECURE_INTEGRATION" == "true" ]]; then
-    healthcmd="curl -vvv -s --insecure -u admin:admin --fail https://localhost:9200/_cluster/health || exit 1"
+    healthcmd="curl -vvv -s --insecure -u admin:$password --fail https://localhost:9200/_cluster/health || exit 1"
   fi
 
   CLUSTER_TAG=$CLUSTER
