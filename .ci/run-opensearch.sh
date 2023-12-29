@@ -64,10 +64,11 @@ END
   if [[ "$i" == "$((NUMBER_OF_NODES-1))" ]]; then local_detach=$DETACH; fi
 
   password="admin"
-  echo "${OPENSEARCH_VERSION} 2.12" 
-  # OpenSearch 2.12 onwards security plugins requires a password to be set to setup admin user
-  if [ "$(echo "${OPENSEARCH_VERSION} 2.12" | awk '{print ($1 >= $2)}')" -eq 1 ]; then
-    password="myStrongPassword123!"
+ IFS='.' read -ra version_array <<< "$VERSION"
+
+  # Starting in 2.12.0, security demo configuration script requires an initial admin password
+  if (( ${version_array[0]} > 2 || (${version_array[0]} == 2 && ${version_array[1]} >= 12) )); then
+      password="myStrongPassword123!"
   fi
 
   set -x
