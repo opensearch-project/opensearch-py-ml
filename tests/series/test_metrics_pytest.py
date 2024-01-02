@@ -49,7 +49,7 @@ class TestSeriesMetrics(TestData):
         oml_flights = self.oml_flights()["AvgTicketPrice"]
 
         for func in self.all_funcs:
-            pd_metric = getattr(pd_flights, func)()
+            pd_metric = (pd_flights - pd_flights.mean()).abs().mean()
             oml_metric = getattr(oml_flights, func)()
 
             self.assert_almost_equal_for_agg(func, pd_metric, oml_metric)
@@ -59,7 +59,7 @@ class TestSeriesMetrics(TestData):
         oml_flights = self.oml_flights()["timestamp"]
 
         for func in self.timestamp_funcs:
-            pd_metric = getattr(pd_flights, func)()
+            pd_metric = (pd_flights - pd_flights.mean()).abs().mean()
             oml_metric = getattr(oml_flights, func)()
 
             if func == "nunique":
@@ -94,7 +94,7 @@ class TestSeriesMetrics(TestData):
             oml_ecommerce = self.oml_ecommerce()[column]
 
             for func in self.all_funcs:
-                pd_metric = getattr(pd_ecommerce, func)()
+                pd_metric = (pd_ecommerce - pd_ecommerce.mean()).abs().mean()
                 oml_metric = getattr(oml_ecommerce, func)(
                     **({"numeric_only": True} if (func != "nunique") else {})
                 )
