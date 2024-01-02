@@ -46,6 +46,9 @@ class TestGroupbyDataFrame(TestData):
         "taxful_total_price",
     ]
 
+    def calculate_mad(self, series):
+        return series.sub(series.mean()).abs().mean()
+
     @pytest.mark.parametrize("dropna", [True, False])
     @pytest.mark.parametrize("numeric_only", [True])
     def test_groupby_aggregate(self, numeric_only, dropna):
@@ -107,14 +110,8 @@ class TestGroupbyDataFrame(TestData):
         oml_flights = self.oml_flights().filter(self.filter_data)
 
         if pd_agg == "mad":
-            pd_groupby = (
-                (
-                    pd_flights.groupby("Cancelled", dropna=dropna).transform(
-                        lambda x: x - x.mean()
-                    )
-                )
-                .abs()
-                .mean()
+            pd_groupby = pd_flights.groupby('Cancelled').apply(
+                lambda x: self.calculate_mad(x.drop(columns='Cancelled').select_dtypes(include=['number', 'bool']))
             )
         else:
             pd_groupby = getattr(
@@ -237,11 +234,7 @@ class TestGroupbyDataFrame(TestData):
         pd_flights = self.pd_flights().filter(self.filter_data + ["DestCountry"])
         oml_flights = self.oml_flights().filter(self.filter_data + ["DestCountry"])
 
-        pd_mad = (
-            (pd_flights.groupby("DestCountry").transform(lambda x: x - x.mean()))
-            .abs()
-            .mean()
-        )
+        pd_mad = pd_flights.groupby('DestCountry').apply(lambda x: x.select_dtypes(include=['number','bool']).apply(self.calculate_mad))
         oml_mad = oml_flights.groupby("DestCountry").mad()
 
         assert_index_equal(pd_mad.columns, oml_mad.columns)
