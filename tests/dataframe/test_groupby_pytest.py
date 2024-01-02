@@ -106,7 +106,11 @@ class TestGroupbyDataFrame(TestData):
         pd_flights = self.pd_flights().filter(self.filter_data)
         oml_flights = self.oml_flights().filter(self.filter_data)
 
-        pd_groupby = getattr(pd_flights.groupby("Cancelled", dropna=dropna), pd_agg)()
+        if pd_agg == "mad":
+            grouped_flights = pd_flights.groupby("Cancelled", dropna=dropna)
+            pd_groupby = (grouped_flights - grouped_flights.mean()).abs().mean()
+        else:
+            pd_groupby = getattr(pd_flights.groupby("Cancelled", dropna=dropna), pd_agg)()
         oml_groupby = getattr(oml_flights.groupby("Cancelled", dropna=dropna), pd_agg)(
             numeric_only=True
         )
@@ -224,7 +228,7 @@ class TestGroupbyDataFrame(TestData):
         pd_flights = self.pd_flights().filter(self.filter_data + ["DestCountry"])
         oml_flights = self.oml_flights().filter(self.filter_data + ["DestCountry"])
 
-        pd_mad = pd_flights.groupby("DestCountry").mad()
+        pd_mad = (pd_flights.groupby("DestCountry") - pd_flights.groupby("DestCountry").mean()).abs().mean()
         oml_mad = oml_flights.groupby("DestCountry").mad()
 
         assert_index_equal(pd_mad.columns, oml_mad.columns)
