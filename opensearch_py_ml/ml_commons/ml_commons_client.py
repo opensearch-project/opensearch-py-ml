@@ -25,6 +25,7 @@ from opensearch_py_ml.ml_commons.model_access_control import ModelAccessControl
 from opensearch_py_ml.ml_commons.model_connector import Connector
 from opensearch_py_ml.ml_commons.model_execute import ModelExecute
 from opensearch_py_ml.ml_commons.model_uploader import ModelUploader
+from opensearch_py_ml.ml_commons.validators.profile import validate_profile_input
 
 
 class MLCommonClient:
@@ -606,3 +607,111 @@ class MLCommonClient:
             method="DELETE",
             url=API_URL,
         )
+
+    def _get_profile(self, payload: Optional[dict] = None):
+        """
+        Get the profile using the given payload.
+
+        :param payload: The payload to be used for getting the profile. Defaults to None.
+        :type payload: Optional[dict]
+        :return: The response from the server after performing the request.
+        :rtype: Any
+        """
+        validate_profile_input(None, payload)
+        return self._client.transport.perform_request(
+            method="GET", url=f"{ML_BASE_URI}/profile", body=payload
+        )
+
+    def _get_models_profile(
+        self, model_id: Optional[str] = "", payload: Optional[dict] = None
+    ):
+        """
+        Get the profile of a model.
+
+        Args:
+            model_id (str, optional): The ID of the model. Defaults to "".
+            payload (dict, optional): Additional payload for the request. Defaults to None.
+
+        Returns:
+            dict: The response from the API.
+        """
+        validate_profile_input(model_id, payload)
+
+        url = f"{ML_BASE_URI}/profile/models/{model_id if model_id else ''}"
+        return self._client.transport.perform_request(
+            method="GET", url=url, body=payload
+        )
+
+    def _get_tasks_profile(
+        self, task_id: Optional[str] = "", payload: Optional[dict] = None
+    ):
+        """
+        Retrieves the profile of a task from the API.
+
+        Parameters:
+            task_id (str, optional): The ID of the task to retrieve the profile for. Defaults to an empty string.
+            payload (dict, optional): Additional payload for the request. Defaults to None.
+
+        Returns:
+            dict: The profile of the task.
+
+        Raises:
+            ValueError: If the input validation fails.
+
+        """
+        validate_profile_input(task_id, payload)
+
+        url = f"{ML_BASE_URI}/profile/tasks/{task_id if task_id else ''}"
+        return self._client.transport.perform_request(
+            method="GET", url=url, body=payload
+        )
+
+    def get_profile(
+        self,
+        profile_type: str = "all",
+        ids: Optional[Union[str, List[str]]] = None,
+        request_body: Optional[dict] = None,
+    ) -> dict:
+        """
+        Get profile information based on the profile type.
+
+        Args:
+            profile_type: The type of profile to retrieve. Valid values are 'all', 'model', or 'task'. Default is 'all'.
+                'all': Retrieves all profiles available.
+                'model': Retrieves the profile(s) of the specified model(s). The model(s) to retrieve are specified by the 'ids' parameter.
+                'task': Retrieves the profile(s) of the specified task(s). The task(s) to retrieve are specified by the 'ids' parameter.
+            ids: Either a single profile ID as a string, or a list of profile IDs to retrieve. Default is None.
+            request_body: The request body containing additional information. Default is None.
+
+        Returns:
+            The profile information.
+
+        Raises:
+            ValueError: If the profile_type is not 'all', 'model', or 'task'.
+
+        Example:
+            get_profile()
+
+            get_profile(profile_type='model', ids='model1')
+
+            get_profile(profile_type='model', ids=['model1', 'model2'])
+
+            get_profile(profile_type='task', ids='task1', request_body={"node_ids": ["KzONM8c8T4Od-NoUANQNGg"],"return_all_tasks": true,"return_all_models": true})
+
+            get_profile(profile_type='task', ids=['task1', 'task2'], request_body={'additional': 'info'})
+        """
+
+        if profile_type == "all":
+            return self._get_profile(request_body)
+        elif profile_type == "model":
+            if ids and isinstance(ids, list):
+                ids = ",".join(ids)
+            return self._get_models_profile(ids, request_body)
+        elif profile_type == "task":
+            if ids and isinstance(ids, list):
+                ids = ",".join(ids)
+            return self._get_tasks_profile(ids, request_body)
+        else:
+            raise ValueError(
+                "Invalid profile type. Profile type must be 'all', 'model' or 'task'."
+            )
