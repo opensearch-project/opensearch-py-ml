@@ -34,6 +34,7 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Update pretrained_models_all_versions.json (2023-10-18 18:11:34) by @dhrubo-os ([#322](https://github.com/opensearch-project/opensearch-py-ml/pull/322))
 - Update model upload history -  sentence-transformers/paraphrase-mpnet-base-v2 (v.1.0.0)(BOTH) by @dhrubo-os ([#321](https://github.com/opensearch-project/opensearch-py-ml/pull/321))
 - Replaced usage of `is_datetime_or_timedelta_dtype` with `is_timedelta64_dtype` and `is_datetime64_any_dtype`([#316](https://github.com/opensearch-project/opensearch-py-ml/pull/316))
+- Replaced deprecated `mad` function with the custom one and upgraded Pandas (v2.1.4) ([#366](https://github.com/opensearch-project/opensearch-py-ml/pull/366))
 
 ### Fixed
 - Enable make_model_config_json to add model description to model config file by @thanawan-atc in ([#203](https://github.com/opensearch-project/opensearch-py-ml/pull/203))
