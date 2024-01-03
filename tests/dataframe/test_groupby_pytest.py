@@ -24,6 +24,7 @@
 
 # File called _pytest for PyCharm compatability
 
+import numpy as np
 import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal, assert_index_equal, assert_series_equal
@@ -48,6 +49,14 @@ class TestGroupbyDataFrame(TestData):
 
     def calculate_mad(self, series):
         return series.sub(series.mean()).abs().mean()
+
+    def mad(self, series):
+        if series.dtype == "float64" or series.dtype == "int64":
+            return series.sub(series.mean()).abs().mean()
+        elif series.dtype == "<M8[ns]":
+            return pd.NaT
+        else:
+            return np.nan
 
     @pytest.mark.parametrize("dropna", [True, False])
     @pytest.mark.parametrize("numeric_only", [True])
@@ -249,7 +258,7 @@ class TestGroupbyDataFrame(TestData):
         assert_index_equal(pd_mad.index, oml_mad.index)
         assert_series_equal(pd_mad.dtypes, oml_mad.dtypes)
 
-        pd_min_mad = pd_flights.groupby("DestCountry").aggregate(["min", "mad"])
+        pd_min_mad = pd_flights.groupby("DestCountry").aggregate(["min", self.mad])
         oml_min_mad = oml_flights.groupby("DestCountry").aggregate(["min", "mad"])
 
         assert_index_equal(pd_min_mad.columns, oml_min_mad.columns)
