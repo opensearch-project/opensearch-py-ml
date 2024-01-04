@@ -103,7 +103,7 @@ def lint(session):
 
 
 @nox.session(python=["3.8", "3.9", "3.10"])
-#@nox.parametrize("pandas_version", ["2.1.4"])
+@nox.parametrize("pandas_version", ["2.1.4"])
 def test(session, pandas_version: str):
     session.install(
         "-r",
