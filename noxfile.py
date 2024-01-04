@@ -103,7 +103,6 @@ def lint(session):
 
 
 @nox.session(python=["3.8", "3.9", "3.10"])
-@nox.parametrize("pandas_version", ["2.1.4"])
 def test(session, pandas_version: str):
     session.install(
         "-r",
@@ -112,7 +111,6 @@ def test(session, pandas_version: str):
         "1500",
     )
     session.install(".")
-    session.run("python", "-m", "pip", "install", f"pandas~={pandas_version}")
     session.run("python", "-m", "setup_tests")
 
     junit_xml = join(abspath(dirname(__file__)), "junit", "opensearch-py-ml-junit.xml")
