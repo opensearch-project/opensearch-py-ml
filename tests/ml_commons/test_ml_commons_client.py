@@ -165,14 +165,15 @@ def test_train(iris_index):
 
 
 def test_execute():
-    raised = False
     try:
         input_json = {"operation": "max", "input_data": [1.0, 2.0, 3.0]}
         result = ml_client.execute(
             algorithm_name="local_sample_calculator", input_json=input_json
         )
     except Exception as ex:
-        pytest.fail(f"Raised Exception during execute API testing with dictionary. Exception info: {ex}")
+        pytest.fail(
+            f"Raised Exception during execute API testing with dictionary. Exception info: {ex}"
+        )
     else:
         assert result["output"]["result"] == 3
 
@@ -182,12 +183,14 @@ def test_execute():
             algorithm_name="local_sample_calculator", input_json=input_json
         )
     except Exception as ex:
-        pytest.fail(f"Raised Exception during execute API testing with JSON string. Exception info: {ex}")
+        pytest.fail(
+            f"Raised Exception during execute API testing with JSON string. Exception info: {ex}"
+        )
     else:
         assert result["output"]["result"] == 3
 
+
 def test_DEPRECATED_integration_pretrained_model_upload_unload_delete():
-    raised = False
     try:
         model_id = ml_client.upload_pretrained_model(
             model_name=PRETRAINED_MODEL_NAME,
@@ -198,33 +201,39 @@ def test_DEPRECATED_integration_pretrained_model_upload_unload_delete():
         )
         ml_model_status = ml_client.get_model_info(model_id)
     except Exception as ex:
-        pytest.fail(f"Raised Exception during pretrained model registration and deployment. Exception info:{ex}")
+        pytest.fail(
+            f"Raised Exception during pretrained model registration and deployment. Exception info:{ex}"
+        )
     else:
         assert ml_model_status.get("model_state") != "DEPLOY_FAILED"
-        
 
     if model_id:
-        raised = False
         try:
             ml_model_status = ml_client.get_model_info(model_id)
         except Exception as ex:
-            pytest.fail("Raised Exception in getting pretrained model info. Exception info: {ex}")
+            pytest.fail(
+                f"Raised Exception in getting pretrained model info. Exception info: {ex}"
+            )
         else:
             assert ml_model_status.get("model_format") == "TORCH_SCRIPT"
             assert ml_model_status.get("algorithm") == "TEXT_EMBEDDING"
-            
+
         try:
             ml_client.unload_model(model_id)
             ml_model_status = ml_client.get_model_info(model_id)
-        except:  # noqa: E722
-            pytest.fail("Raised Exception in pretrained model undeployment. Exception info: {ex}")
+        except Exception as ex:
+            pytest.fail(
+                f"Raised Exception in pretrained model undeployment. Exception info: {ex}"
+            )
         else:
             assert ml_model_status.get("model_state") != "UNDEPLOY_FAILED"
-            
+
         try:
             delete_model_obj = ml_client.delete_model(model_id)
         except Exception as ex:
-            pytest.fail("Raised Exception in deleting pretrained model. Exception info: {ex}")
+            pytest.fail(
+                f"Raised Exception in deleting pretrained model. Exception info: {ex}"
+            )
         else:
             assert delete_model_obj.get("result") == "deleted"
 
