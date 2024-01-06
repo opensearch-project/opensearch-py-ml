@@ -408,8 +408,8 @@ def test_integration_model_train_register_full_cycle():
                 deploy_model=True,
                 isVerbose=True,
             )
-        except Exception as ex:  # noqa: E722
-            assert False, f"Exception occurred during first model registration: {ex}"
+        except Exception as ex:
+            pytest.fail(f"Exception occurred during first model registration: {ex}")
 
         try:
             model_id = ml_client.register_model(
@@ -420,27 +420,29 @@ def test_integration_model_train_register_full_cycle():
             )
             print("Model_id:", model_id)
         except Exception as ex:  # noqa: E722
-            assert False, f"Exception occurred during second model registration: {ex}"
+            pytest.fail(f"Exception occurred during second model registration: {ex}")
 
         if model_id:
             try:
                 ml_load_status = ml_client.deploy_model(
                     model_id, wait_until_deployed=False
                 )
+            except Exception as ex:
+                pytest.fail(f"Exception occurred during model deployment: {ex}")
+            else:
                 task_id = ml_load_status.get("task_id")
                 assert task_id != "" or task_id is not None
 
                 ml_model_status = ml_client.get_model_info(model_id)
                 assert ml_model_status.get("model_state") != "DEPLOY_FAILED"
-            except Exception as ex:  # noqa: E722
-                assert False, f"Exception occurred during model deployment: {ex}"
 
             try:
                 ml_model_status = ml_client.get_model_info(model_id)
+            except Exception as ex:
+                pytest.fail(f"Exception occurred when getting model info: {ex}")
+            else:
                 assert ml_model_status.get("model_format") == "TORCH_SCRIPT"
                 assert ml_model_status.get("algorithm") == "TEXT_EMBEDDING"
-            except Exception as ex:  # noqa: E722
-                assert False, f"Exception occurred when getting model info: {ex}"
 
             if task_id:
                 ml_task_status = None
@@ -448,11 +450,12 @@ def test_integration_model_train_register_full_cycle():
                     ml_task_status = ml_client.get_task_info(
                         task_id, wait_until_task_done=True
                     )
+                except Exception as ex:  # noqa: E722
+                    pytest.fail(f"Exception occurred in pulling task info: {ex}")
+                else:
                     assert ml_task_status.get("task_type") == "DEPLOY_MODEL"
                     print("State:", ml_task_status.get("state"))
                     assert ml_task_status.get("state") != "FAILED"
-                except Exception as ex:  # noqa: E722
-                    assert False, f"Exception occurred in pulling task info: {ex}"
 
                 # This is test is being flaky. Sometimes the test is passing and sometimes showing 500 error
                 # due to memory circuit breaker.
@@ -461,126 +464,120 @@ def test_integration_model_train_register_full_cycle():
                     sentences = ["First test sentence", "Second test sentence"]
                     embedding_result = ml_client.generate_embedding(model_id, sentences)
                     print(embedding_result)
+                except Exception as ex:
+                    pytest.fail(
+                        f"Exception occurred when generating sentence embedding: {ex}"
+                    )
+                else:
                     assert len(embedding_result.get("inference_results")) == 2
-                except Exception as ex:  # noqa: E722
-                    assert (
-                        False
-                    ), f"Exception occurred when generating sentence embedding: {ex}"
 
                 try:
                     delete_task_obj = ml_client.delete_task(task_id)
+                except Exception as ex:
+                    pytest.fail(f"Exception occurred when deleting task: {ex}")
+                else:
                     assert delete_task_obj.get("result") == "deleted"
-                except Exception as ex:  # noqa: E722
-                    assert False, f"Exception occurred when deleting task: {ex}"
 
                 try:
                     ml_client.undeploy_model(model_id)
                     ml_model_status = ml_client.get_model_info(model_id)
+                except Exception as ex:
+                    pytest.fail(f"Exception occurred during model undeployment : {ex}")
+                else:
                     assert ml_model_status.get("model_state") != "UNDEPLOY_FAILED"
-                except Exception as ex:  # noqa: E722
-                    assert False, f"Exception occurred during model undeployment : {ex}"
 
                 try:
                     delete_model_obj = ml_client.delete_model(model_id)
+                except Exception as ex:
+                    pytest.fail(f"Exception occurred during model deletion : {ex}")
+                else:
                     assert delete_model_obj.get("result") == "deleted"
-                except Exception as ex:  # noqa: E722
-                    assert False, f"Exception occurred during model deletion : {ex}"
 
 
 def test_search():
     # Search task cases
-    raised = False
     try:
         search_task_obj = ml_client.search_task(
             input_json='{"query": {"match_all": {}},"size": 1}'
         )
+    except Exception as ex:
+        pytest.fail(f"Raised Exception in searching task. Exception info: {ex}")
+    else:
         assert search_task_obj["hits"]["hits"] != []
-    except:  # noqa: E722
-        raised = True
-    assert raised == False, "Raised Exception in searching task"
 
-    raised = False
     try:
         search_task_obj = ml_client.search_task(
             input_json={"query": {"match_all": {}}, "size": 1}
         )
+    except Exception as ex:
+        pytest.fail(f"Raised Exception in searching task. Exception info: {ex}")
+    else:
         assert search_task_obj["hits"]["hits"] != []
-    except:  # noqa: E722
-        raised = True
-    assert raised == False, "Raised Exception in searching task"
 
-    raised = False
     try:
         search_task_obj = ml_client.search_task(input_json=15)
+    except Exception as ex:
+        pytest.fail(f"Raised Exception in searching task. Exception info: {ex}")
+    else:
         assert search_task_obj == "Invalid JSON object passed as argument."
-    except:  # noqa: E722
-        raised = True
-    assert raised == False, "Raised Exception in searching task"
 
-    raised = False
     try:
         search_task_obj = ml_client.search_task(input_json="15")
+    except Exception as ex:
+        pytest.fail(f"Raised Exception in searching task. Exception info: {ex}")
+    else:
         assert search_task_obj == "Invalid JSON object passed as argument."
-    except:  # noqa: E722
-        raised = True
-    assert raised == False, "Raised Exception in searching task"
 
-    raised = False
     try:
         search_task_obj = ml_client.search_task(
             input_json='{"query": {"match_all": {}},size: 1}'
         )
+    except Exception as ex:
+        pytest.fail(f"Raised Exception in searching task. Exception info: {ex}")
+    else:
         assert search_task_obj == "Invalid JSON string passed as argument."
-    except:  # noqa: E722
-        raised = True
-    assert raised == False, "Raised Exception in searching task"
 
     # Search model cases
-    raised = False
     try:
         search_model_obj = ml_client.search_model(
             input_json='{"query": {"match_all": {}},"size": 1}'
         )
+    except Exception as ex:
+        pytest.fail(f"Raised Exception in searching model. Exception info: {ex}")
+    else:
         assert search_model_obj["hits"]["hits"] != []
-    except:  # noqa: E722
-        raised = True
-    assert raised == False, "Raised Exception in searching model"
 
-    raised = False
     try:
         search_model_obj = ml_client.search_model(
             input_json={"query": {"match_all": {}}, "size": 1}
         )
+    except Exception as ex:
+        pytest.fail(f"Raised Exception in searching model. Exception info: {ex}")
+    else:
         assert search_model_obj["hits"]["hits"] != []
-    except:  # noqa: E722
-        raised = True
-    assert raised == False, "Raised Exception in searching model"
 
-    raised = False
     try:
         search_model_obj = ml_client.search_model(input_json=15)
+    except Exception as ex:
+        pytest.fail(f"Raised Exception in searching model. Exception info: {ex}")
+    else:
         assert search_model_obj == "Invalid JSON object passed as argument."
-    except:  # noqa: E722
-        raised = True
-    assert raised == False, "Raised Exception in searching model"
 
-    raised = False
     try:
         search_model_obj = ml_client.search_model(input_json="15")
+    except Exception as ex:
+        pytest.fail(f"Raised Exception in searching model. Exception info: {ex}")
+    else:
         assert search_model_obj == "Invalid JSON object passed as argument."
-    except:  # noqa: E722
-        raised = True
-    assert raised == False, "Raised Exception in searching model"
 
-    raised = False
     try:
         search_model_obj = ml_client.search_model(
             input_json='{"query": {"match_all": {}},size: 1}'
         )
+    except Exception as ex:
+        pytest.fail(f"Raised Exception in searching model. Exception info: {ex}")
+    else:
         assert search_model_obj == "Invalid JSON string passed as argument."
-    except:  # noqa: E722
-        raised = True
-    assert raised == False, "Raised Exception in searching model"
 
 
 # Model Profile Tests. These tests will need some model train/predict run data. Hence, need
