@@ -239,7 +239,6 @@ def test_DEPRECATED_integration_pretrained_model_upload_unload_delete():
 
 
 def test_integration_pretrained_model_register_undeploy_delete():
-    raised = False
     try:
         model_id = ml_client.register_pretrained_model(
             model_name=PRETRAINED_MODEL_NAME,
@@ -249,39 +248,42 @@ def test_integration_pretrained_model_register_undeploy_delete():
             wait_until_deployed=True,
         )
         ml_model_status = ml_client.get_model_info(model_id)
+    except Exception as ex:
+        pytest.fail(
+            f"Raised Exception during pretrained model registration and deployment. Exception info:{ex}"
+        )
+    else:
         assert ml_model_status.get("model_state") != "DEPLOY_FAILED"
-    except:  # noqa: E722
-        raised = True
-    assert (
-        raised == False
-    ), "Raised Exception during pretrained model registration and deployment"
 
     if model_id:
-        raised = False
         try:
             ml_model_status = ml_client.get_model_info(model_id)
+        except Exception as ex:
+            pytest.fail(
+                f"Raised Exception in getting pretrained model info. Exception info: {ex}"
+            )
+        else:
             assert ml_model_status.get("model_format") == "TORCH_SCRIPT"
             assert ml_model_status.get("algorithm") == "TEXT_EMBEDDING"
-        except:  # noqa: E722
-            raised = True
-        assert raised == False, "Raised Exception in getting pretrained model info"
 
-        raised = False
         try:
             ml_client.undeploy_model(model_id)
             ml_model_status = ml_client.get_model_info(model_id)
+        except Exception as ex:
+            pytest.fail(
+                f"Raised Exception in pretrained model undeployment. Exception info: {ex}"
+            )
+        else:
             assert ml_model_status.get("model_state") != "UNDEPLOY_FAILED"
-        except:  # noqa: E722
-            raised = True
-        assert raised == False, "Raised Exception in pretrained model undeployment"
 
-        raised = False
         try:
             delete_model_obj = ml_client.delete_model(model_id)
+        except Exception as ex:
+            pytest.fail(
+                f"Raised Exception in deleting pretrained model. Exception info: {ex}"
+            )
+        else:
             assert delete_model_obj.get("result") == "deleted"
-        except:  # noqa: E722
-            raised = True
-        assert raised == False, "Raised Exception in deleting pretrained model"
 
 
 def test_DEPRECATED_integration_model_train_upload_full_cycle():
@@ -308,25 +310,26 @@ def test_DEPRECATED_integration_model_train_upload_full_cycle():
             )
             print("Model_id:", model_id)
         except Exception as ex:  # noqa: E722
-            assert False, f"Exception occurred when uploading model: {ex}"
+            pytest.fail(f"Exception occurred when uploading model: {ex}")
 
         if model_id:
             try:
                 ml_load_status = ml_client.load_model(model_id, wait_until_loaded=False)
                 task_id = ml_load_status.get("task_id")
-                assert task_id != "" or task_id is not None
-
                 ml_model_status = ml_client.get_model_info(model_id)
+            except Exception as ex:
+                pytest.fail(f"Exception occurred when loading model: {ex}")
+            else:
+                assert task_id != "" or task_id is not None
                 assert ml_model_status.get("model_state") != "DEPLOY_FAILED"
-            except Exception as ex:  # noqa: E722
-                assert False, f"Exception occurred when loading model: {ex}"
 
             try:
                 ml_model_status = ml_client.get_model_info(model_id)
+            except Exception as ex:
+                pytest.fail(f"Exception occurred when getting model info: {ex}")
+            else:
                 assert ml_model_status.get("model_format") == "TORCH_SCRIPT"
                 assert ml_model_status.get("algorithm") == "TEXT_EMBEDDING"
-            except Exception as ex:  # noqa: E722
-                assert False, f"Exception occurred when getting model info: {ex}"
 
             if task_id:
                 ml_task_status = None
@@ -334,11 +337,13 @@ def test_DEPRECATED_integration_model_train_upload_full_cycle():
                     ml_task_status = ml_client.get_task_info(
                         task_id, wait_until_task_done=True
                     )
-                    assert ml_task_status.get("task_type") == "DEPLOY_MODEL"
                     print("State:", ml_task_status.get("state"))
-                    assert ml_task_status.get("state") != "FAILED"
                 except Exception as ex:  # noqa: E722
-                    assert False, f"Exception occurred when getting task info: {ex}"
+                    pytest.fail(f"Exception occurred when getting task info: {ex}")
+                else:
+                    assert ml_task_status.get("task_type") == "DEPLOY_MODEL"
+                    assert ml_task_status.get("state") != "FAILED"
+
                 # This is test is being flaky. Sometimes the test is passing and sometimes showing 500 error
                 # due to memory circuit breaker.
                 # Todo: We need to revisit this test.
@@ -346,30 +351,33 @@ def test_DEPRECATED_integration_model_train_upload_full_cycle():
                     sentences = ["First test sentence", "Second test sentence"]
                     embedding_result = ml_client.generate_embedding(model_id, sentences)
                     print(embedding_result)
-                    assert len(embedding_result.get("inference_results")) == 2
                 except Exception as ex:  # noqa: E722
-                    assert False, f"Exception occurred when generating embedding: {ex}"
+                    pytest.fail(f"Exception occurred when generating embedding: {ex}")
+                else:
+                    assert len(embedding_result.get("inference_results")) == 2
 
                 try:
                     delete_task_obj = ml_client.delete_task(task_id)
-                    assert delete_task_obj.get("result") == "deleted"
                 except Exception as ex:  # noqa: E722
-                    assert False, f"Exception occurred when deleting task: {ex}"
+                    pytest.fail(f"Exception occurred when deleting task: {ex}")
+                else:
+                    assert delete_task_obj.get("result") == "deleted"
 
                 try:
                     ml_client.unload_model(model_id)
                     ml_model_status = ml_client.get_model_info(model_id)
-                    assert ml_model_status.get("model_state") != "UNDEPLOY_FAILED"
                 except Exception as ex:  # noqa: E722
-                    assert (
-                        False
-                    ), f"Exception occurred when pretrained model undeployment : {ex}"
+                    pytest.fail(
+                        f"Exception occurred when pretrained model undeployment : {ex}"
+                    )
+                else:
+                    assert ml_model_status.get("model_state") != "UNDEPLOY_FAILED"
 
                 try:
                     delete_model_obj = ml_client.delete_model(model_id)
                     assert delete_model_obj.get("result") == "deleted"
                 except Exception as ex:  # noqa: E722
-                    assert False, f"Exception occurred when deleting model: {ex}"
+                    pytest.fail(f"Exception occurred when deleting model: {ex}")
 
 
 def test_integration_model_train_register_full_cycle():
