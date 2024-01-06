@@ -45,6 +45,7 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Fix pandas dependency issue in nox session by installing pandas package to python directly by @thanawan-atc in ([#266](https://github.com/opensearch-project/opensearch-py-ml/pull/266))
 - Fix conditional job execution issue in model upload workflow by @thanawan-atc in ([#294](https://github.com/opensearch-project/opensearch-py-ml/pull/294))
 - fix bug in `MLCommonClient_client.upload_model` by @rawwar in ([#336](https://github.com/opensearch-project/opensearch-py-ml/pull/336))
+- fixed pandas versions in setup.py to match to the ones used for testing by @rawwar in ([#369](https://github.com/opensearch-project/opensearch-py-ml/pull/369))
 
 ## [1.1.0]
 
