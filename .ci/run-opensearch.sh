@@ -63,12 +63,15 @@ END
   local_detach="true"
   if [[ "$i" == "$((NUMBER_OF_NODES-1))" ]]; then local_detach=$DETACH; fi
 
-  password="admin"
- IFS='.' read -ra version_array <<< "$OPENSEARCH_VERSION"
+  OPENSEARCH_REQUIRED_VERSION="2.12.0"
 
+  password="admin"
   # Starting in 2.12.0, security demo configuration script requires an initial admin password
-  if (( ${version_array[0]} > 2 || (${version_array[0]} == 2 && ${version_array[1]} >= 12) )); then
-      password="myStrongPassword123!"
+  COMPARE_VERSION=`echo $OPENSEARCH_REQUIRED_VERSION $OPENSEARCH_VERSION | tr ' ' '\n' | sort -V | uniq | head -n 1`
+  if [ "$COMPARE_VERSION" != "$OPENSEARCH_REQUIRED_VERSION" ]; then
+    password="admin"
+  else
+    password="myStrongPassword123!"
   fi
 
   set -x
