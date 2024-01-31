@@ -159,7 +159,7 @@ $ make html
 ```yml
 opensearch.hosts: ["https://localhost:9200"]
 opensearch.username: "admin" # Default username
-opensearch.password: "admin" # Default password
+opensearch.password: "< admin password >" # Password set during setup
 ```
 
 ## Code guidelines
