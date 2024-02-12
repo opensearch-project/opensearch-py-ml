@@ -25,6 +25,7 @@
 import os
 from datetime import timedelta
 
+import numpy as np
 import pandas as pd
 from pandas.testing import assert_frame_equal, assert_series_equal
 
@@ -151,3 +152,15 @@ def assert_almost_equal(left, right, **kwargs):
         assert left is pd.NaT
     else:
         assert left == right, f"{left} != {right}"
+
+
+def mad(x):
+    if isinstance(x, pd.Series):
+        if x.dtype == "<M8[ns]":
+            return pd.Timestamp("NaT")
+        elif x.dtype == object:
+            return np.nan
+    else:
+        numeric_columns = x.select_dtypes(include=["number", "bool"]).columns
+        x = x[numeric_columns]
+    return np.fabs(x - x.mean()).mean()
