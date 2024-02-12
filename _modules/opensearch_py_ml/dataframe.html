@@ -1085,8 +1085,10 @@
         <span class="k">elif</span> <span class="n">verbose</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>  <span class="c1"># specifically set to False, not nesc None</span>
             <span class="n">_non_verbose_repr</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">_non_verbose_repr</span><span class="p">()</span> <span class="k">if</span> <span class="n">exceeds_info_cols</span> <span class="k">else</span> <span class="n">_verbose_repr</span><span class="p">(</span>
-                <span class="n">number_of_columns</span>
+            <span class="p">(</span>
+                <span class="n">_non_verbose_repr</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">exceeds_info_cols</span>
+                <span class="k">else</span> <span class="n">_verbose_repr</span><span class="p">(</span><span class="n">number_of_columns</span><span class="p">)</span>
             <span class="p">)</span>
 
         <span class="c1"># pandas 0.25.1 uses get_dtype_counts() here. This</span>
