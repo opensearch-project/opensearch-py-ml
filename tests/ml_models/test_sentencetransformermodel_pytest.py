@@ -8,11 +8,13 @@
 import json
 import os
 import shutil
+from unittest.mock import MagicMock, patch
 from zipfile import ZipFile
 
 import pytest
 
-from opensearch_py_ml.ml_models import SentenceTransformerModel
+from opensearch_py_ml.ml_commons import MLCommonClient
+from opensearch_py_ml.ml_models.sentencetransformermodel import SentenceTransformerModel
 
 TEST_FOLDER = os.path.join(
     os.path.dirname(os.path.abspath("__file__")), "tests", "test_model_files"
@@ -656,6 +658,24 @@ def test_zip_model_with_license():
     compare_model_zip_file(zip_file_path, expected_filenames_with_license, model_format)
 
     clean_test_folder(TEST_FOLDER)
+
+
+@pytest.fixture
+def mock_opensearch_client():
+    with patch("opensearchpy.OpenSearch") as mock_client:
+        mock_client.return_value = MagicMock()
+        yield mock_client
+
+
+def test_opensearch_connection(mock_opensearch_client):
+    client = MLCommonClient(mock_opensearch_client)
+    assert client._client == mock_opensearch_client
+
+
+def test_init():
+    model = SentenceTransformerModel(model_id="test-model", folder_path="/test/folder")
+    assert model.folder_path == "/test/folder"
+    assert model.model_id == "test-model"
 
 
 clean_test_folder(TEST_FOLDER)

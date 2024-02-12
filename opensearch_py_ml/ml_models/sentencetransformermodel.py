@@ -92,7 +92,7 @@ class SentenceTransformerModel:
                 str("The default folder path already exists at : " + self.folder_path)
             )
 
-        self.model_id = model_id
+        self.model_id = model_id if model_id is not None else self.DEFAULT_MODEL_ID
         self.torch_script_zip_file_path = None
         self.onnx_zip_file_path = None
 
@@ -806,7 +806,7 @@ class SentenceTransformerModel:
         :rtype: string
         """
 
-        model = SentenceTransformer(model_id)
+        model = SentenceTransformer(self.model_id)
 
         if model_name is None:
             model_name = str(model_id.split("/")[-1] + ".pt")
