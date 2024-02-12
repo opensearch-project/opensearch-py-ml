@@ -94,9 +94,9 @@ def merge_events(
     send = ends[ix]
     sevents = candidates[ix, :]
 
-    merged: List[
-        Dict[str, torch.Tensor]
-    ] = []  # merge in linear pass over time dimension
+    merged: List[Dict[str, torch.Tensor]] = (
+        []
+    )  # merge in linear pass over time dimension
     currstart = torch.tensor([-1])
     currend = torch.tensor([-1])
     currevent = torch.ones(T) * -1.0
