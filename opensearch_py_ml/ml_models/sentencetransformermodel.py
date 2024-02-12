@@ -1304,9 +1304,9 @@ class SentenceTransformerModel:
                 model_config_content["model_content_size_in_bytes"] = os.stat(
                     model_zip_file_path
                 ).st_size
-                model_config_content[
-                    "model_content_hash_value"
-                ] = _generate_model_content_hash_value(model_zip_file_path)
+                model_config_content["model_content_hash_value"] = (
+                    _generate_model_content_hash_value(model_zip_file_path)
+                )
 
         if verbose:
             print("generating ml-commons_model_config.json file...\n")
