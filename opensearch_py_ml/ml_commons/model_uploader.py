@@ -95,9 +95,9 @@ class ModelUploader:
         model_meta_json[TOTAL_CHUNKS_FIELD] = total_num_chunks
 
         if MODEL_CONTENT_SIZE_IN_BYTES_FIELD not in model_meta_json:
-            model_meta_json[
-                MODEL_CONTENT_SIZE_IN_BYTES_FIELD
-            ] = model_content_size_in_bytes
+            model_meta_json[MODEL_CONTENT_SIZE_IN_BYTES_FIELD] = (
+                model_content_size_in_bytes
+            )
         if MODEL_CONTENT_HASH_VALUE not in model_meta_json:
             # Generate the sha1 hash for the model zip file
             hash_val_model_file = _generate_model_content_hash_value(model_path)
