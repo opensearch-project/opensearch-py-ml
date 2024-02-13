@@ -29,7 +29,7 @@ import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal, assert_series_equal
 
-from tests.common import TestData, assert_almost_equal, quantile, mad
+from tests.common import TestData, assert_almost_equal, mad, quantile
 
 
 class TestDataFrameMetrics(TestData):
