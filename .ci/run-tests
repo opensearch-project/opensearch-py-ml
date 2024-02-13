@@ -5,7 +5,7 @@
 # Default environment variables
 export TEST_SUITE="${TEST_SUITE:=oss}"
 export PYTHON_VERSION="${PYTHON_VERSION:=3.9}"
-export PANDAS_VERSION=${PANDAS_VERSION-1.5.0}
+export PANDAS_VERSION=${PANDAS_VERSION-2.0.3}
 export PYTHON_CONNECTION_CLASS="${PYTHON_CONNECTION_CLASS:=Urllib3HttpConnection}"
 export CLUSTER="${1:-opensearch}"
 export SECURE_INTEGRATION="${2:-true}"
