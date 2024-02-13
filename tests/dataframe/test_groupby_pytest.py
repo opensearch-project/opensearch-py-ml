@@ -106,7 +106,16 @@ class TestGroupbyDataFrame(TestData):
         pd_flights = self.pd_flights().filter(self.filter_data)
         oml_flights = self.oml_flights().filter(self.filter_data)
 
-        pd_groupby = getattr(pd_flights.groupby("Cancelled", dropna=dropna), pd_agg)()
+        if pd_agg == "mad":
+            pd_groupby = (
+                pd_flights.groupby("Cancelled", dropna=dropna)
+                .apply(mad)
+                .drop("Cancelled", axis=1)
+            )
+        else:
+            pd_groupby = getattr(
+                pd_flights.groupby("Cancelled", dropna=dropna), pd_agg
+            )()
         oml_groupby = getattr(oml_flights.groupby("Cancelled", dropna=dropna), pd_agg)(
             numeric_only=True
         )

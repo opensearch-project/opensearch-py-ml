@@ -1353,7 +1353,7 @@ class DataFrame(NDFrame):
             "compression": compression,
             "quoting": quoting,
             "quotechar": quotechar,
-            "line_terminator": line_terminator,
+            # "line_terminator": line_terminator,
             "chunksize": chunksize,
             "date_format": date_format,
             "doublequote": doublequote,
