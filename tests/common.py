@@ -164,3 +164,6 @@ def mad(x):
         numeric_columns = x.select_dtypes(include=["number", "bool"]).columns
         x = x[numeric_columns]
     return np.fabs(x - x.mean()).mean()
+
+def quantile(x, numeric_only=None):
+    return x.quantile()
