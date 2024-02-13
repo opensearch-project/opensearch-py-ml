@@ -12,3 +12,4 @@ sentence_transformers
 tqdm
 transformers
 deprecated
+requests

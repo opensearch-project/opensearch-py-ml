@@ -7,5 +7,6 @@
 
 from .metrics_correlation.mcorr import MCorr
 from .sentencetransformermodel import SentenceTransformerModel
+from .crossencodermodel import CrossEncoderModel
 
-__all__ = ["SentenceTransformerModel", "MCorr"]
+__all__ = ["SentenceTransformerModel", "MCorr", "CrossEncoderModel"]
