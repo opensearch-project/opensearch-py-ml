@@ -79,30 +79,23 @@ class CrossEncoderModel:
         self._hf_model_id = hf_model_id
         self._framework = None
         self._folder_path.mkdir(parents=True, exist_ok=True)
+        self._model_zip = None
+        self._model_config = None
 
-    def zip_model(self, framework: str = "pt") -> Path:
+    def zip_model(self, framework: str = "pt", zip_fname: str = "model.zip") -> Path:
         """
-        Compiles and zips the model to {self._folder_path}/model.zip
+        Compiles and zips the model to {self._folder_path}/{zip_fname}
 
         :param framework: one of "pt", "onnx". The framework to zip the model as.
             default: "pt"
         :type framework: str
+        :param zip_fname: path to place resulting zip file inside of self._folder_path.
+            Example: if folder_path is "/tmp/models" and zip_path is "zipped_up.zip" then
+            the file can be found at "/tmp/models/zipped_up.zip"
+            Default: "model.zip"
+        :type zip_fname: str
         :return: the path with the zipped model
         :rtype: Path
-        """
-        if framework == "pt":
-            self._framework = "pt"
-            return self._zip_model_pytorch()
-        if framework == "onnx":
-            self._framework = "onnx"
-            return self._zip_model_onnx()
-        raise Exception(
-            f"Unrecognized framework {framework}. Accepted values are `pt`, `onnx`"
-        )
-
-    def _zip_model_pytorch(self) -> Path:
-        """
-        Compiles the model to TORCHSCRIPT format.
         """
         tk = AutoTokenizer.from_pretrained(self._hf_model_id)
         model = AutoModelForSequenceClassification.from_pretrained(self._hf_model_id)
@@ -113,6 +106,45 @@ class CrossEncoderModel:
         if mname.startswith("bge"):
             features["token_type_ids"] = torch.zeros_like(features["input_ids"])
 
+        if framework == "pt":
+            self._framework = "pt"
+            model_loc = CrossEncoderModel._trace_pytorch(model, features, mname)
+        elif framework == "onnx":
+            self._framework = "onnx"
+            model_loc = CrossEncoderModel._trace_onnx(model, features, mname)
+        else:
+            raise Exception(
+                f"Unrecognized framework {framework}. Accepted values are `pt`, `onnx`"
+            )
+
+        # save tokenizer file
+        tk_path = Path(f"/tmp/{mname}-tokenizer")
+        tk.save_pretrained(tk_path)
+        _fix_tokenizer(tk.model_max_length, tk_path)
+
+        # get apache license
+        r = requests.get(
+            "https://github.com/opensearch-project/opensearch-py-ml/raw/main/LICENSE"
+        )
+        self._model_zip = self._folder_path / zip_fname
+        with ZipFile(self._model_zip, "w") as f:
+            f.write(model_loc, arcname=model_loc.name)
+            f.write(tk_path / "tokenizer.json", arcname="tokenizer.json")
+            f.writestr("LICENSE", r.content)
+
+        # clean up temp files
+        shutil.rmtree(tk_path)
+        os.remove(model_loc)
+        return self._model_zip
+
+    @staticmethod
+    def _trace_pytorch(model, features, mname) -> Path:
+        """
+        Compiles the model to TORCHSCRIPT format.
+
+        :param features: Model input features
+        :return: Path to the traced model
+        """
         # compile
         compiled = torch.jit.trace(
             model,
@@ -123,42 +155,17 @@ class CrossEncoderModel:
             },
             strict=False,
         )
+        save_loc = Path(f"/tmp/{mname}.pt")
         torch.jit.save(compiled, f"/tmp/{mname}.pt")
+        return save_loc
 
-        # save tokenizer file
-        tk_path = f"/tmp/{mname}-tokenizer"
-        tk.save_pretrained(tk_path)
-        _fix_tokenizer(tk.model_max_length, tk_path)
-
-        # get apache license
-        r = requests.get(
-            "https://github.com/opensearch-project/opensearch-py-ml/raw/main/LICENSE"
-        )
-        with ZipFile(self._folder_path / "model.zip", "w") as f:
-            f.write(f"/tmp/{mname}.pt", arcname=f"{mname}.pt")
-            f.write(tk_path + "/tokenizer.json", arcname="tokenizer.json")
-            f.writestr("LICENSE", r.content)
-
-        # clean up temp files
-        shutil.rmtree(f"/tmp/{mname}-tokenizer")
-        os.remove(f"/tmp/{mname}.pt")
-        return self._folder_path / "model.zip"
-
-    def _zip_model_onnx(self):
+    @staticmethod
+    def _trace_onnx(model, features, mname):
         """
         Compiles the model to ONNX format.
         """
-        tk = AutoTokenizer.from_pretrained(self._hf_model_id)
-        model = AutoModelForSequenceClassification.from_pretrained(self._hf_model_id)
-        features = tk([["dummy sentence 1", "dummy sentence 2"]], return_tensors="pt")
-        mname = Path(self._hf_model_id).name
-
-        # bge models don't generate token type ids
-        if mname.startswith("bge"):
-            features["token_type_ids"] = torch.zeros_like(features["input_ids"])
-
         # export to onnx
-        onnx_model_path = f"/tmp/{mname}.onnx"
+        save_loc = Path(f"/tmp/{mname}.onnx")
         torch.onnx.export(
             model=model,
             args=(
@@ -166,7 +173,7 @@ class CrossEncoderModel:
                 features["attention_mask"],
                 features["token_type_ids"],
             ),
-            f=onnx_model_path,
+            f=str(save_loc),
             input_names=["input_ids", "attention_mask", "token_type_ids"],
             output_names=["output"],
             dynamic_axes={
@@ -177,28 +184,11 @@ class CrossEncoderModel:
             },
             verbose=True,
         )
-
-        # save tokenizer file
-        tk_path = f"/tmp/{mname}-tokenizer"
-        tk.save_pretrained(tk_path)
-        _fix_tokenizer(tk.model_max_length, tk_path)
-
-        # get apache license
-        r = requests.get(
-            "https://github.com/opensearch-project/opensearch-py-ml/raw/main/LICENSE"
-        )
-        with ZipFile(self._folder_path / "model.zip", "w") as f:
-            f.write(onnx_model_path, arcname=f"{mname}.pt")
-            f.write(tk_path + "/tokenizer.json", arcname="tokenizer.json")
-            f.writestr("LICENSE", r.content)
-
-        # clean up temp files
-        shutil.rmtree(f"/tmp/{mname}-tokenizer")
-        os.remove(onnx_model_path)
-        return self._folder_path / "model.zip"
+        return save_loc
 
     def make_model_config_json(
         self,
+        config_fname: str = "config.json",
         model_name: str = None,
         version_number: str = 1,
         description: str = None,
@@ -210,6 +200,11 @@ class CrossEncoderModel:
         Parse from config.json file of pre-trained hugging-face model to generate a ml-commons_model_config.json file.
         If all required fields are given by users, use the given parameters and will skip reading the config.json
 
+        :param config_fname:
+            Optional, File name of model json config file. Default is "config.json".
+            Controls where the config file generated by this function will appear -
+            "{self._folder_path}/{config_fname}"
+        :type config_fname: str
         :param model_name:
             Optional, The name of the model. If None, default is model id, for example,
             'sentence-transformers/msmarco-distilbert-base-tas-b'
@@ -234,11 +229,13 @@ class CrossEncoderModel:
         :return: model config file path. The file path where the model config file is being saved
         :rtype: string
         """
-        if not (self._folder_path / "model.zip").exists():
-            raise Exception("Generate the model zip before generating the config")
-        hash_value = _generate_model_content_hash_value(
-            str(self._folder_path / "model.zip")
-        )
+        if self._model_zip is None:
+            raise Exception(
+                "No model zip file. Generate the model zip file before generating the config."
+            )
+        if not self._model_zip.exists():
+            raise Exception(f"Model zip file {self._model_zip} could not be found")
+        hash_value = _generate_model_content_hash_value(str(self._model_zip))
         if model_name is None:
             model_name = Path(self._hf_model_id).name
         if description is None:
@@ -269,11 +266,12 @@ class CrossEncoderModel:
                 "all_config": all_config,
             },
         }
+        self._model_config = self._folder_path / config_fname
         if verbose:
             print(json.dumps(model_config_content, indent=2))
-        with open(self._folder_path / "config.json", "w") as f:
+        with open(self._model_config, "w") as f:
             json.dump(model_config_content, f)
-        return self._folder_path / "config.json"
+        return self._model_config
 
     def upload(
         self,
@@ -294,15 +292,17 @@ class CrossEncoderModel:
         :param verbose: log a bunch or not
         :type verbose: bool
         """
-        config_path = self._folder_path / "config.json"
-        model_path = self._folder_path / "model.zip"
         gen_cfg = False
-        if not model_path.exists() or self._framework != framework:
+        if (
+            self._model_zip is None
+            or not self._model_zip.exists()
+            or self._framework != framework
+        ):
             gen_cfg = True
             self.zip_model(framework)
-        if not config_path.exists() or gen_cfg:
+        if self._model_config is None or not self._model_config.exists() or gen_cfg:
             self.make_model_config_json()
         uploader = ModelUploader(client)
         uploader._register_model(
-            str(model_path), str(config_path), model_group_id, verbose
+            str(self._model_zip), str(self._model_config), model_group_id, verbose
         )
