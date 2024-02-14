@@ -6,18 +6,20 @@
 # GitHub history for details.
 
 import json
-from opensearch_py_ml.ml_commons import ModelUploader
-from transformers import AutoModelForSequenceClassification, AutoTokenizer, AutoConfig
+import os
+import shutil
 from pathlib import Path
 from zipfile import ZipFile
-import shutil
-import os
+
 import requests
 import torch
+from opensearchpy import OpenSearch
+from transformers import AutoConfig, AutoModelForSequenceClassification, AutoTokenizer
+
+from opensearch_py_ml.ml_commons import ModelUploader
 from opensearch_py_ml.ml_commons.ml_common_utils import (
     _generate_model_content_hash_value,
 )
-from opensearchpy import OpenSearch
 
 
 def _fix_tokenizer(max_len: int, path: Path):
@@ -31,8 +33,8 @@ def _fix_tokenizer(max_len: int, path: Path):
     """
     with open(Path(path) / "tokenizer.json", "r") as f:
         parsed = json.load(f)
-    if "truncation" not in parsed or parsed['truncation'] is None:
-        parsed['truncation'] = {
+    if "truncation" not in parsed or parsed["truncation"] is None:
+        parsed["truncation"] = {
             "direction": "Right",
             "max_length": max_len,
             "strategy": "LongestFirst",
@@ -46,11 +48,9 @@ class CrossEncoderModel:
     """
     Class for configuring and uploading cross encoder models for opensearch
     """
+
     def __init__(
-            self,
-            hf_model_id: str,
-            folder_path: str = None,
-            overwrite: bool = False
+        self, hf_model_id: str, folder_path: str = None, overwrite: bool = False
     ) -> None:
         """
         Initialize a new CrossEncoder model from a huggingface id
@@ -72,12 +72,13 @@ class CrossEncoderModel:
             self._folder_path = Path(folder_path)
 
         if self._folder_path.exists() and not overwrite:
-            raise Exception(f"Folder {self._folder_path} already exists. To overwrite it, set `overwrite=True`.")
+            raise Exception(
+                f"Folder {self._folder_path} already exists. To overwrite it, set `overwrite=True`."
+            )
 
         self._hf_model_id = hf_model_id
         self._framework = None
         self._folder_path.mkdir(parents=True, exist_ok=True)
-
 
     def zip_model(self, framework: str = "pt") -> Path:
         """
@@ -95,8 +96,9 @@ class CrossEncoderModel:
         if framework == "onnx":
             self._framework = "onnx"
             return self._zip_model_onnx()
-        raise Exception(f"Unrecognized framework {framework}. Accepted values are `pt`, `onnx`")
-
+        raise Exception(
+            f"Unrecognized framework {framework}. Accepted values are `pt`, `onnx`"
+        )
 
     def _zip_model_pytorch(self) -> Path:
         """
@@ -109,14 +111,18 @@ class CrossEncoderModel:
 
         # bge models don't generate token type ids
         if mname.startswith("bge"):
-            features['token_type_ids'] = torch.zeros_like(features['input_ids'])
+            features["token_type_ids"] = torch.zeros_like(features["input_ids"])
 
         # compile
-        compiled = torch.jit.trace(model, example_kwarg_inputs={
-            'input_ids': features['input_ids'],
-            'attention_mask': features['attention_mask'],
-            'token_type_ids': features['token_type_ids']
-        }, strict=False)
+        compiled = torch.jit.trace(
+            model,
+            example_kwarg_inputs={
+                "input_ids": features["input_ids"],
+                "attention_mask": features["attention_mask"],
+                "token_type_ids": features["token_type_ids"],
+            },
+            strict=False,
+        )
         torch.jit.save(compiled, f"/tmp/{mname}.pt")
 
         # save tokenizer file
@@ -125,7 +131,9 @@ class CrossEncoderModel:
         _fix_tokenizer(tk.model_max_length, tk_path)
 
         # get apache license
-        r = requests.get("https://github.com/opensearch-project/opensearch-py-ml/raw/main/LICENSE")
+        r = requests.get(
+            "https://github.com/opensearch-project/opensearch-py-ml/raw/main/LICENSE"
+        )
         with ZipFile(self._folder_path / "model.zip", "w") as f:
             f.write(f"/tmp/{mname}.pt", arcname=f"{mname}.pt")
             f.write(tk_path + "/tokenizer.json", arcname="tokenizer.json")
@@ -147,23 +155,27 @@ class CrossEncoderModel:
 
         # bge models don't generate token type ids
         if mname.startswith("bge"):
-            features['token_type_ids'] = torch.zeros_like(features['input_ids'])
+            features["token_type_ids"] = torch.zeros_like(features["input_ids"])
 
         # export to onnx
         onnx_model_path = f"/tmp/{mname}.onnx"
         torch.onnx.export(
             model=model,
-            args=(features['input_ids'], features['attention_mask'], features['token_type_ids']),
+            args=(
+                features["input_ids"],
+                features["attention_mask"],
+                features["token_type_ids"],
+            ),
             f=onnx_model_path,
-            input_names=['input_ids', 'attention_mask', 'token_type_ids'],
-            output_names=['output'],
+            input_names=["input_ids", "attention_mask", "token_type_ids"],
+            output_names=["output"],
             dynamic_axes={
-                'input_ids': {0: 'batch_size', 1: 'sequence_length'},
-                'attention_mask': {0: 'batch_size', 1: 'sequence_length'},
-                'token_type_ids': {0: 'batch_size', 1: 'sequence_length'},
-                'output': {0: 'batch_size'}
+                "input_ids": {0: "batch_size", 1: "sequence_length"},
+                "attention_mask": {0: "batch_size", 1: "sequence_length"},
+                "token_type_ids": {0: "batch_size", 1: "sequence_length"},
+                "output": {0: "batch_size"},
             },
-            verbose=True
+            verbose=True,
         )
 
         # save tokenizer file
@@ -172,7 +184,9 @@ class CrossEncoderModel:
         _fix_tokenizer(tk.model_max_length, tk_path)
 
         # get apache license
-        r = requests.get("https://github.com/opensearch-project/opensearch-py-ml/raw/main/LICENSE")
+        r = requests.get(
+            "https://github.com/opensearch-project/opensearch-py-ml/raw/main/LICENSE"
+        )
         with ZipFile(self._folder_path / "model.zip", "w") as f:
             f.write(onnx_model_path, arcname=f"{mname}.pt")
             f.write(tk_path + "/tokenizer.json", arcname="tokenizer.json")
@@ -183,15 +197,14 @@ class CrossEncoderModel:
         os.remove(onnx_model_path)
         return self._folder_path / "model.zip"
 
-
     def make_model_config_json(
-            self,
-            model_name: str = None,
-            version_number: str = 1,
-            description: str = None,
-            all_config: str = None,
-            model_type: str = None,
-            verbose: bool = False,
+        self,
+        model_name: str = None,
+        version_number: str = 1,
+        description: str = None,
+        all_config: str = None,
+        model_type: str = None,
+        verbose: bool = False,
     ):
         """
         Parse from config.json file of pre-trained hugging-face model to generate a ml-commons_model_config.json file.
@@ -223,7 +236,9 @@ class CrossEncoderModel:
         """
         if not (self._folder_path / "model.zip").exists():
             raise Exception("Generate the model zip before generating the config")
-        hash_value = _generate_model_content_hash_value(str(self._folder_path / "model.zip"))
+        hash_value = _generate_model_content_hash_value(
+            str(self._folder_path / "model.zip")
+        )
         if model_name is None:
             model_name = Path(self._hf_model_id).name
         if description is None:
@@ -235,12 +250,11 @@ class CrossEncoderModel:
             model_type = "bert"
         model_format = None
         if self._framework is not None:
-            model_format = {
-                'pt': 'TORCH_SCRIPT',
-                'onnx': 'ONNX'
-            }.get(self._framework)
+            model_format = {"pt": "TORCH_SCRIPT", "onnx": "ONNX"}.get(self._framework)
         if model_format is None:
-            raise Exception("Model format either not found or not supported. Zip the model before generating the config")
+            raise Exception(
+                "Model format either not found or not supported. Zip the model before generating the config"
+            )
         model_config_content = {
             "name": model_name,
             "version": f"1.0.{version_number}",
@@ -253,7 +267,7 @@ class CrossEncoderModel:
                 "embedding_dimension": 1,
                 "framework_type": "huggingface_transformers",
                 "all_config": all_config,
-            }
+            },
         }
         if verbose:
             print(json.dumps(model_config_content, indent=2))
@@ -261,7 +275,13 @@ class CrossEncoderModel:
             json.dump(model_config_content, f)
         return self._folder_path / "config.json"
 
-    def upload(self, client: OpenSearch, framework: str = 'pt', model_group_id: str = "", verbose: bool = False):
+    def upload(
+        self,
+        client: OpenSearch,
+        framework: str = "pt",
+        model_group_id: str = "",
+        verbose: bool = False,
+    ):
         """
         Upload the model to OpenSearch
 
@@ -283,7 +303,6 @@ class CrossEncoderModel:
         if not config_path.exists() or gen_cfg:
             self.make_model_config_json()
         uploader = ModelUploader(client)
-        uploader._register_model(str(model_path), str(config_path), model_group_id, verbose)
-
-
-
+        uploader._register_model(
+            str(model_path), str(config_path), model_group_id, verbose
+        )
