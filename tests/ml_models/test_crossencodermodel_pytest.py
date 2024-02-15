@@ -20,7 +20,7 @@ TEST_FOLDER = Path(__file__) / "tests" / "test_model_files"
 
 @pytest.fixture(scope="function")
 def tinybert() -> CrossEncoderModel:
-    model = CrossEncoderModel("cross-encoder/ms-marco-TinyBERT-L-2-v2")
+    model = CrossEncoderModel("cross-encoder/ms-marco-TinyBERT-L-2-v2", overwrite=True)
     yield model
     shutil.rmtree(
         "/tmp/models/cross-encoder/ms-marco-TinyBert-L-2-v2", ignore_errors=True
@@ -32,7 +32,7 @@ def test_pt_has_correct_files(tinybert):
     config_path = tinybert.make_model_config_json()
     compare_model_zip_file(
         zip_file_path=zip_path,
-        expected_filenames=["ms-marco-TinyBERT-L-2-v2.pt", "tokenizer.json", "LICENSE"],
+        expected_filenames={"ms-marco-TinyBERT-L-2-v2.pt", "tokenizer.json", "LICENSE"},
         model_format="TORCH_SCRIPT",
     )
     compare_model_config(
@@ -52,11 +52,11 @@ def test_onnx_has_correct_files(tinybert):
     config_path = tinybert.make_model_config_json()
     compare_model_zip_file(
         zip_file_path=zip_path,
-        expected_filenames=[
+        expected_filenames={
             "ms-marco-TinyBERT-L-2-v2.onnx",
             "tokenizer.json",
             "LICENSE",
-        ],
+        },
         model_format="ONNX",
     )
     compare_model_config(
@@ -78,7 +78,7 @@ def test_can_pick_names_for_files(tinybert):
     )
     compare_model_zip_file(
         zip_file_path=zip_path,
-        expected_filenames=["funky-model-filename.pt", "tokenizer.json", "LICENSE"],
+        expected_filenames={"funky-model-filename.pt", "tokenizer.json", "LICENSE"},
         model_format="TORCH_SCRIPT",
     )
     compare_model_config(
