@@ -120,6 +120,17 @@ class CrossEncoderModel:
         # save tokenizer file
         tk_path = Path(f"/tmp/{mname}-tokenizer")
         tk.save_pretrained(tk_path)
+        if tk.model_max_length > model.get_max_length():
+            model_config = AutoConfig.from_pretrained(self._hf_model_id)
+            if hasattr(model_config, "max_position_embeddings"):
+                tk.model_max_length = model_config.max_position_embeddings
+            elif hasattr(model_config, "n_positions"):
+                tk.model_max_length = model_config.n_positions
+            else:
+                tk.model_max_length = 2**15  # =32768. Set to something big I guess
+            print(
+                f"The model_max_length is not properly defined in tokenizer_config.json. Setting it to be {tk.model_max_length}"
+            )
         _fix_tokenizer(tk.model_max_length, tk_path)
 
         # get apache license
