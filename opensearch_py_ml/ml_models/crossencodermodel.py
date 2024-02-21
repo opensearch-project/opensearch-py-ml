@@ -82,12 +82,14 @@ class CrossEncoderModel:
         self._model_zip = None
         self._model_config = None
 
-    def zip_model(self, framework: str = "pt", zip_fname: str = "model.zip") -> Path:
+    def zip_model(
+        self, framework: str = "torch_script", zip_fname: str = "model.zip"
+    ) -> Path:
         """
         Compiles and zips the model to {self._folder_path}/{zip_fname}
 
-        :param framework: one of "pt", "onnx". The framework to zip the model as.
-            default: "pt"
+        :param framework: one of "torch_script", "onnx". The framework to zip the model as.
+            default: "torch_script"
         :type framework: str
         :param zip_fname: path to place resulting zip file inside of self._folder_path.
             Example: if folder_path is "/tmp/models" and zip_path is "zipped_up.zip" then
@@ -106,15 +108,15 @@ class CrossEncoderModel:
         if mname.startswith("bge"):
             features["token_type_ids"] = torch.zeros_like(features["input_ids"])
 
-        if framework == "pt":
-            self._framework = "pt"
+        if framework == "torch_script":
+            self._framework = "torch_script"
             model_loc = CrossEncoderModel._trace_pytorch(model, features, mname)
         elif framework == "onnx":
             self._framework = "onnx"
             model_loc = CrossEncoderModel._trace_onnx(model, features, mname)
         else:
             raise Exception(
-                f"Unrecognized framework {framework}. Accepted values are `pt`, `onnx`"
+                f"Unrecognized framework {framework}. Accepted values are `torch_script`, `onnx`"
             )
 
         # save tokenizer file
@@ -258,7 +260,9 @@ class CrossEncoderModel:
             model_type = "bert"
         model_format = None
         if self._framework is not None:
-            model_format = {"pt": "TORCH_SCRIPT", "onnx": "ONNX"}.get(self._framework)
+            model_format = {"torch_script": "TORCH_SCRIPT", "onnx": "ONNX"}.get(
+                self._framework
+            )
         if model_format is None:
             raise Exception(
                 "Model format either not found or not supported. Zip the model before generating the config"
@@ -287,7 +291,7 @@ class CrossEncoderModel:
     def upload(
         self,
         client: OpenSearch,
-        framework: str = "pt",
+        framework: str = "torch_script",
         model_group_id: str = "",
         verbose: bool = False,
     ):
@@ -296,7 +300,7 @@ class CrossEncoderModel:
 
         :param client: OpenSearch client
         :type client: OpenSearch
-        :param framework: either 'pt' or 'onnx'
+        :param framework: either 'torch_script' or 'onnx'
         :type framework: str
         :param model_group_id: model group id to upload this model to
         :type model_group_id: str

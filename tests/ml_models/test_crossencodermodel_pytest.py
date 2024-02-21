@@ -72,7 +72,9 @@ def test_onnx_has_correct_files(tinybert):
 
 
 def test_can_pick_names_for_files(tinybert):
-    zip_path = tinybert.zip_model(framework="onnx", zip_fname="funky-model-filename.pt")
+    zip_path = tinybert.zip_model(
+        framework="torch_script", zip_fname="funky-model-filename.pt"
+    )
     config_path = tinybert.make_model_config_json(
         config_fname="funky-model-config.json"
     )
