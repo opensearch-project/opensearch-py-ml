@@ -203,7 +203,7 @@ class CrossEncoderModel:
         self,
         config_fname: str = "config.json",
         model_name: str = None,
-        version_number: str = 1,
+        version_number: str = '1.0.0',
         description: str = None,
         all_config: str = None,
         model_type: str = None,
@@ -269,10 +269,10 @@ class CrossEncoderModel:
             )
         model_config_content = {
             "name": model_name,
-            "version": f"1.0.{version_number}",
+            "version": version_number,
             "description": description,
             "model_format": model_format,
-            "function_name": "TEXT_SIMILARITY",
+            "model_mask_type": "TEXT_SIMILARITY",
             "model_content_hash_value": hash_value,
             "model_config": {
                 "model_type": model_type,
