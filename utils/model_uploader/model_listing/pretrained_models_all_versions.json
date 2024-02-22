@@ -151,7 +151,7 @@
   {
     "name": "huggingface/cross-encoders/ms-marco-MiniLM-L-6-v2",
     "versions": {
-      "1.0.1": {
+      "1.0.2": {
         "format": [
           "onnx",
           "torch_script"
@@ -163,7 +163,7 @@
   {
     "name": "huggingface/cross-encoders/ms-marco-MiniLM-L-12-v2",
     "versions": {
-      "1.0.1": {
+      "1.0.2": {
         "format": [
           "onnx",
           "torch_script"
