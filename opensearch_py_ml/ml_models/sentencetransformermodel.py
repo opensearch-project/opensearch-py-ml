@@ -807,7 +807,7 @@ class SentenceTransformerModel:
         """
 
         if model_id is None:
-            model_id =  self.model_id
+            model_id = self.model_id
 
         model = SentenceTransformer(model_id)
 
