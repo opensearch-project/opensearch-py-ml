@@ -36,6 +36,8 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Replaced usage of `is_datetime_or_timedelta_dtype` with `is_timedelta64_dtype` and `is_datetime64_any_dtype` by @rawwar ([#316](https://github.com/opensearch-project/opensearch-py-ml/pull/316))
 - use try-except-else block for handling unexpected exceptions during integration tests by @rawwar([#370](https://github.com/opensearch-project/opensearch-py-ml/pull/370))
 - Removed pandas version pin in nox tests by @rawwar ([#368](https://github.com/opensearch-project/opensearch-py-ml/pull/368))
+- Fix to ensure `model_id` is only required once when saving a model in `sentencetransformermodel.py` in ([#376](https://github.com/opensearch-project/opensearch-py-ml/pull/376))
+- Add a `config_output_path` param in `make_model_config_json` in `sentencetransformermodel.py` to chose where the saving location of the model config json file. ([#376](https://github.com/opensearch-project/opensearch-py-ml/pull/376))
 
 ### Fixed
 - Enable make_model_config_json to add model description to model config file by @thanawan-atc in ([#203](https://github.com/opensearch-project/opensearch-py-ml/pull/203))

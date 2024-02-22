@@ -1149,7 +1149,7 @@ class SentenceTransformerModel:
         model_name: str = None,
         version_number: str = 1,
         model_format: str = "TORCH_SCRIPT",
-        config_out_path: str = None,
+        config_output_path: str = None,
         model_zip_file_path: str = None,
         embedding_dimension: int = None,
         pooling_mode: str = None,
