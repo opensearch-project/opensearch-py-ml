@@ -726,13 +726,13 @@ def test_save_as_pt_model_with_different_id():
     model_id2 = "sentence-transformers/all-MiniLM-L6-v2"
     model_format = "TORCH_SCRIPT"
     zip_file_path = os.path.join(TEST_FOLDER, "msmarco-distilbert-base-tas-b.zip")
-    zip_file_path2 = os.path.join(TEST_FOLDER, "all-MiniLM-L6-v2")
+    zip_file_path2 = os.path.join(TEST_FOLDER, "all-MiniLM-L6-v2.zip")
     expected_filenames_wo_model_id = {
         "msmarco-distilbert-base-tas-b.pt",
         "tokenizer.json",
     }
     expected_filenames_with_model_id = {
-        "msmarco-distilbert-base-tas-b.pt",
+        "all-MiniLM-L6-v2.pt",
         "tokenizer.json",
     }
 
