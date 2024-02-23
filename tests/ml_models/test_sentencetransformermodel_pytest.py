@@ -251,9 +251,41 @@ def test_make_model_config_json_for_torch_script():
         model_id=model_id,
     )
 
-    test_model5.save_as_pt(model_id=model_id, sentences=["today is sunny"])
+    test_model5.save_as_pt(sentences=["today is sunny"])
     model_config_path_torch = test_model5.make_model_config_json(
         model_format="TORCH_SCRIPT", verbose=True
+    )
+
+    compare_model_config(
+        model_config_path_torch,
+        model_id,
+        model_format,
+        expected_model_description=expected_model_description,
+        expected_model_config_data=expected_model_config_data,
+    )
+
+    clean_test_folder(TEST_FOLDER)
+
+
+def test_make_model_config_json_set_path_for_torch_script():
+    model_id = "sentence-transformers/multi-qa-MiniLM-L6-cos-v1"
+    model_format = "TORCH_SCRIPT"
+    expected_model_description = "This is a sentence-transformers model: It maps sentences & paragraphs to a 384 dimensional dense vector space and was designed for semantic search. It has been trained on 215M  pairs from diverse sources."
+    expected_model_config_data = {
+        "embedding_dimension": 384,
+        "pooling_mode": "MEAN",
+        "normalize_result": True,
+    }
+
+    clean_test_folder(TEST_FOLDER)
+    test_model5 = SentenceTransformerModel(
+        folder_path=TEST_FOLDER,
+        model_id=model_id,
+    )
+
+    test_model5.save_as_pt(sentences=["today is sunny"])
+    model_config_path_torch = test_model5.make_model_config_json(
+        config_output_path=TEST_FOLDER, model_format="TORCH_SCRIPT", verbose=True
     )
 
     compare_model_config(
@@ -283,8 +315,40 @@ def test_make_model_config_json_for_onnx():
         model_id=model_id,
     )
 
-    test_model6.save_as_onnx(model_id=model_id)
+    test_model6.save_as_onnx()
     model_config_path_onnx = test_model6.make_model_config_json(model_format="ONNX")
+
+    compare_model_config(
+        model_config_path_onnx,
+        model_id,
+        model_format,
+        expected_model_description=expected_model_description,
+        expected_model_config_data=expected_model_config_data,
+    )
+
+    clean_test_folder(TEST_FOLDER)
+
+
+def test_make_model_config_json_set_path_for_onnx():
+    model_id = "sentence-transformers/paraphrase-MiniLM-L3-v2"
+    model_format = "ONNX"
+    expected_model_description = "This is a sentence-transformers model: It maps sentences & paragraphs to a 384 dimensional dense vector space and can be used for tasks like clustering or semantic search."
+    expected_model_config_data = {
+        "embedding_dimension": 384,
+        "pooling_mode": "MEAN",
+        "normalize_result": False,
+    }
+
+    clean_test_folder(TEST_FOLDER)
+    test_model6 = SentenceTransformerModel(
+        folder_path=TEST_FOLDER,
+        model_id=model_id,
+    )
+
+    test_model6.save_as_onnx()
+    model_config_path_onnx = test_model6.make_model_config_json(
+        config_output_path=TEST_FOLDER, model_format="ONNX"
+    )
 
     compare_model_config(
         model_config_path_onnx,
@@ -318,7 +382,7 @@ def test_overwrite_fields_in_model_config():
         model_id=model_id,
     )
 
-    test_model7.save_as_pt(model_id=model_id, sentences=["today is sunny"])
+    test_model7.save_as_pt(sentences=["today is sunny"])
     model_config_path_torch = test_model7.make_model_config_json(
         model_format="TORCH_SCRIPT"
     )
@@ -337,7 +401,7 @@ def test_overwrite_fields_in_model_config():
         model_id=model_id,
     )
 
-    test_model8.save_as_pt(model_id=model_id, sentences=["today is sunny"])
+    test_model8.save_as_pt(sentences=["today is sunny"])
     model_config_path_torch = test_model8.make_model_config_json(
         model_format="TORCH_SCRIPT",
         embedding_dimension=overwritten_model_config_data["embedding_dimension"],
@@ -367,7 +431,7 @@ def test_missing_readme_md_file():
         model_id=model_id,
     )
 
-    test_model9.save_as_pt(model_id=model_id, sentences=["today is sunny"])
+    test_model9.save_as_pt(sentences=["today is sunny"])
     temp_path = os.path.join(
         TEST_FOLDER,
         "README.md",
@@ -403,7 +467,7 @@ def test_missing_expected_description_in_readme_file():
         model_id=model_id,
     )
 
-    test_model10.save_as_pt(model_id=model_id, sentences=["today is sunny"])
+    test_model10.save_as_pt(sentences=["today is sunny"])
     temp_path = os.path.join(
         TEST_FOLDER,
         "README.md",
@@ -440,7 +504,7 @@ def test_overwrite_description():
         model_id=model_id,
     )
 
-    test_model11.save_as_pt(model_id=model_id, sentences=["today is sunny"])
+    test_model11.save_as_pt(sentences=["today is sunny"])
     model_config_path_torch = test_model11.make_model_config_json(
         model_format=model_format, description=expected_model_description
     )
@@ -471,7 +535,7 @@ def test_long_description():
         model_id=model_id,
     )
 
-    test_model12.save_as_pt(model_id=model_id, sentences=["today is sunny"])
+    test_model12.save_as_pt(sentences=["today is sunny"])
     model_config_path_torch = test_model12.make_model_config_json(
         model_format=model_format
     )
@@ -501,7 +565,7 @@ def test_truncation_parameter():
         model_id=model_id,
     )
 
-    test_model13.save_as_pt(model_id=model_id, sentences=["today is sunny"])
+    test_model13.save_as_pt(sentences=["today is sunny"])
 
     tokenizer_json_file_path = os.path.join(TEST_FOLDER, "tokenizer.json")
     try:
@@ -534,7 +598,7 @@ def test_undefined_model_max_length_in_tokenizer_for_torch_script():
         model_id=model_id,
     )
 
-    test_model14.save_as_pt(model_id=model_id, sentences=["today is sunny"])
+    test_model14.save_as_pt(sentences=["today is sunny"])
 
     tokenizer_json_file_path = os.path.join(TEST_FOLDER, "tokenizer.json")
     try:
@@ -563,7 +627,7 @@ def test_undefined_model_max_length_in_tokenizer_for_onnx():
         model_id=model_id,
     )
 
-    test_model14.save_as_onnx(model_id=model_id)
+    test_model14.save_as_onnx()
 
     tokenizer_json_file_path = os.path.join(TEST_FOLDER, "tokenizer.json")
     try:
@@ -598,7 +662,6 @@ def test_save_as_pt_with_license():
     )
 
     test_model15.save_as_pt(
-        model_id=model_id,
         sentences=["today is sunny"],
         add_apache_license=True,
     )
@@ -622,7 +685,7 @@ def test_save_as_onnx_with_license():
         model_id=model_id,
     )
 
-    test_model16.save_as_onnx(model_id=model_id, add_apache_license=True)
+    test_model16.save_as_onnx(add_apache_license=True)
 
     compare_model_zip_file(onnx_zip_file_path, onnx_expected_filenames, model_format)
 
@@ -649,11 +712,43 @@ def test_zip_model_with_license():
         model_id=model_id,
     )
 
-    test_model17.save_as_pt(model_id=model_id, sentences=["today is sunny"])
+    test_model17.save_as_pt(sentences=["today is sunny"])
     compare_model_zip_file(zip_file_path, expected_filenames_wo_license, model_format)
 
     test_model17.zip_model(add_apache_license=True)
     compare_model_zip_file(zip_file_path, expected_filenames_with_license, model_format)
+
+    clean_test_folder(TEST_FOLDER)
+
+
+def test_save_as_pt_model_with_different_id():
+    model_id = "sentence-transformers/msmarco-distilbert-base-tas-b"
+    model_id2 = "sentence-transformers/all-MiniLM-L6-v2"
+    model_format = "TORCH_SCRIPT"
+    zip_file_path = os.path.join(TEST_FOLDER, "msmarco-distilbert-base-tas-b.zip")
+    zip_file_path2 = os.path.join(TEST_FOLDER, "all-MiniLM-L6-v2")
+    expected_filenames_wo_model_id = {
+        "msmarco-distilbert-base-tas-b.pt",
+        "tokenizer.json",
+    }
+    expected_filenames_with_model_id = {
+        "msmarco-distilbert-base-tas-b.pt",
+        "tokenizer.json",
+    }
+
+    clean_test_folder(TEST_FOLDER)
+    test_model17 = SentenceTransformerModel(
+        folder_path=TEST_FOLDER,
+        model_id=model_id,
+    )
+
+    test_model17.save_as_pt(sentences=["today is sunny"])
+    compare_model_zip_file(zip_file_path, expected_filenames_wo_model_id, model_format)
+
+    test_model17.save_as_pt(model_id=model_id2, sentences=["today is sunny"])
+    compare_model_zip_file(
+        zip_file_path2, expected_filenames_with_model_id, model_format
+    )
 
     clean_test_folder(TEST_FOLDER)
 

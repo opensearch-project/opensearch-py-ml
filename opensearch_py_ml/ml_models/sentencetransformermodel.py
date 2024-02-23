@@ -780,7 +780,7 @@ class SentenceTransformerModel:
             Required, for example  sentences = ['today is sunny']
         :type sentences: List of string [str]
         :param model_id:
-            sentence transformer model id to download model from sentence transformers.
+            Optional, sentence transformer model id to download model from sentence transformers.
             default model_id = "sentence-transformers/msmarco-distilbert-base-tas-b"
         :type model_id: string
         :param model_name:
@@ -892,7 +892,7 @@ class SentenceTransformerModel:
         zip the model file and its tokenizer.json file to prepare to upload to the Open Search cluster
 
         :param model_id:
-            sentence transformer model id to download model from sentence transformers.
+            Optional, sentence transformer model id to download model from sentence transformers.
             default model_id = "sentence-transformers/msmarco-distilbert-base-tas-b"
         :type model_id: string
         :param model_name:
