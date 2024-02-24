@@ -13,6 +13,7 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Add support for model connectors by @rawwar in ([#345](https://github.com/opensearch-project/opensearch-py-ml/pull/345))
 - Add support for model profiles by @rawwar in ([#358](https://github.com/opensearch-project/opensearch-py-ml/pull/358))
 - Support for security default admin credential changes in 2.12.0 in ([#365](https://github.com/opensearch-project/opensearch-py-ml/pull/365))
+- adding cross encoder models in the pre-trained traced list ([#378](https://github.com/opensearch-project/opensearch-py-ml/pull/378))
 
 
 ### Changed
@@ -36,6 +37,7 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Replaced usage of `is_datetime_or_timedelta_dtype` with `is_timedelta64_dtype` and `is_datetime64_any_dtype` by @rawwar ([#316](https://github.com/opensearch-project/opensearch-py-ml/pull/316))
 - use try-except-else block for handling unexpected exceptions during integration tests by @rawwar([#370](https://github.com/opensearch-project/opensearch-py-ml/pull/370))
 - Removed pandas version pin in nox tests by @rawwar ([#368](https://github.com/opensearch-project/opensearch-py-ml/pull/368))
+- Switch AL2 to AL2023 agent and DockerHub to ECR images in ml-models.JenkinsFile ([#377](https://github.com/opensearch-project/opensearch-py-ml/pull/377))
 - Fix to ensure `model_id` is only required once when saving a model in `sentencetransformermodel.py` in ([#376](https://github.com/opensearch-project/opensearch-py-ml/pull/376))
 - Add a `config_output_path` param in `make_model_config_json` in `sentencetransformermodel.py` to chose where the saving location of the model config json file. ([#376](https://github.com/opensearch-project/opensearch-py-ml/pull/376))
 
