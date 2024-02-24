@@ -1,0 +1,20 @@
+[project]
+name = "opensearch-py-ml"
+description = "OpenSearch Python Machine Learning Library"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {file = "LICENSE.txt"}
+dependencies = [
+    "opensearch-py>=2",
+    "pandas>=1.5,<3",
+    "matplotlib>=3.6.0,<4",
+    "numpy>=1.24.0,<2",
+    "deprecated>=1.2.14,<2",
+]
+
+# ToDo: get from "about" dict in setup.py 
+[project.urls] 
+homepage = "https://opensearch-project.github.io/opensearch-py-ml/index.html"
+documentation = "https://opensearch.org/docs/latest/clients/opensearch-py-ml/"
+repository = "https://github.com/opensearch-project/opensearch-py-ml"
+changelog = "https://github.com/opensearch-project/opensearch-py-ml/blob/main/CHANGELOG.md"
