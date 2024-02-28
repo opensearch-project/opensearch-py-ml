@@ -7,12 +7,14 @@
 
 import json
 import os
+import re
 import shutil
 from pathlib import Path
 from zipfile import ZipFile
 
 import requests
 import torch
+from mdutils.fileutils import MarkDownFile
 from opensearchpy import OpenSearch
 from transformers import AutoConfig, AutoModelForSequenceClassification, AutoTokenizer
 
@@ -203,7 +205,7 @@ class CrossEncoderModel:
         self,
         config_fname: str = "config.json",
         model_name: str = None,
-        version_number: str = '1.0.0',
+        version_number: str = "1.0.0",
         description: str = None,
         all_config: str = None,
         model_type: str = None,
@@ -252,7 +254,20 @@ class CrossEncoderModel:
         if model_name is None:
             model_name = Path(self._hf_model_id).name
         if description is None:
-            description = f"Cross Encoder Model {model_name}"
+            readme_file_path = os.path.join(self._folder_path, "README.md")
+            if os.path.exists(readme_file_path):
+                try:
+                    if verbose:
+                        print("reading README.md file")
+                    description = self._get_model_description_from_readme_file(
+                        readme_file_path
+                    )
+                except Exception as e:
+                    print(f"Cannot scrape model description from README.md file: {e}")
+                    description = self._generate_default_model_description()
+            else:
+                print("Cannot find README.md file to scrape model description")
+                description = self._generate_default_model_description()
         if all_config is None:
             cfg = AutoConfig.from_pretrained(self._hf_model_id)
             all_config = cfg.to_json_string()
@@ -322,3 +337,70 @@ class CrossEncoderModel:
         uploader._register_model(
             str(self._model_zip), str(self._model_config), model_group_id, verbose
         )
+
+    def _get_model_description_from_readme_file(self, readme_file_path) -> str:
+        """
+        Get description of the model from README.md file in the model folder
+        after the model is saved in local directory
+
+        See example here:
+        https://huggingface.co/sentence-transformers/msmarco-distilbert-base-tas-b/blob/main/README.md)
+
+        This function assumes that the README.md has the following format:
+
+        # sentence-transformers/msmarco-distilbert-base-tas-b
+        This is [ ... further description ... ]
+
+        # [ ... Next section ...]
+        ...
+
+        :param readme_file_path: Path to README.md file
+        :type readme_file_path: string
+        :return: Description of the model
+        :rtype: string
+        """
+        readme_data = MarkDownFile.read_file(readme_file_path)
+
+        # Find the description section
+        start_str = f"\n# {self._hf_model_id}"
+        start = readme_data.find(start_str)
+        if start == -1:
+            model_name = self._hf_model_id.split("/")[1]
+            start_str = f"\n# {model_name}"
+            start = readme_data.find(start_str)
+        end = readme_data.find("\n#", start + len(start_str))
+
+        # If we cannot find the scope of description section, raise error.
+        if start == -1 or end == -1:
+            assert False, "Cannot find description in README.md file"
+
+        # Parse out the description section
+        description = readme_data[start + len(start_str) + 1 : end].strip()
+        description = description.split("\n")[0]
+
+        # Remove hyperlink and reformat text
+        description = re.sub(r"\(.*?\)", "", description)
+        description = re.sub(r"[\[\]]", "", description)
+        description = re.sub(r"\*", "", description)
+
+        # Remove unnecessary part if exists (i.e. " For an introduction to ...")
+        # (Found in https://huggingface.co/sentence-transformers/multi-qa-mpnet-base-dot-v1/blob/main/README.md)
+        unnecessary_part = description.find(" For an introduction to")
+        if unnecessary_part != -1:
+            description = description[:unnecessary_part]
+
+        return description
+
+    def _generate_default_model_description(self) -> str:
+        """
+        Generate default model description of the model based on embedding_dimension
+
+        :return: Description of the model
+        :rtype: string
+        """
+        print(
+            "Using default description instead (You can overwrite this by specifying description parameter in \
+make_model_config_json function)"
+        )
+        description = f"This is a cross-encoder model: It maps (query, passage) pairs to real-valued relevance scores."
+        return description
