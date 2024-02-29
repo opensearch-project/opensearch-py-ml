@@ -402,5 +402,5 @@ class CrossEncoderModel:
             "Using default description instead (You can overwrite this by specifying description parameter in \
 make_model_config_json function)"
         )
-        description = f"This is a cross-encoder model: It maps (query, passage) pairs to real-valued relevance scores."
+        description = "This is a cross-encoder model: It maps (query, passage) pairs to real-valued relevance scores."
         return description

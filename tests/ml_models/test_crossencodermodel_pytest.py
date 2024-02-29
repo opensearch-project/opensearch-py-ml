@@ -73,14 +73,15 @@ def test_onnx_has_correct_files(tinybert):
 
 def test_can_pick_names_for_files(tinybert):
     zip_path = tinybert.zip_model(
-        framework="torch_script", zip_fname="funky-model-filename.pt"
+        framework="torch_script", zip_fname="funky-model-filename.zip"
     )
     config_path = tinybert.make_model_config_json(
         config_fname="funky-model-config.json"
     )
+    assert (tinybert._folder_path / "funky-model-filename.zip").exists()
     compare_model_zip_file(
         zip_file_path=zip_path,
-        expected_filenames={"funky-model-filename.pt", "tokenizer.json", "LICENSE"},
+        expected_filenames={"ms-marco-TinyBERT-L-2-v2.pt", "tokenizer.json", "LICENSE"},
         model_format="TORCH_SCRIPT",
     )
     compare_model_config(
