@@ -52,6 +52,7 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Fix conditional job execution issue in model upload workflow by @thanawan-atc in ([#294](https://github.com/opensearch-project/opensearch-py-ml/pull/294))
 - fix bug in `MLCommonClient_client.upload_model` by @rawwar in ([#336](https://github.com/opensearch-project/opensearch-py-ml/pull/336))
 - fix lint issues on main by @rawwar in ([#374](https://github.com/opensearch-project/opensearch-py-ml/pull/374))
+- fix CVE vulnerability by @rawwar in ([#383](https://github.com/opensearch-project/opensearch-py-ml/pull/383))
 
 ## [1.1.0]
 
