@@ -421,7 +421,7 @@ class SentenceTransformerModel:
         if model_id is None:
             model_id = self.model_id
         if output_model_name is None:
-            output_model_name = str(self.model_id.split("/")[-1] + ".pt")
+            output_model_name = str(model_id.split("/")[-1] + ".pt")
 
         # declare variables before assignment for training
         corp_len = []
