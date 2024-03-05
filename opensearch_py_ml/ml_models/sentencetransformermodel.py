@@ -419,9 +419,9 @@ class SentenceTransformerModel:
         """
 
         if model_id is None:
-            model_id = "sentence-transformers/msmarco-distilbert-base-tas-b"
+            model_id = self.model_id
         if output_model_name is None:
-            output_model_name = str(self.model_id.split("/")[-1] + ".pt")
+            output_model_name = str(model_id.split("/")[-1] + ".pt")
 
         # declare variables before assignment for training
         corp_len = []
@@ -765,7 +765,7 @@ class SentenceTransformerModel:
     def save_as_pt(
         self,
         sentences: [str],
-        model_id="sentence-transformers/msmarco-distilbert-base-tas-b",
+        model_id: str = None,
         model_name: str = None,
         save_json_folder_path: str = None,
         model_output_path: str = None,
@@ -780,7 +780,7 @@ class SentenceTransformerModel:
             Required, for example  sentences = ['today is sunny']
         :type sentences: List of string [str]
         :param model_id:
-            sentence transformer model id to download model from sentence transformers.
+            Optional, sentence transformer model id to download model from sentence transformers.
             default model_id = "sentence-transformers/msmarco-distilbert-base-tas-b"
         :type model_id: string
         :param model_name:
@@ -805,6 +805,9 @@ class SentenceTransformerModel:
         :return: model zip file path. The file path where the zip file is being saved
         :rtype: string
         """
+
+        if model_id is None:
+            model_id = self.model_id
 
         model = SentenceTransformer(model_id)
 
@@ -877,7 +880,7 @@ class SentenceTransformerModel:
 
     def save_as_onnx(
         self,
-        model_id="sentence-transformers/msmarco-distilbert-base-tas-b",
+        model_id: str = None,
         model_name: str = None,
         save_json_folder_path: str = None,
         model_output_path: str = None,
@@ -889,7 +892,7 @@ class SentenceTransformerModel:
         zip the model file and its tokenizer.json file to prepare to upload to the Open Search cluster
 
         :param model_id:
-            sentence transformer model id to download model from sentence transformers.
+            Optional, sentence transformer model id to download model from sentence transformers.
             default model_id = "sentence-transformers/msmarco-distilbert-base-tas-b"
         :type model_id: string
         :param model_name:
@@ -914,6 +917,9 @@ class SentenceTransformerModel:
         :return: model zip file path. The file path where the zip file is being saved
         :rtype: string
         """
+
+        if model_id is None:
+            model_id = self.model_id
 
         model = SentenceTransformer(model_id)
 
@@ -1143,6 +1149,7 @@ class SentenceTransformerModel:
         model_name: str = None,
         version_number: str = 1,
         model_format: str = "TORCH_SCRIPT",
+        config_output_path: str = None,
         model_zip_file_path: str = None,
         embedding_dimension: int = None,
         pooling_mode: str = None,
@@ -1163,6 +1170,10 @@ class SentenceTransformerModel:
         :param model_format:
             Optional, the format of the model. Default is "TORCH_SCRIPT".
         :type model_format: string
+        :param config_output_path:
+             Optional, path to save model config json file. If None, default as
+             default_folder_path from the constructor
+        :type config_output_path: string
         :param model_zip_file_path:
             Optional, path to the model zip file. Default is the zip file path used in save_as_pt or save_as_onnx
             depending on model_format. This zip file is used to compute model_content_size_in_bytes and
@@ -1198,6 +1209,8 @@ class SentenceTransformerModel:
         :rtype: string
         """
         folder_path = self.folder_path
+        if config_output_path is None:
+            config_output_path = self.folder_path
         config_json_file_path = os.path.join(folder_path, "config.json")
         if model_name is None:
             model_name = self.model_id
@@ -1313,7 +1326,7 @@ class SentenceTransformerModel:
             print(json.dumps(model_config_content, indent=4))
 
         model_config_file_path = os.path.join(
-            folder_path, "ml-commons_model_config.json"
+            config_output_path, "ml-commons_model_config.json"
         )
         os.makedirs(os.path.dirname(model_config_file_path), exist_ok=True)
         with open(model_config_file_path, "w") as file:
