@@ -26,6 +26,7 @@ from opensearch_py_ml.ml_commons.model_connector import Connector
 from opensearch_py_ml.ml_commons.model_execute import ModelExecute
 from opensearch_py_ml.ml_commons.model_uploader import ModelUploader
 from opensearch_py_ml.ml_commons.validators.profile import validate_profile_input
+from opensearch_py_ml.ml_commons.validators.stats import validate_stats_input
 
 
 class MLCommonClient:
@@ -608,7 +609,13 @@ class MLCommonClient:
             url=API_URL,
         )
 
-    def get_stats(self, node_id: Optional[str] = "", stat_id: Optional[str] = ""):
+    def get_stats(
+        self,
+        node_id: Optional[str] = "",
+        stat_id: Optional[str] = "",
+        payload: Optional[dict] = None,
+    ):
+        validate_stats_input(node_id, stat_id, payload)
         if node_id and stat_id:
             url = f"{ML_BASE_URI}/{node_id}/stats/{stat_id}"
         elif node_id:
@@ -618,7 +625,9 @@ class MLCommonClient:
         else:
             url = f"{ML_BASE_URI}/stats"
 
-        return self._client.transport.perform_request(method="GET", url=url)
+        return self._client.transport.perform_request(
+            method="GET", url=url, body=payload
+        )
 
     def _get_profile(self, payload: Optional[dict] = None):
         """
