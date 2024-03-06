@@ -619,6 +619,18 @@ def test_stats():
     for k, v in res["nodes"].items():
         assert stat_id in v
 
+    with pytest.raises(ValueError):
+        ml_client.get_stats(node_id="invalid", payload={"query": {"match_all": {}}})
+
+    with pytest.raises(ValueError):
+        ml_client.get_stats(payload=10)
+
+    with pytest.raises(ValueError):
+        ml_client.get_stats(node_id=10)
+
+    with pytest.raises(ValueError):
+        ml_client.get_stats(stat_id=10)
+
 
 # Model Profile Tests. These tests will need some model train/predict run data. Hence, need
 #  to be run at the end after the training/prediction tests are done.
