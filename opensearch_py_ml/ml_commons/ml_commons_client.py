@@ -619,6 +619,7 @@ class MLCommonClient:
             url = f"{ML_BASE_URI}/stats"
 
         return self._client.transport.perform_request(method="GET", url=url)
+
     def _get_profile(self, payload: Optional[dict] = None):
         """
         Get the profile using the given payload.
