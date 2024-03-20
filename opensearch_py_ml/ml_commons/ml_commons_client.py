@@ -615,6 +615,21 @@ class MLCommonClient:
         stat_id: Optional[str] = "",
         payload: Optional[dict] = None,
     ):
+        """
+        Retrieves statistics for a given node or stat ID.
+
+        Args:
+            node_id (str, optional): The ID of the node to retrieve statistics for.
+            stat_id (str, optional): The ID of the specific statistic to retrieve.
+            payload (dict, optional): Additional payload for the request.
+
+        Returns:
+            dict: The response from the server containing the statistics.
+
+        Raises:
+            ValidationError: If the input parameters fail validation.
+
+        """
         validate_stats_input(node_id, stat_id, payload)
         if node_id and stat_id:
             url = f"{ML_BASE_URI}/{node_id}/stats/{stat_id}"
