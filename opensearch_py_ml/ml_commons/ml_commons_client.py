@@ -26,6 +26,7 @@ from opensearch_py_ml.ml_commons.model_connector import Connector
 from opensearch_py_ml.ml_commons.model_execute import ModelExecute
 from opensearch_py_ml.ml_commons.model_uploader import ModelUploader
 from opensearch_py_ml.ml_commons.validators.profile import validate_profile_input
+from opensearch_py_ml.ml_commons.validators.stats import validate_stats_input
 
 
 class MLCommonClient:
@@ -606,6 +607,41 @@ class MLCommonClient:
         return self._client.transport.perform_request(
             method="DELETE",
             url=API_URL,
+        )
+
+    def get_stats(
+        self,
+        node_id: Optional[str] = "",
+        stat_id: Optional[str] = "",
+        payload: Optional[dict] = None,
+    ):
+        """
+        Retrieves statistics for a given node or stat ID.
+
+        Args:
+            node_id (str, optional): The ID of the node to retrieve statistics for.
+            stat_id (str, optional): The ID of the specific statistic to retrieve.
+            payload (dict, optional): Additional payload for the request.
+
+        Returns:
+            dict: The response from the server containing the statistics.
+
+        Raises:
+            ValidationError: If the input parameters fail validation.
+
+        """
+        validate_stats_input(node_id, stat_id, payload)
+        if node_id and stat_id:
+            url = f"{ML_BASE_URI}/{node_id}/stats/{stat_id}"
+        elif node_id:
+            url = f"{ML_BASE_URI}/{node_id}/stats"
+        elif stat_id:
+            url = f"{ML_BASE_URI}/stats/{stat_id}"
+        else:
+            url = f"{ML_BASE_URI}/stats"
+
+        return self._client.transport.perform_request(
+            method="GET", url=url, body=payload
         )
 
     def _get_profile(self, payload: Optional[dict] = None):

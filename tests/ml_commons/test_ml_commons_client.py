@@ -14,6 +14,7 @@ from os.path import exists
 import pytest
 from opensearchpy import OpenSearch, helpers
 from opensearchpy.exceptions import RequestError
+from packaging.version import parse as parse_version
 from sklearn.datasets import load_iris
 
 from opensearch_py_ml.ml_commons import MLCommonClient
@@ -47,6 +48,9 @@ test_model = SentenceTransformerModel(folder_path=TEST_FOLDER, overwrite=True)
 PRETRAINED_MODEL_NAME = "huggingface/sentence-transformers/all-MiniLM-L12-v2"
 PRETRAINED_MODEL_VERSION = "1.0.1"
 PRETRAINED_MODEL_FORMAT = "TORCH_SCRIPT"
+
+OPENSEARCH_VERSION = parse_version(os.environ.get("OPENSEARCH_VERSION", "2.11.0"))
+STATS_MIN_VERSION = parse_version("2.11.0")
 
 
 @pytest.fixture
@@ -578,6 +582,54 @@ def test_search():
         pytest.fail(f"Raised Exception in searching model. Exception info: {ex}")
     else:
         assert search_model_obj == "Invalid JSON string passed as argument."
+
+
+@pytest.mark.skipif(
+    OPENSEARCH_VERSION < STATS_MIN_VERSION,
+    reason="Stats API is supported in OpenSearch 2.8.0 and above",
+)
+def test_stats():
+    res = ml_client.get_stats()
+
+    assert isinstance(res, dict)
+    assert "nodes" in res
+    assert len(res["nodes"]) > 0
+
+    node_id = list(res["nodes"].keys())[0]
+    stat_id = "ml_executing_task_count"
+
+    res = ml_client.get_stats(node_id, stat_id)
+
+    assert isinstance(res, dict)
+    assert "nodes" in res
+    assert node_id in res["nodes"]
+    assert stat_id in res["nodes"][node_id]
+
+    res = ml_client.get_stats(node_id=node_id)
+
+    assert isinstance(res, dict)
+    assert "nodes" in res
+    assert node_id in res["nodes"]
+
+    res = ml_client.get_stats(stat_id=stat_id)
+    assert isinstance(res, dict)
+    assert "nodes" in res
+    assert node_id in res["nodes"]
+
+    for k, v in res["nodes"].items():
+        assert stat_id in v
+
+    with pytest.raises(ValueError):
+        ml_client.get_stats(node_id="invalid", payload={"query": {"match_all": {}}})
+
+    with pytest.raises(ValueError):
+        ml_client.get_stats(payload=10)
+
+    with pytest.raises(ValueError):
+        ml_client.get_stats(node_id=10)
+
+    with pytest.raises(ValueError):
+        ml_client.get_stats(stat_id=10)
 
 
 # Model Profile Tests. These tests will need some model train/predict run data. Hence, need
