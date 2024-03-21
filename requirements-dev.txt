@@ -14,6 +14,7 @@ transformers>=4.36.0,<5
 deprecated>=1.2.14,<2
 mdutils>=1.6.0,<2
 pillow>10.0.0,<11
+onnxruntime
 
 #
 # Testing

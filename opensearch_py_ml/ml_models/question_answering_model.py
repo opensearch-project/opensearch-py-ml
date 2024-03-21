@@ -5,17 +5,18 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
-# for generating config 
+# for generating config
 import json
 import os
 from pathlib import Path
 from zipfile import ZipFile
+
 import requests
 
 # for torch
 import torch
-from transformers import AutoTokenizer, AutoModelForQuestionAnswering
 import transformers
+from transformers import AutoModelForQuestionAnswering, AutoTokenizer
 
 from opensearch_py_ml.ml_commons.ml_common_utils import (
     _generate_model_content_hash_value,
@@ -28,6 +29,7 @@ class QuestionAnsweringModel:
     """
     Class for tracing the QuestionAnswering model.
     """
+
     # distilbert-base-cased-distilled-squad
     DEFAULT_MODEL_ID = "distilbert-base-cased-distilled-squad"
     SYNTHETIC_QUERY_FOLDER = "synthetic_queries"
@@ -79,7 +81,7 @@ class QuestionAnsweringModel:
         self.model_id = model_id
         self.torch_script_zip_file_path = None
         self.onnx_zip_file_path = None
-    
+
     def _add_apache_license_to_model_zip_file(self, model_zip_file_path: str):
         """
         Add Apache-2.0 license file to the model zip file at model_zip_file_path
@@ -158,7 +160,6 @@ class QuestionAnsweringModel:
             zip_file_name = str(model_id.split("/")[-1] + ".zip")
         zip_file_path = os.path.join(model_output_path, zip_file_name)
 
-        
         tokenizer.save_pretrained(save_json_folder_path)
         tokenizer_file_path = os.path.join(save_json_folder_path, "tokenizer.json")
         # Open the tokenizer.json and replace the truncation field
@@ -177,7 +178,6 @@ class QuestionAnsweringModel:
         with open(tokenizer_file_path, "w") as file:
             json.dump(parsed_json, file, indent=2)
 
-
         # convert to pt format will need to be in cpu,
         # set the device to cpu, convert its input_ids and attention_mask in cpu and save as .pt format
         device = torch.device("cpu")
@@ -187,9 +187,7 @@ class QuestionAnsweringModel:
         ).to(device)
 
         compiled_model = torch.jit.trace(
-            cpu_model,
-            (features["input_ids"], features["attention_mask"]),
-            strict=False
+            cpu_model, (features["input_ids"], features["attention_mask"]), strict=False
         )
         torch.jit.save(compiled_model, model_path)
         print("Traced torchscript model is saved to ", model_path)
@@ -210,7 +208,7 @@ class QuestionAnsweringModel:
         self.torch_script_zip_file_path = zip_file_path
         print("zip file is saved to ", zip_file_path, "\n")
         return zip_file_path
-    
+
     def save_as_onnx(
         self,
         model_id="distilbert-base-cased-distilled-squad",
@@ -271,7 +269,7 @@ class QuestionAnsweringModel:
 
         # save tokenizer.json in save_json_folder_name
         tokenizer.save_pretrained(save_json_folder_path)
-        
+
         # Find the tokenizer.json file path in cache: /Users/faradawn/.cache/huggingface/hub/models/...
         tokenizer_file_path = os.path.join(save_json_folder_path, "tokenizer.json")
 
@@ -291,9 +289,13 @@ class QuestionAnsweringModel:
         tokenizer_file_path = os.path.join(save_json_folder_path, "tokenizer.json")
         with open(tokenizer_file_path, "w") as file:
             json.dump(parsed_json, file, indent=2)
-        
+
         # load config
-        model_kind, model_onnx_config = transformers.onnx.FeaturesManager.check_supported_model_or_raise(model, feature="question-answering")
+        model_kind, model_onnx_config = (
+            transformers.onnx.FeaturesManager.check_supported_model_or_raise(
+                model, feature="question-answering"
+            )
+        )
         onnx_config = model_onnx_config(model.config)
 
         # export
@@ -302,7 +304,7 @@ class QuestionAnsweringModel:
             model=model,
             config=onnx_config,
             opset=13,
-            output=Path(model_path)
+            output=Path(model_path),
         )
 
         print("Traced onnx model is saved to ", model_path)
@@ -392,7 +394,6 @@ class QuestionAnsweringModel:
         model = AutoModelForQuestionAnswering.from_pretrained(self.model_id)
         model.save_pretrained(self.folder_path)
 
-        
         # fill the empty fields
         if (
             model_type is None
@@ -404,7 +405,7 @@ class QuestionAnsweringModel:
                 if embedding_dimension is None:
                     try:
                         embedding_dimension = model.config.dim
-                    except Exception as e:
+                    except Exception:
                         embedding_dimension = 768
 
                 if model_type is None:
@@ -413,7 +414,7 @@ class QuestionAnsweringModel:
                     pooling_mode = "CLS"
                 if normalize_result is None:
                     normalize_result = False
-                
+
             except Exception as e:
                 raise Exception(
                     f"Raised exception while getting model data from pre-trained hugging-face model object: {e}"
@@ -422,7 +423,7 @@ class QuestionAnsweringModel:
         # fill the description
         if description is None:
             description = "This is a question-answering model: it provides answers to a question and context."
-            
+
         # dump the config.json file
         if all_config is None:
             if not os.path.exists(config_json_file_path):
@@ -463,7 +464,7 @@ class QuestionAnsweringModel:
                 "all_config": json.dumps(all_config),
             },
         }
-        
+
         # get model size and hash value
         if model_zip_file_path is None:
             model_zip_file_path = (
@@ -480,9 +481,9 @@ class QuestionAnsweringModel:
                 model_config_content["model_content_size_in_bytes"] = os.stat(
                     model_zip_file_path
                 ).st_size
-                model_config_content[
-                    "model_content_hash_value"
-                ] = _generate_model_content_hash_value(model_zip_file_path)
+                model_config_content["model_content_hash_value"] = (
+                    _generate_model_content_hash_value(model_zip_file_path)
+                )
 
         if verbose:
             print("generating ml-commons_model_config.json file...\n")
@@ -499,4 +500,3 @@ class QuestionAnsweringModel:
         )
 
         return model_config_file_path
-

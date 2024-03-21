@@ -15,10 +15,11 @@ import pytest
 
 from opensearch_py_ml.ml_models import QuestionAnsweringModel
 
-
 # default parameters
 default_model_id = "distilbert-base-cased-distilled-squad"
-default_model_description = "This is a question-answering model: it provides answers to a question and context."
+default_model_description = (
+    "This is a question-answering model: it provides answers to a question and context."
+)
 
 TEST_FOLDER = os.path.join(
     os.path.dirname(os.path.abspath("__file__")), "tests", "test_model_files"
@@ -29,7 +30,6 @@ TESTDATA_FILENAME = os.path.join(
 TESTDATA_UNZIP_FOLDER = os.path.join(
     os.path.dirname(os.path.abspath("__file__")), "tests", "sample_zip"
 )
-
 
 
 def clean_test_folder(TEST_FOLDER):
@@ -120,7 +120,6 @@ clean_test_folder(TEST_FOLDER)
 test_model = QuestionAnsweringModel(folder_path=TEST_FOLDER)
 
 
-
 def test_check_attribute():
     test_model = QuestionAnsweringModel(folder_path=TEST_FOLDER)
     try:
@@ -141,9 +140,7 @@ def test_check_attribute():
 
     clean_test_folder(TEST_FOLDER)
     our_model_id = "distilbert-base-cased-distilled-squad"
-    test_model1 = QuestionAnsweringModel(
-        folder_path=TEST_FOLDER, model_id=our_model_id
-    )
+    test_model1 = QuestionAnsweringModel(folder_path=TEST_FOLDER, model_id=our_model_id)
     assert test_model1.model_id == our_model_id
 
 
@@ -160,30 +157,31 @@ def test_folder_path():
 # New tests for save_as_pt and save_as_onnx
 
 test_cases = [
-    {
-        "question": "Who was Jim Henson?",
-        "context": "Jim Henson was a nice puppet"
-    },
+    {"question": "Who was Jim Henson?", "context": "Jim Henson was a nice puppet"},
     {
         "question": "Where do I live?",
-        "context": "My name is Sarah and I live in London"
+        "context": "My name is Sarah and I live in London",
     },
     {
         "question": "What's my name?",
-        "context": "My name is Clara and I live in Berkeley."
+        "context": "My name is Clara and I live in Berkeley.",
     },
     {
         "question": "Which name is also used to describe the Amazon rainforest in English?",
-        "context": "The Amazon rainforest (Portuguese: Floresta Amazônica or Amazônia; Spanish: Selva Amazónica, Amazonía or usually Amazonia; French: Forêt amazonienne; Dutch: Amazoneregenwoud), also known in English as Amazonia or the Amazon Jungle, is a moist broadleaf forest that covers most of the Amazon basin of South America. This basin encompasses 7,000,000 square kilometres (2,700,000 sq mi), of which 5,500,000 square kilometres (2,100,000 sq mi) are covered by the rainforest. This region includes territory belonging to nine nations. The majority of the forest is contained within Brazil, with 60% of the rainforest, followed by Peru with 13%, Colombia with 10%, and with minor amounts in Venezuela, Ecuador, Bolivia, Guyana, Suriname and French Guiana. States or departments in four nations contain 'Amazonas' in their names. The Amazon represents over half of the planet's remaining rainforests, and comprises the largest and most biodiverse tract of tropical rainforest in the world, with an estimated 390 billion individual trees divided into 16,000 species."
-    }
+        "context": "The Amazon rainforest (Portuguese: Floresta Amazônica or Amazônia; Spanish: Selva Amazónica, Amazonía or usually Amazonia; French: Forêt amazonienne; Dutch: Amazoneregenwoud), also known in English as Amazonia or the Amazon Jungle, is a moist broadleaf forest that covers most of the Amazon basin of South America. This basin encompasses 7,000,000 square kilometres (2,700,000 sq mi), of which 5,500,000 square kilometres (2,100,000 sq mi) are covered by the rainforest. This region includes territory belonging to nine nations. The majority of the forest is contained within Brazil, with 60% of the rainforest, followed by Peru with 13%, Colombia with 10%, and with minor amounts in Venezuela, Ecuador, Bolivia, Guyana, Suriname and French Guiana. States or departments in four nations contain 'Amazonas' in their names. The Amazon represents over half of the planet's remaining rainforests, and comprises the largest and most biodiverse tract of tropical rainforest in the world, with an estimated 390 billion individual trees divided into 16,000 species.",
+    },
 ]
+
 
 def get_official_answer(test_cases):
     # Obtain pytorch's official model
-    from transformers import AutoTokenizer, AutoModelForQuestionAnswering
     import torch
-    tokenizer = AutoTokenizer.from_pretrained('distilbert-base-cased-distilled-squad')
-    official_model = AutoModelForQuestionAnswering.from_pretrained('distilbert-base-cased-distilled-squad')
+    from transformers import AutoModelForQuestionAnswering, AutoTokenizer
+
+    tokenizer = AutoTokenizer.from_pretrained("distilbert-base-cased-distilled-squad")
+    official_model = AutoModelForQuestionAnswering.from_pretrained(
+        "distilbert-base-cased-distilled-squad"
+    )
 
     results = []
 
@@ -195,12 +193,14 @@ def get_official_answer(test_cases):
         answer_start_index = torch.argmax(outputs.start_logits, dim=-1).item()
         answer_end_index = torch.argmax(outputs.end_logits, dim=-1).item()
         results.append([answer_start_index, answer_end_index])
-    
+
     return results
 
+
 def get_pt_answer(test_cases, folder_path, model_id):
-    from transformers import AutoTokenizer, AutoModelForQuestionAnswering
     import torch
+    from transformers import AutoTokenizer
+
     tokenizer = AutoTokenizer.from_pretrained(model_id)
     traced_model = torch.jit.load(f"{folder_path}/{model_id}.pt")
 
@@ -215,14 +215,15 @@ def get_pt_answer(test_cases, folder_path, model_id):
         answer_start_index = torch.argmax(outputs["start_logits"], dim=-1).item()
         answer_end_index = torch.argmax(outputs["end_logits"], dim=-1).item()
         results.append([answer_start_index, answer_end_index])
-        
+
     return results
 
 
 def get_onnx_answer(test_cases, folder_path, model_id):
-    from transformers import AutoTokenizer
-    from onnxruntime import InferenceSession
     import numpy as np
+    from onnxruntime import InferenceSession
+    from transformers import AutoTokenizer
+
     session = InferenceSession(f"{folder_path}/{model_id}.onnx")
     tokenizer = AutoTokenizer.from_pretrained(model_id)
 
@@ -233,12 +234,14 @@ def get_onnx_answer(test_cases, folder_path, model_id):
         inputs = tokenizer(question, context, return_tensors="pt")
 
         inputs = tokenizer(question, context, return_tensors="np")
-        outputs = session.run(output_names=["start_logits", "end_logits"], input_feed=dict(inputs))
+        outputs = session.run(
+            output_names=["start_logits", "end_logits"], input_feed=dict(inputs)
+        )
 
         answer_start_index = np.argmax(outputs[0], axis=-1).item()
         answer_end_index = np.argmax(outputs[1], axis=-1).item()
         results.append([answer_start_index, answer_end_index])
-        
+
     return results
 
 
@@ -248,10 +251,13 @@ def test_pt_answer():
     pt_results = get_pt_answer(test_cases, TEST_FOLDER, default_model_id)
     official_results = get_official_answer(test_cases)
     for i in range(len(pt_results)):
-        assert pt_results[i] == official_results[i], f"Failed at index {i}: pt_results[{i}] ({pt_results[i]}) != official_results[{i}] ({official_results[i]})"
-    
+        assert (
+            pt_results[i] == official_results[i]
+        ), f"Failed at index {i}: pt_results[{i}] ({pt_results[i]}) != official_results[{i}] ({official_results[i]})"
+
     clean_test_folder(TEST_FOLDER)
     clean_test_folder(TESTDATA_UNZIP_FOLDER)
+
 
 def test_onnx_answer():
     test_model = QuestionAnsweringModel(folder_path=TEST_FOLDER, overwrite=True)
@@ -259,11 +265,12 @@ def test_onnx_answer():
     onnx_results = get_onnx_answer(test_cases, TEST_FOLDER, default_model_id)
     official_results = get_official_answer(test_cases)
     for i in range(len(onnx_results)):
-        assert onnx_results[i] == official_results[i], f"Failed at index {i}: onnx_results[{i}] ({onnx_results[i]}) != official_results[{i}] ({official_results[i]})"
-    
+        assert (
+            onnx_results[i] == official_results[i]
+        ), f"Failed at index {i}: onnx_results[{i}] ({onnx_results[i]}) != official_results[{i}] ({official_results[i]})"
+
     clean_test_folder(TEST_FOLDER)
     clean_test_folder(TESTDATA_UNZIP_FOLDER)
-
 
 
 def test_make_model_config_json_for_torch_script():
@@ -362,6 +369,7 @@ def test_overwrite_fields_in_model_config():
 
     clean_test_folder(TEST_FOLDER)
 
+
 def test_missing_expected_description_in_readme_file():
     model_id = default_model_id
     model_format = "TORCH_SCRIPT"
@@ -430,7 +438,6 @@ def test_overwrite_description():
     clean_test_folder(TEST_FOLDER)
 
 
-
 def test_truncation_parameter():
     model_id = default_model_id
     MAX_LENGTH_TASB = 512
@@ -466,7 +473,9 @@ def test_truncation_parameter():
 def test_save_as_pt_with_license():
     model_id = "distilbert-base-cased-distilled-squad"
     model_format = "TORCH_SCRIPT"
-    torch_script_zip_file_path = os.path.join(TEST_FOLDER, "distilbert-base-cased-distilled-squad.zip")
+    torch_script_zip_file_path = os.path.join(
+        TEST_FOLDER, "distilbert-base-cased-distilled-squad.zip"
+    )
     torch_script_expected_filenames = {
         "distilbert-base-cased-distilled-squad.pt",
         "tokenizer.json",
@@ -495,8 +504,14 @@ def test_save_as_pt_with_license():
 def test_save_as_onnx_with_license():
     model_id = "distilbert-base-cased-distilled-squad"
     model_format = "ONNX"
-    onnx_zip_file_path = os.path.join(TEST_FOLDER, "distilbert-base-cased-distilled-squad.zip")
-    onnx_expected_filenames = {"distilbert-base-cased-distilled-squad.onnx", "tokenizer.json", "LICENSE"}
+    onnx_zip_file_path = os.path.join(
+        TEST_FOLDER, "distilbert-base-cased-distilled-squad.zip"
+    )
+    onnx_expected_filenames = {
+        "distilbert-base-cased-distilled-squad.onnx",
+        "tokenizer.json",
+        "LICENSE",
+    }
 
     clean_test_folder(TEST_FOLDER)
     test_model16 = QuestionAnsweringModel(
@@ -509,7 +524,6 @@ def test_save_as_onnx_with_license():
     compare_model_zip_file(onnx_zip_file_path, onnx_expected_filenames, model_format)
 
     clean_test_folder(TEST_FOLDER)
-
 
 
 clean_test_folder(TEST_FOLDER)
