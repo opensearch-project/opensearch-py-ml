@@ -146,5 +146,30 @@
         ],
         "description": "This is a neural sparse encoding model: It transfers text into sparse vector, and then extract nonzero index and value to entry and weights. It serves only in ingestion and customer should use tokenizer model in query."
       }
-    },
+    }
+  },
+  {
+    "name": "huggingface/cross-encoders/ms-marco-MiniLM-L-6-v2",
+    "versions": {
+      "1.0.2": {
+        "format": [
+          "onnx",
+          "torch_script"
+        ],
+        "description": "The model can be used for Information Retrieval: Given a query, encode the query will all possible passages (e.g. retrieved with ElasticSearch). Then sort the passages in a decreasing order."
+      }
+    }
+  },
+  {
+    "name": "huggingface/cross-encoders/ms-marco-MiniLM-L-12-v2",
+    "versions": {
+      "1.0.2": {
+        "format": [
+          "onnx",
+          "torch_script"
+        ],
+        "description": "The model can be used for Information Retrieval: Given a query, encode the query will all possible passages (e.g. retrieved with ElasticSearch). Then sort the passages in a decreasing order."
+      }
+    }
+  }
 ]
