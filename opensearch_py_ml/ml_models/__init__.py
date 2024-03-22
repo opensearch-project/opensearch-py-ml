@@ -6,6 +6,7 @@
 # GitHub history for details.
 
 from .metrics_correlation.mcorr import MCorr
+from .question_answering_model import QuestionAnsweringModel
 from .sentencetransformermodel import SentenceTransformerModel
 
-__all__ = ["SentenceTransformerModel", "MCorr"]
+__all__ = ["SentenceTransformerModel", "QuestionAnsweringModel", "MCorr"]

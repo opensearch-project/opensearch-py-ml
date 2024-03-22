@@ -463,7 +463,7 @@ def test_overwrite_description():
 def test_long_description():
     model_id = "sentence-transformers/gtr-t5-base"
     model_format = "TORCH_SCRIPT"
-    expected_model_description = "This is a sentence-transformers model: It maps sentences & paragraphs to a 768 dimensional dense vector space. The model was specifically trained for the task of sematic search."
+    expected_model_description = "This is a sentence-transformers model: It maps sentences & paragraphs to a 768 dimensional dense vector space. The model was specifically trained for the task of semantic search."
 
     clean_test_folder(TEST_FOLDER)
     test_model12 = SentenceTransformerModel(
