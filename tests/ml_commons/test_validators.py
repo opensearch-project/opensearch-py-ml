@@ -7,7 +7,7 @@
 
 import pytest
 
-from opensearch_py_ml.ml_commons.validators.model_access_control import (
+from opensearch_py_ml.ml_commons.validators import (
     _validate_model_group_access_mode,
     _validate_model_group_add_all_backend_roles,
     _validate_model_group_backend_roles,
