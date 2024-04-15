@@ -11,7 +11,7 @@ from opensearchpy import OpenSearch
 from opensearchpy.exceptions import NotFoundError
 
 from opensearch_py_ml.ml_commons.ml_common_utils import ML_BASE_URI
-from opensearch_py_ml.ml_commons.validators.model_access_control import (
+from opensearch_py_ml.ml_commons.validators import (
     validate_create_model_group_parameters,
     validate_delete_model_group_parameters,
     validate_search_model_group_parameters,
