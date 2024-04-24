@@ -657,19 +657,19 @@ class SentenceTransformerModel:
         with ZipFile(str(model_zip_file_path), "a") as zipObj:
             zipObj.writestr("LICENSE", r.content)
             
-    def _add_third_party_statements_text_to_model_zip_file(self, third_party_statements_text: str, model_zip_file_path: str):
+    def _add_third_party_copyrights_statements_to_model_zip_file(self, third_party_copyrights_statements: str, model_zip_file_path: str):
         """
         Add Statements text for non Apache-2.0 licensed third party model. Add it to the model zip file at model_zip_file_path
 
-        :param third_party_statements_text: Statements text for non Apache-2.0 licensed third party model. Should be put in the final artifact.
-        :type third_party_statements_text: string
+        :param third_party_copyrights_statements: Statements text for non Apache-2.0 licensed third party model. Should be put in the final artifact.
+        :type third_party_copyrights_statements: string
         :param model_zip_file_path: Path to the model zip file
         :type model_zip_file_path: string
         :return: no return value expected
         :rtype: None
         """
         with ZipFile(str(model_zip_file_path), "a") as zipObj:
-            zipObj.writestr("THIRD-PARTY", third_party_statements_text)
+            zipObj.writestr("THIRD-PARTY", third_party_copyrights_statements)
 
     def zip_model(
         self,
@@ -785,7 +785,7 @@ class SentenceTransformerModel:
         model_output_path: str = None,
         zip_file_name: str = None,
         add_apache_license: bool = False,
-        third_party_statements_text: Optional[str] = None
+        third_party_copyrights_statements: Optional[str] = None
     ) -> str:
         """
         Download sentence transformer model directly from huggingface, convert model to torch script format,
@@ -817,13 +817,13 @@ class SentenceTransformerModel:
         :param add_apache_license:
             Optional, whether to add a Apache-2.0 license file to model zip file
         :type add_apache_license: string
-        :param third_party_statements_text: Statements text for non Apache-2.0 licensed third party model. Should be put in the final artifact.
-        :type third_party_statements_text: string
+        :param third_party_copyrights_statements: Statements text for non Apache-2.0 licensed third party model. Should be put in the final artifact.
+        :type third_party_copyrights_statements: string
         :return: model zip file path. The file path where the zip file is being saved
         :rtype: string
         """
         
-        if add_apache_license == True and not third_party_statements_text is None:
+        if add_apache_license == True and not third_party_copyrights_statements is None:
             assert False, "When the model is from third party under non Apache-2.0 license, we can not add Apache-2.0 license for it."
             
         model = SentenceTransformer(model_id)
@@ -890,8 +890,8 @@ class SentenceTransformerModel:
             )
         if add_apache_license:
             self._add_apache_license_to_model_zip_file(zip_file_path)
-        if not third_party_statements_text is None:
-            self._add_third_party_statements_text_to_model_zip_file(third_party_statements_text, zip_file_path)
+        if not third_party_copyrights_statements is None:
+            self._add_third_party_copyrights_statements_to_model_zip_file(third_party_copyrights_statements, zip_file_path)
 
         self.torch_script_zip_file_path = zip_file_path
         print("zip file is saved to ", zip_file_path, "\n")
@@ -905,7 +905,7 @@ class SentenceTransformerModel:
         model_output_path: str = None,
         zip_file_name: str = None,
         add_apache_license: bool = False,
-        third_party_statements_text: Optional[str] = None
+        third_party_copyrights_statements: Optional[str] = None
     ) -> str:
         """
         Download sentence transformer model directly from huggingface, convert model to onnx format,
@@ -934,13 +934,13 @@ class SentenceTransformerModel:
         :param add_apache_license:
             Optional, whether to add a Apache-2.0 license file to model zip file
         :type add_apache_license: string
-        :param third_party_statements_text: Statements text for non Apache-2.0 licensed third party model. Should be put in the final artifact.
-        :type third_party_statements_text: string
+        :param third_party_copyrights_statements: Statements text for non Apache-2.0 licensed third party model. Should be put in the final artifact.
+        :type third_party_copyrights_statements: string
         :return: model zip file path. The file path where the zip file is being saved
         :rtype: string
         """
         
-        if add_apache_license == True and not third_party_statements_text is None:
+        if add_apache_license == True and not third_party_copyrights_statements is None:
             assert False, "When the model is from third party under non Apache-2.0 license, we can not add Apache-2.0 license for it."
 
         model = SentenceTransformer(model_id)
@@ -996,8 +996,8 @@ class SentenceTransformerModel:
             )
         if add_apache_license:
             self._add_apache_license_to_model_zip_file(zip_file_path)
-        if not third_party_statements_text is None:
-            self._add_third_party_statements_text_to_model_zip_file(third_party_statements_text, zip_file_path)
+        if not third_party_copyrights_statements is None:
+            self._add_third_party_copyrights_statements_to_model_zip_file(third_party_copyrights_statements, zip_file_path)
 
         self.onnx_zip_file_path = zip_file_path
         print("zip file is saved to ", zip_file_path, "\n")

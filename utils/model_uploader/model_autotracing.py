@@ -91,7 +91,7 @@ def trace_sentence_transformer_model(
     embedding_dimension: Optional[int] = None,
     pooling_mode: Optional[str] = None,
     model_description: Optional[str] = None,
-    third_party_statements_text: Optional[str] = None
+    third_party_copyrights_statements: Optional[str] = None
 ) -> Tuple[str, str]:
     """
     Trace the pretrained sentence transformer model, create a model config file,
@@ -111,8 +111,8 @@ def trace_sentence_transformer_model(
     :type pooling_mode: string
     :param model_description: Model description input
     :type model_description: string
-    :param third_party_statements_text: Statements text for non Apache-2.0 licensed third party model. Should be put in the final artifact.
-    :type third_party_statements_text: string
+    :param third_party_copyrights_statements: Statements text for non Apache-2.0 licensed third party model. Should be put in the final artifact.
+    :type third_party_copyrights_statements: string
     :return: Tuple of model_path (path to model zip file) and model_config_path (path to model config json file)
     :rtype: Tuple[str, str]
     """
@@ -142,13 +142,13 @@ def trace_sentence_transformer_model(
                 model_id=model_id,
                 sentences=TEST_SENTENCES,
                 add_apache_license=model_license=="Apache-2.0",
-                third_party_statements_text=third_party_statements_text
+                third_party_copyrights_statements=third_party_copyrights_statements
             )
         else:
             model_path = pre_trained_model.save_as_onnx(
                 model_id=model_id,
                 add_apache_license=model_license=="Apache-2.0",
-                third_party_statements_text=third_party_statements_text
+                third_party_copyrights_statements=third_party_copyrights_statements
             )
     except Exception as e:
         assert False, f"Raised Exception during saving model as {model_format}: {e}"
@@ -422,7 +422,7 @@ def main(
     embedding_dimension: Optional[int] = None,
     pooling_mode: Optional[str] = None,
     model_description: Optional[str] = None,
-    third_party_statements_text: Optional[str] = None
+    third_party_copyrights_statements: Optional[str] = None
 ) -> None:
     """
     Perform model auto-tracing and prepare files for uploading to OpenSearch model hub
@@ -441,8 +441,8 @@ def main(
     :type pooling_mode: string
     :param model_description: Model description input
     :type model_description: string
-    :param third_party_statements_text: Statements text for non Apache-2.0 licensed third party model. Should be put in the final artifact.
-    :type third_party_statements_text: string
+    :param third_party_copyrights_statements: Statements text for non Apache-2.0 licensed third party model. Should be put in the final artifact.
+    :type third_party_copyrights_statements: string
     :return: No return value expected
     :rtype: None
     """
@@ -463,7 +463,7 @@ def main(
     )
     print(
         "Third Party Statements Text: ", 
-        third_party_statements_text if third_party_statements_text is not None else "N/A"
+        third_party_copyrights_statements if third_party_copyrights_statements is not None else "N/A"
     )
     print("==========================================")
 
@@ -494,7 +494,7 @@ def main(
             embedding_dimension,
             pooling_mode,
             model_description,
-            third_party_statements_text
+            third_party_copyrights_statements
         )
 
         torchscript_embedding_data = register_and_deploy_sentence_transformer_model(
@@ -537,7 +537,7 @@ def main(
             embedding_dimension,
             pooling_mode,
             model_description,
-            third_party_statements_text
+            third_party_copyrights_statements
         )
 
         onnx_embedding_data = register_and_deploy_sentence_transformer_model(
@@ -652,10 +652,10 @@ if __name__ == "__main__":
     
     if args.model_license == "MIT":
         # in the model_uploader.yml we check that all materials are provided
-        third_party_statements_text = generate_thirdpart_statements_for_MIT(model_id=args.model_id, copyright_statement=args.mit_copyright_statement,
+        third_party_copyrights_statements = generate_thirdpart_statements_for_MIT(model_id=args.model_id, copyright_statement=args.mit_copyright_statement,
                                             attribution_website=args.mit_attribution_website,model_version=args.model_version)
     else:
-        third_party_statements_text = None
+        third_party_copyrights_statements = None
         
     main(
         args.model_id,
@@ -665,5 +665,5 @@ if __name__ == "__main__":
         args.embedding_dimension,
         args.pooling_mode,
         args.model_description,
-        third_party_statements_text
+        third_party_copyrights_statements
     )
