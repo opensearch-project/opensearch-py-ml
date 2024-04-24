@@ -621,41 +621,16 @@ if __name__ == "__main__":
         help="Model description if you want to overwrite the default description",
     )
     parser.add_argument(
-        "-mcs",
-        "--mit_copyright_statement",
+        "-tpcs",
+        "--third_party_copyrights_statements",
         type=str,
         nargs="?",
         default=None,
         const=None,
-        help="Copyright statement for MIT licensed models. Should be picked from origin MIT license file. E.g. Copyright (c) year author",
-    )
-    parser.add_argument(
-        "-maw",
-        "--mit_attribution_website",
-        type=str,
-        nargs="?",
-        default=None,
-        const=None,
-        help="The project website for MIT licensed models. The MIT license file is supposed to be found in this website",
-    )
-    parser.add_argument(
-        "-mmv",
-        "--mit_model_version",
-        type=str,
-        nargs="?",
-        default=None,
-        const=None,
-        help="The model version for MIT licensed models. Different from the model_version field above, this version should be quoted from the origin project website.",
+        help="Copyright statement for MIT licensed models.",
     )
     
     args = parser.parse_args()
-    
-    if args.model_license == "MIT":
-        # in the model_uploader.yml we check that all materials are provided
-        third_party_copyrights_statements = generate_thirdpart_statements_for_MIT(model_id=args.model_id, copyright_statement=args.mit_copyright_statement,
-                                            attribution_website=args.mit_attribution_website,model_version=args.model_version)
-    else:
-        third_party_copyrights_statements = None
         
     main(
         args.model_id,
@@ -665,5 +640,5 @@ if __name__ == "__main__":
         args.embedding_dimension,
         args.pooling_mode,
         args.model_description,
-        third_party_copyrights_statements
+        args.third_party_copyrights_statements
     )

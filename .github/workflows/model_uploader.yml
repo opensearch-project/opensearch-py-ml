@@ -57,16 +57,8 @@ on:
         options:
         - "NO"
         - "YES"
-      mit_copyright_statement:
-        description: "(Optional) Copyright statement for MIT licensed models. Should be picked from origin MIT license file. E.g. Copyright (c) {year} {author}"
-        required: false
-        type: string
-      mit_attribution_website:
-        description: "(Optional) The project website for MIT licensed models. The MIT license file is supposed to be found in this website"
-        required: false
-        type: string
-      mit_model_version:
-        description: "(Optional) The model version for MIT licensed models. Different from the model_version field above, this version should be quoted from the origin project website."
+      third_party_copyrights_statements:
+        description: "(Optional) Copyright statements for MIT licensed models. Should be put in the final artifact."
         required: false
         type: string
 
@@ -92,9 +84,7 @@ jobs:
         embedding_dimension=${{ github.event.inputs.embedding_dimension }}
         pooling_mode=${{ github.event.inputs.pooling_mode }}
         model_description="${{ github.event.inputs.model_description }}"
-        mit_copyright_statement="${{ github.event.inputs.mit_copyright_statement }}"
-        mit_attribution_website="${{ github.event.inputs.mit_attribution_website }}"
-        mit_model_version="${{ github.event.inputs.mit_model_version }}"
+        third_party_copyrights_statements="${{ github.event.inputs.third_party_copyrights_statements }}"
         
         workflow_info="
         ============= Workflow Details ==============
@@ -111,9 +101,7 @@ jobs:
         - Embedding Dimension: ${embedding_dimension:-N/A}
         - Pooling Mode: ${pooling_mode:-N/A}
         - Model Description: ${model_description:-N/A}
-        - MIT Copyright Statement: ${mit_copyright_statement:-N/A}
-        - MIT Attribution Website: ${mit_attribution_website:-N/A}
-        - MIT Model Version: ${mit_model_version:-N/A}
+        - Third Party Copyrights Statements: ${third_party_copyrights_statements:-N/A}
         
         ======== Workflow Output Information =========
         - Embedding Verification: Passed"
@@ -122,22 +110,22 @@ jobs:
         echo "${workflow_info@E}" >> $GITHUB_OUTPUT
         echo "EOF" >> $GITHUB_OUTPUT
         echo "${workflow_info@E}"
-    - name: Check MIT license material
-      id: check_mit_license_material
+    - name: Check MIT license copyright statements
+      id: check_mit_license_copyright_statements
       run: |
         if [[ "${{ github.event.inputs.model_license }}" == "MIT" ]]
         then
           echo "Uploading MIT licensed model"
-          if [[ "${{ github.event.inputs.mit_copyright_statement }}" == "" && "${{ github.event.inputs.mit_attribution_website }}" == "" && "${{ github.event.inputs.mit_model_version }}" == "" ]]
+          if [[ "${{ github.event.inputs.third_party_copyrights_statements }}" == "" ]]
           then
-              echo "missing materials for MIT model"
+              echo "missing copyright statements for MIT model"
               exit 1
         fi
     - name: Initiate license_line
       id: init_license_line
       run: |
         echo "verified_apache=:white_check_mark: — It is verified that this model is licensed under Apache 2.0" >> $GITHUB_OUTPUT
-        echo "verified_mit=:white_check_mark: — It is verified that this model is licensed under MIT, and we have enough materials to generate the attribution file" >> $GITHUB_OUTPUT
+        echo "verified_mit=:white_check_mark: — It is verified that this model is licensed under MIT, and we have provided copyright statements" >> $GITHUB_OUTPUT
         echo "unverified=- [ ]  :warning: The license cannot be verified. Please confirm by yourself that the model is licensed under Apache 2.0 or MIT with enough materials  :warning:" >> $GITHUB_OUTPUT
     outputs:
       model_folder: ${{ steps.init_folders.outputs.model_folder }}
@@ -220,9 +208,7 @@ jobs:
           echo "EMBEDDING_DIMENSION=${{ github.event.inputs.embedding_dimension }}" >> $GITHUB_ENV
           echo "POOLING_MODE=${{ github.event.inputs.pooling_mode }}" >> $GITHUB_ENV     
           echo "MODEL_DESCRIPTION=${{ github.event.inputs.model_description }}" >> $GITHUB_ENV
-          echo "MIT_COPYRIGHT_STATEMENT=${{ github.event.inputs.mit_copyright_statement }}" >> $GITHUB_ENV
-          echo "MIT_ATTRIBUTION_WEBSITE=${{ github.event.inputs.mit_attribution_website }}" >> $GITHUB_ENV
-          echo "MIT_MODEL_VERSION=${{ github.event.inputs.mit_model_version }}" >> $GITHUB_ENV
+          echo "THIRD_PARTY_COPYRIGHTS_STATEMENTS=${{ github.event.inputs.third_party_copyrights_statements }}" >> $GITHUB_ENV
       - name: Autotracing ${{ matrix.cluster }} secured=${{ matrix.secured }} version=${{matrix.entry.opensearch_version}}
         run: "./.ci/run-tests ${{ matrix.cluster }} ${{ matrix.secured }} ${{ matrix.entry.opensearch_version }} trace"
       - name: Limit Model Size to 2GB
