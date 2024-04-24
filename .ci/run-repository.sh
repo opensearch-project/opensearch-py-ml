@@ -74,9 +74,7 @@ elif [[ "$TASK_TYPE" == "trace" ]]; then
   echo -e "\033[34;1mINFO:\033[0m EMBEDDING_DIMENSION: ${EMBEDDING_DIMENSION:-N/A}\033[0m"
   echo -e "\033[34;1mINFO:\033[0m POOLING_MODE: ${POOLING_MODE:-N/A}\033[0m"
   echo -e "\033[34;1mINFO:\033[0m MODEL_DESCRIPTION: ${MODEL_DESCRIPTION:-N/A}\033[0m"
-  echo -e "\033[34;1mINFO:\033[0m MIT_COPYRIGHT_STATEMENT: ${MIT_COPYRIGHT_STATEMENT:-N/A}\033[0m"
-  echo -e "\033[34;1mINFO:\033[0m MIT_ATTRIBUTION_WEBSITE: ${MIT_ATTRIBUTION_WEBSITE:-N/A}\033[0m"
-  echo -e "\033[34;1mINFO:\033[0m MIT_MODEL_VERSION: ${MIT_MODEL_VERSION:-N/A}\033[0m"
+  echo -e "\033[34;1mINFO:\033[0m THIRD_PARTY_COPYRIGHTS_STATEMENTS: ${THIRD_PARTY_COPYRIGHTS_STATEMENTS:-N/A}\033[0m"
 
   docker run \
   --network=${network_name} \
@@ -89,7 +87,7 @@ elif [[ "$TASK_TYPE" == "trace" ]]; then
   --name opensearch-py-ml-trace-runner \
   opensearch-project/opensearch-py-ml \
   nox -s "trace-${PYTHON_VERSION}" -- ${MODEL_ID} ${MODEL_LICENSE} ${MODEL_VERSION} ${TRACING_FORMAT} -ed ${EMBEDDING_DIMENSION} -pm ${POOLING_MODE} \
-   -md ${MODEL_DESCRIPTION:+"$MODEL_DESCRIPTION"} -mcs ${MIT_COPYRIGHT_STATEMENT} -maw ${MIT_ATTRIBUTION_WEBSITE} -mmv ${MIT_MODEL_VERSION}
+   -md ${MODEL_DESCRIPTION:+"$MODEL_DESCRIPTION"} -tpcs ${THIRD_PARTY_COPYRIGHTS_STATEMENTS}
   
   docker cp opensearch-py-ml-trace-runner:/code/opensearch-py-ml/upload/ ./upload/
   docker cp opensearch-py-ml-trace-runner:/code/opensearch-py-ml/trace_output/ ./trace_output/
