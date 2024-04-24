@@ -238,8 +238,8 @@ jobs:
       - name: License Verification
         id: license_verification
         run: |
-          apache_verified=$(<trace_output/apache_verified.txt)
-          if [[ $apache_verified == "True" ]]
+          license_verified=$(<trace_output/license_verified.txt)
+          if [[ $license_verified == "True" ]]
           then
             echo "license_line=${{ needs.init-workflow-var.outputs.verified_license_line }}" >> $GITHUB_OUTPUT
             echo "license_info=Automatically Verified" >> $GITHUB_OUTPUT

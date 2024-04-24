@@ -68,11 +68,15 @@ elif [[ "$TASK_TYPE" == "doc" ]]; then
 elif [[ "$TASK_TYPE" == "trace" ]]; then
   # Set up OpenSearch cluster & Run model autotracing (Invoked by model_uploader.yml workflow)
   echo -e "\033[34;1mINFO:\033[0m MODEL_ID: ${MODEL_ID}\033[0m"
+  echo -e "\033[34;1mINFO:\033[0m MODEL_LICENSE: ${MODEL_LICENSE}\033[0m"
   echo -e "\033[34;1mINFO:\033[0m MODEL_VERSION: ${MODEL_VERSION}\033[0m"
   echo -e "\033[34;1mINFO:\033[0m TRACING_FORMAT: ${TRACING_FORMAT}\033[0m"
   echo -e "\033[34;1mINFO:\033[0m EMBEDDING_DIMENSION: ${EMBEDDING_DIMENSION:-N/A}\033[0m"
   echo -e "\033[34;1mINFO:\033[0m POOLING_MODE: ${POOLING_MODE:-N/A}\033[0m"
   echo -e "\033[34;1mINFO:\033[0m MODEL_DESCRIPTION: ${MODEL_DESCRIPTION:-N/A}\033[0m"
+  echo -e "\033[34;1mINFO:\033[0m MIT_COPYRIGHT_STATEMENT: ${MIT_COPYRIGHT_STATEMENT:-N/A}\033[0m"
+  echo -e "\033[34;1mINFO:\033[0m MIT_ATTRIBUTION_WEBSITE: ${MIT_ATTRIBUTION_WEBSITE:-N/A}\033[0m"
+  echo -e "\033[34;1mINFO:\033[0m MIT_MODEL_VERSION: ${MIT_MODEL_VERSION:-N/A}\033[0m"
 
   docker run \
   --network=${network_name} \
@@ -84,7 +88,8 @@ elif [[ "$TASK_TYPE" == "trace" ]]; then
   --env "TEST_TYPE=server" \
   --name opensearch-py-ml-trace-runner \
   opensearch-project/opensearch-py-ml \
-  nox -s "trace-${PYTHON_VERSION}" -- ${MODEL_ID} ${MODEL_VERSION} ${TRACING_FORMAT} -ed ${EMBEDDING_DIMENSION} -pm ${POOLING_MODE} -md ${MODEL_DESCRIPTION:+"$MODEL_DESCRIPTION"}
+  nox -s "trace-${PYTHON_VERSION}" -- ${MODEL_ID} ${MODEL_LICENSE} ${MODEL_VERSION} ${TRACING_FORMAT} -ed ${EMBEDDING_DIMENSION} -pm ${POOLING_MODE} \
+   -md ${MODEL_DESCRIPTION:+"$MODEL_DESCRIPTION"} -mcs ${MIT_COPYRIGHT_STATEMENT} -maw ${MIT_ATTRIBUTION_WEBSITE} -mmv ${MIT_MODEL_VERSION}
   
   docker cp opensearch-py-ml-trace-runner:/code/opensearch-py-ml/upload/ ./upload/
   docker cp opensearch-py-ml-trace-runner:/code/opensearch-py-ml/trace_output/ ./trace_output/
