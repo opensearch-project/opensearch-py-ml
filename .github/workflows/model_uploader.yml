@@ -120,6 +120,7 @@ jobs:
           then
               echo "missing copyright statements for MIT model"
               exit 1
+          fi
         fi
     - name: Initiate license_line
       id: init_license_line
