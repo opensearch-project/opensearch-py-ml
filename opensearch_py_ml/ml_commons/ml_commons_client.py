@@ -382,7 +382,7 @@ class MLCommonClient:
             elif model_state == "PARTIALLY_DEPLOYED":
                 print("Model deployed only partially")
             else:
-                raise Exception("Model deployment failed")
+                raise Exception("Model deployment failed, model_state:",model_state)
 
         return self._get_task_info(task_id)
 
