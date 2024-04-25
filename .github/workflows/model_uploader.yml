@@ -58,7 +58,7 @@ on:
         - "NO"
         - "YES"
       MIT_license_url:
-        description: "(Optional) MIT license of the huggingface MIT model."
+        description: "(Optional) MIT license url of the huggingface MIT model."
         required: false
         type: string
 

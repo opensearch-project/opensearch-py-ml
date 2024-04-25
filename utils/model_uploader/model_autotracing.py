@@ -29,12 +29,13 @@ THIS_DIR = os.path.dirname(__file__)
 ROOT_DIR = os.path.join(THIS_DIR, "../..")
 sys.path.append(ROOT_DIR)
 
-from opensearch_py_ml.ml_commons import MLCommonClient
-from opensearch_py_ml.ml_models.sentencetransformermodel import SentenceTransformerModel
-from tests import OPENSEARCH_TEST_CLIENT
 from third_party_statements import (
     generate_thirdpart_statements_for_huggingface_MIT_models,
 )
+
+from opensearch_py_ml.ml_commons import MLCommonClient
+from opensearch_py_ml.ml_models.sentencetransformermodel import SentenceTransformerModel
+from tests import OPENSEARCH_TEST_CLIENT
 
 BOTH_FORMAT = "BOTH"
 TORCH_SCRIPT_FORMAT = "TORCH_SCRIPT"
@@ -470,9 +471,11 @@ def main(
     )
     print(
         "Third Party Statements Text: ",
-        third_party_copyrights_statements
-        if third_party_copyrights_statements is not None
-        else "N/A",
+        (
+            third_party_copyrights_statements
+            if third_party_copyrights_statements is not None
+            else "N/A"
+        ),
     )
     print("==========================================")
 
@@ -535,7 +538,10 @@ def main(
 
     if tracing_format in [ONNX_FORMAT, BOTH_FORMAT]:
         print("--- Begin tracing a model in ONNX ---")
-        (onnx_model_path, onnx_model_config_path,) = trace_sentence_transformer_model(
+        (
+            onnx_model_path,
+            onnx_model_config_path,
+        ) = trace_sentence_transformer_model(
             model_id,
             model_license,
             model_version,

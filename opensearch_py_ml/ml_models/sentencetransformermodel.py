@@ -825,7 +825,7 @@ class SentenceTransformerModel:
         :rtype: string
         """
 
-        if add_apache_license == True and not third_party_copyrights_statements is None:
+        if add_apache_license == True and third_party_copyrights_statements is not None:
             assert (
                 False
             ), "When the model is from third party under non Apache-2.0 license, we can not add Apache-2.0 license for it."
@@ -894,7 +894,7 @@ class SentenceTransformerModel:
             )
         if add_apache_license:
             self._add_apache_license_to_model_zip_file(zip_file_path)
-        if not third_party_copyrights_statements is None:
+        if third_party_copyrights_statements is not None:
             self._add_third_party_copyrights_statements_to_model_zip_file(
                 third_party_copyrights_statements, zip_file_path
             )
@@ -946,7 +946,7 @@ class SentenceTransformerModel:
         :rtype: string
         """
 
-        if add_apache_license == True and not third_party_copyrights_statements is None:
+        if add_apache_license == True and third_party_copyrights_statements is not None:
             assert (
                 False
             ), "When the model is from third party under non Apache-2.0 license, we can not add Apache-2.0 license for it."
@@ -1004,7 +1004,7 @@ class SentenceTransformerModel:
             )
         if add_apache_license:
             self._add_apache_license_to_model_zip_file(zip_file_path)
-        if not third_party_copyrights_statements is None:
+        if third_party_copyrights_statements is not None:
             self._add_third_party_copyrights_statements_to_model_zip_file(
                 third_party_copyrights_statements, zip_file_path
             )
@@ -1344,9 +1344,9 @@ class SentenceTransformerModel:
                 model_config_content["model_content_size_in_bytes"] = os.stat(
                     model_zip_file_path
                 ).st_size
-                model_config_content[
-                    "model_content_hash_value"
-                ] = _generate_model_content_hash_value(model_zip_file_path)
+                model_config_content["model_content_hash_value"] = (
+                    _generate_model_content_hash_value(model_zip_file_path)
+                )
 
         if verbose:
             print("generating ml-commons_model_config.json file...\n")
