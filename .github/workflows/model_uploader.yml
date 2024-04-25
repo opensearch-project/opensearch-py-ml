@@ -290,7 +290,7 @@ jobs:
       - name: Create Issue Body
         id: create_issue_body
         run: |    
-          issue_body="Please approve or deny opensearch-py-ml model uploading:
+          issue_body='Please approve or deny opensearch-py-ml model uploading:
           
           ${{ needs.model-auto-tracing.outputs.license_line }}
           
@@ -298,7 +298,7 @@ jobs:
           ${{ needs.model-auto-tracing.outputs.model_description_info }}
           
           ===== Dry Run of Model Uploading =====
-          ${{ needs.model-auto-tracing.outputs.dryrun_output }}"
+          ${{ needs.model-auto-tracing.outputs.dryrun_output }}'
 
           echo "issue_body<<EOF" >> $GITHUB_OUTPUT
           echo "${issue_body@E}" >> $GITHUB_OUTPUT
