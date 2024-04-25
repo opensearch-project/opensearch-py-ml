@@ -643,12 +643,12 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-
-    third_party_copyrights_statements = (
-        generate_thirdpart_statements_for_huggingface_MIT_models(
-            args.model_id, args.mit_license_url
+    if args.model_license == "MIT":
+        third_party_copyrights_statements = (
+            generate_thirdpart_statements_for_huggingface_MIT_models(
+                args.model_id, args.mit_license_url
+            )
         )
-    )
     main(
         args.model_id,
         args.model_license,
