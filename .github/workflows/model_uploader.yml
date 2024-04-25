@@ -295,7 +295,7 @@ jobs:
       - name: Create Issue Body
         id: create_issue_body
         run: |    
-          issue_body='Please approve or deny opensearch-py-ml model uploading:
+          issue_body="Please approve or deny opensearch-py-ml model uploading:
           
           ${{ needs.model-auto-tracing.outputs.license_line }}
           
@@ -303,7 +303,7 @@ jobs:
           ${{ needs.model-auto-tracing.outputs.model_description_info }}
           
           ===== Dry Run of Model Uploading =====
-          ${{ needs.model-auto-tracing.outputs.dryrun_output }}'
+          ${{ needs.model-auto-tracing.outputs.dryrun_output }}"
 
           echo "issue_body<<EOF" >> $GITHUB_OUTPUT
           echo "${issue_body@E}" >> $GITHUB_OUTPUT
@@ -380,14 +380,14 @@ jobs:
       - name: Create PR Body
         id: create_pr_body
         run: |
-          pr_body='
+          pr_body="
           - [ ] This PR made commit to only these three files: MODEL_UPLOAD_HISTORY.md, supported_models.json, and CHANGELOG.md.
           - [ ] CHANGELOG.md has been updated by the workflow or by you if the workflow fails to do so. 
           - [ ] Merge conflicts have been resolved.
           
           ${{ needs.init-workflow-var.outputs.workflow_info }}
           ${{ needs.model-auto-tracing.outputs.license_info }}
-          ${{ needs.model-auto-tracing.outputs.model_description_info }}'
+          ${{ needs.model-auto-tracing.outputs.model_description_info }}"
           
           echo "pr_body<<EOF" >> $GITHUB_OUTPUT
           echo "${pr_body@E}" >> $GITHUB_OUTPUT

@@ -371,7 +371,7 @@ class MLCommonClient:
             for i in range(TIMEOUT):
                 ml_model_status = self.get_model_info(model_id)
                 model_state = ml_model_status.get("model_state")
-                if model_state in ["DEPLOYED", "PARTIALLY_DEPLOYED"]:
+                if model_state in ["DEPLOYED", "PARTIALLY_DEPLOYED", "DEPLOY_FAILED"]:
                     break
                 time.sleep(1)
 
@@ -382,7 +382,8 @@ class MLCommonClient:
             elif model_state == "PARTIALLY_DEPLOYED":
                 print("Model deployed only partially")
             else:
-                raise Exception("Model deployment failed, model_state:", model_state)
+                raise Exception("Model deployment failed, model_state:", model_state, 
+                                "task info:",self.get_task_info(task_id))
 
         return self._get_task_info(task_id)
 
