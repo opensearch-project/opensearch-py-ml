@@ -656,8 +656,10 @@ class SentenceTransformerModel:
 
         with ZipFile(str(model_zip_file_path), "a") as zipObj:
             zipObj.writestr("LICENSE", r.content)
-            
-    def _add_third_party_copyrights_statements_to_model_zip_file(self, third_party_copyrights_statements: str, model_zip_file_path: str):
+
+    def _add_third_party_copyrights_statements_to_model_zip_file(
+        self, third_party_copyrights_statements: str, model_zip_file_path: str
+    ):
         """
         Add Statements text for non Apache-2.0 licensed third party model. Add it to the model zip file at model_zip_file_path
 
@@ -785,7 +787,7 @@ class SentenceTransformerModel:
         model_output_path: str = None,
         zip_file_name: str = None,
         add_apache_license: bool = False,
-        third_party_copyrights_statements: Optional[str] = None
+        third_party_copyrights_statements: Optional[str] = None,
     ) -> str:
         """
         Download sentence transformer model directly from huggingface, convert model to torch script format,
@@ -822,10 +824,12 @@ class SentenceTransformerModel:
         :return: model zip file path. The file path where the zip file is being saved
         :rtype: string
         """
-        
+
         if add_apache_license == True and not third_party_copyrights_statements is None:
-            assert False, "When the model is from third party under non Apache-2.0 license, we can not add Apache-2.0 license for it."
-            
+            assert (
+                False
+            ), "When the model is from third party under non Apache-2.0 license, we can not add Apache-2.0 license for it."
+
         model = SentenceTransformer(model_id)
 
         if model_name is None:
@@ -891,7 +895,9 @@ class SentenceTransformerModel:
         if add_apache_license:
             self._add_apache_license_to_model_zip_file(zip_file_path)
         if not third_party_copyrights_statements is None:
-            self._add_third_party_copyrights_statements_to_model_zip_file(third_party_copyrights_statements, zip_file_path)
+            self._add_third_party_copyrights_statements_to_model_zip_file(
+                third_party_copyrights_statements, zip_file_path
+            )
 
         self.torch_script_zip_file_path = zip_file_path
         print("zip file is saved to ", zip_file_path, "\n")
@@ -905,7 +911,7 @@ class SentenceTransformerModel:
         model_output_path: str = None,
         zip_file_name: str = None,
         add_apache_license: bool = False,
-        third_party_copyrights_statements: Optional[str] = None
+        third_party_copyrights_statements: Optional[str] = None,
     ) -> str:
         """
         Download sentence transformer model directly from huggingface, convert model to onnx format,
@@ -939,9 +945,11 @@ class SentenceTransformerModel:
         :return: model zip file path. The file path where the zip file is being saved
         :rtype: string
         """
-        
+
         if add_apache_license == True and not third_party_copyrights_statements is None:
-            assert False, "When the model is from third party under non Apache-2.0 license, we can not add Apache-2.0 license for it."
+            assert (
+                False
+            ), "When the model is from third party under non Apache-2.0 license, we can not add Apache-2.0 license for it."
 
         model = SentenceTransformer(model_id)
 
@@ -997,7 +1005,9 @@ class SentenceTransformerModel:
         if add_apache_license:
             self._add_apache_license_to_model_zip_file(zip_file_path)
         if not third_party_copyrights_statements is None:
-            self._add_third_party_copyrights_statements_to_model_zip_file(third_party_copyrights_statements, zip_file_path)
+            self._add_third_party_copyrights_statements_to_model_zip_file(
+                third_party_copyrights_statements, zip_file_path
+            )
 
         self.onnx_zip_file_path = zip_file_path
         print("zip file is saved to ", zip_file_path, "\n")
@@ -1334,9 +1344,9 @@ class SentenceTransformerModel:
                 model_config_content["model_content_size_in_bytes"] = os.stat(
                     model_zip_file_path
                 ).st_size
-                model_config_content["model_content_hash_value"] = (
-                    _generate_model_content_hash_value(model_zip_file_path)
-                )
+                model_config_content[
+                    "model_content_hash_value"
+                ] = _generate_model_content_hash_value(model_zip_file_path)
 
         if verbose:
             print("generating ml-commons_model_config.json file...\n")

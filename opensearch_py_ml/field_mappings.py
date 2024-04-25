@@ -445,9 +445,9 @@ class FieldMappings:
                 try:
                     series = df.loc[df.os_field_name == os_field_name_keyword]
                     if not series.empty and series.is_aggregatable.squeeze():
-                        row_as_dict["aggregatable_os_field_name"] = (
-                            os_field_name_keyword
-                        )
+                        row_as_dict[
+                            "aggregatable_os_field_name"
+                        ] = os_field_name_keyword
                     else:
                         row_as_dict["aggregatable_os_field_name"] = None
                 except KeyError:

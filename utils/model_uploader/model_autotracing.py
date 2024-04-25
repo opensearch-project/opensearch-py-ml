@@ -32,7 +32,9 @@ sys.path.append(ROOT_DIR)
 from opensearch_py_ml.ml_commons import MLCommonClient
 from opensearch_py_ml.ml_models.sentencetransformermodel import SentenceTransformerModel
 from tests import OPENSEARCH_TEST_CLIENT
-from third_party_statements import generate_thirdpart_statements_for_MIT
+from third_party_statements import (
+    generate_thirdpart_statements_for_huggingface_MIT_models,
+)
 
 BOTH_FORMAT = "BOTH"
 TORCH_SCRIPT_FORMAT = "TORCH_SCRIPT"
@@ -80,8 +82,13 @@ def verify_license_in_md_file(model_license: str = "Apache-2.0") -> bool:
         print(f"\nFound {model_license} license at " + TEMP_MODEL_PATH + "/README.md")
         return True
     else:
-        print(f"\nDid not find {model_license} license at " + TEMP_MODEL_PATH + "/README.md")
+        print(
+            f"\nDid not find {model_license} license at "
+            + TEMP_MODEL_PATH
+            + "/README.md"
+        )
         return False
+
 
 def trace_sentence_transformer_model(
     model_id: str,
@@ -91,7 +98,7 @@ def trace_sentence_transformer_model(
     embedding_dimension: Optional[int] = None,
     pooling_mode: Optional[str] = None,
     model_description: Optional[str] = None,
-    third_party_copyrights_statements: Optional[str] = None
+    third_party_copyrights_statements: Optional[str] = None,
 ) -> Tuple[str, str]:
     """
     Trace the pretrained sentence transformer model, create a model config file,
@@ -141,14 +148,14 @@ def trace_sentence_transformer_model(
             model_path = pre_trained_model.save_as_pt(
                 model_id=model_id,
                 sentences=TEST_SENTENCES,
-                add_apache_license=model_license=="Apache-2.0",
-                third_party_copyrights_statements=third_party_copyrights_statements
+                add_apache_license=model_license == "Apache-2.0",
+                third_party_copyrights_statements=third_party_copyrights_statements,
             )
         else:
             model_path = pre_trained_model.save_as_onnx(
                 model_id=model_id,
-                add_apache_license=model_license=="Apache-2.0",
-                third_party_copyrights_statements=third_party_copyrights_statements
+                add_apache_license=model_license == "Apache-2.0",
+                third_party_copyrights_statements=third_party_copyrights_statements,
             )
     except Exception as e:
         assert False, f"Raised Exception during saving model as {model_format}: {e}"
@@ -422,7 +429,7 @@ def main(
     embedding_dimension: Optional[int] = None,
     pooling_mode: Optional[str] = None,
     model_description: Optional[str] = None,
-    third_party_copyrights_statements: Optional[str] = None
+    third_party_copyrights_statements: Optional[str] = None,
 ) -> None:
     """
     Perform model auto-tracing and prepare files for uploading to OpenSearch model hub
@@ -462,8 +469,10 @@ def main(
         model_description if model_description is not None else "N/A",
     )
     print(
-        "Third Party Statements Text: ", 
-        third_party_copyrights_statements if third_party_copyrights_statements is not None else "N/A"
+        "Third Party Statements Text: ",
+        third_party_copyrights_statements
+        if third_party_copyrights_statements is not None
+        else "N/A",
     )
     print("==========================================")
 
@@ -494,7 +503,7 @@ def main(
             embedding_dimension,
             pooling_mode,
             model_description,
-            third_party_copyrights_statements
+            third_party_copyrights_statements,
         )
 
         torchscript_embedding_data = register_and_deploy_sentence_transformer_model(
@@ -526,10 +535,7 @@ def main(
 
     if tracing_format in [ONNX_FORMAT, BOTH_FORMAT]:
         print("--- Begin tracing a model in ONNX ---")
-        (
-            onnx_model_path,
-            onnx_model_config_path,
-        ) = trace_sentence_transformer_model(
+        (onnx_model_path, onnx_model_config_path,) = trace_sentence_transformer_model(
             model_id,
             model_license,
             model_version,
@@ -537,7 +543,7 @@ def main(
             embedding_dimension,
             pooling_mode,
             model_description,
-            third_party_copyrights_statements
+            third_party_copyrights_statements,
         )
 
         onnx_embedding_data = register_and_deploy_sentence_transformer_model(
@@ -621,17 +627,22 @@ if __name__ == "__main__":
         help="Model description if you want to overwrite the default description",
     )
     parser.add_argument(
-        "-tpcs",
-        "--third_party_copyrights_statements",
+        "-mlu",
+        "--mit_license_url",
         type=str,
         nargs="?",
         default=None,
         const=None,
-        help="Copyright statement for MIT licensed models.",
+        help="MIT license url",
     )
-    
+
     args = parser.parse_args()
-        
+
+    third_party_copyrights_statements = (
+        generate_thirdpart_statements_for_huggingface_MIT_models(
+            args.model_id, args.mit_license_url
+        )
+    )
     main(
         args.model_id,
         args.model_license,
@@ -640,5 +651,5 @@ if __name__ == "__main__":
         args.embedding_dimension,
         args.pooling_mode,
         args.model_description,
-        args.third_party_copyrights_statements
+        third_party_copyrights_statements,
     )
