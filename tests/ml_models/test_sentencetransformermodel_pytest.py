@@ -221,6 +221,26 @@ def test_missing_files():
     assert "Cannot find config.json" in str(exc_info.value)
 
 
+def test_save_model_but_license_conflicts():
+    with pytest.raises(AssertionError) as exc_info:
+        test_model.save_as_pt(
+            sentences=["today is sunny"], add_apache_license=True, third_party_copyrights_statements="test statements"
+        )
+    assert (
+        "When the model is from third party under non Apache-2.0 license, we can not add Apache-2.0 license for it."
+        in str(exc_info.value)
+    )
+
+    with pytest.raises(AssertionError) as exc_info:
+        test_model.save_as_onnx(
+            add_apache_license=True, third_party_copyrights_statements="test statements"
+        )
+    assert (
+        "When the model is from third party under non Apache-2.0 license, we can not add Apache-2.0 license for it."
+        in str(exc_info.value)
+    )
+
+
 def test_save_as_pt():
     try:
         test_model.save_as_pt(sentences=["today is sunny"])
@@ -654,6 +674,65 @@ def test_zip_model_with_license():
 
     test_model17.zip_model(add_apache_license=True)
     compare_model_zip_file(zip_file_path, expected_filenames_with_license, model_format)
+
+    clean_test_folder(TEST_FOLDER)
+
+
+def test_save_as_pt_with_third_party_copyrights_statements():
+    model_id = "sentence-transformers/all-MiniLM-L6-v2"
+    model_format = "TORCH_SCRIPT"
+    torch_script_zip_file_path = os.path.join(TEST_FOLDER, "all-MiniLM-L6-v2.zip")
+    torch_script_expected_filenames = {
+        "all-MiniLM-L6-v2.pt",
+        "tokenizer.json",
+        "THIRD-PARTY",
+    }
+
+    clean_test_folder(TEST_FOLDER)
+    test_model18 = SentenceTransformerModel(
+        folder_path=TEST_FOLDER,
+        model_id=model_id,
+    )
+    third_party_copyrights_statements = "test statements"
+
+    test_model18.save_as_pt(
+        model_id=model_id,
+        sentences=["today is sunny"],
+        third_party_copyrights_statements=third_party_copyrights_statements,
+    )
+
+    compare_model_zip_file(
+        torch_script_zip_file_path, torch_script_expected_filenames, model_format
+    )
+
+    clean_test_folder(TEST_FOLDER)
+
+
+def test_save_as_onnx_with_third_party_copyrights_statements():
+    model_id = "sentence-transformers/all-MiniLM-L6-v2"
+    model_format = "TORCH_SCRIPT"
+    torch_script_zip_file_path = os.path.join(TEST_FOLDER, "all-MiniLM-L6-v2.zip")
+    torch_script_expected_filenames = {
+        "all-MiniLM-L6-v2.pt",
+        "tokenizer.json",
+        "THIRD-PARTY",
+    }
+
+    clean_test_folder(TEST_FOLDER)
+    test_model19 = SentenceTransformerModel(
+        folder_path=TEST_FOLDER,
+        model_id=model_id,
+    )
+    third_party_copyrights_statements = "test statements"
+
+    test_model19.save_as_onnx(
+        model_id=model_id,
+        third_party_copyrights_statements=third_party_copyrights_statements,
+    )
+
+    compare_model_zip_file(
+        torch_script_zip_file_path, torch_script_expected_filenames, model_format
+    )
 
     clean_test_folder(TEST_FOLDER)
 
