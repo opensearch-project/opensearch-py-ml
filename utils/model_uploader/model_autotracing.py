@@ -649,6 +649,9 @@ if __name__ == "__main__":
                 args.model_id, args.mit_license_url
             )
         )
+    else:
+        third_party_copyrights_statements = None
+
     main(
         args.model_id,
         args.model_license,
