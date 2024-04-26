@@ -224,7 +224,9 @@ def test_missing_files():
 def test_save_model_but_license_conflicts():
     with pytest.raises(AssertionError) as exc_info:
         test_model.save_as_pt(
-            sentences=["today is sunny"], add_apache_license=True, third_party_copyrights_statements="test statements"
+            sentences=["today is sunny"],
+            add_apache_license=True,
+            third_party_copyrights_statements="test statements",
         )
     assert (
         "When the model is from third party under non Apache-2.0 license, we can not add Apache-2.0 license for it."
