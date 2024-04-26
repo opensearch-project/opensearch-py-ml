@@ -829,7 +829,6 @@ class SentenceTransformerModel:
             assert (
                 False
             ), "When the model is from third party under non Apache-2.0 license, we can not add Apache-2.0 license for it."
-
         model = SentenceTransformer(model_id)
 
         if model_name is None:
@@ -950,7 +949,6 @@ class SentenceTransformerModel:
             assert (
                 False
             ), "When the model is from third party under non Apache-2.0 license, we can not add Apache-2.0 license for it."
-
         model = SentenceTransformer(model_id)
 
         if model_name is None:
