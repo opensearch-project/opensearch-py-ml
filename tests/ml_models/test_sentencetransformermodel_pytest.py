@@ -715,7 +715,7 @@ def test_save_as_onnx_with_third_party_copyrights_statements():
     model_format = "TORCH_SCRIPT"
     torch_script_zip_file_path = os.path.join(TEST_FOLDER, "all-MiniLM-L6-v2.zip")
     torch_script_expected_filenames = {
-        "all-MiniLM-L6-v2.pt",
+        "all-MiniLM-L6-v2.onnx",
         "tokenizer.json",
         "THIRD-PARTY",
     }
