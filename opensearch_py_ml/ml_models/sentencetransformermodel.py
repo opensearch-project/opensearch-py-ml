@@ -38,6 +38,7 @@ from opensearch_py_ml.ml_commons.ml_common_utils import (
 )
 
 LICENSE_URL = "https://github.com/opensearch-project/opensearch-py-ml/raw/main/LICENSE"
+THIRD_PARTY_FILE_NAME = "THIRD-PARTY"
 
 
 class SentenceTransformerModel:
@@ -671,7 +672,7 @@ class SentenceTransformerModel:
         :rtype: None
         """
         with ZipFile(str(model_zip_file_path), "a") as zipObj:
-            zipObj.writestr("THIRD-PARTY", third_party_copyrights_statements)
+            zipObj.writestr(THIRD_PARTY_FILE_NAME, third_party_copyrights_statements)
 
     def zip_model(
         self,
