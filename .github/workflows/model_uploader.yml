@@ -57,8 +57,8 @@ on:
         options:
         - "NO"
         - "YES"
-      MIT_license_url:
-        description: "(Optional) MIT license url of the huggingface MIT model."
+      additional_license_url:
+        description: "(Optional) Additional license url of the huggingface MIT model."
         required: false
         type: string
 
@@ -84,7 +84,7 @@ jobs:
         embedding_dimension=${{ github.event.inputs.embedding_dimension }}
         pooling_mode=${{ github.event.inputs.pooling_mode }}
         model_description="${{ github.event.inputs.model_description }}"
-        MIT_license_url="${{ github.event.inputs.MIT_license_url }}"
+        additional_license_url="${{ github.event.inputs.additional_license_url }}"
         
         workflow_info="
         ============= Workflow Details ==============
@@ -101,7 +101,7 @@ jobs:
         - Embedding Dimension: ${embedding_dimension:-N/A}
         - Pooling Mode: ${pooling_mode:-N/A}
         - Model Description: ${model_description:-N/A}
-        - MIT License Url: ${MIT_license_url:-N/A}
+        - Additional License Url: ${additional_license_url:-N/A}
         
         ======== Workflow Output Information =========
         - Embedding Verification: Passed"
@@ -110,13 +110,13 @@ jobs:
         echo "${workflow_info@E}" >> $GITHUB_OUTPUT
         echo "EOF" >> $GITHUB_OUTPUT
         echo "${workflow_info@E}"
-    - name: Check MIT license url
-      id: check_mit_license_url
+    - name: Check Additional license url
+      id: check_additional_license_url
       run: |
         if [[ "${{ github.event.inputs.model_license }}" == "MIT" ]]
         then
           echo "Uploading MIT licensed model"
-          if [[ "${{ github.event.inputs.MIT_license_url }}" == "" ]]
+          if [[ "${{ github.event.inputs.additional_license_url }}" == "" ]]
           then
               echo "missing MIT license url"
               exit 1
@@ -214,7 +214,7 @@ jobs:
           echo "EMBEDDING_DIMENSION=${{ github.event.inputs.embedding_dimension }}" >> $GITHUB_ENV
           echo "POOLING_MODE=${{ github.event.inputs.pooling_mode }}" >> $GITHUB_ENV     
           echo "MODEL_DESCRIPTION=${{ github.event.inputs.model_description }}" >> $GITHUB_ENV
-          echo "MIT_LICENSE_URL=${{ github.event.inputs.MIT_license_url }}" >> $GITHUB_ENV
+          echo "ADDITIONAL_LICENSE_URL=${{ github.event.inputs.additional_license_url }}" >> $GITHUB_ENV
       - name: Autotracing ${{ matrix.cluster }} secured=${{ matrix.secured }} version=${{matrix.entry.opensearch_version}}
         run: "./.ci/run-tests ${{ matrix.cluster }} ${{ matrix.secured }} ${{ matrix.entry.opensearch_version }} trace"
       - name: Limit Model Size to 2GB

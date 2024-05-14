@@ -633,20 +633,20 @@ if __name__ == "__main__":
         help="Model description if you want to overwrite the default description",
     )
     parser.add_argument(
-        "-mlu",
-        "--mit_license_url",
+        "-alu",
+        "--additional_license_url",
         type=str,
         nargs="?",
         default=None,
         const=None,
-        help="MIT license url",
+        help="Additional license url",
     )
 
     args = parser.parse_args()
     if args.model_license == "MIT":
         third_party_copyrights_statements = (
             generate_thirdpart_statements_for_huggingface_MIT_models(
-                args.model_id, args.mit_license_url
+                args.model_id, args.additional_license_url
             )
         )
     else:
