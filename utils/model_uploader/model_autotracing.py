@@ -29,6 +29,10 @@ THIS_DIR = os.path.dirname(__file__)
 ROOT_DIR = os.path.join(THIS_DIR, "../..")
 sys.path.append(ROOT_DIR)
 
+from third_party_statements import (
+    generate_thirdpart_statements_for_huggingface_MIT_models,
+)
+
 from opensearch_py_ml.ml_commons import MLCommonClient
 from opensearch_py_ml.ml_models.sentencetransformermodel import SentenceTransformerModel
 from tests import OPENSEARCH_TEST_CLIENT
@@ -43,7 +47,7 @@ ONNX_FOLDER_PATH = "model-onnx/"
 UPLOAD_FOLDER_PATH = "upload/"
 MODEL_CONFIG_FILE_NAME = "ml-commons_model_config.json"
 OUTPUT_DIR = "trace_output/"
-LICENSE_VAR_FILE = "apache_verified.txt"
+LICENSE_VAR_FILE = "license_verified.txt"
 DESCRIPTION_VAR_FILE = "description.txt"
 TEST_SENTENCES = [
     "First test sentence",
@@ -54,14 +58,14 @@ RTOL_TEST = 1e-03
 ATOL_TEST = 1e-05
 
 
-def verify_license_in_md_file() -> bool:
+def verify_license_in_md_file(model_license: str = "Apache-2.0") -> bool:
     """
-    Verify that the model is licensed under Apache 2.0
+    Verify that the model is licensed under target model_license (Apache-2.0 or MIT)
     by looking at metadata in README.md file of the model
 
     TODO: Support other open source licenses in future
 
-    :return: Whether the model is licensed under Apache 2.0
+    :return: Whether the model is under target model_license
     :rtype: Bool
     """
     try:
@@ -75,21 +79,27 @@ def verify_license_in_md_file() -> bool:
     if start == -1 or end == -1:
         return False
     metadata_info = readme_data[start + 3 : end]
-    if "apache-2.0" in metadata_info.lower():
-        print("\nFound apache-2.0 license at " + TEMP_MODEL_PATH + "/README.md")
+    if model_license.lower() in metadata_info.lower():
+        print(f"\nFound {model_license} license at " + TEMP_MODEL_PATH + "/README.md")
         return True
     else:
-        print("\nDid not find apache-2.0 license at " + TEMP_MODEL_PATH + "/README.md")
+        print(
+            f"\nDid not find {model_license} license at "
+            + TEMP_MODEL_PATH
+            + "/README.md"
+        )
         return False
 
 
 def trace_sentence_transformer_model(
     model_id: str,
+    model_license: str,
     model_version: str,
     model_format: str,
     embedding_dimension: Optional[int] = None,
     pooling_mode: Optional[str] = None,
     model_description: Optional[str] = None,
+    third_party_copyrights_statements: Optional[str] = None,
 ) -> Tuple[str, str]:
     """
     Trace the pretrained sentence transformer model, create a model config file,
@@ -97,6 +107,8 @@ def trace_sentence_transformer_model(
 
     :param model_id: Model ID of the pretrained model
     :type model_id: string
+    :param model_license: Model license ("Apache-2.0" or "MIT")
+    :type model_license: string
     :param model_version: Version of the pretrained model for registration
     :type model_version: string
     :param model_format: Model format ("TORCH_SCRIPT" or "ONNX")
@@ -107,6 +119,8 @@ def trace_sentence_transformer_model(
     :type pooling_mode: string
     :param model_description: Model description input
     :type model_description: string
+    :param third_party_copyrights_statements: Statements text for non Apache-2.0 licensed third party model. Should be put in the final artifact.
+    :type third_party_copyrights_statements: string
     :return: Tuple of model_path (path to model zip file) and model_config_path (path to model config json file)
     :rtype: Tuple[str, str]
     """
@@ -135,11 +149,14 @@ def trace_sentence_transformer_model(
             model_path = pre_trained_model.save_as_pt(
                 model_id=model_id,
                 sentences=TEST_SENTENCES,
-                add_apache_license=True,
+                add_apache_license=model_license == "Apache-2.0",
+                third_party_copyrights_statements=third_party_copyrights_statements,
             )
         else:
             model_path = pre_trained_model.save_as_onnx(
-                model_id=model_id, add_apache_license=True
+                model_id=model_id,
+                add_apache_license=model_license == "Apache-2.0",
+                third_party_copyrights_statements=third_party_copyrights_statements,
             )
     except Exception as e:
         assert False, f"Raised Exception during saving model as {model_format}: {e}"
@@ -407,17 +424,21 @@ def store_description_variable(config_path_for_checking_description: str) -> Non
 
 def main(
     model_id: str,
+    model_license: str,
     model_version: str,
     tracing_format: str,
     embedding_dimension: Optional[int] = None,
     pooling_mode: Optional[str] = None,
     model_description: Optional[str] = None,
+    third_party_copyrights_statements: Optional[str] = None,
 ) -> None:
     """
     Perform model auto-tracing and prepare files for uploading to OpenSearch model hub
 
     :param model_id: Model ID of the pretrained model
     :type model_id: string
+    :param model_license: Model license ("Apache-2.0" or "MIT")
+    :type model_license: string
     :param model_version: Version of the pretrained model for registration
     :type model_version: string
     :param tracing_format: Tracing format ("TORCH_SCRIPT", "ONNX", or "BOTH")
@@ -428,12 +449,15 @@ def main(
     :type pooling_mode: string
     :param model_description: Model description input
     :type model_description: string
+    :param third_party_copyrights_statements: Statements text for non Apache-2.0 licensed third party model. Should be put in the final artifact.
+    :type third_party_copyrights_statements: string
     :return: No return value expected
     :rtype: None
     """
 
     print("\n=== Begin running model_autotracing.py ===")
     print("Model ID: ", model_id)
+    print("Model License: ", model_license)
     print("Model Version: ", model_version)
     print("Tracing Format: ", tracing_format)
     print(
@@ -445,6 +469,14 @@ def main(
         "Model Description: ",
         model_description if model_description is not None else "N/A",
     )
+    print(
+        "Third Party Statements Text: ",
+        (
+            third_party_copyrights_statements
+            if third_party_copyrights_statements is not None
+            else "N/A"
+        ),
+    )
     print("==========================================")
 
     ml_client = MLCommonClient(OPENSEARCH_TEST_CLIENT)
@@ -455,7 +487,7 @@ def main(
     )
 
     pre_trained_model.save(path=TEMP_MODEL_PATH)
-    license_verified = verify_license_in_md_file()
+    license_verified = verify_license_in_md_file(model_license=model_license)
     try:
         shutil.rmtree(TEMP_MODEL_PATH)
     except Exception as e:
@@ -468,11 +500,13 @@ def main(
             torchscript_model_config_path,
         ) = trace_sentence_transformer_model(
             model_id,
+            model_license,
             model_version,
             TORCH_SCRIPT_FORMAT,
             embedding_dimension,
             pooling_mode,
             model_description,
+            third_party_copyrights_statements,
         )
 
         torchscript_embedding_data = register_and_deploy_sentence_transformer_model(
@@ -509,11 +543,13 @@ def main(
             onnx_model_config_path,
         ) = trace_sentence_transformer_model(
             model_id,
+            model_license,
             model_version,
             ONNX_FORMAT,
             embedding_dimension,
             pooling_mode,
             model_description,
+            third_party_copyrights_statements,
         )
 
         onnx_embedding_data = register_and_deploy_sentence_transformer_model(
@@ -558,6 +594,9 @@ if __name__ == "__main__":
         help="Model ID for auto-tracing and uploading (e.g. sentence-transformers/msmarco-distilbert-base-tas-b)",
     )
     parser.add_argument(
+        "model_license", type=str, help="Model license (e.g. Apache-2.0)"
+    )
+    parser.add_argument(
         "model_version", type=str, help="Model version number (e.g. 1.0.1)"
     )
     parser.add_argument(
@@ -593,13 +632,33 @@ if __name__ == "__main__":
         const=None,
         help="Model description if you want to overwrite the default description",
     )
+    parser.add_argument(
+        "-alu",
+        "--additional_license_url",
+        type=str,
+        nargs="?",
+        default=None,
+        const=None,
+        help="Additional license url",
+    )
+
     args = parser.parse_args()
+    if args.model_license == "MIT":
+        third_party_copyrights_statements = (
+            generate_thirdpart_statements_for_huggingface_MIT_models(
+                args.model_id, args.additional_license_url
+            )
+        )
+    else:
+        third_party_copyrights_statements = None
 
     main(
         args.model_id,
+        args.model_license,
         args.model_version,
         args.tracing_format,
         args.embedding_dimension,
         args.pooling_mode,
         args.model_description,
+        third_party_copyrights_statements,
     )

@@ -8,6 +8,14 @@ on:
         required: true
         type: string
         default: "huggingface"
+      model_license:
+        description: "Model license (e.g. Apache-2.0)"
+        required: true
+        type: choice
+        default: "Apache-2.0"
+        options:
+          - "Apache-2.0"
+          - "MIT"
       model_id:
         description: "Model ID for auto-tracing and uploading (e.g. sentence-transformers/msmarco-distilbert-base-tas-b)"
         required: true
@@ -49,7 +57,10 @@ on:
         options:
         - "NO"
         - "YES"
-        
+      additional_license_url:
+        description: "(Optional) Additional license url of the huggingface MIT model."
+        required: false
+        type: string
 
 jobs:
   # Step 2: Initiate workflow variable
@@ -73,6 +84,7 @@ jobs:
         embedding_dimension=${{ github.event.inputs.embedding_dimension }}
         pooling_mode=${{ github.event.inputs.pooling_mode }}
         model_description="${{ github.event.inputs.model_description }}"
+        additional_license_url="${{ github.event.inputs.additional_license_url }}"
         
         workflow_info="
         ============= Workflow Details ==============
@@ -83,11 +95,13 @@ jobs:
           
         ========= Workflow Input Information =========
         - Model ID: ${{ github.event.inputs.model_id }}
+        - Model License ${{ github.event.inputs.model_license }}
         - Model Version: ${{ github.event.inputs.model_version }}
         - Tracing Format: ${{ github.event.inputs.tracing_format }}
         - Embedding Dimension: ${embedding_dimension:-N/A}
         - Pooling Mode: ${pooling_mode:-N/A}
         - Model Description: ${model_description:-N/A}
+        - Additional License Url: ${additional_license_url:-N/A}
         
         ======== Workflow Output Information =========
         - Embedding Verification: Passed"
@@ -96,16 +110,35 @@ jobs:
         echo "${workflow_info@E}" >> $GITHUB_OUTPUT
         echo "EOF" >> $GITHUB_OUTPUT
         echo "${workflow_info@E}"
+    - name: Check Additional license url
+      id: check_additional_license_url
+      run: |
+        if [[ "${{ github.event.inputs.model_license }}" == "MIT" ]]
+        then
+          echo "Uploading MIT licensed model"
+          if [[ "${{ github.event.inputs.additional_license_url }}" == "" ]]
+          then
+              echo "missing MIT license url"
+              exit 1
+          fi
+          if [[ "${{ github.event.inputs.model_source }}" == "" ]]
+          then
+              echo "only support MIT models from huggingface now"
+              exit 1
+          fi
+        fi
     - name: Initiate license_line
       id: init_license_line
       run: |
-        echo "verified=:white_check_mark: — It is verified that this model is licensed under Apache 2.0" >> $GITHUB_OUTPUT
-        echo "unverified=- [ ]  :warning: The license cannot be verified. Please confirm by yourself that the model is licensed under Apache 2.0  :warning:" >> $GITHUB_OUTPUT
+        echo "verified_apache=:white_check_mark: — It is verified that this model is licensed under Apache 2.0" >> $GITHUB_OUTPUT
+        echo "verified_mit=:white_check_mark: — It is verified that this model is licensed under MIT, and we have provided copyright statements" >> $GITHUB_OUTPUT
+        echo "unverified=- [ ]  :warning: The license cannot be verified. Please confirm by yourself that the model is licensed under Apache 2.0 or MIT with enough materials  :warning:" >> $GITHUB_OUTPUT
     outputs:
       model_folder: ${{ steps.init_folders.outputs.model_folder }}
       sentence_transformer_folder: ${{ steps.init_folders.outputs.sentence_transformer_folder }}
       workflow_info: ${{ steps.init_workflow_info.outputs.workflow_info }}
-      verified_license_line: ${{ steps.init_license_line.outputs.verified }}
+      verified_apache_license_line: ${{ steps.init_license_line.outputs.verified_apache }}
+      verified_mit_license_line: ${{ steps.init_license_line.outputs.verified_mit }}
       unverified_license_line: ${{ steps.init_license_line.outputs.unverified }}
 
   # Step 3: Check if the model already exists in the model hub
@@ -175,11 +208,13 @@ jobs:
       - name: Export Arguments
         run: | 
           echo "MODEL_ID=${{ github.event.inputs.model_id }}" >> $GITHUB_ENV
+          echo "MODEL_LICENSE=${{ github.event.inputs.model_license }}" >> $GITHUB_ENV
           echo "MODEL_VERSION=${{ github.event.inputs.model_version }}" >> $GITHUB_ENV
           echo "TRACING_FORMAT=${{ github.event.inputs.tracing_format }}" >> $GITHUB_ENV
           echo "EMBEDDING_DIMENSION=${{ github.event.inputs.embedding_dimension }}" >> $GITHUB_ENV
           echo "POOLING_MODE=${{ github.event.inputs.pooling_mode }}" >> $GITHUB_ENV     
-          echo "MODEL_DESCRIPTION=${{ github.event.inputs.model_description }}" >> $GITHUB_ENV     
+          echo "MODEL_DESCRIPTION=${{ github.event.inputs.model_description }}" >> $GITHUB_ENV
+          echo "ADDITIONAL_LICENSE_URL=${{ github.event.inputs.additional_license_url }}" >> $GITHUB_ENV
       - name: Autotracing ${{ matrix.cluster }} secured=${{ matrix.secured }} version=${{matrix.entry.opensearch_version}}
         run: "./.ci/run-tests ${{ matrix.cluster }} ${{ matrix.secured }} ${{ matrix.entry.opensearch_version }} trace"
       - name: Limit Model Size to 2GB
@@ -195,10 +230,15 @@ jobs:
       - name: License Verification
         id: license_verification
         run: |
-          apache_verified=$(<trace_output/apache_verified.txt)
-          if [[ $apache_verified == "True" ]]
+          license_verified=$(<trace_output/license_verified.txt)
+          if [[ $license_verified == "True" ]]
           then
-            echo "license_line=${{ needs.init-workflow-var.outputs.verified_license_line }}" >> $GITHUB_OUTPUT
+            if [[ "${{ github.event.inputs.model_license }}" == "Apache-2.0" ]]
+            then
+              echo "license_line=${{ needs.init-workflow-var.outputs.verified_apache_license_line }}" >> $GITHUB_OUTPUT
+            else
+              echo "license_line=${{ needs.init-workflow-var.outputs.verified_mit_license_line }}" >> $GITHUB_OUTPUT
+            fi
             echo "license_info=Automatically Verified" >> $GITHUB_OUTPUT
           else
             echo "license_line=${{ needs.init-workflow-var.outputs.unverified_license_line }}" >> $GITHUB_OUTPUT 
