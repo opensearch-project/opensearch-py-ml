@@ -25,7 +25,7 @@ from opensearch_py_ml.ml_commons.model_access_control import ModelAccessControl
 from opensearch_py_ml.ml_commons.model_connector import Connector
 from opensearch_py_ml.ml_commons.model_execute import ModelExecute
 from opensearch_py_ml.ml_commons.model_uploader import ModelUploader
-from opensearch_py_ml.ml_commons.validators.profile import validate_profile_input
+from opensearch_py_ml.ml_commons.validators import validate_profile_input
 
 
 class MLCommonClient:
