@@ -5,7 +5,8 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
+from .crossencodermodel import CrossEncoderModel
 from .metrics_correlation.mcorr import MCorr
 from .sentencetransformermodel import SentenceTransformerModel
 
-__all__ = ["SentenceTransformerModel", "MCorr"]
+__all__ = ["SentenceTransformerModel", "MCorr", "CrossEncoderModel"]
