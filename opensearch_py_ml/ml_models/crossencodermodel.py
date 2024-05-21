@@ -62,7 +62,7 @@ class CrossEncoderModel:
         :param folder_path: folder path to save the model
             default is /tmp/models/hf_model_id
         :type folder_path: str
-        :param overwrite: whether to overwrite the existing model
+        :param overwrite: whether to overwrite the existing model at folder+path
         :type overwrite: bool
         :return: None
         """
@@ -104,25 +104,25 @@ class CrossEncoderModel:
         tk = AutoTokenizer.from_pretrained(self._hf_model_id)
         model = AutoModelForSequenceClassification.from_pretrained(self._hf_model_id)
         features = tk([["dummy sentence 1", "dummy sentence 2"]], return_tensors="pt")
-        mname = Path(self._hf_model_id).name
+        model_name = Path(self._hf_model_id).name
 
         # bge models don't generate token type ids
-        if mname.startswith("bge"):
+        if model_name.startswith("bge"):
             features["token_type_ids"] = torch.zeros_like(features["input_ids"])
 
         if framework == "torch_script":
             self._framework = "torch_script"
-            model_loc = CrossEncoderModel._trace_pytorch(model, features, mname)
+            model_loc = CrossEncoderModel._trace_pytorch(model, features, model_name)
         elif framework == "onnx":
             self._framework = "onnx"
-            model_loc = CrossEncoderModel._trace_onnx(model, features, mname)
+            model_loc = CrossEncoderModel._trace_onnx(model, features, model_name)
         else:
             raise Exception(
                 f"Unrecognized framework {framework}. Accepted values are `torch_script`, `onnx`"
             )
 
         # save tokenizer file
-        tk_path = Path(f"/tmp/{mname}-tokenizer")
+        tk_path = Path(f"/tmp/{model_name}-tokenizer")
         tk.save_pretrained(tk_path)
         if tk.model_max_length is None:
             model_config = AutoConfig.from_pretrained(self._hf_model_id)
@@ -153,7 +153,7 @@ class CrossEncoderModel:
         return self._model_zip
 
     @staticmethod
-    def _trace_pytorch(model, features, mname) -> Path:
+    def _trace_pytorch(model, features, model_name) -> Path:
         """
         Compiles the model to TORCHSCRIPT format.
 
@@ -170,17 +170,17 @@ class CrossEncoderModel:
             },
             strict=False,
         )
-        save_loc = Path(f"/tmp/{mname}.pt")
-        torch.jit.save(compiled, f"/tmp/{mname}.pt")
+        save_loc = Path(f"/tmp/{model_name}.pt")
+        torch.jit.save(compiled, f"/tmp/{model_name}.pt")
         return save_loc
 
     @staticmethod
-    def _trace_onnx(model, features, mname):
+    def _trace_onnx(model, features, model_name):
         """
         Compiles the model to ONNX format.
         """
         # export to onnx
-        save_loc = Path(f"/tmp/{mname}.onnx")
+        save_loc = Path(f"/tmp/{model_name}.onnx")
         torch.onnx.export(
             model=model,
             args=(
