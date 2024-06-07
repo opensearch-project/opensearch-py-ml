@@ -1228,7 +1228,7 @@ class Operations:
     ) -> pd.DataFrame:
         df_list: List[pd.DataFrame] = []
         i = 0
-        for df in self.search_yield_pandas_dataframes(query_compiler=query_compiler, sort_index=os_index_field):
+        for df in self.search_yield_pandas_dataframes(query_compiler=query_compiler, sort_index=query_compiler.index.os_index_field):
             if show_progress:
                 i = i + df.shape[0]
                 if i % DEFAULT_PROGRESS_REPORTING_NUM_ROWS == 0:
