@@ -1537,7 +1537,7 @@ def _search_yield_hits(
     # Pagination with 'search_after' must have a 'sort' setting.
     # Using '_doc:asc' is the most efficient as reads documents
     # in the order that they're written on disk in Lucene.
-    body.setdefault("sort", [{sort_index: "asc"}])
+    body.setdefault("sort", [{sort_index: sort_index}])
 
     # Improves performance by not tracking # of hits. We only
     # care about the hit itself for these queries.
