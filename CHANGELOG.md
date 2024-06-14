@@ -1,6 +1,16 @@
 # CHANGELOG
 Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
+## [Unreleased 1.x]
+
+### Added
+
+### Changed
+
+### Fixed
+
+- Fixed DataFrame.to_pandas duplication bug by adding query_compiler object method by @Arnav-Gr0ver in ([#392](https://github.com/opensearch-project/opensearch-py-ml/pull/392))
+
 ## [1.2.0]
 
 ### Added
