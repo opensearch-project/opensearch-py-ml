@@ -166,3 +166,20 @@ def trace(session):
         "utils/model_uploader/model_autotracing.py",
         *(session.posargs),
     )
+
+
+@nox.session(python=["3.9"])
+def sparsetrace(session):
+    session.install(
+        "-r",
+        "requirements-dev.txt",
+        "--timeout",
+        "1500",
+    )
+    session.install(".")
+
+    session.run(
+        "python",
+        "utils/model_uploader/sparse_model_autotracing.py",
+        *(session.posargs),
+    )

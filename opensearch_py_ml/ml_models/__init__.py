@@ -7,5 +7,6 @@
 
 from .metrics_correlation.mcorr import MCorr
 from .sentencetransformermodel import SentenceTransformerModel
+from .sparse_encoding_model import SparseEncodingModel
 
-__all__ = ["SentenceTransformerModel", "MCorr"]
+__all__ = ["SentenceTransformerModel", "MCorr", "SparseEncodingModel"]
