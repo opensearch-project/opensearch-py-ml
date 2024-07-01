@@ -251,7 +251,7 @@ jobs:
         with:
           secret: ${{ github.TOKEN }}
           approvers: ${{ steps.get_approvers.outputs.approvers }}
-          minimum-approvals: 1
+          minimum-approvals: 2
           issue-title: "Upload Model to OpenSearch Model Hub (${{ github.event.inputs.model_id }})"
           issue-body: ${{ steps.create_issue_body.outputs.issue_body }}
           exclude-workflow-initiator-as-approver: false

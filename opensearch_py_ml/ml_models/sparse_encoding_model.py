@@ -74,7 +74,7 @@ class SparseEncodingModel(SparseModel):
     def save_as_pt(
         self,
         sentences: [str],
-        model_id="opensearch-project/opensearch-neural-sparse-encoding-v1",
+        model_id=DEFAULT_MODEL_ID,
         model_name: str = None,
         save_json_folder_path: str = None,
         model_output_path: str = None,
@@ -201,7 +201,7 @@ class SparseEncodingModel(SparseModel):
                 else self.onnx_zip_file_path
             )
             if model_zip_file_path is None:
-                print(
+                raise Exception(
                     "The model configuration JSON file currently lacks the 'model_content_size_in_bytes' and "
                     "'model_content_hash_value' fields. You can include these fields by specifying the "
                     "'model_zip_file_path' parameter. Failure to do so may result in the model registration process "

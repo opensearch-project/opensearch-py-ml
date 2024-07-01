@@ -40,51 +40,6 @@ class SparseModel:
             assert r.status_code == 200, "Failed to download license"
             zipObj.writestr("LICENSE", r.content)
 
-    def zip_model(
-        self,
-        model_name: str = None,
-        zip_file_name: str = None,
-        add_apache_license: bool = False,
-    ):
-        """
-        Zip the model file and its tokenizer.json file to prepare to upload to the OpenSearch cluster
-
-        :param model_path:
-            Optional, path to find the model file, if None, default as concatenate model_id and
-            '.pt' file in current path
-        :type model_path: string
-        :param model_name:
-            the name of the trained custom model. If None, default as concatenate model_id and '.pt'
-        :type model_name: string
-        :param zip_file_name: str =None
-            Optional, file name for zip file. if None, default as concatenate model_id and '.zip'
-        :type zip_file_name: string
-        :param add_apache_license:
-            Optional, whether to add a Apache-2.0 license file to model zip file
-        :type add_apache_license: string
-        :param verbose:
-            optional, use to print more logs. Default as false
-        :type verbose: bool
-        :return: no return value expected
-        :rtype: None
-        """
-        model_name = model_name or f"{self.model_id.split('/')[-1]}.pt"
-        zip_file_name = zip_file_name or f"{self.model_id.split('/')[-1]}.zip"
-
-        model_path = os.path.join(self.folder_path, model_name)
-        zip_file_path = os.path.join(self.folder_path, zip_file_name)
-        tokenizer_json_path = os.path.join(self.folder_path, "tokenizer.json")
-
-        if not all(map(os.path.exists, [model_path, tokenizer_json_path])):
-            raise FileNotFoundError("Required files not found for zipping.")
-
-        with ZipFile(zip_file_path, "w") as zipObj:
-            zipObj.write(model_path, arcname=model_name)
-            zipObj.write(tokenizer_json_path, arcname="tokenizer.json")
-
-        if add_apache_license:
-            self._add_apache_license_to_zip(zip_file_path)
-
     def save_as_pt(
         self,
         model_id,
