@@ -46,11 +46,7 @@ def clean_test_folder(TEST_FOLDER):
 
 
 def compare_model_config(
-    model_config_path,
-    model_id,
-    model_format,
-    expected_model_description=None,
-    expected_model_config_data=None,
+    model_config_path, model_id, model_format, expected_model_description=None
 ):
     try:
         with open(model_config_path) as json_file:
@@ -69,28 +65,16 @@ def compare_model_config(
         and model_config_data["model_format"] == model_format
     ), f"Missing or Wrong model_format in {model_format} model config file"
 
+    assert (
+        "function_name" in model_config_data
+        and model_config_data["function_name"] == "SPARSE_ENCODING"
+    ), f"Missing or Wrong function_name in {model_format} model config file"
+
     if expected_model_description is not None:
         assert (
             "description" in model_config_data
             and model_config_data["description"] == expected_model_description
         ), f"Missing or Wrong model description in {model_format} model config file'"
-
-    if expected_model_config_data is not None:
-        assert (
-            "model_config" in model_config_data
-        ), f"Missing 'model_config' in {model_format} model config file"
-
-        if expected_model_config_data is not None:
-            for k, v in expected_model_config_data.items():
-                assert (
-                    k in model_config_data["model_config"]
-                    and model_config_data["model_config"][k] == v
-                ) or (
-                    k not in model_config_data["model_config"]
-                    and k == "normalize_result"
-                    and not v
-                )
-
     assert (
         "model_content_size_in_bytes" in model_config_data
     ), f"Missing 'model_content_size_in_bytes' in {model_format} model config file"
@@ -125,7 +109,7 @@ def test_check_attribute():
         test_model.model_id == "opensearch-project/opensearch-neural-sparse-encoding-v1"
     )
 
-    default_folder = os.path.join(os.getcwd(), "sentence_transformer_model_files")
+    default_folder = os.path.join(os.getcwd(), "opensearch_neural_sparse_model_files")
 
     clean_test_folder(default_folder)
     test_model0 = SparseEncodingModel()
@@ -189,13 +173,6 @@ def test_make_model_config_json_for_torch_script():
         "This is a sparse encoding model for opensearch-neural-sparse-encoding-v1."
     )
     model_id = "opensearch-project/opensearch-neural-sparse-encoding-v1"
-
-    expected_model_config_data = {
-        "name": model_id,
-        "version": "1.0.0",
-        "model_format": model_format,
-        "function_name": "SPARSE_ENCODING",
-    }
     clean_test_folder(TEST_FOLDER)
     test_model3 = SparseEncodingModel(folder_path=TEST_FOLDER)
 
@@ -209,7 +186,6 @@ def test_make_model_config_json_for_torch_script():
         model_id,
         model_format,
         expected_model_description=expected_model_description,
-        expected_model_config_data=expected_model_config_data,
     )
 
     clean_test_folder(TEST_FOLDER)
@@ -247,7 +223,7 @@ def test_overwrite_description():
 
 
 def test_long_description():
-    model_id = "sentence-transformers/gtr-t5-base"
+    model_id = "opensearch-project/opensearch-neural-sparse-encoding-v1"
     model_format = "TORCH_SCRIPT"
     expected_model_description = (
         "This is a sparce encoding model: It generate lots of tokens with different weight "
@@ -285,10 +261,10 @@ def test_save_as_pt_with_license():
     model_id = "opensearch-project/opensearch-neural-sparse-encoding-v1"
     model_format = "TORCH_SCRIPT"
     torch_script_zip_file_path = os.path.join(
-        TEST_FOLDER, "test-neural-sparse-encoding-v1.pt"
+        TEST_FOLDER, "opensearch-neural-sparse-encoding-v1.zip"
     )
     torch_script_expected_filenames = {
-        "test-neural-sparse-encoding-v1.pt",
+        "opensearch-neural-sparse-encoding-v1.pt",
         "tokenizer.json",
         "LICENSE",
     }
@@ -300,9 +276,7 @@ def test_save_as_pt_with_license():
     )
 
     test_model6.save_as_pt(
-        model_id=model_id,
-        sentences=["today is sunny"],
-        add_apache_license=True,
+        model_id=model_id, sentences=["today is sunny"], add_apache_license=True
     )
 
     compare_model_zip_file(

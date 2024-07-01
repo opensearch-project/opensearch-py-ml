@@ -266,6 +266,12 @@ OUTPUT_KEY = "output"
 
 
 class NeuralSparseModel(torch.nn.Module):
+    """
+    A PyTorch module for transforming input text to sparse vector representation using a pre-trained internal BERT model.
+    This class encapsulates the BERT model and provides methods to process text queries into sparse vectors,
+    which are easier to handle in sparse data scenarios such as information retrieval.
+    """
+
     def __init__(self, bert, tokenizer=None):
         super().__init__()
         self.bert = bert
