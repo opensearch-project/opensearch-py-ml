@@ -498,6 +498,15 @@ class MLCommonClient:
             url=API_URL,
         )
 
+    def generate_sparse_encoding(self, model_id: str, sentences: List[str]) -> object:
+        API_URL = f"{ML_BASE_URI}/_predict/sparse_encoding/{model_id}"
+        API_BODY = {"text_docs": sentences}
+        return self._client.transport.perform_request(
+            method="POST",
+            url=API_URL,
+            body=API_BODY,
+        )
+
     def generate_embedding(self, model_id: str, sentences: List[str]) -> object:
         """
         This method return embedding for given sentences (using ml commons _predict api)

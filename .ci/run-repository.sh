@@ -85,7 +85,30 @@ elif [[ "$TASK_TYPE" == "trace" ]]; then
   --name opensearch-py-ml-trace-runner \
   opensearch-project/opensearch-py-ml \
   nox -s "trace-${PYTHON_VERSION}" -- ${MODEL_ID} ${MODEL_VERSION} ${TRACING_FORMAT} -ed ${EMBEDDING_DIMENSION} -pm ${POOLING_MODE} -md ${MODEL_DESCRIPTION:+"$MODEL_DESCRIPTION"}
-  
+
+  docker cp opensearch-py-ml-trace-runner:/code/opensearch-py-ml/upload/ ./upload/
+  docker cp opensearch-py-ml-trace-runner:/code/opensearch-py-ml/trace_output/ ./trace_output/
+  docker rm opensearch-py-ml-trace-runner
+
+elif [[ "$TASK_TYPE" == "sparse_trace" ]]; then
+  # Set up OpenSearch cluster & Run model autotracing (Invoked by model_uploader.yml workflow)
+  echo -e "\033[34;1mINFO:\033[0m MODEL_ID: ${MODEL_ID}\033[0m"
+  echo -e "\033[34;1mINFO:\033[0m MODEL_VERSION: ${MODEL_VERSION}\033[0m"
+  echo -e "\033[34;1mINFO:\033[0m TRACING_FORMAT: ${TRACING_FORMAT}\033[0m"
+  echo -e "\033[34;1mINFO:\033[0m MODEL_DESCRIPTION: ${MODEL_DESCRIPTION:-N/A}\033[0m"
+
+  docker run \
+  --network=${network_name} \
+  --env "STACK_VERSION=${STACK_VERSION}" \
+  --env "OPENSEARCH_URL=${opensearch_url}" \
+  --env "OPENSEARCH_VERSION=${OPENSEARCH_VERSION}" \
+  --env "TEST_SUITE=${TEST_SUITE}" \
+  --env "PYTHON_CONNECTION_CLASS=${PYTHON_CONNECTION_CLASS}" \
+  --env "TEST_TYPE=server" \
+  --name opensearch-py-ml-trace-runner \
+  opensearch-project/opensearch-py-ml \
+  nox -s "sparsetrace-${PYTHON_VERSION}" -- ${MODEL_ID} ${MODEL_VERSION} ${TRACING_FORMAT} -md ${MODEL_DESCRIPTION:+"$MODEL_DESCRIPTION"}
+
   docker cp opensearch-py-ml-trace-runner:/code/opensearch-py-ml/upload/ ./upload/
   docker cp opensearch-py-ml-trace-runner:/code/opensearch-py-ml/trace_output/ ./trace_output/
   docker rm opensearch-py-ml-trace-runner
