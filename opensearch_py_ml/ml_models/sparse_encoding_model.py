@@ -114,8 +114,8 @@ class SparseEncodingModel(SparseModel):
         :rtype: string
         """
         backbone_model = AutoModelForMaskedLM.from_pretrained(model_id)
-        model = NeuralSparseModel(backbone_model)
         self.tokenizer = AutoTokenizer.from_pretrained(model_id)
+        model = NeuralSparseModel(backbone_model,self.tokenizer)
 
         if model_name is None:
             model_name = str(model_id.split("/")[-1] + ".pt")
@@ -133,7 +133,7 @@ class SparseEncodingModel(SparseModel):
         zip_file_path = os.path.join(model_output_path, zip_file_name)
 
         # save tokenizer.json in save_json_folder_name
-        backbone_model.save_pretrained(save_json_folder_path)
+        # backbone_model.save_pretrained(save_json_folder_path)
         self.tokenizer.save_pretrained(save_json_folder_path)
         super()._fill_null_truncation_field(
             save_json_folder_path, self.tokenizer.model_max_length
