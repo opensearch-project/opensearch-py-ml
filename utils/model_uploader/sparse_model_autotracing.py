@@ -12,8 +12,6 @@ import shutil
 import sys
 from typing import Optional, Tuple
 
-from mdutils.fileutils import MarkDownFile
-
 THIS_DIR = os.path.dirname(__file__)
 ROOT_DIR = os.path.join(THIS_DIR, "../..")
 sys.path.append(ROOT_DIR)
@@ -22,6 +20,7 @@ from opensearch_py_ml.ml_commons import MLCommonClient
 from opensearch_py_ml.ml_models import SparseEncodingModel
 from tests import OPENSEARCH_TEST_CLIENT
 from utils.model_uploader import autotracing_utils
+from huggingface_hub import HfApi
 
 BOTH_FORMAT = "BOTH"
 TORCH_SCRIPT_FORMAT = "TORCH_SCRIPT"
@@ -40,34 +39,14 @@ RTOL_TEST = 1e-03
 ATOL_TEST = 1e-05
 
 
-def verify_license_in_md_file() -> bool:
-    """
-    Verify that the model is licensed under Apache 2.0
-    by looking at metadata in README.md file of the model
-
-    TODO: Support other open source licenses in future
-
-    :return: Whether the model is licensed under Apache 2.0
-    :rtype: Bool
-    """
-    try:
-        readme_data = MarkDownFile.read_file(TEMP_MODEL_PATH + "/" + "README.md")
-    except Exception as e:
-        print(f"Cannot verify the license: {e}")
-        return False
-
-    start = readme_data.find("---")
-    end = readme_data.find("---", start + 3)
-    if start == -1 or end == -1:
-        return False
-    metadata_info = readme_data[start + 3 : end]
-    if "apache-2.0" in metadata_info.lower():
-        print("\nFound apache-2.0 license at " + TEMP_MODEL_PATH + "/README.md")
+def verify_license_by_Hf(model_id:str):
+    api = HfApi()
+    model_info = api.model_info(model_id)
+    model_license = model_info.cardData.get("license", "License information not found.")
+    if model_license == "apache-2.0":
         return True
     else:
-        print("\nDid not find apache-2.0 license at " + TEMP_MODEL_PATH + "/README.md")
         return False
-
 
 def trace_sparse_encoding_model(
     model_id: str,
@@ -345,7 +324,7 @@ def main(
     pre_trained_model = SparseEncodingModel(model_id)
     original_encoding_data = pre_trained_model.process_queries(TEST_SENTENCES)
     pre_trained_model.save(path=TEMP_MODEL_PATH)
-    license_verified = verify_license_in_md_file()
+    license_verified = verify_license_by_Hf(model_id)
 
     try:
         shutil.rmtree(TEMP_MODEL_PATH)

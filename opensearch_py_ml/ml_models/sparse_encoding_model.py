@@ -4,7 +4,6 @@
 # compatible open source license.
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
-
 import json
 import os
 from zipfile import ZipFile
@@ -114,8 +113,8 @@ class SparseEncodingModel(SparseModel):
         :return: model zip file path. The file path where the zip file is being saved
         :rtype: string
         """
-        bert = AutoModelForMaskedLM.from_pretrained(model_id)
-        model = NeuralSparseModel(bert)
+        backbone_model = AutoModelForMaskedLM.from_pretrained(model_id)
+        model = NeuralSparseModel(backbone_model)
         self.tokenizer = AutoTokenizer.from_pretrained(model_id)
 
         if model_name is None:
@@ -134,7 +133,7 @@ class SparseEncodingModel(SparseModel):
         zip_file_path = os.path.join(model_output_path, zip_file_name)
 
         # save tokenizer.json in save_json_folder_name
-        bert.save_pretrained(save_json_folder_path)
+        backbone_model.save_pretrained(save_json_folder_path)
         self.tokenizer.save_pretrained(save_json_folder_path)
         super()._fill_null_truncation_field(
             save_json_folder_path, self.tokenizer.model_max_length
@@ -228,16 +227,16 @@ class SparseEncodingModel(SparseModel):
         )
         return model_config_file_path
 
-    def get_bert(self):
+    def get_backbone_model(self):
         return AutoModelForMaskedLM.from_pretrained(self.model_id)
 
     def get_model(self):
-        return NeuralSparseModel(self.get_bert(), self.tokenizer)
+        return NeuralSparseModel(self.get_backbone_model(), self.tokenizer)
 
     def save(self, path):
-        bert = AutoModelForMaskedLM.from_pretrained(self.model_id)
+        backbone_model = AutoModelForMaskedLM.from_pretrained(self.model_id)
         tokenizer = AutoTokenizer.from_pretrained(self.model_id)
-        bert.save_pretrained(path)
+        backbone_model.save_pretrained(path)
         tokenizer.save_pretrained(path)
 
     def post_process(self):
