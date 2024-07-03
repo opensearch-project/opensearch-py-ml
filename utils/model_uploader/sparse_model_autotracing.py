@@ -16,11 +16,12 @@ THIS_DIR = os.path.dirname(__file__)
 ROOT_DIR = os.path.join(THIS_DIR, "../..")
 sys.path.append(ROOT_DIR)
 
+from huggingface_hub import HfApi
+
 from opensearch_py_ml.ml_commons import MLCommonClient
 from opensearch_py_ml.ml_models import SparseEncodingModel
 from tests import OPENSEARCH_TEST_CLIENT
 from utils.model_uploader import autotracing_utils
-from huggingface_hub import HfApi
 
 BOTH_FORMAT = "BOTH"
 TORCH_SCRIPT_FORMAT = "TORCH_SCRIPT"
@@ -39,7 +40,7 @@ RTOL_TEST = 1e-03
 ATOL_TEST = 1e-05
 
 
-def verify_license_by_Hf(model_id:str):
+def verify_license_by_Hf(model_id: str):
     api = HfApi()
     model_info = api.model_info(model_id)
     model_license = model_info.cardData.get("license", "License information not found.")
@@ -47,6 +48,7 @@ def verify_license_by_Hf(model_id:str):
         return True
     else:
         return False
+
 
 def trace_sparse_encoding_model(
     model_id: str,

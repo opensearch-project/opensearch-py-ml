@@ -143,12 +143,13 @@ class SparseEncodingModel(SparseModel):
         # set the device to cpu, convert its input_ids and attention_mask in cpu and save as .pt format
         device = torch.device("cpu")
         cpu_model = model.to(device)
+
         features = self.tokenizer(
             sentences,
             add_special_tokens=True,
             padding=True,
             truncation=True,
-            max_length=512,
+            max_length=self.tokenizer.model_max_length,
             return_attention_mask=True,
             return_token_type_ids=False,
             return_tensors="pt",
@@ -290,12 +291,12 @@ class NeuralSparseModel(torch.nn.Module):
         )[0]
         values, _ = torch.max(result * input[ATTENTION_MASK_KEY].unsqueeze(-1), dim=1)
         values = torch.log(1 + torch.relu(values))
+        values[:, self.special_token_ids] = 0
         return {OUTPUT_KEY: values}
 
     def get_sparse_vector(self, feature):
         output = self.forward(feature)
         values = output[OUTPUT_KEY]
-        values[:, self.special_token_ids] = 0
         return values
 
     def transform_sparse_vector_to_dict(self, sparse_vector):
