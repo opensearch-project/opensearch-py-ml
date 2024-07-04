@@ -49,7 +49,8 @@ class SparseEncodingModel(SparseModel):
     ) -> None:
 
         super().__init__(model_id, folder_path, overwrite)
-        self.tokenizer = None
+        self.tokenizer = AutoTokenizer.from_pretrained(model_id)
+        self.backbone_model = AutoModelForMaskedLM.from_pretrained(model_id)
         default_folder_path = os.path.join(
             os.getcwd(), "opensearch_neural_sparse_model_files"
         )
@@ -110,13 +111,10 @@ class SparseEncodingModel(SparseModel):
         :param add_apache_license:
             Optional, whether to add Apache-2.0 license file to model zip file
         :type add_apache_license: string
+
         :return: model zip file path. The file path where the zip file is being saved
         :rtype: string
         """
-        backbone_model = AutoModelForMaskedLM.from_pretrained(model_id)
-        self.tokenizer = AutoTokenizer.from_pretrained(model_id)
-        model = NeuralSparseModel(backbone_model, self.tokenizer)
-
         if model_name is None:
             model_name = str(model_id.split("/")[-1] + ".pt")
 
@@ -132,9 +130,11 @@ class SparseEncodingModel(SparseModel):
             zip_file_name = str(model_id.split("/")[-1] + ".zip")
         zip_file_path = os.path.join(model_output_path, zip_file_name)
 
+        model = NeuralSparseModel(self.backbone_model, self.tokenizer)
+
         # save tokenizer.json in save_json_folder_name
-        # backbone_model.save_pretrained(save_json_folder_path)
         self.tokenizer.save_pretrained(save_json_folder_path)
+
         super()._fill_null_truncation_field(
             save_json_folder_path, self.tokenizer.model_max_length
         )
@@ -229,14 +229,17 @@ class SparseEncodingModel(SparseModel):
         return model_config_file_path
 
     def get_backbone_model(self):
-        return AutoModelForMaskedLM.from_pretrained(self.model_id)
+        if self.backbone_model is not None:
+            return self.backbone_model
+        else:
+            return AutoModelForMaskedLM.from_pretrained(self.model_id)
 
     def get_model(self):
-        return NeuralSparseModel(self.get_backbone_model(), self.tokenizer)
+        return NeuralSparseModel(self.get_backbone_model(), self.get_tokenizer())
 
     def save(self, path):
-        backbone_model = AutoModelForMaskedLM.from_pretrained(self.model_id)
-        tokenizer = AutoTokenizer.from_pretrained(self.model_id)
+        backbone_model = self.get_backbone_model()
+        tokenizer = self.get_tokenizer()
         backbone_model.save_pretrained(path)
         tokenizer.save_pretrained(path)
 
@@ -247,12 +250,13 @@ class SparseEncodingModel(SparseModel):
         pass
 
     def get_tokenizer(self):
-        return self.tokenizer
+        if self.tokenizer is not None:
+            return self.tokenizer
+        else:
+            return AutoTokenizer.from_pretrained(self.model_id)
 
-    def process_queries(self, queries):
-        if self.tokenizer is None:
-            self.init_tokenizer()
-        return self.get_model().process_queries(queries)
+    def process_sparse_encoding(self, queries):
+        return self.get_model().process_sparse_encoding(queries)
 
     def init_tokenizer(self, model_id=None):
         if model_id is None:
@@ -300,18 +304,22 @@ class NeuralSparseModel(torch.nn.Module):
         return values
 
     def transform_sparse_vector_to_dict(self, sparse_vector):
-        tokens = [
-            self.id_to_token[i]
-            for i in torch.nonzero(sparse_vector, as_tuple=True)[1].tolist()
-        ]
-        return {
-            token: weight.item()
-            for token, weight in zip(
-                tokens, sparse_vector[sparse_vector.nonzero(as_tuple=True)]
-            )
-        }
+        all_sparse_dicts = []
+        for vector in sparse_vector:
+            tokens = [
+                self.id_to_token[i]
+                for i in torch.nonzero(vector, as_tuple=True)[0].tolist()
+            ]
+            sparse_dict = {
+                token: weight.item()
+                for token, weight in zip(
+                    tokens, vector[torch.nonzero(vector, as_tuple=True)]
+                )
+            }
+            all_sparse_dicts.append(sparse_dict)
+        return all_sparse_dicts
 
-    def process_queries(self, queries):
+    def process_sparse_encoding(self, queries):
         features = self.tokenizer(
             queries,
             padding=True,

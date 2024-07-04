@@ -35,7 +35,7 @@ MODEL_CONFIG_FILE_NAME = "ml-commons_model_config.json"
 OUTPUT_DIR = "trace_output/"
 LICENSE_VAR_FILE = "apache_verified.txt"
 DESCRIPTION_VAR_FILE = "description.txt"
-TEST_SENTENCES = ["Nice to meet you."]
+TEST_SENTENCES = ["Nice to meet you.", "I like playing football.", "Thanks."]
 RTOL_TEST = 1e-03
 ATOL_TEST = 1e-05
 
@@ -132,7 +132,7 @@ def register_and_deploy_sparse_encoding_model(
     model_path: str,
     model_config_path: str,
     model_format: str,
-    query: list[str],
+    texts: list[str],
 ) -> dict:
     encoding_data = None
     model_id = autotracing_utils.register_and_deploy_model(
@@ -140,7 +140,7 @@ def register_and_deploy_sparse_encoding_model(
     )
     autotracing_utils.check_model_status(ml_client, model_id, model_format)
     try:
-        encoding_output = ml_client.generate_sparse_encoding(model_id, query)
+        encoding_output = ml_client.generate_sparse_encoding(model_id, texts)
 
         encoding_data = encoding_output["inference_results"][0]["output"][0][
             "dataAsMap"
@@ -153,6 +153,25 @@ def register_and_deploy_sparse_encoding_model(
     autotracing_utils.undeploy_model(ml_client, model_id, model_format)
     autotracing_utils.delete_model(ml_client, model_id, model_format)
     return encoding_data
+
+
+def verify_embedding_data_vectors(original_embedding_datas, tracing_embedding_datas):
+    if len(original_embedding_datas) != len(tracing_embedding_datas):
+        print(
+            f"The length of original_embedding_data_vector: {len(original_embedding_datas)} and tracing_embedding_data_vector: {len(tracing_embedding_datas)} are different"
+        )
+        return False
+
+    for index, (original, tracing) in enumerate(
+        zip(original_embedding_datas, tracing_embedding_datas)
+    ):
+        if not verify_sparse_encoding(original, tracing):
+            print(
+                f"Verification failed for index {index}, whose input is {TEST_SENTENCES[index]}."
+            )
+            return False
+
+    return True
 
 
 def verify_sparse_encoding(
@@ -324,7 +343,7 @@ def main(
 
     ml_client = MLCommonClient(OPENSEARCH_TEST_CLIENT)
     pre_trained_model = SparseEncodingModel(model_id)
-    original_encoding_data = pre_trained_model.process_queries(TEST_SENTENCES)
+    original_encoding_datas = pre_trained_model.process_sparse_encoding(TEST_SENTENCES)
     pre_trained_model.save(path=TEMP_MODEL_PATH)
     license_verified = verify_license_by_Hf(model_id)
 
@@ -342,7 +361,7 @@ def main(
             model_id, model_version, TORCH_SCRIPT_FORMAT, model_description=None
         )
 
-        torchscript_encoding_data = register_and_deploy_sparse_encoding_model(
+        torchscript_encoding_datas = register_and_deploy_sparse_encoding_model(
             ml_client,
             torchscript_model_path,
             torchscript_model_config_path,
@@ -350,8 +369,8 @@ def main(
             TEST_SENTENCES,
         )
 
-        pass_test = verify_sparse_encoding(
-            original_encoding_data, torchscript_encoding_data
+        pass_test = verify_embedding_data_vectors(
+            original_encoding_datas, torchscript_encoding_datas
         )
         assert (
             pass_test
@@ -380,7 +399,7 @@ def main(
             model_id, model_version, ONNX_FORMAT, model_description=None
         )
 
-        onnx_embedding_data = register_and_deploy_sparse_encoding_model(
+        onnx_embedding_datas = register_and_deploy_sparse_encoding_model(
             ml_client,
             onnx_model_path,
             onnx_model_config_path,
@@ -388,7 +407,9 @@ def main(
             TEST_SENTENCES,
         )
 
-        pass_test = verify_sparse_encoding(original_encoding_data, onnx_embedding_data)
+        pass_test = verify_embedding_data_vectors(
+            original_encoding_datas, onnx_embedding_datas
+        )
         assert (
             pass_test
         ), f"Failed while verifying embeddings of {model_id} model in ONNX format"
@@ -438,4 +459,4 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    main(args.model_id, args.model_version, args.tracing_format)
+    main(args.model_id, args.model_version, args.tracing_format, args.model_description)

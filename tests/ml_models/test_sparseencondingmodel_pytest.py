@@ -156,7 +156,6 @@ def test_make_model_config_json_for_torch_script():
     model_id = "opensearch-project/opensearch-neural-sparse-encoding-v1"
     clean_test_folder(TEST_FOLDER)
     test_model3 = SparseEncodingModel(folder_path=TEST_FOLDER)
-
     test_model3.save_as_pt(model_id=model_id, sentences=["today is sunny"])
     model_config_path_torch = test_model3.make_model_config_json(
         model_format="TORCH_SCRIPT", description=expected_model_description
