@@ -136,7 +136,7 @@ def test_folder_path():
 def test_check_required_fields():
     # test without required_fields should raise TypeError
     with pytest.raises(TypeError):
-        test_model.process_queries()
+        test_model.process_sparse_encoding()
     with pytest.raises(TypeError):
         test_model.save_as_pt()
 
