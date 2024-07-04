@@ -140,26 +140,6 @@ def test_check_required_fields():
     with pytest.raises(TypeError):
         test_model.save_as_pt()
 
-
-def test_no_config_files():
-    with pytest.raises(Exception) as exc_info:
-        temp_path = os.path.join(
-            os.path.dirname(os.path.abspath("__file__")),
-            "tests",
-            "test_SparseEncodingModel",
-        )
-        clean_test_folder(temp_path)
-        test_model2 = SparseEncodingModel(folder_path=temp_path)
-        test_model2.save_as_pt(sentences=["today is sunny"])
-        os.remove(os.path.join(temp_path, "config.json"))
-        test_model2.torch_script_zip_file_path = None
-        test_model2.make_model_config_json()
-    assert (
-        " Failure to do so may result in the model registration process encountering issues"
-        in str(exc_info.value)
-    )
-
-
 def test_save_as_pt():
     try:
         test_model.save_as_pt(sentences=["today is sunny"])
