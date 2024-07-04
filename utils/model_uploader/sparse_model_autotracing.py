@@ -142,9 +142,9 @@ def register_and_deploy_sparse_encoding_model(
     try:
         encoding_output = ml_client.generate_sparse_encoding(model_id, texts)
 
-        encoding_data = encoding_output["inference_results"][0]["output"][0][
+        encoding_datas = encoding_output["inference_results"][0]["output"][0][
             "dataAsMap"
-        ]["response"][0]
+        ]["response"]
 
     except Exception as e:
         assert (
@@ -152,7 +152,7 @@ def register_and_deploy_sparse_encoding_model(
         ), f"Raised Exception in generating sparse encoding with {model_format} model: {e}"
     autotracing_utils.undeploy_model(ml_client, model_id, model_format)
     autotracing_utils.delete_model(ml_client, model_id, model_format)
-    return encoding_data
+    return encoding_datas
 
 
 def verify_embedding_data_vectors(original_embedding_datas, tracing_embedding_datas):
