@@ -276,9 +276,9 @@ class NeuralSparseModel(torch.nn.Module):
     which are easier to handle in sparse data scenarios such as information retrieval.
     """
 
-    def __init__(self, bert, tokenizer=None):
+    def __init__(self, backbone_model, tokenizer=None):
         super().__init__()
-        self.bert = bert
+        self.backbone_model = backbone_model
         if tokenizer is not None:
             self.tokenizer = tokenizer
             self.special_token_ids = [
@@ -290,7 +290,7 @@ class NeuralSparseModel(torch.nn.Module):
                 self.id_to_token[idx] = token
 
     def forward(self, input: dict[str, torch.Tensor]) -> dict[str, torch.Tensor]:
-        result = self.bert(
+        result = self.backbone_model(
             input_ids=input[INPUT_ID_KEY], attention_mask=input[ATTENTION_MASK_KEY]
         )[0]
         values, _ = torch.max(result * input[ATTENTION_MASK_KEY].unsqueeze(-1), dim=1)
