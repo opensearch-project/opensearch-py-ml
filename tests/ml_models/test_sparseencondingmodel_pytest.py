@@ -140,6 +140,7 @@ def test_check_required_fields():
     with pytest.raises(TypeError):
         test_model.save_as_pt()
 
+
 def test_save_as_pt():
     try:
         test_model.save_as_pt(sentences=["today is sunny"])

@@ -115,7 +115,7 @@ class SparseEncodingModel(SparseModel):
         """
         backbone_model = AutoModelForMaskedLM.from_pretrained(model_id)
         self.tokenizer = AutoTokenizer.from_pretrained(model_id)
-        model = NeuralSparseModel(backbone_model,self.tokenizer)
+        model = NeuralSparseModel(backbone_model, self.tokenizer)
 
         if model_name is None:
             model_name = str(model_id.split("/")[-1] + ".pt")
