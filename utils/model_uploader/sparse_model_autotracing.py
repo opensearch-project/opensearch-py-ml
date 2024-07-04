@@ -133,8 +133,8 @@ def register_and_deploy_sparse_encoding_model(
     model_config_path: str,
     model_format: str,
     texts: list[str],
-) -> dict:
-    encoding_data = None
+) -> list:
+    encoding_datas = None
     model_id = autotracing_utils.register_and_deploy_model(
         ml_client, model_format, model_path, model_config_path
     )
@@ -142,9 +142,12 @@ def register_and_deploy_sparse_encoding_model(
     try:
         encoding_output = ml_client.generate_sparse_encoding(model_id, texts)
 
-        encoding_datas = encoding_output["inference_results"][0]["output"][0][
-            "dataAsMap"
-        ]["response"]
+        encoding_datas = [
+            encoding_output["inference_results"][i]["output"][0]["dataAsMap"][
+                "response"
+            ][0]
+            for i in range(len(texts))
+        ]
 
     except Exception as e:
         assert (
