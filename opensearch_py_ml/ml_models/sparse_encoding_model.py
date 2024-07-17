@@ -16,7 +16,7 @@ from opensearch_py_ml.ml_commons.ml_common_utils import (
 )
 from opensearch_py_ml.ml_models.sparse_model import SparseModel
 
-SPARSE_ENCODING_FUNCTION_NAME = "SPARSE_ENCODING"
+from .ml_commons_utils import SPARSE_ENCODING_FUNCTION_NAME
 
 
 def _generate_default_model_description() -> str:

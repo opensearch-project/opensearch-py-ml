@@ -11,7 +11,7 @@ from zipfile import ZipFile
 
 import requests
 
-LICENSE_URL = "https://github.com/opensearch-project/opensearch-py-ml/raw/main/LICENSE"
+from .ml_commons_utils import LICENSE_URL
 
 
 class SparseModel:

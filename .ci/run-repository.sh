@@ -86,6 +86,8 @@ elif [[ "$TASK_TYPE" == "trace" ]]; then
   opensearch-project/opensearch-py-ml \
   nox -s "trace-${PYTHON_VERSION}" -- ${MODEL_ID} ${MODEL_VERSION} ${TRACING_FORMAT} -ed ${EMBEDDING_DIMENSION} -pm ${POOLING_MODE} -md ${MODEL_DESCRIPTION:+"$MODEL_DESCRIPTION"}
 
+  # To upload a model, we need the model artifact, description, license files into local path
+  # trace_output should include description and license file.
   docker cp opensearch-py-ml-trace-runner:/code/opensearch-py-ml/upload/ ./upload/
   docker cp opensearch-py-ml-trace-runner:/code/opensearch-py-ml/trace_output/ ./trace_output/
   docker rm opensearch-py-ml-trace-runner
@@ -109,7 +111,11 @@ elif [[ "$TASK_TYPE" == "sparse_trace" ]]; then
   opensearch-project/opensearch-py-ml \
   nox -s "sparsetrace-${PYTHON_VERSION}" -- ${MODEL_ID} ${MODEL_VERSION} ${TRACING_FORMAT} -md ${MODEL_DESCRIPTION:+"$MODEL_DESCRIPTION"}
 
+  # To upload a model, we need the model artifact, description, license files into local path
+  # trace_output should include description and license file.
   docker cp opensearch-py-ml-trace-runner:/code/opensearch-py-ml/upload/ ./upload/
   docker cp opensearch-py-ml-trace-runner:/code/opensearch-py-ml/trace_output/ ./trace_output/
+
+  # Delete the docker image
   docker rm opensearch-py-ml-trace-runner
 fi

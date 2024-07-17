@@ -37,7 +37,7 @@ from opensearch_py_ml.ml_commons.ml_common_utils import (
     _generate_model_content_hash_value,
 )
 
-LICENSE_URL = "https://github.com/opensearch-project/opensearch-py-ml/raw/main/LICENSE"
+from .ml_commons_utils import LICENSE_URL
 
 
 class SentenceTransformerModel:
