@@ -6,48 +6,39 @@
 # GitHub history for details.
 
 import argparse
-import json
 import os
 import shutil
 import sys
 from typing import Optional, Tuple
 
+import numpy as np
+
+from utils.model_uploader.autotracing_utils import (
+    ATOL_TEST,
+    BOTH_FORMAT,
+    ONNX_FOLDER_PATH,
+    ONNX_FORMAT,
+    RTOL_TEST,
+    TEMP_MODEL_PATH,
+    TORCH_SCRIPT_FORMAT,
+    TORCHSCRIPT_FOLDER_PATH,
+    ModelTraceError,
+    init_sparse_model,
+    prepare_files_for_uploading,
+    preview_model_config, verify_license_by_hfapi, store_description_variable, store_license_verified_variable,
+)
+
 THIS_DIR = os.path.dirname(__file__)
 ROOT_DIR = os.path.join(THIS_DIR, "../..")
 sys.path.append(ROOT_DIR)
 
-from huggingface_hub import HfApi
 
 from opensearch_py_ml.ml_commons import MLCommonClient
 from opensearch_py_ml.ml_models import SparseEncodingModel
 from tests import OPENSEARCH_TEST_CLIENT
 from utils.model_uploader import autotracing_utils
 
-BOTH_FORMAT = "BOTH"
-TORCH_SCRIPT_FORMAT = "TORCH_SCRIPT"
-ONNX_FORMAT = "ONNX"
-
-TEMP_MODEL_PATH = "temp_model_path"
-TORCHSCRIPT_FOLDER_PATH = "model-torchscript/"
-ONNX_FOLDER_PATH = "model-onnx/"
-UPLOAD_FOLDER_PATH = "upload/"
-MODEL_CONFIG_FILE_NAME = "ml-commons_model_config.json"
-OUTPUT_DIR = "trace_output/"
-LICENSE_VAR_FILE = "apache_verified.txt"
-DESCRIPTION_VAR_FILE = "description.txt"
 TEST_SENTENCES = ["Nice to meet you.", "I like playing football.", "Thanks."]
-RTOL_TEST = 1e-03
-ATOL_TEST = 1e-05
-
-
-def verify_license_by_Hf(model_id: str):
-    api = HfApi()
-    model_info = api.model_info(model_id)
-    model_license = model_info.cardData.get("license", "License information not found.")
-    if model_license == "apache-2.0":
-        return True
-    else:
-        return False
 
 
 def trace_sparse_encoding_model(
@@ -71,6 +62,7 @@ def trace_sparse_encoding_model(
     :return: Tuple of model_path (path to model zip file) and model_config_path (path to model config json file)
     :rtype: Tuple[str, str]
     """
+
     folder_path = (
         TORCHSCRIPT_FOLDER_PATH
         if model_format == TORCH_SCRIPT_FORMAT
@@ -78,18 +70,11 @@ def trace_sparse_encoding_model(
     )
 
     # 1.) Initiate a sparse encoding model class object
-    try:
-        pre_trained_model = SparseEncodingModel(
-            model_id=model_id, folder_path=folder_path, overwrite=True
-        )
-    except Exception as e:
-        assert (
-            False
-        ), f"Raised Exception in tracing {model_format} model\
-                             during initiating a sparse encoding model class object: {e}"
+    pre_trained_model = init_sparse_model(
+        SparseEncodingModel, model_id, model_format, folder_path
+    )
 
     # 2.) Save the model in the specified format
-
     try:
         if model_format == TORCH_SCRIPT_FORMAT:
             model_path = pre_trained_model.save_as_pt(
@@ -102,7 +87,7 @@ def trace_sparse_encoding_model(
                 model_id=model_id, add_apache_license=True
             )
     except Exception as e:
-        assert False, f"Raised Exception during saving model as {model_format}: {e}"
+        raise ModelTraceError("saving model", model_format, e)
 
     # 3.) Create a model config json file
     try:
@@ -112,16 +97,10 @@ def trace_sparse_encoding_model(
             description=model_description,
         )
     except Exception as e:
-        assert (
-            False
-        ), f"Raised Exception during making model config file for {model_format} model: {e}"
+        raise ModelTraceError("making model config file", model_format, e)
 
     # 4.) Preview model config
-    print(f"\n+++++ {model_format} Model Config +++++\n")
-    with open(model_config_path, "r") as f:
-        model_config = json.load(f)
-        print(json.dumps(model_config, indent=4))
-    print("\n+++++++++++++++++++++++++++++++++++++++\n")
+    preview_model_config(model_format, model_config_path)
 
     # 5.) Return model_path & model_config_path for model registration
     return model_path, model_config_path
@@ -141,14 +120,12 @@ def register_and_deploy_sparse_encoding_model(
     autotracing_utils.check_model_status(ml_client, model_id, model_format)
     try:
         encoding_output = ml_client.generate_sparse_encoding(model_id, texts)
-
         encoding_datas = [
             encoding_output["inference_results"][i]["output"][0]["dataAsMap"][
                 "response"
             ][0]
             for i in range(len(texts))
         ]
-
     except Exception as e:
         assert (
             False
@@ -161,7 +138,8 @@ def register_and_deploy_sparse_encoding_model(
 def verify_embedding_data_vectors(original_embedding_datas, tracing_embedding_datas):
     if len(original_embedding_datas) != len(tracing_embedding_datas):
         print(
-            f"The length of original_embedding_data_vector: {len(original_embedding_datas)} and tracing_embedding_data_vector: {len(tracing_embedding_datas)} are different"
+            f"The length of original_embedding_data_vector: {len(original_embedding_datas)} and "
+            f"tracing_embedding_data_vector: {len(tracing_embedding_datas)} are different"
         )
         return False
 
@@ -184,127 +162,15 @@ def verify_sparse_encoding(
     if original_embedding_data.keys() != tracing_embedding_data.keys():
         print("Different encoding dimensions")
         return False
-    tolerance = 0.01
     for key in original_embedding_data:
-        if abs(original_embedding_data[key] - tracing_embedding_data[key]) > tolerance:
+        a = original_embedding_data[key]
+        b = tracing_embedding_data[key]
+        if not np.allclose(a, b, rtol=RTOL_TEST, atol=ATOL_TEST):
             print(
                 f"{key}'s score has gap: {original_embedding_data[key]} != {tracing_embedding_data[key]}"
             )
             return False
     return True
-
-
-def prepare_files_for_uploading(
-    model_id: str,
-    model_version: str,
-    model_format: str,
-    src_model_path: str,
-    src_model_config_path: str,
-) -> tuple[str, str]:
-    """
-    Prepare files for uploading by storing them in UPLOAD_FOLDER_PATH
-
-    :param model_id: Model ID of the pretrained model
-    :type model_id: string
-    :param model_version: Version of the pretrained model for registration
-    :type model_version: string
-    :param model_format: Model format ("TORCH_SCRIPT" or "ONNX")
-    :type model_format: string
-    :param src_model_path: Path to model files for uploading
-    :type src_model_path: string
-    :param src_model_config_path: Path to model config files for uploading
-    :type src_model_config_path: string
-    :return: Tuple of dst_model_path (path to model zip file) and dst_model_config_path
-    (path to model config json file) in the UPLOAD_FOLDER_PATH
-    :rtype: Tuple[str, str]
-    """
-    model_type, model_name = model_id.split("/")
-    model_format = model_format.lower()
-    folder_to_delete = (
-        TORCHSCRIPT_FOLDER_PATH if model_format == "torch_script" else ONNX_FOLDER_PATH
-    )
-
-    # Store to be uploaded files in UPLOAD_FOLDER_PATH
-    try:
-        dst_model_dir = (
-            f"{UPLOAD_FOLDER_PATH}{model_name}/{model_version}/{model_format}"
-        )
-        os.makedirs(dst_model_dir, exist_ok=True)
-        dst_model_filename = (
-            f"{model_type}_{model_name}-{model_version}-{model_format}.zip"
-        )
-        dst_model_path = dst_model_dir + "/" + dst_model_filename
-        shutil.copy(src_model_path, dst_model_path)
-        print(f"\nCopied {src_model_path} to {dst_model_path}")
-
-        dst_model_config_dir = (
-            f"{UPLOAD_FOLDER_PATH}{model_name}/{model_version}/{model_format}"
-        )
-        os.makedirs(dst_model_config_dir, exist_ok=True)
-        dst_model_config_filename = "config.json"
-        dst_model_config_path = dst_model_config_dir + "/" + dst_model_config_filename
-        shutil.copy(src_model_config_path, dst_model_config_path)
-        print(f"Copied {src_model_config_path} to {dst_model_config_path}")
-    except Exception as e:
-        assert (
-            False
-        ), f"Raised Exception during preparing {model_format} files for uploading: {e}"
-
-    # Delete model folder downloaded from HuggingFace during model tracing
-    try:
-        shutil.rmtree(folder_to_delete)
-    except Exception as e:
-        assert False, f"Raised Exception while deleting {folder_to_delete}: {e}"
-
-    return dst_model_path, dst_model_config_path
-
-
-def store_license_verified_variable(license_verified: bool) -> None:
-    """
-    Store whether the model is licensed under Apache 2.0 in OUTPUT_DIR/LICENSE_VAR_FILE
-    to be used to generate issue body for manual approval
-
-    :param license_verified: Whether the model is licensed under Apache 2.0
-    :return: No return value expected
-    :rtype: None
-    """
-    try:
-        os.makedirs(OUTPUT_DIR, exist_ok=True)
-        license_var_filepath = OUTPUT_DIR + "/" + LICENSE_VAR_FILE
-        with open(license_var_filepath, "w") as f:
-            f.write(str(license_verified))
-    except Exception as e:
-        print(
-            f"Cannot store license_verified ({license_verified}) in {license_var_filepath}: {e}"
-        )
-
-
-def store_description_variable(config_path_for_checking_description: str) -> None:
-    """
-    Store model description in OUTPUT_DIR/DESCRIPTION_VAR_FILE
-    to be used to generate issue body for manual approval
-
-    :param config_path_for_checking_description: Path to config json file
-    :type config_path_for_checking_description: str
-    :return: No return value expected
-    :rtype: None
-    """
-    try:
-        os.makedirs(OUTPUT_DIR, exist_ok=True)
-        description_var_filepath = OUTPUT_DIR + "/" + DESCRIPTION_VAR_FILE
-        with open(config_path_for_checking_description, "r") as f:
-            config_dict = json.load(f)
-            description = (
-                config_dict["description"] if "description" in config_dict else "-"
-            )
-        print(f"Storing the following description at {description_var_filepath}")
-        print(description)
-        with open(description_var_filepath, "w") as f:
-            f.write(description)
-    except Exception as e:
-        print(
-            f"Cannot store description ({description}) in {description_var_filepath}: {e}"
-        )
 
 
 def main(
@@ -330,7 +196,7 @@ def main(
 
     print(
         f"""
-    === Begin running model_autotracing.py ===
+    === Begin running sparse_model_autotracing.py ===
     Model ID: {model_id}
     Model Version: {model_version}
     Tracing Format: {tracing_format}
@@ -348,7 +214,7 @@ def main(
     pre_trained_model = SparseEncodingModel(model_id)
     original_encoding_datas = pre_trained_model.process_sparse_encoding(TEST_SENTENCES)
     pre_trained_model.save(path=TEMP_MODEL_PATH)
-    license_verified = verify_license_by_Hf(model_id)
+    license_verified = verify_license_by_hfapi(model_id)
 
     try:
         shutil.rmtree(TEMP_MODEL_PATH)

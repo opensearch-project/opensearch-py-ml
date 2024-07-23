@@ -10,7 +10,6 @@
 # files for uploading to OpenSearch model hub.
 
 import argparse
-import json
 import os
 import shutil
 import sys
@@ -21,7 +20,25 @@ from mdutils.fileutils import MarkDownFile
 from numpy.typing import DTypeLike
 from sentence_transformers import SentenceTransformer
 
-from utils.model_uploader.autotracing_utils import autotracing_warning_filters
+from utils.model_uploader.autotracing_utils import (
+    ATOL_TEST,
+    BOTH_FORMAT,
+    ONNX_FOLDER_PATH,
+    ONNX_FORMAT,
+    RTOL_TEST,
+    TEMP_MODEL_PATH,
+    TORCH_SCRIPT_FORMAT,
+    TORCHSCRIPT_FOLDER_PATH,
+    autotracing_warning_filters,
+    check_model_status,
+    prepare_files_for_uploading,
+    preview_model_config,
+    register_and_deploy_model,
+    store_description_variable,
+)
+from utils.model_uploader.sparse_model_autotracing import (
+    store_license_verified_variable,
+)
 
 # We need to append ROOT_DIR path so that we can import
 # OPENSEARCH_TEST_CLIENT and opensearch_py_ml since this
@@ -34,25 +51,15 @@ from opensearch_py_ml.ml_commons import MLCommonClient
 from opensearch_py_ml.ml_models.sentencetransformermodel import SentenceTransformerModel
 from tests import OPENSEARCH_TEST_CLIENT
 
-BOTH_FORMAT = "BOTH"
-TORCH_SCRIPT_FORMAT = "TORCH_SCRIPT"
-ONNX_FORMAT = "ONNX"
-
-TEMP_MODEL_PATH = "temp_model_path"
-TORCHSCRIPT_FOLDER_PATH = "model-torchscript/"
-ONNX_FOLDER_PATH = "model-onnx/"
-UPLOAD_FOLDER_PATH = "upload/"
-MODEL_CONFIG_FILE_NAME = "ml-commons_model_config.json"
-OUTPUT_DIR = "trace_output/"
-LICENSE_VAR_FILE = "apache_verified.txt"
-DESCRIPTION_VAR_FILE = "description.txt"
 TEST_SENTENCES = [
     "First test sentence",
     "This is another sentence used for testing model embedding outputs.",
-    "OpenSearch is a scalable, flexible, and extensible open-source software suite for search, analytics, and observability applications licensed under Apache 2.0. Powered by Apache Lucene and driven by the OpenSearch Project community, OpenSearch offers a vendor-agnostic toolset you can use to build secure, high-performance, cost-efficient applications. Use OpenSearch as an end-to-end solution or connect it with your preferred open-source tools or partner projects.",
+    "OpenSearch is a scalable, flexible, and extensible open-source software suite for search, analytics, "
+    "and observability applications licensed under Apache 2.0. Powered by Apache Lucene and driven by the OpenSearch "
+    "Project community, OpenSearch offers a vendor-agnostic toolset you can use to build secure, high-performance, "
+    "cost-efficient applications. Use OpenSearch as an end-to-end solution or connect it with your preferred "
+    "open-source tools or partner projects.",
 ]
-RTOL_TEST = 1e-03
-ATOL_TEST = 1e-05
 
 
 def verify_license_in_md_file() -> bool:
@@ -161,11 +168,7 @@ def trace_sentence_transformer_model(
         ), f"Raised Exception during making model config file for {model_format} model: {e}"
 
     # 4.) Preview model config
-    print(f"\n+++++ {model_format} Model Config +++++\n")
-    with open(model_config_path, "r") as f:
-        model_config = json.load(f)
-        print(json.dumps(model_config, indent=4))
-    print("\n+++++++++++++++++++++++++++++++++++++++\n")
+    preview_model_config(model_format, model_config_path)
 
     # 5.) Return model_path & model_config_path for model registration
     return model_path, model_config_path
@@ -196,32 +199,11 @@ def register_and_deploy_sentence_transformer_model(
     embedding_data = None
 
     # 1.) Register & Deploy the model
-    model_id = ""
-    try:
-        model_id = ml_client.register_model(
-            model_path=model_path,
-            model_config_path=model_config_path,
-            deploy_model=True,
-            isVerbose=True,
-        )
-        print(f"\n{model_format}_model_id:", model_id)
-        assert model_id != "" or model_id is not None
-    except Exception as e:
-        assert (
-            False
-        ), f"Raised Exception in {model_format} model registration/deployment: {e}"
-
+    model_id = register_and_deploy_model(
+        ml_client, model_format, model_path, model_config_path
+    )
     # 2.) Check model status
-    try:
-        ml_model_status = ml_client.get_model_info(model_id)
-        print("\nModel Status:")
-        print(ml_model_status)
-        assert ml_model_status.get("model_state") == "DEPLOYED"
-        assert ml_model_status.get("model_format") == model_format
-        assert ml_model_status.get("algorithm") == "TEXT_EMBEDDING"
-    except Exception as e:
-        assert False, f"Raised Exception in getting {model_format} model info: {e}"
-
+    check_model_status(ml_client, model_id, model_format)
     # 3.) Generate embeddings
     try:
         embedding_output = ml_client.generate_embedding(model_id, TEST_SENTENCES)
@@ -290,120 +272,6 @@ def verify_embedding_data(
         return False
     else:
         return True
-
-
-def prepare_files_for_uploading(
-    model_id: str,
-    model_version: str,
-    model_format: str,
-    src_model_path: str,
-    src_model_config_path: str,
-) -> None:
-    """
-    Prepare files for uploading by storing them in UPLOAD_FOLDER_PATH
-
-    :param model_id: Model ID of the pretrained model
-    :type model_id: string
-    :param model_version: Version of the pretrained model for registration
-    :type model_version: string
-    :param model_format: Model format ("TORCH_SCRIPT" or "ONNX")
-    :type model_format: string
-    :param src_model_path: Path to model files for uploading
-    :type src_model_path: string
-    :param src_model_config_path: Path to model config files for uploading
-    :type src_model_config_path: string
-    :return: Tuple of dst_model_path (path to model zip file) and dst_model_config_path
-    (path to model config json file) in the UPLOAD_FOLDER_PATH
-    :rtype: Tuple[str, str]
-    """
-    model_type, model_name = model_id.split("/")
-    model_format = model_format.lower()
-    folder_to_delete = (
-        TORCHSCRIPT_FOLDER_PATH if model_format == "torch_script" else ONNX_FOLDER_PATH
-    )
-
-    # Store to be uploaded files in UPLOAD_FOLDER_PATH
-    try:
-        dst_model_dir = (
-            f"{UPLOAD_FOLDER_PATH}{model_name}/{model_version}/{model_format}"
-        )
-        os.makedirs(dst_model_dir, exist_ok=True)
-        dst_model_filename = (
-            f"{model_type}_{model_name}-{model_version}-{model_format}.zip"
-        )
-        dst_model_path = dst_model_dir + "/" + dst_model_filename
-        shutil.copy(src_model_path, dst_model_path)
-        print(f"\nCopied {src_model_path} to {dst_model_path}")
-
-        dst_model_config_dir = (
-            f"{UPLOAD_FOLDER_PATH}{model_name}/{model_version}/{model_format}"
-        )
-        os.makedirs(dst_model_config_dir, exist_ok=True)
-        dst_model_config_filename = "config.json"
-        dst_model_config_path = dst_model_config_dir + "/" + dst_model_config_filename
-        shutil.copy(src_model_config_path, dst_model_config_path)
-        print(f"Copied {src_model_config_path} to {dst_model_config_path}")
-    except Exception as e:
-        assert (
-            False
-        ), f"Raised Exception during preparing {model_format} files for uploading: {e}"
-
-    # Delete model folder downloaded from HuggingFace during model tracing
-    try:
-        shutil.rmtree(folder_to_delete)
-    except Exception as e:
-        assert False, f"Raised Exception while deleting {folder_to_delete}: {e}"
-
-    return dst_model_path, dst_model_config_path
-
-
-def store_license_verified_variable(license_verified: bool) -> None:
-    """
-    Store whether the model is licensed under Apache 2.0 in OUTPUT_DIR/LICENSE_VAR_FILE
-    to be used to generate issue body for manual approval
-
-    :param license_verified: Whether the model is licensed under Apache 2.0
-    :type model_path: bool
-    :return: No return value expected
-    :rtype: None
-    """
-    try:
-        os.makedirs(OUTPUT_DIR, exist_ok=True)
-        license_var_filepath = OUTPUT_DIR + "/" + LICENSE_VAR_FILE
-        with open(license_var_filepath, "w") as f:
-            f.write(str(license_verified))
-    except Exception as e:
-        print(
-            f"Cannot store license_verified ({license_verified}) in {license_var_filepath}: {e}"
-        )
-
-
-def store_description_variable(config_path_for_checking_description: str) -> None:
-    """
-    Store model description in OUTPUT_DIR/DESCRIPTION_VAR_FILE
-    to be used to generate issue body for manual approval
-
-    :param config_path_for_checking_description: Path to config json file
-    :type config_path_for_checking_description: str
-    :return: No return value expected
-    :rtype: None
-    """
-    try:
-        os.makedirs(OUTPUT_DIR, exist_ok=True)
-        description_var_filepath = OUTPUT_DIR + "/" + DESCRIPTION_VAR_FILE
-        with open(config_path_for_checking_description, "r") as f:
-            config_dict = json.load(f)
-            description = (
-                config_dict["description"] if "description" in config_dict else "-"
-            )
-        print(f"Storing the following description at {description_var_filepath}")
-        print(description)
-        with open(description_var_filepath, "w") as f:
-            f.write(description)
-    except Exception as e:
-        print(
-            f"Cannot store description ({description}) in {description_var_filepath}: {e}"
-        )
 
 
 def main(
