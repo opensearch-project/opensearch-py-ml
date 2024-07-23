@@ -21,7 +21,6 @@ from zipfile import ZipFile
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import requests
 import torch
 import yaml
 from accelerate import Accelerator, notebook_launcher
@@ -37,10 +36,10 @@ from opensearch_py_ml.ml_commons.ml_common_utils import (
     _generate_model_content_hash_value,
 )
 
-from .ml_commons_utils import LICENSE_URL
+from .base_models import BaseUploadModel
 
 
-class SentenceTransformerModel:
+class SentenceTransformerModel(BaseUploadModel):
     """
     Class for training, exporting and configuring the SentenceTransformers model.
     """
@@ -73,6 +72,7 @@ class SentenceTransformerModel:
         :return: no return value expected
         :rtype: None
         """
+        super().__init__(model_id, folder_path, overwrite)
         default_folder_path = os.path.join(
             os.getcwd(), "sentence_transformer_model_files"
         )
@@ -641,22 +641,6 @@ class SentenceTransformerModel:
         print("Model saved to path: " + self.folder_path + "\n")
         return traced_cpu
 
-    def _add_apache_license_to_model_zip_file(self, model_zip_file_path: str):
-        """
-        Add Apache-2.0 license file to the model zip file at model_zip_file_path
-
-        :param model_zip_file_path:
-            Path to the model zip file
-        :type model_zip_file_path: string
-        :return: no return value expected
-        :rtype: None
-        """
-        r = requests.get(LICENSE_URL)
-        assert r.status_code == 200, "Failed to add license file to the model zip file"
-
-        with ZipFile(str(model_zip_file_path), "a") as zipObj:
-            zipObj.writestr("LICENSE", r.content)
-
     def zip_model(
         self,
         model_path: str = None,
@@ -728,39 +712,9 @@ class SentenceTransformerModel:
                 arcname="tokenizer.json",
             )
         if add_apache_license:
-            self._add_apache_license_to_model_zip_file(zip_file_path)
+            super()._add_apache_license_to_model_zip_file(zip_file_path)
 
         print("zip file is saved to " + zip_file_path + "\n")
-
-    def _fill_null_truncation_field(
-        self,
-        save_json_folder_path: str,
-        max_length: int,
-    ) -> None:
-        """
-        Fill truncation field in tokenizer.json when it is null
-
-        :param save_json_folder_path:
-             path to save model json file, e.g, "home/save_pre_trained_model_json/")
-        :type save_json_folder_path: string
-        :param max_length:
-             maximum sequence length for model
-        :type max_length: int
-        :return: no return value expected
-        :rtype: None
-        """
-        tokenizer_file_path = os.path.join(save_json_folder_path, "tokenizer.json")
-        with open(tokenizer_file_path) as user_file:
-            parsed_json = json.load(user_file)
-        if "truncation" not in parsed_json or parsed_json["truncation"] is None:
-            parsed_json["truncation"] = {
-                "direction": "Right",
-                "max_length": max_length,
-                "strategy": "LongestFirst",
-                "stride": 0,
-            }
-            with open(tokenizer_file_path, "w") as file:
-                json.dump(parsed_json, file, indent=2)
 
     def save_as_pt(
         self,
@@ -833,7 +787,7 @@ class SentenceTransformerModel:
 
         # save tokenizer.json in save_json_folder_name
         model.save(save_json_folder_path)
-        self._fill_null_truncation_field(
+        super()._fill_null_truncation_field(
             save_json_folder_path, model.tokenizer.model_max_length
         )
 
@@ -869,7 +823,7 @@ class SentenceTransformerModel:
                 arcname="tokenizer.json",
             )
         if add_apache_license:
-            self._add_apache_license_to_model_zip_file(zip_file_path)
+            super()._add_apache_license_to_model_zip_file(zip_file_path)
 
         self.torch_script_zip_file_path = zip_file_path
         print("zip file is saved to ", zip_file_path, "\n")
@@ -943,7 +897,7 @@ class SentenceTransformerModel:
 
         # save tokenizer.json in output_path
         model.save(save_json_folder_path)
-        self._fill_null_truncation_field(
+        super()._fill_null_truncation_field(
             save_json_folder_path, model.tokenizer.model_max_length
         )
 
@@ -967,7 +921,7 @@ class SentenceTransformerModel:
                 arcname="tokenizer.json",
             )
         if add_apache_license:
-            self._add_apache_license_to_model_zip_file(zip_file_path)
+            super()._add_apache_license_to_model_zip_file(zip_file_path)
 
         self.onnx_zip_file_path = zip_file_path
         print("zip file is saved to ", zip_file_path, "\n")

@@ -4,66 +4,46 @@
 # compatible open source license.
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
-
 import json
 import os
+from abc import ABC, abstractmethod
 from zipfile import ZipFile
 
 import requests
 
-from .ml_commons_utils import LICENSE_URL
+from opensearch_py_ml.ml_commons.ml_common_utils import (
+    LICENSE_URL,
+    SPARSE_ENCODING_FUNCTION_NAME,
+)
 
 
-class SparseModel:
+class BaseUploadModel(ABC):
     """
-    Class for autotracing the Sparse Encoding model.
+    A base class for uploading models to OpenSearch pretrained model hub.
     """
 
     def __init__(
-        self,
-        model_id: str,
-        folder_path: str = "./model_files/",
-        overwrite: bool = False,
-    ):
+        self, model_id: str, folder_path: str = None, overwrite: bool = False
+    ) -> None:
         self.model_id = model_id
         self.folder_path = folder_path
         self.overwrite = overwrite
 
-    def pro_process(self):
+    @abstractmethod
+    def save_as_pt(self, *args, **kwargs):
         pass
 
-    def post_process(self):
+    @abstractmethod
+    def save_as_onnx(self, *args, **kwargs):
         pass
 
-    def _add_apache_license_to_zip(self, zip_file_path: str):
-        with ZipFile(zip_file_path, "a") as zipObj, requests.get(LICENSE_URL) as r:
-            assert r.status_code == 200, "Failed to download license"
-            zipObj.writestr("LICENSE", r.content)
-
-    def save_as_pt(
-        self,
-        model_id,
-        sentences,
-        add_apache_license=True,
-    ):
-        pass
-
-    def save_as_onnx(
-        self,
-        model_id,
-        add_apache_license=True,
-    ):
-        pass
-
+    @abstractmethod
     def make_model_config_json(
         self,
-        version_number: str = "1.0",
-        model_format: str = "TORCH_SCRIPT",
-        description: str = None,
+        version_number: str,
+        model_format: str,
+        description: str,
     ) -> str:
-        pass
-
-    def save(self, path: str):
         pass
 
     def _fill_null_truncation_field(
@@ -111,3 +91,27 @@ class SparseModel:
 
         with ZipFile(str(model_zip_file_path), "a") as zipObj:
             zipObj.writestr("LICENSE", r.content)
+
+
+class SparseModel(BaseUploadModel, ABC):
+    """
+    Class for autotracing the Sparse Encoding model.
+    """
+
+    def __init__(
+        self,
+        model_id: str,
+        folder_path: str = "./model_files/",
+        overwrite: bool = False,
+    ):
+        super().__init__(model_id, folder_path, overwrite)
+        self.model_id = model_id
+        self.folder_path = folder_path
+        self.overwrite = overwrite
+        self.function_name = SPARSE_ENCODING_FUNCTION_NAME
+
+    def pre_process(self):
+        pass
+
+    def post_process(self):
+        pass

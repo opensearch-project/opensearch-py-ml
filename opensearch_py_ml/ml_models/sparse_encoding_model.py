@@ -12,11 +12,10 @@ import torch
 from transformers import AutoModelForMaskedLM, AutoTokenizer
 
 from opensearch_py_ml.ml_commons.ml_common_utils import (
+    SPARSE_ENCODING_FUNCTION_NAME,
     _generate_model_content_hash_value,
 )
-from opensearch_py_ml.ml_models.sparse_model import SparseModel
-
-from .ml_commons_utils import SPARSE_ENCODING_FUNCTION_NAME
+from opensearch_py_ml.ml_models.base_models import SparseModel
 
 
 def _generate_default_model_description() -> str:
@@ -175,6 +174,9 @@ class SparseEncodingModel(SparseModel):
         self.torch_script_zip_file_path = zip_file_path
         print("zip file is saved to ", zip_file_path, "\n")
         return zip_file_path
+
+    def save_as_onnx(self, *args, **kwargs):
+        raise NotImplementedError
 
     def make_model_config_json(
         self,

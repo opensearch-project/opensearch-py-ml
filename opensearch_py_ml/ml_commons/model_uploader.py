@@ -180,11 +180,12 @@ class ModelUploader:
                 raise ValueError(f"{MODEL_CONTENT_HASH_VALUE} can not be empty")
             if not model_meta.get(TOTAL_CHUNKS_FIELD):
                 raise ValueError(f"{TOTAL_CHUNKS_FIELD} can not be empty")
-            if not model_meta.get(MODEL_CONFIG_FIELD) and not (
-                model_meta.get(MODEL_FUNCTION_NAME) == "SPARSE_ENCODING"
-                or model_meta.get(MODEL_TASK_TYPE) == "SPARSE_ENCODING"
-            ):
-                raise ValueError(f"{MODEL_CONFIG_FIELD} can not be empty")
+            if not model_meta.get(MODEL_CONFIG_FIELD):
+                if (
+                    model_meta.get(MODEL_FUNCTION_NAME) != "SPARSE_ENCODING"
+                    and model_meta.get(MODEL_TASK_TYPE) != "SPARSE_ENCODING"
+                ):
+                    raise ValueError(f"{MODEL_CONFIG_FIELD} can not be empty")
             else:
                 if not isinstance(model_meta.get(MODEL_CONFIG_FIELD), dict):
                     raise TypeError(

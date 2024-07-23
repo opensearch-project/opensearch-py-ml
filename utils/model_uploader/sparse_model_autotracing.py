@@ -13,6 +13,14 @@ from typing import Optional, Tuple
 
 import numpy as np
 
+THIS_DIR = os.path.dirname(__file__)
+ROOT_DIR = os.path.join(THIS_DIR, "../..")
+sys.path.append(ROOT_DIR)
+
+from opensearch_py_ml.ml_commons import MLCommonClient
+from opensearch_py_ml.ml_models import SparseEncodingModel
+from tests import OPENSEARCH_TEST_CLIENT
+from utils.model_uploader import autotracing_utils
 from utils.model_uploader.autotracing_utils import (
     ATOL_TEST,
     BOTH_FORMAT,
@@ -25,18 +33,11 @@ from utils.model_uploader.autotracing_utils import (
     ModelTraceError,
     init_sparse_model,
     prepare_files_for_uploading,
-    preview_model_config, verify_license_by_hfapi, store_description_variable, store_license_verified_variable,
+    preview_model_config,
+    store_description_variable,
+    store_license_verified_variable,
+    verify_license_by_hfapi,
 )
-
-THIS_DIR = os.path.dirname(__file__)
-ROOT_DIR = os.path.join(THIS_DIR, "../..")
-sys.path.append(ROOT_DIR)
-
-
-from opensearch_py_ml.ml_commons import MLCommonClient
-from opensearch_py_ml.ml_models import SparseEncodingModel
-from tests import OPENSEARCH_TEST_CLIENT
-from utils.model_uploader import autotracing_utils
 
 TEST_SENTENCES = ["Nice to meet you.", "I like playing football.", "Thanks."]
 
@@ -75,6 +76,7 @@ def trace_sparse_encoding_model(
     )
 
     # 2.) Save the model in the specified format
+
     try:
         if model_format == TORCH_SCRIPT_FORMAT:
             model_path = pre_trained_model.save_as_pt(
