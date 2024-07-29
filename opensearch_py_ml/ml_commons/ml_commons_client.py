@@ -499,6 +499,16 @@ class MLCommonClient:
         )
 
     def generate_sparse_encoding(self, model_id: str, sentences: List[str]) -> object:
+        """
+        Generates sparse encoding for the given sentences (using ml commons _predict API).
+
+        :param model_id: Unique ID of the Sparse model.
+        :type model_id: string
+        :param sentences: List of sentences.
+        :type sentences: list of string
+        :return: Returns a JSON object `inference_results` containing the sparse encoding results for the given sentences.
+        :rtype: object
+        """
         API_URL = f"{ML_BASE_URI}/_predict/sparse_encoding/{model_id}"
         API_BODY = {"text_docs": sentences}
         return self._client.transport.perform_request(

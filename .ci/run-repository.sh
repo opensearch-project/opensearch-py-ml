@@ -65,7 +65,7 @@ elif [[ "$TASK_TYPE" == "doc" ]]; then
   
   docker cp opensearch-py-ml-doc-runner:/code/opensearch-py-ml/docs/build/ ./docs/
   docker rm opensearch-py-ml-doc-runner
-elif [[ "$TASK_TYPE" == "trace" ]]; then
+elif [[ "$TASK_TYPE" == "SentenceTransformerTrace" ]]; then
   # Set up OpenSearch cluster & Run model autotracing (Invoked by model_uploader.yml workflow)
   echo -e "\033[34;1mINFO:\033[0m MODEL_ID: ${MODEL_ID}\033[0m"
   echo -e "\033[34;1mINFO:\033[0m MODEL_VERSION: ${MODEL_VERSION}\033[0m"
@@ -92,7 +92,7 @@ elif [[ "$TASK_TYPE" == "trace" ]]; then
   docker cp opensearch-py-ml-trace-runner:/code/opensearch-py-ml/trace_output/ ./trace_output/
   docker rm opensearch-py-ml-trace-runner
 
-elif [[ "$TASK_TYPE" == "sparse_trace" ]]; then
+elif [[ "$TASK_TYPE" == "SparseTrace" ]]; then
   # Set up OpenSearch cluster & Run model autotracing (Invoked by model_uploader.yml workflow)
   echo -e "\033[34;1mINFO:\033[0m MODEL_ID: ${MODEL_ID}\033[0m"
   echo -e "\033[34;1mINFO:\033[0m MODEL_VERSION: ${MODEL_VERSION}\033[0m"
