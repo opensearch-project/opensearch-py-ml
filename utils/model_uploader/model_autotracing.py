@@ -20,9 +20,20 @@ from mdutils.fileutils import MarkDownFile
 from numpy.typing import DTypeLike
 from sentence_transformers import SentenceTransformer
 
+# We need to append ROOT_DIR path so that we can import
+# OPENSEARCH_TEST_CLIENT and opensearch_py_ml since this
+# python script is not in the root directory.
+THIS_DIR = os.path.dirname(__file__)
+ROOT_DIR = os.path.join(THIS_DIR, "../..")
+sys.path.append(ROOT_DIR)
+
+from opensearch_py_ml.ml_commons import MLCommonClient
+from opensearch_py_ml.ml_models.sentencetransformermodel import SentenceTransformerModel
+from tests import OPENSEARCH_TEST_CLIENT
 from utils.model_uploader.autotracing_utils import (
     ATOL_TEST,
     BOTH_FORMAT,
+    DENSE_MODEL_ALGORITHM,
     ONNX_FOLDER_PATH,
     ONNX_FORMAT,
     RTOL_TEST,
@@ -39,17 +50,6 @@ from utils.model_uploader.autotracing_utils import (
 from utils.model_uploader.sparse_model_autotracing import (
     store_license_verified_variable,
 )
-
-# We need to append ROOT_DIR path so that we can import
-# OPENSEARCH_TEST_CLIENT and opensearch_py_ml since this
-# python script is not in the root directory.
-THIS_DIR = os.path.dirname(__file__)
-ROOT_DIR = os.path.join(THIS_DIR, "../..")
-sys.path.append(ROOT_DIR)
-
-from opensearch_py_ml.ml_commons import MLCommonClient
-from opensearch_py_ml.ml_models.sentencetransformermodel import SentenceTransformerModel
-from tests import OPENSEARCH_TEST_CLIENT
 
 TEST_SENTENCES = [
     "First test sentence",
@@ -203,7 +203,7 @@ def register_and_deploy_sentence_transformer_model(
         ml_client, model_format, model_path, model_config_path
     )
     # 2.) Check model status
-    check_model_status(ml_client, model_id, model_format)
+    check_model_status(ml_client, model_id, model_format, DENSE_MODEL_ALGORITHM)
     # 3.) Generate embeddings
     try:
         embedding_output = ml_client.generate_embedding(model_id, TEST_SENTENCES)

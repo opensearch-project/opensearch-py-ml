@@ -20,22 +20,27 @@ sys.path.append(ROOT_DIR)
 from opensearch_py_ml.ml_commons import MLCommonClient
 from opensearch_py_ml.ml_models import SparseEncodingModel
 from tests import OPENSEARCH_TEST_CLIENT
-from utils.model_uploader import autotracing_utils
 from utils.model_uploader.autotracing_utils import (
     ATOL_TEST,
     BOTH_FORMAT,
     ONNX_FOLDER_PATH,
     ONNX_FORMAT,
     RTOL_TEST,
+    SPARSE_ALGORITHM,
     TEMP_MODEL_PATH,
     TORCH_SCRIPT_FORMAT,
     TORCHSCRIPT_FOLDER_PATH,
     ModelTraceError,
+    autotracing_warning_filters,
+    check_model_status,
+    delete_model,
     init_sparse_model,
     prepare_files_for_uploading,
     preview_model_config,
+    register_and_deploy_model,
     store_description_variable,
     store_license_verified_variable,
+    undeploy_model,
     verify_license_by_hfapi,
 )
 
@@ -116,10 +121,10 @@ def register_and_deploy_sparse_encoding_model(
     texts: list[str],
 ) -> list:
     encoding_datas = None
-    model_id = autotracing_utils.register_and_deploy_model(
+    model_id = register_and_deploy_model(
         ml_client, model_format, model_path, model_config_path
     )
-    autotracing_utils.check_model_status(ml_client, model_id, model_format)
+    check_model_status(ml_client, model_id, model_format, SPARSE_ALGORITHM)
     try:
         encoding_output = ml_client.generate_sparse_encoding(model_id, texts)
         encoding_datas = [
@@ -132,8 +137,8 @@ def register_and_deploy_sparse_encoding_model(
         assert (
             False
         ), f"Raised Exception in generating sparse encoding with {model_format} model: {e}"
-    autotracing_utils.undeploy_model(ml_client, model_id, model_format)
-    autotracing_utils.delete_model(ml_client, model_id, model_format)
+    undeploy_model(ml_client, model_id, model_format)
+    delete_model(ml_client, model_id, model_format)
     return encoding_datas
 
 
@@ -303,7 +308,7 @@ def main(
 
 
 if __name__ == "__main__":
-    autotracing_utils.autotracing_warning_filters()
+    autotracing_warning_filters()
 
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(

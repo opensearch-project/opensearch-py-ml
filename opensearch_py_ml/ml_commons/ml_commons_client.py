@@ -509,7 +509,7 @@ class MLCommonClient:
         :return: Returns a JSON object `inference_results` containing the sparse encoding results for the given sentences.
         :rtype: object
         """
-        API_URL = f"{ML_BASE_URI}/_predict/sparse_encoding/{model_id}"
+        API_URL = f"{ML_BASE_URI}/models/{model_id}/_predict/"
         API_BODY = {"text_docs": sentences}
         return self._client.transport.perform_request(
             method="POST",

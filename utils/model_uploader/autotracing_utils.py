@@ -23,6 +23,8 @@ BOTH_FORMAT = "BOTH"
 TORCH_SCRIPT_FORMAT = "TORCH_SCRIPT"
 ONNX_FORMAT = "ONNX"
 
+DENSE_MODEL_ALGORITHM = "TEXT_EMBEDDING"
+SPARSE_ALGORITHM = "SPARSE_ENCODING"
 TEMP_MODEL_PATH = "temp_model_path"
 TORCHSCRIPT_FOLDER_PATH = "model-torchscript/"
 ONNX_FOLDER_PATH = "model-onnx/"
@@ -69,7 +71,9 @@ def register_and_deploy_model(
         ), f"Raised Exception in {model_format} model registration/deployment: {e}"
 
 
-def check_model_status(ml_client: "MLCommonClient", model_id: str, model_format: str):
+def check_model_status(
+    ml_client: "MLCommonClient", model_id: str, model_format: str, model_algorithm: str
+):
     """
     Check the status of the model.
 
@@ -87,7 +91,7 @@ def check_model_status(ml_client: "MLCommonClient", model_id: str, model_format:
         print(ml_model_status)
         assert ml_model_status.get("model_state") == "DEPLOYED"
         assert ml_model_status.get("model_format") == model_format
-        assert ml_model_status.get("algorithm") == "SPARSE_ENCODING"
+        assert ml_model_status.get("algorithm") == model_algorithm
     except Exception as e:
         assert False, f"Raised Exception in getting {model_format} model info: {e}"
 
