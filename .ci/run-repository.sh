@@ -101,5 +101,6 @@ elif [[ "$TASK_TYPE" == "SentenceTransformerTrace" || "$TASK_TYPE" == "SparseTra
   # trace_output should include description and license file.
   docker cp opensearch-py-ml-trace-runner:/code/opensearch-py-ml/upload/ ./upload/
   docker cp opensearch-py-ml-trace-runner:/code/opensearch-py-ml/trace_output/ ./trace_output/
+  # Delete the docker image
   docker rm opensearch-py-ml-trace-runner
 fi

@@ -126,7 +126,8 @@ def register_and_deploy_sparse_encoding_model(
     )
     check_model_status(ml_client, model_id, model_format, SPARSE_ALGORITHM)
     try:
-        encoding_output = ml_client.generate_sparse_encoding(model_id, texts)
+        encoding_input = {"text_docs": texts}
+        encoding_output = ml_client.generate_model_inference(model_id, encoding_input)
         encoding_datas = [
             encoding_output["inference_results"][i]["output"][0]["dataAsMap"][
                 "response"
