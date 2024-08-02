@@ -65,7 +65,7 @@ elif [[ "$TASK_TYPE" == "doc" ]]; then
   
   docker cp opensearch-py-ml-doc-runner:/code/opensearch-py-ml/docs/build/ ./docs/
   docker rm opensearch-py-ml-doc-runner
-elif [[ "$TASK_TYPE" == "trace" ]]; then
+elif [[ "$TASK_TYPE" == "SentenceTransformerTrace" || "$TASK_TYPE" == "SparseTrace" ]]; then
   # Set up OpenSearch cluster & Run model autotracing (Invoked by model_uploader.yml workflow)
   echo -e "\033[34;1mINFO:\033[0m MODEL_ID: ${MODEL_ID}\033[0m"
   echo -e "\033[34;1mINFO:\033[0m MODEL_VERSION: ${MODEL_VERSION}\033[0m"
@@ -73,6 +73,17 @@ elif [[ "$TASK_TYPE" == "trace" ]]; then
   echo -e "\033[34;1mINFO:\033[0m EMBEDDING_DIMENSION: ${EMBEDDING_DIMENSION:-N/A}\033[0m"
   echo -e "\033[34;1mINFO:\033[0m POOLING_MODE: ${POOLING_MODE:-N/A}\033[0m"
   echo -e "\033[34;1mINFO:\033[0m MODEL_DESCRIPTION: ${MODEL_DESCRIPTION:-N/A}\033[0m"
+
+  if [[ "$TASK_TYPE" == "SentenceTransformerTrace" ]]; then
+      NOX_TRACE_TYPE="trace"
+      EXTRA_ARGS="-ed ${EMBEDDING_DIMENSION} -pm ${POOLING_MODE}"
+  elif [[ "$TASK_TYPE" == "SparseTrace" ]]; then
+      NOX_TRACE_TYPE="sparsetrace"
+      EXTRA_ARGS=""
+  else
+      echo "Unknown TASK_TYPE: $TASK_TYPE"
+      exit 1
+  fi
 
   docker run \
   --network=${network_name} \
@@ -84,9 +95,12 @@ elif [[ "$TASK_TYPE" == "trace" ]]; then
   --env "TEST_TYPE=server" \
   --name opensearch-py-ml-trace-runner \
   opensearch-project/opensearch-py-ml \
-  nox -s "trace-${PYTHON_VERSION}" -- ${MODEL_ID} ${MODEL_VERSION} ${TRACING_FORMAT} -ed ${EMBEDDING_DIMENSION} -pm ${POOLING_MODE} -md ${MODEL_DESCRIPTION:+"$MODEL_DESCRIPTION"}
-  
+  nox -s "${NOX_TRACE_TYPE}-${PYTHON_VERSION}" -- ${MODEL_ID} ${MODEL_VERSION} ${TRACING_FORMAT} ${EXTRA_ARGS} -md ${MODEL_DESCRIPTION:+"$MODEL_DESCRIPTION"}
+
+  # To upload a model, we need the model artifact, description, license files into local path
+  # trace_output should include description and license file.
   docker cp opensearch-py-ml-trace-runner:/code/opensearch-py-ml/upload/ ./upload/
   docker cp opensearch-py-ml-trace-runner:/code/opensearch-py-ml/trace_output/ ./trace_output/
+  # Delete the docker image
   docker rm opensearch-py-ml-trace-runner
 fi

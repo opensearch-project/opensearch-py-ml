@@ -11,7 +11,7 @@ ML_BASE_URI = "/_plugins/_ml"
 MODEL_CHUNK_MAX_SIZE = 10_000_000
 MODEL_MAX_SIZE = 4_000_000_000
 BUF_SIZE = 65536  # lets read stuff in 64kb chunks!
-TIMEOUT = 120  # timeout for synchronous method calls in seconds
+TIMEOUT = 240  # timeout for synchronous method calls in seconds
 META_API_ENDPOINT = "models/meta"
 MODEL_NAME_FIELD = "name"
 MODEL_VERSION_FIELD = "version"
@@ -24,6 +24,12 @@ EMBEDDING_DIMENSION = "embedding_dimension"
 FRAMEWORK_TYPE = "framework_type"
 MODEL_CONTENT_HASH_VALUE = "model_content_hash_value"
 MODEL_GROUP_ID = "model_group_id"
+MODEL_FUNCTION_NAME = "function_name"
+MODEL_TASK_TYPE = "model_task_type"
+# URL of the license file for the OpenSearch project
+LICENSE_URL = "https://github.com/opensearch-project/opensearch-py-ml/raw/main/LICENSE"
+# Name of the function used for sparse encoding
+SPARSE_ENCODING_FUNCTION_NAME = "SPARSE_ENCODING"
 
 
 def _generate_model_content_hash_value(model_file_path: str) -> str:

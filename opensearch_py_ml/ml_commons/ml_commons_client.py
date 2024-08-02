@@ -498,6 +498,24 @@ class MLCommonClient:
             url=API_URL,
         )
 
+    def generate_model_inference(self, model_id: str, request_body: dict) -> object:
+        """
+        Generates inference result for the given input using the specified request body.
+
+        :param model_id: Unique ID of the model.
+        :type model_id: string
+        :param request_body: Request body to send to the API.
+        :type request_body: dict
+        :return: Returns a JSON object `inference_results` containing the results for the given input.
+        :rtype: object
+        """
+        API_URL = f"{ML_BASE_URI}/models/{model_id}/_predict/"
+        return self._client.transport.perform_request(
+            method="POST",
+            url=API_URL,
+            body=request_body,
+        )
+
     def generate_embedding(self, model_id: str, sentences: List[str]) -> object:
         """
         This method return embedding for given sentences (using ml commons _predict api)
