@@ -24,6 +24,10 @@ on:
         - "BOTH"
         - "TORCH_SCRIPT"
         - "ONNX"
+      upload_prefix:
+        description: "Specifies the model prefix for uploading. For example, transforming the default path from '.../sentence-transformers/msmarco-distilbert-base-tas-b' to '.../{prefix}/msmarco-distilbert-base-tas-b'."
+        required: false
+        type: string
       model_type:
         description: "Model type for auto-tracing (SentenceTransformer/Sparse)"
         required: true
@@ -74,7 +78,12 @@ jobs:
       run: |
         model_id=${{ github.event.inputs.model_id }}
         echo "model_folder=ml-models/${{github.event.inputs.model_source}}/${model_id}" >> $GITHUB_OUTPUT
-        echo "model_prefix_folder=ml-models/${{github.event.inputs.model_source}}/${model_id%%/*}/" >> $GITHUB_OUTPUT
+        if [[ -n "${{ github.event.inputs.upload_prefix }}" ]]; then
+          model_prefix="ml-models/${{ github.event.inputs.model_source }}/${{ github.event.inputs.upload_prefix }}"
+        else
+          model_prefix="ml-models/${{ github.event.inputs.model_source }}/${model_id%%/*}"
+        fi
+        echo "model_prefix_folder=$model_prefix" >> $GITHUB_OUTPUT
     - name: Initiate workflow_info
       id: init_workflow_info
       run: |
