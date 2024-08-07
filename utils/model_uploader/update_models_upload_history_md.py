@@ -85,17 +85,32 @@ def create_model_json_obj(
     return model_obj
 
 
-def sort_models(models: List[Dict]) -> List[Dict]:
+def sort_and_deduplicate_models(models: List[Dict]) -> List[Dict]:
     """
-    Sort models
+    Sort and deduplicate models
 
     :param models: List of model dictionary objects to be sorted
     :type models: list[dict]
     :return: Sorted list of model dictionary objects
     :rtype: list[dict]
     """
-    models = sorted(
-        models,
+
+    # Remove duplicates
+    unique_models = {}
+    for model in models:
+        key = (model["Model Version"], model["Model ID"], model["Model Format"])
+        if (
+            key not in unique_models
+            or model["Upload Time"] > unique_models[key]["Upload Time"]
+        ):
+            unique_models[key] = model
+
+    # Convert the unique_models dictionary back to a list
+    unique_models_list = list(unique_models.values())
+
+    # Sort the deduplicated list
+    sorted_models = sorted(
+        unique_models_list,
         key=lambda d: (
             d["Upload Time"],
             d["Model Version"],
@@ -103,7 +118,7 @@ def sort_models(models: List[Dict]) -> List[Dict]:
             d["Model Format"],
         ),
     )
-    return models
+    return sorted_models
 
 
 def update_model_json_file(
@@ -172,7 +187,7 @@ def update_model_json_file(
         models.append(model_obj)
 
     models = [dict(t) for t in {tuple(m.items()) for m in models}]
-    models = sort_models(models)
+    models = sort_and_deduplicate_models(models)
     with open(MODEL_JSON_FILEPATH, "w") as f:
         json.dump(models, f, indent=4)
 
@@ -188,7 +203,7 @@ def update_md_file():
     if os.path.exists(MODEL_JSON_FILEPATH):
         with open(MODEL_JSON_FILEPATH, "r") as f:
             models = json.load(f)
-    models = sort_models(models)
+    models = sort_and_deduplicate_models(models)
     table_data = KEYS[:]
     for m in models:
         for k in KEYS:

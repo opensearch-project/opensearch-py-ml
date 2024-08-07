@@ -77,12 +77,12 @@ jobs:
       id: init_folders
       run: |
         model_id=${{ github.event.inputs.model_id }}
-        echo "model_folder=ml-models/${{github.event.inputs.model_source}}/${model_id}" >> $GITHUB_OUTPUT
         if [[ -n "${{ github.event.inputs.upload_prefix }}" ]]; then
           model_prefix="ml-models/${{ github.event.inputs.model_source }}/${{ github.event.inputs.upload_prefix }}"
         else
           model_prefix="ml-models/${{ github.event.inputs.model_source }}/${model_id%%/*}"
         fi
+        echo "model_folder=$model_prefix/${model_id##*/}" >> $GITHUB_OUTPUT
         echo "model_prefix_folder=$model_prefix" >> $GITHUB_OUTPUT
     - name: Initiate workflow_info
       id: init_workflow_info
