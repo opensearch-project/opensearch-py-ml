@@ -1228,7 +1228,10 @@ class Operations:
     ) -> pd.DataFrame:
         df_list: List[pd.DataFrame] = []
         i = 0
-        for df in self.search_yield_pandas_dataframes(query_compiler=query_compiler):
+        for df in self.search_yield_pandas_dataframes(
+            query_compiler=query_compiler,
+            sort_index=query_compiler.index.os_index_field,
+        ):
             if show_progress:
                 i = i + df.shape[0]
                 if i % DEFAULT_PROGRESS_REPORTING_NUM_ROWS == 0:
@@ -1534,7 +1537,7 @@ def _search_yield_hits(
     # Pagination with 'search_after' must have a 'sort' setting.
     # Using '_doc:asc' is the most efficient as reads documents
     # in the order that they're written on disk in Lucene.
-    body.setdefault("sort", [{sort_index: "asc"}])
+    body.setdefault("sort", [{sort_index: sort_index}])
 
     # Improves performance by not tracking # of hits. We only
     # care about the hit itself for these queries.
