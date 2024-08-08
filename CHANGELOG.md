@@ -43,6 +43,7 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Update model upload history -  opensearch-project/opensearch-neural-sparse-encoding-doc-v2-mini (v.1.0.0)(TORCH_SCRIPT) by @dhrubo-os ([#407](https://github.com/opensearch-project/opensearch-py-ml/pull/407))
 - Update model upload history -  opensearch-project/opensearch-neural-sparse-encoding-doc-v2-distill (v.1.0.0)(TORCH_SCRIPT) by @dhrubo-os ([#405](https://github.com/opensearch-project/opensearch-py-ml/pull/405))
 - Update model upload history -  opensearch-project/opensearch-neural-sparse-encoding-v2-distill (v.1.0.0)(TORCH_SCRIPT) by @dhrubo-os ([#410](https://github.com/opensearch-project/opensearch-py-ml/pull/410))
+- Update pretrained_models_all_versions.json (2024-08-08 11:08:43) by @dhrubo-os ([#411](https://github.com/opensearch-project/opensearch-py-ml/pull/411))
 
 ### Fixed
 - Fix the wrong input parameter for model_uploader's base_download_path in jekins trigger.([#402](https://github.com/opensearch-project/opensearch-py-ml/pull/402))
