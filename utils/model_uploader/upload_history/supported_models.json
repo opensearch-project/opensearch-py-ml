@@ -51,6 +51,16 @@
     },
     {
         "Model Uploader": "@dhrubo-os",
+        "Upload Time": "2024-08-07 18:23:41",
+        "Model ID": "opensearch-project/opensearch-neural-sparse-encoding-doc-v2-mini",
+        "Model Version": "1.0.0",
+        "Model Format": "TORCH_SCRIPT",
+        "Embedding Dimension": "N/A",
+        "Pooling Mode": "N/A",
+        "Workflow Run ID": "10294048787"
+    },
+    {
+        "Model Uploader": "@dhrubo-os",
         "Upload Time": "2024-08-07 18:01:26",
         "Model ID": "opensearch-project/opensearch-neural-sparse-encoding-doc-v2-distill",
         "Model Version": "1.0.0",
