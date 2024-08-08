@@ -171,5 +171,38 @@
         "description": "The model can be used for Information Retrieval: Given a query, encode the query will all possible passages (e.g. retrieved with ElasticSearch). Then sort the passages in a decreasing order."
       }
     }
+  },
+  {
+    "name": "amazon/neural-sparse/opensearch-neural-sparse-encoding-doc-v2-distill",
+    "versions": {
+      "1.0.0": {
+        "format": [
+          "torch_script"
+        ],
+        "description": "This is a neural sparse encoding model: It transfers text into sparse vector, and then extract nonzero index and value to entry and weights. It serves only in ingestion and customer should use tokenizer model in query."
+      }
+    }
+  },
+  {
+    "name": "amazon/neural-sparse/opensearch-neural-sparse-encoding-doc-v2-mini",
+    "versions": {
+      "1.0.0": {
+        "format": [
+          "torch_script"
+        ],
+        "description": "This is a neural sparse encoding model: It transfers text into sparse vector, and then extract nonzero index and value to entry and weights. It serves only in ingestion and customer should use tokenizer model in query."
+      }
+    }
+  },
+  {
+    "name": "amazon/neural-sparse/opensearch-neural-sparse-encoding-v2-distill",
+    "versions": {
+      "1.0.0": {
+        "format": [
+          "torch_script"
+        ],
+        "description": "This is a neural sparse encoding model: It transfers text into sparse vector, and then extract nonzero index and value to entry and weights. It serves in both ingestion and search."
+      }
+    }
   }
 ]
