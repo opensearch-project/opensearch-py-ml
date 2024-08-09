@@ -33,6 +33,7 @@ MODEL_CONFIG_FILE_NAME = "ml-commons_model_config.json"
 OUTPUT_DIR = "trace_output/"
 LICENSE_VAR_FILE = "apache_verified.txt"
 DESCRIPTION_VAR_FILE = "description.txt"
+SPARSE_MODEL_TYPE = "neural-sparse"
 RTOL_TEST = 1e-03
 ATOL_TEST = 1e-05
 
@@ -235,6 +236,7 @@ def prepare_files_for_uploading(
     model_format: str,
     src_model_path: str,
     src_model_config_path: str,
+    upload_prefix: str = None,
 ) -> tuple[str, str]:
     """
     Prepare files for uploading by storing them in UPLOAD_FOLDER_PATH
@@ -253,7 +255,11 @@ def prepare_files_for_uploading(
     (path to model config json file) in the UPLOAD_FOLDER_PATH
     :rtype: Tuple[str, str]
     """
-    model_type, model_name = model_id.split("/")
+    model_type, model_name = (
+        model_id.split("/")
+        if upload_prefix is None
+        else (upload_prefix, model_id.split("/")[-1])
+    )
     model_format = model_format.lower()
     folder_to_delete = (
         TORCHSCRIPT_FOLDER_PATH if model_format == "torch_script" else ONNX_FOLDER_PATH
