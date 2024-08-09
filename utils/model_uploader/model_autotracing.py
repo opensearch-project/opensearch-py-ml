@@ -428,8 +428,11 @@ if __name__ == "__main__":
         help="Model format for auto-tracing",
     )
     parser.add_argument(
-        "upload_prefix",
+        "-up",
+        "--upload_prefix",
         type=str,
+        nargs="?",
+        default=None,
         help="Model customize path prefix for upload",
     )
     parser.add_argument(
