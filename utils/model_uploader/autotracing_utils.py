@@ -33,7 +33,6 @@ MODEL_CONFIG_FILE_NAME = "ml-commons_model_config.json"
 OUTPUT_DIR = "trace_output/"
 LICENSE_VAR_FILE = "apache_verified.txt"
 DESCRIPTION_VAR_FILE = "description.txt"
-SPARSE_MODEL_TYPE = "neural-sparse"
 RTOL_TEST = 1e-03
 ATOL_TEST = 1e-05
 

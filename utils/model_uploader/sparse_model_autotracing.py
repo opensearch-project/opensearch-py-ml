@@ -27,7 +27,6 @@ from utils.model_uploader.autotracing_utils import (
     ONNX_FORMAT,
     RTOL_TEST,
     SPARSE_ALGORITHM,
-    SPARSE_MODEL_TYPE,
     TEMP_MODEL_PATH,
     TORCH_SCRIPT_FORMAT,
     TORCHSCRIPT_FOLDER_PATH,
@@ -187,7 +186,7 @@ def main(
     model_version: str,
     tracing_format: str,
     model_description: Optional[str] = None,
-    upload_prefix: Optional[str] = None
+    upload_prefix: Optional[str] = None,
 ) -> None:
     """
     Perform model auto-tracing and prepare files for uploading to OpenSearch model hub
@@ -267,7 +266,7 @@ def main(
             TORCH_SCRIPT_FORMAT,
             torchscript_model_path,
             torchscript_model_config_path,
-            upload_prefix
+            upload_prefix,
         )
 
         config_path_for_checking_description = torchscript_dst_model_config_path
@@ -347,4 +346,10 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    main(args.model_id, args.model_version, args.tracing_format ,args.model_description,args.upload_prefix)
+    main(
+        args.model_id,
+        args.model_version,
+        args.tracing_format,
+        args.model_description,
+        args.upload_prefix,
+    )
