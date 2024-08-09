@@ -72,6 +72,7 @@ elif [[ "$TASK_TYPE" == "SentenceTransformerTrace" || "$TASK_TYPE" == "SparseTra
   echo -e "\033[34;1mINFO:\033[0m TRACING_FORMAT: ${TRACING_FORMAT}\033[0m"
   echo -e "\033[34;1mINFO:\033[0m EMBEDDING_DIMENSION: ${EMBEDDING_DIMENSION:-N/A}\033[0m"
   echo -e "\033[34;1mINFO:\033[0m POOLING_MODE: ${POOLING_MODE:-N/A}\033[0m"
+  echo -e "\033[34;1mINFO:\033[0m UPLOAD_PREFIX: ${UPLOAD_PREFIX:-N/A}\033[0m"
   echo -e "\033[34;1mINFO:\033[0m MODEL_DESCRIPTION: ${MODEL_DESCRIPTION:-N/A}\033[0m"
 
   if [[ "$TASK_TYPE" == "SentenceTransformerTrace" ]]; then
@@ -95,7 +96,7 @@ elif [[ "$TASK_TYPE" == "SentenceTransformerTrace" || "$TASK_TYPE" == "SparseTra
   --env "TEST_TYPE=server" \
   --name opensearch-py-ml-trace-runner \
   opensearch-project/opensearch-py-ml \
-  nox -s "${NOX_TRACE_TYPE}-${PYTHON_VERSION}" -- ${MODEL_ID} ${MODEL_VERSION} ${TRACING_FORMAT} ${EXTRA_ARGS} -md ${MODEL_DESCRIPTION:+"$MODEL_DESCRIPTION"}
+  nox -s "${NOX_TRACE_TYPE}-${PYTHON_VERSION}" -- ${MODEL_ID} ${MODEL_VERSION} ${TRACING_FORMAT} ${EXTRA_ARGS} -up ${UPLOAD_PREFIX} -md ${MODEL_DESCRIPTION:+"$MODEL_DESCRIPTION"}
 
   # To upload a model, we need the model artifact, description, license files into local path
   # trace_output should include description and license file.

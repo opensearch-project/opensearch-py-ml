@@ -281,6 +281,7 @@ def main(
     embedding_dimension: Optional[int] = None,
     pooling_mode: Optional[str] = None,
     model_description: Optional[str] = None,
+    upload_prefix: Optional[str] = None,
 ) -> None:
     """
     Perform model auto-tracing and prepare files for uploading to OpenSearch model hub
@@ -363,6 +364,7 @@ def main(
             TORCH_SCRIPT_FORMAT,
             torchscript_model_path,
             torchscript_model_config_path,
+            upload_prefix,
         )
 
         config_path_for_checking_description = torchscript_dst_model_config_path
@@ -426,6 +428,14 @@ if __name__ == "__main__":
         help="Model format for auto-tracing",
     )
     parser.add_argument(
+        "-up",
+        "--upload_prefix",
+        type=str,
+        nargs="?",
+        default=None,
+        help="Model customize path prefix for upload",
+    )
+    parser.add_argument(
         "-ed",
         "--embedding_dimension",
         type=int,
@@ -462,4 +472,5 @@ if __name__ == "__main__":
         args.embedding_dimension,
         args.pooling_mode,
         args.model_description,
+        args.upload_prefix,
     )
