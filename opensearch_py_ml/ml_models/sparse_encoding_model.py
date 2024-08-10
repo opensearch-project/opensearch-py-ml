@@ -81,8 +81,8 @@ class SparseEncodingModel(SparseModel):
         add_apache_license: bool = True,
     ) -> str:
         """
-        Download sentence transformer model directly from huggingface, convert model to torch script format,
-        zip the model file and its tokenizer.json file to prepare to upload to the Open Search cluster
+        Download sparse encoding model directly from huggingface, convert model to torch script format,
+        zip the model file and its tokenizer.json file to prepare to upload to the OpenSearch cluster
 
         :param sentences:
             Required, for example  sentences = ['today is sunny']

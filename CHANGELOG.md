@@ -46,6 +46,7 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - updating listing file with three v2 sparse model - by @dhrubo-os ([#412](https://github.com/opensearch-project/opensearch-py-ml/pull/412))
 
 ### Fixed
+- Fix the wrong final zip file name in model_uploader workflow, now will name it by the upload_prefix alse.([#413](https://github.com/opensearch-project/opensearch-py-ml/pull/413/files))
 - Fix the wrong input parameter for model_uploader's base_download_path in jekins trigger.([#402](https://github.com/opensearch-project/opensearch-py-ml/pull/402))
 - Enable make_model_config_json to add model description to model config file by @thanawan-atc in ([#203](https://github.com/opensearch-project/opensearch-py-ml/pull/203))
 - Correct demo_ml_commons_integration.ipynb by @thanawan-atc in ([#208](https://github.com/opensearch-project/opensearch-py-ml/pull/208))
