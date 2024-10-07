@@ -441,7 +441,7 @@ class DataFrame(NDFrame):
                 axes["index"] = [axes["index"]]
             if errors == "raise":
                 # Check if axes['index'] values exists in index
-                count = self._query_compiler._index_matches_count(axes["index"])
+                count = self._query_compiler._index_matches_count(list(axes["index"]))
                 if count != len(axes["index"]):
                     raise ValueError(
                         f"number of labels {count}!={len(axes['index'])} not contained in axis"
