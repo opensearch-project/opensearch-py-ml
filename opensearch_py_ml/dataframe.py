@@ -424,7 +424,10 @@ class DataFrame(NDFrame):
             axis = pd.DataFrame._get_axis_name(axis)
             axes = {axis: labels}
         elif index is not None or columns is not None:
-            axes = {"index": pd.Index(index), "columns": pd.Index(columns)}
+            axes = {
+                "index": pd.Index(index) if index is not None else index,
+                "columns": pd.Index(columns) if columns is not None else columns,
+            }
         else:
             raise ValueError(
                 "Need to specify at least one of 'labels', 'index' or 'columns'"
