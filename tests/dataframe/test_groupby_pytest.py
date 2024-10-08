@@ -224,14 +224,18 @@ class TestGroupbyDataFrame(TestData):
         pd_flights = self.pd_flights().filter(self.filter_data + ["DestCountry"])
         oml_flights = self.oml_flights().filter(self.filter_data + ["DestCountry"])
 
-        pd_mad = pd_flights.groupby("DestCountry").mad()
+        pd_mad = pd_flights.groupby("DestCountry").apply(
+            lambda x: (x - x.mean()).abs().mean()
+        )
         oml_mad = oml_flights.groupby("DestCountry").mad()
 
         assert_index_equal(pd_mad.columns, oml_mad.columns)
         assert_index_equal(pd_mad.index, oml_mad.index)
         assert_series_equal(pd_mad.dtypes, oml_mad.dtypes)
 
-        pd_min_mad = pd_flights.groupby("DestCountry").aggregate(["min", "mad"])
+        pd_min_mad = pd_flights.groupby("DestCountry").aggregate(
+            {"column_name": ["min", lambda x: (x - x.mean()).abs().mean()]}
+        )
         oml_min_mad = oml_flights.groupby("DestCountry").aggregate(["min", "mad"])
 
         assert_index_equal(pd_min_mad.columns, oml_min_mad.columns)
