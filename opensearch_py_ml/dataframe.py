@@ -431,14 +431,16 @@ class DataFrame(NDFrame):
             if index is not None:
                 if not is_list_like(index):
                     index = [index]
-                axes["index"] = pd.Index(index)
+                axes["index"] = pd.Index(index) if isinstance(index, list) else index
             else:
                 axes["index"] = None
 
             if columns is not None:
                 if not is_list_like(columns):
                     columns = [columns]
-                axes["columns"] = pd.Index(columns)
+                axes["columns"] = (
+                    pd.Index(columns) if isinstance(columns, list) else columns
+                )
             else:
                 axes["columns"] = None
         else:
