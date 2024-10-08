@@ -239,7 +239,11 @@ class TestGroupbyDataFrame(TestData):
         pd_min_mad = pd_flights.groupby("DestCountry").aggregate(
             {"AvgTicketPrice": ["min", lambda x: (x - x.mean()).abs().mean()]}
         )
-        oml_min_mad = oml_flights.groupby("DestCountry").aggregate(["min", "mad"])
+        pd_min_mad.columns = pd_min_mad.columns.set_levels(["min", "mad"], level=1)
+
+        oml_min_mad = oml_flights.groupby("DestCountry")["AvgTicketPrice"].aggregate(
+            ["min", "mad"]
+        )
 
         assert_index_equal(pd_min_mad.columns, oml_min_mad.columns)
         assert_index_equal(pd_min_mad.index, oml_min_mad.index)
