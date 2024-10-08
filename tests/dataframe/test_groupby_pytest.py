@@ -237,7 +237,7 @@ class TestGroupbyDataFrame(TestData):
         assert_series_equal(pd_mad.dtypes, oml_mad.dtypes)
 
         pd_min_mad = pd_flights.groupby("DestCountry").aggregate(
-            {"column_name": ["min", lambda x: (x - x.mean()).abs().mean()]}
+            {"AvgTicketPrice": ["min", lambda x: (x - x.mean()).abs().mean()]}
         )
         oml_min_mad = oml_flights.groupby("DestCountry").aggregate(["min", "mad"])
 
