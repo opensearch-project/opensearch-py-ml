@@ -424,13 +424,23 @@ class DataFrame(NDFrame):
             axis = pd.DataFrame._get_axis_name(axis)
             axes = {axis: labels}
         elif index is not None or columns is not None:
-            # axes = {
-            #     "index": pd.Index(index) if index is not None else index,
-            #     "columns": pd.Index(columns) if columns is not None else columns,
-            # }
-            axes, _ = pd.DataFrame()._construct_axes_from_arguments(
-                (index, columns), {}
-            )
+            # axes, _ = pd.DataFrame()._construct_axes_from_arguments(
+            #     (index, columns), {}
+            # )
+            axes = {}
+            if index is not None:
+                if not is_list_like(index):
+                    index = [index]
+                axes["index"] = pd.Index(index)
+            else:
+                axes["index"] = None
+
+            if columns is not None:
+                if not is_list_like(columns):
+                    columns = [columns]
+                axes["columns"] = pd.Index(columns)
+            else:
+                axes["columns"] = None
         else:
             raise ValueError(
                 "Need to specify at least one of 'labels', 'index' or 'columns'"
