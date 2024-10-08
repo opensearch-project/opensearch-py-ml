@@ -429,11 +429,22 @@ class DataFrame(NDFrame):
             # )
             axes = {}
             if index is not None:
-                if not is_list_like(index):
-                    index = [index]
-                axes["index"] = pd.Index(index) if isinstance(index, list) else index
+                if isinstance(index, pd.Index):
+                    index = index.tolist()  # Convert Index to list
+                elif not is_list_like(index):
+                    index = [index]  # Convert to list if it's not list-like already
+                axes["index"] = index
             else:
                 axes["index"] = None
+
+            if columns is not None:
+                if isinstance(columns, pd.Index):
+                    columns = columns.tolist()  # Convert Index to list
+                elif not is_list_like(columns):
+                    columns = [columns]  # Convert to list if it's not list-like already
+                axes["columns"] = columns
+            else:
+                axes["columns"] = None
 
             if columns is not None:
                 if not is_list_like(columns):
