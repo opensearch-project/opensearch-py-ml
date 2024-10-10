@@ -501,7 +501,10 @@ class TestDataFrameMetrics(TestData):
             ["AvgTicketPrice", "FlightDelayMin", "dayOfWeek"]
         )
 
-        pd_quantile = pd_flights.agg(["quantile", "min"], numeric_only=numeric_only)
+        pd_quantile = pd_flights.agg(
+            [lambda x: x.quantile(0.5), lambda x: x.min()], numeric_only=numeric_only
+        )
+        pd_quantile.index = ["quantile", "min"]
         oml_quantile = oml_flights.agg(["quantile", "min"], numeric_only=numeric_only)
 
         assert_frame_equal(
