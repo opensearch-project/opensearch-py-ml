@@ -224,12 +224,17 @@ class TestGroupbyDataFrame(TestData):
         pd_flights = self.pd_flights().filter(self.filter_data + ["DestCountry"])
         oml_flights = self.oml_flights().filter(self.filter_data + ["DestCountry"])
 
+        custom_mad = lambda x: (x - x.mean()).abs().mean()
+
         pd_mad = pd_flights.groupby("DestCountry").apply(
-            lambda x: (x - x.mean()).abs().mean()
+            lambda x: x.select_dtypes(include='number').apply(custom_mad)
         )
-        pd_mad = pd_mad.drop(
-            columns="DestCountry", errors="ignore"
-        )  # drop 'DestCountry' if it exists
+
+        # Re-merge non-numeric columns back, with suffixes to avoid column overlap
+        non_numeric_columns = pd_flights.select_dtypes(exclude='number').groupby("DestCountry").first()
+        pd_mad = pd_mad.join(non_numeric_columns, lsuffix='_numeric', rsuffix='_non_numeric')[self.filter_data]
+        if 'Cancelled' in pd_mad.columns:
+            pd_mad['Cancelled'] = pd_mad['Cancelled'].astype(float)
         oml_mad = oml_flights.groupby("DestCountry").mad()
 
         assert_index_equal(pd_mad.columns, oml_mad.columns)
@@ -237,8 +242,10 @@ class TestGroupbyDataFrame(TestData):
         assert_series_equal(pd_mad.dtypes, oml_mad.dtypes)
 
         pd_min_mad = pd_flights.groupby("DestCountry").aggregate(
-            {"AvgTicketPrice": ["min", lambda x: (x - x.mean()).abs().mean()]}
+            {"AvgTicketPrice": ["min", custom_mad]}
         )
+
+        # Rename the columns to reflect 'min' and 'mad'
         pd_min_mad.columns = pd_min_mad.columns.set_levels(["min", "mad"], level=1)
 
         oml_min_mad = oml_flights.groupby("DestCountry")["AvgTicketPrice"].aggregate(
