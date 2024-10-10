@@ -224,14 +224,32 @@ class TestGroupbyDataFrame(TestData):
         pd_flights = self.pd_flights().filter(self.filter_data + ["DestCountry"])
         oml_flights = self.oml_flights().filter(self.filter_data + ["DestCountry"])
 
-        pd_mad = pd_flights.groupby("DestCountry").mad()
+        pd_mad = pd_flights.groupby("DestCountry").apply(
+            lambda x: x.select_dtypes(include="number").apply(
+                lambda x: (x - x.mean()).abs().mean()
+            )
+        )
+
+        # Re-merge non-numeric columns back, with suffixes to avoid column overlap
+        non_numeric_columns = (
+            pd_flights.select_dtypes(exclude="number").groupby("DestCountry").first()
+        )
+        pd_mad = pd_mad.join(
+            non_numeric_columns, lsuffix="_numeric", rsuffix="_non_numeric"
+        )[self.filter_data]
+        if "Cancelled" in pd_mad.columns:
+            pd_mad["Cancelled"] = pd_mad["Cancelled"].astype(float)
         oml_mad = oml_flights.groupby("DestCountry").mad()
 
         assert_index_equal(pd_mad.columns, oml_mad.columns)
         assert_index_equal(pd_mad.index, oml_mad.index)
         assert_series_equal(pd_mad.dtypes, oml_mad.dtypes)
 
-        pd_min_mad = pd_flights.groupby("DestCountry").aggregate(["min", "mad"])
+        pd_min_mad = pd_flights.groupby("DestCountry").agg(
+            ["min", lambda x: (x - x.median()).abs().mean()]
+        )
+
+        pd_min_mad.columns = pd_min_mad.columns.set_levels(["min", "mad"], level=1)
         oml_min_mad = oml_flights.groupby("DestCountry").aggregate(["min", "mad"])
 
         assert_index_equal(pd_min_mad.columns, oml_min_mad.columns)
