@@ -55,7 +55,10 @@ with warnings.catch_warnings():
 
 
 def build_pd_series(
-    data: Dict[str, Any], dtype: Optional["DTypeLike"] = None, **kwargs: Any
+    data: Dict[str, Any],
+    dtype: Optional["DTypeLike"] = None,
+    index_name: Optional[str] = None,
+    **kwargs: Any,
 ) -> pd.Series:
     """Builds a pd.Series while squelching the warning
     for unspecified dtype on empty series
@@ -63,6 +66,9 @@ def build_pd_series(
     dtype = dtype or (EMPTY_SERIES_DTYPE if not data else dtype)
     if dtype is not None:
         kwargs["dtype"] = dtype
+    if index_name:
+        index = pd.Index(data.keys(), name=index_name)
+        kwargs["index"] = index
     return pd.Series(data, **kwargs)
 
 

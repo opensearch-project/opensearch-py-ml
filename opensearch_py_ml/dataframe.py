@@ -424,9 +424,36 @@ class DataFrame(NDFrame):
             axis = pd.DataFrame._get_axis_name(axis)
             axes = {axis: labels}
         elif index is not None or columns is not None:
-            axes, _ = pd.DataFrame()._construct_axes_from_arguments(
-                (index, columns), {}
-            )
+            # axes, _ = pd.DataFrame()._construct_axes_from_arguments(
+            #     (index, columns), {}
+            # )
+            axes = {}
+            if index is not None:
+                if isinstance(index, pd.Index):
+                    index = index.tolist()  # Convert Index to list
+                elif not is_list_like(index):
+                    index = [index]  # Convert to list if it's not list-like already
+                axes["index"] = index
+            else:
+                axes["index"] = None
+
+            if columns is not None:
+                if isinstance(columns, pd.Index):
+                    columns = columns.tolist()  # Convert Index to list
+                elif not is_list_like(columns):
+                    columns = [columns]  # Convert to list if it's not list-like already
+                axes["columns"] = columns
+            else:
+                axes["columns"] = None
+
+            if columns is not None:
+                if not is_list_like(columns):
+                    columns = [columns]
+                axes["columns"] = (
+                    pd.Index(columns) if isinstance(columns, list) else columns
+                )
+            else:
+                axes["columns"] = None
         else:
             raise ValueError(
                 "Need to specify at least one of 'labels', 'index' or 'columns'"
@@ -440,7 +467,7 @@ class DataFrame(NDFrame):
                 axes["index"] = [axes["index"]]
             if errors == "raise":
                 # Check if axes['index'] values exists in index
-                count = self._query_compiler._index_matches_count(axes["index"])
+                count = self._query_compiler._index_matches_count(list(axes["index"]))
                 if count != len(axes["index"]):
                     raise ValueError(
                         f"number of labels {count}!={len(axes['index'])} not contained in axis"
@@ -1326,7 +1353,6 @@ class DataFrame(NDFrame):
         compression="infer",
         quoting=None,
         quotechar='"',
-        line_terminator=None,
         chunksize=None,
         tupleize_cols=None,
         date_format=None,
@@ -1355,7 +1381,6 @@ class DataFrame(NDFrame):
             "compression": compression,
             "quoting": quoting,
             "quotechar": quotechar,
-            "line_terminator": line_terminator,
             "chunksize": chunksize,
             "date_format": date_format,
             "doublequote": doublequote,

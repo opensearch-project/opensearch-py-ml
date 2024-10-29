@@ -312,11 +312,12 @@ class Series(NDFrame):
 
         >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')
         >>> df['Carrier'].value_counts()
+        Carrier
         Logstash Airways    3331
         JetBeats            3274
         Kibana Airlines     3234
         ES-Air              3220
-        Name: Carrier, dtype: int64
+        Name: count, dtype: int64
         """
         if not isinstance(os_size, int):
             raise TypeError("os_size must be a positive integer.")

@@ -81,9 +81,10 @@ class TestDataFrameMetrics(TestData):
         logger.setLevel(logging.DEBUG)
 
         for func in self.extended_funcs:
-            pd_metric = getattr(pd_flights, func)(
-                **({"numeric_only": True} if func != "mad" else {})
-            )
+            if func == "mad":
+                pd_metric = (pd_flights - pd_flights.mean()).abs().mean()
+            else:
+                pd_metric = getattr(pd_flights, func)(**({"numeric_only": True}))
             oml_metric = getattr(oml_flights, func)(numeric_only=True)
 
             pd_value = pd_metric["AvgTicketPrice"]
@@ -101,7 +102,10 @@ class TestDataFrameMetrics(TestData):
         ]
 
         for func in self.extended_funcs:
-            pd_metric = getattr(pd_flights_1, func)()
+            if func == "mad":
+                pd_metric = (pd_flights_1 - pd_flights_1.mean()).abs().mean()
+            else:
+                pd_metric = getattr(pd_flights_1, func)()
             oml_metric = getattr(oml_flights_1, func)(numeric_only=False)
 
             assert_series_equal(pd_metric, oml_metric, check_exact=False)
@@ -111,7 +115,10 @@ class TestDataFrameMetrics(TestData):
         oml_flights_0 = oml_flights[oml_flights.FlightNum == "XXX"][["AvgTicketPrice"]]
 
         for func in self.extended_funcs:
-            pd_metric = getattr(pd_flights_0, func)()
+            if func == "mad":
+                pd_metric = (pd_flights_0 - pd_flights_0.mean()).abs().mean()
+            else:
+                pd_metric = getattr(pd_flights_0, func)()
             oml_metric = getattr(oml_flights_0, func)(numeric_only=False)
 
             assert_series_equal(pd_metric, oml_metric, check_exact=False)
@@ -498,7 +505,8 @@ class TestDataFrameMetrics(TestData):
             ["AvgTicketPrice", "FlightDelayMin", "dayOfWeek"]
         )
 
-        pd_quantile = pd_flights.agg(["quantile", "min"], numeric_only=numeric_only)
+        pd_quantile = pd_flights.agg([lambda x: x.quantile(0.5), lambda x: x.min()])
+        pd_quantile.index = ["quantile", "min"]
         oml_quantile = oml_flights.agg(["quantile", "min"], numeric_only=numeric_only)
 
         assert_frame_equal(
