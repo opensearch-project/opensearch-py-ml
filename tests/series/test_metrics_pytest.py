@@ -51,7 +51,7 @@ class TestSeriesMetrics(TestData):
 
         for func in self.all_funcs:
             if func in CustomFunctionDispatcher.customFunctionMap:
-                pd_metric = pd_flights.apply(
+                pd_metric = pd_flights.agg(
                     lambda x: CustomFunctionDispatcher.apply_custom_function(func, x)
                 )
             else:
@@ -101,7 +101,7 @@ class TestSeriesMetrics(TestData):
 
             for func in self.all_funcs:
                 if func in CustomFunctionDispatcher.customFunctionMap:
-                    pd_metric = pd_ecommerce.apply(
+                    pd_metric = pd_ecommerce.agg(
                         lambda x: CustomFunctionDispatcher.apply_custom_function(
                             func, x
                         )
