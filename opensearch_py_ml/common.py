@@ -66,7 +66,7 @@ def build_pd_series(
     dtype = dtype or (EMPTY_SERIES_DTYPE if not data else dtype)
     if dtype is not None:
         kwargs["dtype"] = dtype
-    if index_name:
+    if index_name is not None:
         index = pd.Index(data.keys(), name=index_name)
         kwargs["index"] = index
     return pd.Series(data, **kwargs)
