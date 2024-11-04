@@ -41,6 +41,7 @@ import numpy as np
 import pandas as pd  # type: ignore
 
 from opensearch_py_ml.common import opensearch_date_to_pandas_date
+from opensearch_py_ml.constants import MEAN_ABSOLUTE_DEVIATION, VARIANCE
 from opensearch_py_ml.field_mappings import FieldMappings
 from opensearch_py_ml.filter import BooleanFilter, QueryFilter
 from opensearch_py_ml.index import Index
@@ -587,17 +588,15 @@ class QueryCompiler:
 
     def var(self, numeric_only: Optional[bool] = None) -> pd.Series:
         return self._operations._metric_agg_series(
-            self, ["var"], numeric_only=numeric_only
+            self, [VARIANCE], numeric_only=numeric_only
         )
 
     def std(self, numeric_only: Optional[bool] = None) -> pd.Series:
-        return self._operations._metric_agg_series(
-            self, ["std"], numeric_only=numeric_only
-        )
+        return self._operations._metric_agg_series(self, [], numeric_only=numeric_only)
 
     def mad(self, numeric_only: Optional[bool] = None) -> pd.Series:
         return self._operations._metric_agg_series(
-            self, ["mad"], numeric_only=numeric_only
+            self, [MEAN_ABSOLUTE_DEVIATION], numeric_only=numeric_only
         )
 
     def median(self, numeric_only: Optional[bool] = None) -> pd.Series:

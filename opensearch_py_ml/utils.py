@@ -32,6 +32,8 @@ from typing import Any, Callable, Collection, Iterable, List, TypeVar, Union, ca
 import pandas as pd  # type: ignore
 from pandas.core.dtypes.common import is_list_like  # type: ignore
 
+from opensearch_py_ml.constants import MEAN_ABSOLUTE_DEVIATION
+
 RT = TypeVar("RT")
 
 
@@ -106,7 +108,7 @@ def try_sort(iterable: Iterable[str]) -> Iterable[str]:
 class CustomFunctionDispatcher:
     # Define custom functions in a dictionary
     customFunctionMap = {
-        "mad": lambda x: (x - x.median()).abs().mean(),
+        MEAN_ABSOLUTE_DEVIATION: lambda x: (x - x.median()).abs().mean(),
     }
 
     @classmethod

@@ -28,6 +28,11 @@ import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal, assert_index_equal, assert_series_equal
 
+from opensearch_py_ml.constants import (
+    MEAN_ABSOLUTE_DEVIATION,
+    STANDARD_DEVIATION,
+    VARIANCE,
+)
 from opensearch_py_ml.utils import CustomFunctionDispatcher
 from tests.common import TestData
 
@@ -101,7 +106,9 @@ class TestGroupbyDataFrame(TestData):
         )
 
     @pytest.mark.parametrize("dropna", [True, False])
-    @pytest.mark.parametrize("pd_agg", ["mad", "var", "std"])
+    @pytest.mark.parametrize(
+        "pd_agg", [MEAN_ABSOLUTE_DEVIATION, VARIANCE, STANDARD_DEVIATION]
+    )
     def test_groupby_aggs_mad_var_std(self, pd_agg, dropna):
         # For these aggs pandas doesn't support numeric_only
         pd_flights = self.pd_flights().filter(self.filter_data)
@@ -235,7 +242,9 @@ class TestGroupbyDataFrame(TestData):
 
         pd_mad = pd_flights.groupby("DestCountry").apply(
             lambda group: group.select_dtypes(include="number").apply(
-                lambda x: CustomFunctionDispatcher.apply_custom_function("mad", x)
+                lambda x: CustomFunctionDispatcher.apply_custom_function(
+                    MEAN_ABSOLUTE_DEVIATION, x
+                )
             )
         )
 
@@ -255,11 +264,20 @@ class TestGroupbyDataFrame(TestData):
         assert_series_equal(pd_mad.dtypes, oml_mad.dtypes)
 
         pd_min_mad = pd_flights.groupby("DestCountry").agg(
-            ["min", lambda x: CustomFunctionDispatcher.apply_custom_function("mad", x)]
+            [
+                "min",
+                lambda x: CustomFunctionDispatcher.apply_custom_function(
+                    MEAN_ABSOLUTE_DEVIATION, x
+                ),
+            ]
         )
 
-        pd_min_mad.columns = pd_min_mad.columns.set_levels(["min", "mad"], level=1)
-        oml_min_mad = oml_flights.groupby("DestCountry").aggregate(["min", "mad"])
+        pd_min_mad.columns = pd_min_mad.columns.set_levels(
+            ["min", MEAN_ABSOLUTE_DEVIATION], level=1
+        )
+        oml_min_mad = oml_flights.groupby("DestCountry").aggregate(
+            ["min", MEAN_ABSOLUTE_DEVIATION]
+        )
 
         assert_index_equal(pd_min_mad.columns, oml_min_mad.columns)
         assert_index_equal(pd_min_mad.index, oml_min_mad.index)

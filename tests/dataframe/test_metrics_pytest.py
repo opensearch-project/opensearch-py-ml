@@ -27,6 +27,12 @@ import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal, assert_series_equal
 
+from opensearch_py_ml.constants import (
+    MEAN_ABSOLUTE_DEVIATION,
+    STANDARD_DEVIATION,
+    VARIANCE,
+)
+
 # File called _pytest for PyCharm compatibility
 from opensearch_py_ml.utils import CustomFunctionDispatcher
 from tests.common import TestData, assert_almost_equal
@@ -34,7 +40,7 @@ from tests.common import TestData, assert_almost_equal
 
 class TestDataFrameMetrics(TestData):
     funcs = ["max", "min", "mean", "sum"]
-    extended_funcs = ["median", "mad", "var", "std"]
+    extended_funcs = ["median", MEAN_ABSOLUTE_DEVIATION, VARIANCE, STANDARD_DEVIATION]
     filter_data = [
         "AvgTicketPrice",
         "Cancelled",
@@ -190,9 +196,9 @@ class TestDataFrameMetrics(TestData):
             "min": pd.Timestamp("2018-01-01 00:00:00"),
             "mean": pd.Timestamp("2018-01-21 19:20:45.564438232"),
             "sum": pd.NaT,
-            "mad": pd.NaT,
-            "var": pd.NaT,
-            "std": pd.NaT,
+            MEAN_ABSOLUTE_DEVIATION: pd.NaT,
+            VARIANCE: pd.NaT,
+            STANDARD_DEVIATION: pd.NaT,
             "nunique": 12236,
         }
 
@@ -301,7 +307,7 @@ class TestDataFrameMetrics(TestData):
         agg_data = oml_flights.agg(filtered_aggs, numeric_only=True).transpose()
         for agg in filtered_aggs:
             # Explicitly check for mad because it returns nan for bools
-            if agg == "mad":
+            if agg == MEAN_ABSOLUTE_DEVIATION:
                 assert np.isnan(agg_data[agg]["Cancelled"])
             else:
                 assert_series_equal(
@@ -317,7 +323,7 @@ class TestDataFrameMetrics(TestData):
         for agg in self.funcs + self.extended_funcs:
             result = getattr(oml_flights, agg)(numeric_only=True)
             assert result.dtype == np.dtype("float64")
-            assert result.shape == ((3,) if agg != "mad" else (2,))
+            assert result.shape == ((3,) if agg != MEAN_ABSOLUTE_DEVIATION else (2,))
 
     # check dtypes and shape of min, max and median for numeric_only=False | None
     @pytest.mark.parametrize("agg", ["min", "max", "median"])

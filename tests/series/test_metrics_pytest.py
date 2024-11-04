@@ -31,16 +31,30 @@ import pandas as pd
 import pytest
 from pandas.testing import assert_series_equal
 
+from opensearch_py_ml.constants import (
+    MEAN_ABSOLUTE_DEVIATION,
+    STANDARD_DEVIATION,
+    VARIANCE,
+)
 from opensearch_py_ml.utils import CustomFunctionDispatcher
 from tests.common import TestData, assert_almost_equal
 
 
 class TestSeriesMetrics(TestData):
-    all_funcs = ["max", "min", "mean", "sum", "nunique", "var", "std", "mad"]
+    all_funcs = [
+        "max",
+        "min",
+        "mean",
+        "sum",
+        "nunique",
+        VARIANCE,
+        STANDARD_DEVIATION,
+        MEAN_ABSOLUTE_DEVIATION,
+    ]
     timestamp_funcs = ["max", "min", "mean", "nunique"]
 
     def assert_almost_equal_for_agg(self, func, pd_metric, oml_metric):
-        if func in ("nunique", "var", "mad"):
+        if func in ("nunique", VARIANCE, MEAN_ABSOLUTE_DEVIATION):
             np.testing.assert_almost_equal(pd_metric, oml_metric, decimal=-3)
         else:
             np.testing.assert_almost_equal(pd_metric, oml_metric, decimal=2)

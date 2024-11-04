@@ -52,6 +52,11 @@ from opensearch_py_ml.common import (
     build_pd_series,
     opensearch_date_to_pandas_date,
 )
+from opensearch_py_ml.constants import (
+    MEAN_ABSOLUTE_DEVIATION,
+    STANDARD_DEVIATION,
+    VARIANCE,
+)
 from opensearch_py_ml.index import Index
 from opensearch_py_ml.query import Query
 from opensearch_py_ml.tasks import (
@@ -620,7 +625,7 @@ class Operations:
                         values.append(field.nan_value)
                     # Explicit condition for mad to add NaN because it doesn't support bool
                     elif is_dataframe_agg and numeric_only:
-                        if pd_agg == "mad":
+                        if pd_agg == MEAN_ABSOLUTE_DEVIATION:
                             values.append(field.nan_value)
                     continue
 
@@ -1097,7 +1102,14 @@ class Operations:
         """
         # pd aggs that will be mapped to os aggs
         # that can use 'extended_stats'.
-        extended_stats_pd_aggs = {"mean", "min", "max", "sum", "var", "std"}
+        extended_stats_pd_aggs = {
+            "mean",
+            "min",
+            "max",
+            "sum",
+            VARIANCE,
+            STANDARD_DEVIATION,
+        }
         extended_stats_os_aggs = {"avg", "min", "max", "sum"}
         extended_stats_calls = 0
 
@@ -1117,15 +1129,15 @@ class Operations:
                 os_aggs.append("avg")
             elif pd_agg == "sum":
                 os_aggs.append("sum")
-            elif pd_agg == "std":
+            elif pd_agg == STANDARD_DEVIATION:
                 os_aggs.append(("extended_stats", "std_deviation"))
-            elif pd_agg == "var":
+            elif pd_agg == VARIANCE:
                 os_aggs.append(("extended_stats", "variance"))
 
             # Aggs that aren't 'extended_stats' compatible
             elif pd_agg == "nunique":
                 os_aggs.append("cardinality")
-            elif pd_agg == "mad":
+            elif pd_agg == MEAN_ABSOLUTE_DEVIATION:
                 os_aggs.append("median_absolute_deviation")
             elif pd_agg == "median":
                 os_aggs.append(("percentiles", (50.0,)))
@@ -1205,7 +1217,7 @@ class Operations:
 
         df1 = self.aggs(
             query_compiler=query_compiler,
-            pd_aggs=["count", "mean", "min", "max", "std"],
+            pd_aggs=["count", "mean", "min", "max", STANDARD_DEVIATION],
             numeric_only=True,
         )
         df2 = self.quantile(
@@ -1223,10 +1235,12 @@ class Operations:
 
         if df.shape[1] == 1:
             return df.reindex(
-                ["count", "mean", "std", "min", "25%", "50%", "75%", "max"]
+                ["count", "mean", STANDARD_DEVIATION, "min", "25%", "50%", "75%", "max"]
             )
 
-        return df.reindex(["count", "mean", "min", "25%", "50%", "75%", "max", "std"])
+        return df.reindex(
+            ["count", "mean", "min", "25%", "50%", "75%", "max", STANDARD_DEVIATION]
+        )
 
     def to_pandas(
         self, query_compiler: "QueryCompiler", show_progress: bool = False

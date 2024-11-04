@@ -28,6 +28,7 @@ import numpy as np
 import pytest
 from pandas.testing import assert_frame_equal, assert_series_equal
 
+from opensearch_py_ml.constants import STANDARD_DEVIATION, VARIANCE
 from tests.common import TestData
 
 
@@ -47,10 +48,10 @@ class TestDataFrameAggs(TestData):
         assert_frame_equal(pd_sum_min, oml_sum_min, check_exact=False)
 
         pd_sum_min_std = pd_flights.select_dtypes(include=[np.number]).agg(
-            ["sum", "min", "std"]
+            ["sum", "min", STANDARD_DEVIATION]
         )
         oml_sum_min_std = oml_flights.select_dtypes(include=[np.number]).agg(
-            ["sum", "min", "std"], numeric_only=True
+            ["sum", "min", STANDARD_DEVIATION], numeric_only=True
         )
 
         print(pd_sum_min_std.dtypes)
@@ -75,10 +76,10 @@ class TestDataFrameAggs(TestData):
         assert_frame_equal(pd_sum_min, oml_sum_min, check_exact=False)
 
         pd_sum_min_std = pd_flights.select_dtypes(include=[np.number]).agg(
-            ["sum", "min", "std"]
+            ["sum", "min", STANDARD_DEVIATION]
         )
         oml_sum_min_std = oml_flights.select_dtypes(include=[np.number]).agg(
-            ["sum", "min", "std"], numeric_only=True
+            ["sum", "min", STANDARD_DEVIATION], numeric_only=True
         )
 
         print(pd_sum_min_std.dtypes)
@@ -94,10 +95,10 @@ class TestDataFrameAggs(TestData):
 
         pd_aggs = pd_ecommerce[
             ["taxful_total_price", "taxless_total_price", "total_quantity"]
-        ].agg(["median", "var"])
+        ].agg(["median", VARIANCE])
         oml_aggs = oml_ecommerce[
             ["taxful_total_price", "taxless_total_price", "total_quantity"]
-        ].agg(["median", "var"], numeric_only=True)
+        ].agg(["median", VARIANCE], numeric_only=True)
 
         print(pd_aggs, pd_aggs.dtypes)
         print(oml_aggs, oml_aggs.dtypes)
