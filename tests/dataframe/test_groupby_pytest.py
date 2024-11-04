@@ -110,7 +110,7 @@ class TestGroupbyDataFrame(TestData):
         pd_groupby = pd_flights.groupby("Cancelled", dropna=dropna).agg(
             lambda x: CustomFunctionDispatcher.apply_custom_function(pd_agg, x)
         )
-        if not pd_groupby:
+        if pd_groupby is None:
             pd_groupby = getattr(
                 pd_flights.groupby("Cancelled", dropna=dropna), pd_agg
             )()

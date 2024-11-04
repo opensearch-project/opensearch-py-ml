@@ -53,7 +53,7 @@ class TestSeriesMetrics(TestData):
             pd_metric = pd_flights.apply(
                 lambda x: CustomFunctionDispatcher.apply_custom_function(func, x)
             )
-            if not pd_metric:
+            if pd_metric is None:
                 pd_metric = getattr(pd_flights, func)()
             oml_metric = getattr(oml_flights, func)()
 
@@ -102,7 +102,7 @@ class TestSeriesMetrics(TestData):
                 pd_metric = pd_ecommerce.apply(
                     lambda x: CustomFunctionDispatcher.apply_custom_function(func, x)
                 )
-                if not pd_metric:
+                if pd_metric is None:
                     pd_metric = getattr(pd_ecommerce, func)()
                 oml_metric = getattr(oml_ecommerce, func)(
                     **({"numeric_only": True} if (func != "nunique") else {})
