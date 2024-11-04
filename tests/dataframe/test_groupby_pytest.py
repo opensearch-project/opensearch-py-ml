@@ -28,6 +28,7 @@ import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal, assert_index_equal, assert_series_equal
 
+from opensearch_py_ml.utils import CustomFunctionDispatcher
 from tests.common import TestData
 
 
@@ -106,11 +107,10 @@ class TestGroupbyDataFrame(TestData):
         pd_flights = self.pd_flights().filter(self.filter_data)
         oml_flights = self.oml_flights().filter(self.filter_data)
 
-        if pd_agg == "mad":
-            pd_groupby = pd_flights.groupby("Cancelled", dropna=dropna).agg(
-                lambda x: (x - x.mean()).abs().mean()
-            )
-        else:
+        pd_groupby = pd_flights.groupby("Cancelled", dropna=dropna).agg(
+            lambda x: CustomFunctionDispatcher.apply_custom_function(pd_agg, x)
+        )
+        if not pd_groupby:
             pd_groupby = getattr(
                 pd_flights.groupby("Cancelled", dropna=dropna), pd_agg
             )()
@@ -233,8 +233,8 @@ class TestGroupbyDataFrame(TestData):
         oml_flights = self.oml_flights().filter(self.filter_data + ["DestCountry"])
 
         pd_mad = pd_flights.groupby("DestCountry").apply(
-            lambda x: x.select_dtypes(include="number").apply(
-                lambda x: (x - x.mean()).abs().mean()
+            lambda group: group.select_dtypes(include="number").apply(
+                lambda x: CustomFunctionDispatcher.apply_custom_function("mad", x)
             )
         )
 
@@ -254,7 +254,7 @@ class TestGroupbyDataFrame(TestData):
         assert_series_equal(pd_mad.dtypes, oml_mad.dtypes)
 
         pd_min_mad = pd_flights.groupby("DestCountry").agg(
-            ["min", lambda x: (x - x.median()).abs().mean()]
+            ["min", lambda x: CustomFunctionDispatcher.apply_custom_function("mad", x)]
         )
 
         pd_min_mad.columns = pd_min_mad.columns.set_levels(["min", "mad"], level=1)

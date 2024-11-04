@@ -24,11 +24,11 @@
 
 import numpy as np
 import pandas as pd
-
-# File called _pytest for PyCharm compatibility
 import pytest
 from pandas.testing import assert_frame_equal, assert_series_equal
 
+# File called _pytest for PyCharm compatibility
+from opensearch_py_ml.utils import CustomFunctionDispatcher
 from tests.common import TestData, assert_almost_equal
 
 
@@ -81,9 +81,8 @@ class TestDataFrameMetrics(TestData):
         logger.setLevel(logging.DEBUG)
 
         for func in self.extended_funcs:
-            if func == "mad":
-                pd_metric = (pd_flights - pd_flights.mean()).abs().mean()
-            else:
+            pd_metric = CustomFunctionDispatcher.apply_custom_function(func, pd_flights)
+            if not pd_metric:
                 pd_metric = getattr(pd_flights, func)(**({"numeric_only": True}))
             oml_metric = getattr(oml_flights, func)(numeric_only=True)
 
@@ -102,9 +101,10 @@ class TestDataFrameMetrics(TestData):
         ]
 
         for func in self.extended_funcs:
-            if func == "mad":
-                pd_metric = (pd_flights_1 - pd_flights_1.mean()).abs().mean()
-            else:
+            pd_metric = pd_flights_1.apply(
+                lambda x: CustomFunctionDispatcher.apply_custom_function(func, x)
+            )
+            if not pd_metric:
                 pd_metric = getattr(pd_flights_1, func)()
             oml_metric = getattr(oml_flights_1, func)(numeric_only=False)
 
@@ -115,9 +115,10 @@ class TestDataFrameMetrics(TestData):
         oml_flights_0 = oml_flights[oml_flights.FlightNum == "XXX"][["AvgTicketPrice"]]
 
         for func in self.extended_funcs:
-            if func == "mad":
-                pd_metric = (pd_flights_0 - pd_flights_0.mean()).abs().mean()
-            else:
+            pd_metric = pd_flights_0.apply(
+                lambda x: CustomFunctionDispatcher.apply_custom_function(func, x)
+            )
+            if not pd_metric:
                 pd_metric = getattr(pd_flights_0, func)()
             oml_metric = getattr(oml_flights_0, func)(numeric_only=False)
 

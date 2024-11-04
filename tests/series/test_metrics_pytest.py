@@ -31,6 +31,7 @@ import pandas as pd
 import pytest
 from pandas.testing import assert_series_equal
 
+from opensearch_py_ml.utils import CustomFunctionDispatcher
 from tests.common import TestData, assert_almost_equal
 
 
@@ -49,9 +50,10 @@ class TestSeriesMetrics(TestData):
         oml_flights = self.oml_flights()["AvgTicketPrice"]
 
         for func in self.all_funcs:
-            if func == "mad":
-                pd_metric = (pd_flights - pd_flights.mean()).abs().mean()
-            else:
+            pd_metric = pd_flights.apply(
+                lambda x: CustomFunctionDispatcher.apply_custom_function(func, x)
+            )
+            if not pd_metric:
                 pd_metric = getattr(pd_flights, func)()
             oml_metric = getattr(oml_flights, func)()
 
@@ -97,9 +99,10 @@ class TestSeriesMetrics(TestData):
             oml_ecommerce = self.oml_ecommerce()[column]
 
             for func in self.all_funcs:
-                if func == "mad":
-                    pd_metric = (pd_ecommerce - pd_ecommerce.mean()).abs().mean()
-                else:
+                pd_metric = pd_ecommerce.apply(
+                    lambda x: CustomFunctionDispatcher.apply_custom_function(func, x)
+                )
+                if not pd_metric:
                     pd_metric = getattr(pd_ecommerce, func)()
                 oml_metric = getattr(oml_ecommerce, func)(
                     **({"numeric_only": True} if (func != "nunique") else {})

@@ -101,3 +101,23 @@ def try_sort(iterable: Iterable[str]) -> Iterable[str]:
         return sorted(listed)
     except TypeError:
         return listed
+
+
+class CustomFunctionDispatcher:
+    # Define custom functions in a dictionary
+    customFunctionMap = {
+        "mad": lambda x: (x - x.median()).abs().mean(),
+    }
+
+    @classmethod
+    def apply_custom_function(cls, func, data):
+        """
+        Apply a custom function if available, else return None.
+        :param func: Function name as a string
+        :param data: Data on which function is applied
+        :return: Result of custom function or None if func not found
+        """
+        custom_func = cls.customFunctionMap.get(func)
+        if custom_func:
+            return custom_func(data)
+        return None
