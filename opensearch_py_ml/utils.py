@@ -30,6 +30,7 @@ from collections.abc import Collection as ABCCollection
 from typing import Any, Callable, Collection, Iterable, List, TypeVar, Union, cast
 
 import pandas as pd  # type: ignore
+from pandas.core.dtypes.common import is_list_like  # type: ignore
 
 RT = TypeVar("RT")
 
@@ -59,6 +60,29 @@ def is_valid_attr_name(s: str) -> bool:
     return bool(
         isinstance(s, str) and re.search(string=s, pattern=r"^[a-zA-Z_][a-zA-Z0-9_]*$")
     )
+
+
+def to_list_if_needed(value):
+    """
+    Converts the input to a list if necessary.
+
+    If the input is a pandas Index, it converts it to a list.
+    If the input is not list-like (e.g., a single value), it wraps it in a list.
+    If the input is None or already list-like, it returns it as is.
+
+    Parameters:
+    value: The input to potentially convert to a list.
+
+    Returns:
+    The input converted to a list if needed, or the original input if no conversion is necessary.
+    """
+    if value is None:
+        return None
+    if isinstance(value, pd.Index):
+        return value.tolist()
+    if not is_list_like(value):
+        return [value]
+    return value
 
 
 def to_list(x: Union[Collection[Any], pd.Series]) -> List[Any]:

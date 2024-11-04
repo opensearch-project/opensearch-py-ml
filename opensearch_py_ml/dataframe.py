@@ -47,7 +47,7 @@ from opensearch_py_ml.filter import BooleanFilter
 from opensearch_py_ml.groupby import DataFrameGroupBy
 from opensearch_py_ml.ndframe import NDFrame
 from opensearch_py_ml.series import Series
-from opensearch_py_ml.utils import is_valid_attr_name
+from opensearch_py_ml.utils import is_valid_attr_name, to_list_if_needed
 
 if TYPE_CHECKING:
     from opensearchpy import OpenSearch
@@ -424,33 +424,14 @@ class DataFrame(NDFrame):
             axis = pd.DataFrame._get_axis_name(axis)
             axes = {axis: labels}
         elif index is not None or columns is not None:
-            axes = {}
-            if index is not None:
-                if isinstance(index, pd.Index):
-                    index = index.tolist()  # Convert Index to list
-                elif not is_list_like(index):
-                    index = [index]  # Convert to list if it's not list-like already
-                axes["index"] = index
-            else:
-                axes["index"] = None
-
-            if columns is not None:
-                if isinstance(columns, pd.Index):
-                    columns = columns.tolist()  # Convert Index to list
-                elif not is_list_like(columns):
-                    columns = [columns]  # Convert to list if it's not list-like already
-                axes["columns"] = columns
-            else:
-                axes["columns"] = None
-
-            if columns is not None:
-                if not is_list_like(columns):
-                    columns = [columns]
-                axes["columns"] = (
-                    pd.Index(columns) if isinstance(columns, list) else columns
-                )
-            else:
-                axes["columns"] = None
+            axes = {
+                "index": to_list_if_needed(index),
+                "columns": (
+                    pd.Index(to_list_if_needed(columns))
+                    if columns is not None
+                    else None
+                ),
+            }
         else:
             raise ValueError(
                 "Need to specify at least one of 'labels', 'index' or 'columns'"
