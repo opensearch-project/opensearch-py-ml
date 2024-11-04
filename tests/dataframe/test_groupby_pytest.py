@@ -107,10 +107,11 @@ class TestGroupbyDataFrame(TestData):
         pd_flights = self.pd_flights().filter(self.filter_data)
         oml_flights = self.oml_flights().filter(self.filter_data)
 
-        pd_groupby = pd_flights.groupby("Cancelled", dropna=dropna).agg(
-            lambda x: CustomFunctionDispatcher.apply_custom_function(pd_agg, x)
-        )
-        if pd_groupby is None:
+        if pd_agg in CustomFunctionDispatcher.customFunctionMap:
+            pd_groupby = pd_flights.groupby("Cancelled", dropna=dropna).agg(
+                lambda x: CustomFunctionDispatcher.apply_custom_function(pd_agg, x)
+            )
+        else:
             pd_groupby = getattr(
                 pd_flights.groupby("Cancelled", dropna=dropna), pd_agg
             )()

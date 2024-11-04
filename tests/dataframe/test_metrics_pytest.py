@@ -81,8 +81,11 @@ class TestDataFrameMetrics(TestData):
         logger.setLevel(logging.DEBUG)
 
         for func in self.extended_funcs:
-            pd_metric = CustomFunctionDispatcher.apply_custom_function(func, pd_flights)
-            if pd_metric is None:
+            if func in CustomFunctionDispatcher.customFunctionMap:
+                pd_metric = CustomFunctionDispatcher.apply_custom_function(
+                    func, pd_flights
+                )
+            else:
                 pd_metric = getattr(pd_flights, func)(**({"numeric_only": True}))
             oml_metric = getattr(oml_flights, func)(numeric_only=True)
 
@@ -101,10 +104,11 @@ class TestDataFrameMetrics(TestData):
         ]
 
         for func in self.extended_funcs:
-            pd_metric = pd_flights_1.apply(
-                lambda x: CustomFunctionDispatcher.apply_custom_function(func, x)
-            )
-            if pd_metric is None:
+            if func in CustomFunctionDispatcher.customFunctionMap:
+                pd_metric = pd_flights_1.apply(
+                    lambda x: CustomFunctionDispatcher.apply_custom_function(func, x)
+                )
+            else:
                 pd_metric = getattr(pd_flights_1, func)()
             oml_metric = getattr(oml_flights_1, func)(numeric_only=False)
 
@@ -115,10 +119,11 @@ class TestDataFrameMetrics(TestData):
         oml_flights_0 = oml_flights[oml_flights.FlightNum == "XXX"][["AvgTicketPrice"]]
 
         for func in self.extended_funcs:
-            pd_metric = pd_flights_0.apply(
-                lambda x: CustomFunctionDispatcher.apply_custom_function(func, x)
-            )
-            if pd_metric is None:
+            if func in CustomFunctionDispatcher.customFunctionMap:
+                pd_metric = pd_flights_0.apply(
+                    lambda x: CustomFunctionDispatcher.apply_custom_function(func, x)
+                )
+            else:
                 pd_metric = getattr(pd_flights_0, func)()
             oml_metric = getattr(oml_flights_0, func)(numeric_only=False)
 

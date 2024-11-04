@@ -50,10 +50,11 @@ class TestSeriesMetrics(TestData):
         oml_flights = self.oml_flights()["AvgTicketPrice"]
 
         for func in self.all_funcs:
-            pd_metric = pd_flights.apply(
-                lambda x: CustomFunctionDispatcher.apply_custom_function(func, x)
-            )
-            if pd_metric is None:
+            if func in CustomFunctionDispatcher.customFunctionMap:
+                pd_metric = pd_flights.apply(
+                    lambda x: CustomFunctionDispatcher.apply_custom_function(func, x)
+                )
+            else:
                 pd_metric = getattr(pd_flights, func)()
             oml_metric = getattr(oml_flights, func)()
 
@@ -99,10 +100,13 @@ class TestSeriesMetrics(TestData):
             oml_ecommerce = self.oml_ecommerce()[column]
 
             for func in self.all_funcs:
-                pd_metric = pd_ecommerce.apply(
-                    lambda x: CustomFunctionDispatcher.apply_custom_function(func, x)
-                )
-                if pd_metric is None:
+                if func in CustomFunctionDispatcher.customFunctionMap:
+                    pd_metric = pd_ecommerce.apply(
+                        lambda x: CustomFunctionDispatcher.apply_custom_function(
+                            func, x
+                        )
+                    )
+                else:
                     pd_metric = getattr(pd_ecommerce, func)()
                 oml_metric = getattr(oml_ecommerce, func)(
                     **({"numeric_only": True} if (func != "nunique") else {})
