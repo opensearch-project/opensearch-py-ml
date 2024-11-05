@@ -125,7 +125,6 @@ class TestGroupbyDataFrame(TestData):
         oml_groupby = getattr(oml_flights.groupby("Cancelled", dropna=dropna), pd_agg)(
             numeric_only=True
         )
-        pd_groupby = pd_groupby[oml_groupby.columns]
 
         # checking only values because dtypes are checked in aggs tests
         assert_frame_equal(
