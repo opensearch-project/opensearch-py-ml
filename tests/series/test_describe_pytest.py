@@ -24,7 +24,7 @@
 
 import pandas as pd
 
-from opensearch_py_ml.constants import STANDARD_DEVIATION
+from opensearch_py_ml.utils import STANDARD_DEVIATION
 from tests.common import TestData, assert_series_equal
 
 

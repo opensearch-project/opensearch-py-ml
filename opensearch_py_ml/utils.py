@@ -32,10 +32,11 @@ from typing import Any, Callable, Collection, Iterable, List, TypeVar, Union, ca
 import pandas as pd  # type: ignore
 from pandas.core.dtypes.common import is_list_like  # type: ignore
 
-from opensearch_py_ml.constants import MEAN_ABSOLUTE_DEVIATION
-
 RT = TypeVar("RT")
 
+MEAN_ABSOLUTE_DEVIATION = "mad"
+VARIANCE = "var"
+STANDARD_DEVIATION = "std"
 
 def deprecated_api(
     replace_with: str,

@@ -52,7 +52,7 @@ from opensearch_py_ml.common import (
     build_pd_series,
     opensearch_date_to_pandas_date,
 )
-from opensearch_py_ml.constants import (
+from opensearch_py_ml.utils import (
     MEAN_ABSOLUTE_DEVIATION,
     STANDARD_DEVIATION,
     VARIANCE,

@@ -25,7 +25,7 @@
 
 from typing import TYPE_CHECKING, List, Optional, Union
 
-from opensearch_py_ml.constants import (
+from opensearch_py_ml.utils import (
     MEAN_ABSOLUTE_DEVIATION,
     STANDARD_DEVIATION,
     VARIANCE,

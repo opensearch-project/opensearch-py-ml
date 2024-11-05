@@ -41,7 +41,7 @@ import numpy as np
 import pandas as pd  # type: ignore
 
 from opensearch_py_ml.common import opensearch_date_to_pandas_date
-from opensearch_py_ml.constants import (
+from opensearch_py_ml.utils import (
     MEAN_ABSOLUTE_DEVIATION,
     STANDARD_DEVIATION,
     VARIANCE,
