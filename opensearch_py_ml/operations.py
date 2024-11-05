@@ -1229,11 +1229,18 @@ class Operations:
 
         df = pd.concat([df1, df2])
 
+        # Note: In recent pandas versions, `describe()` returns a different index order
+        # for one-column DataFrames compared to multi-column DataFrames.
+        # We adjust the order manually to ensure consistency.
         if df.shape[1] == 1:
+            # For single-column DataFrames, `describe()` typically outputs:
+            # ["count", "mean", "std", "min", "25%", "50%", "75%", "max"]
             return df.reindex(
                 ["count", "mean", STANDARD_DEVIATION, "min", "25%", "50%", "75%", "max"]
             )
 
+        # For multi-column DataFrames, `describe()` typically outputs:
+        # ["count", "mean", "min", "25%", "50%", "75%", "max", "std"]
         return df.reindex(
             ["count", "mean", "min", "25%", "50%", "75%", "max", STANDARD_DEVIATION]
         )
