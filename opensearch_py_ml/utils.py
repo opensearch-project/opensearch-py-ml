@@ -38,6 +38,7 @@ MEAN_ABSOLUTE_DEVIATION = "mad"
 VARIANCE = "var"
 STANDARD_DEVIATION = "std"
 
+
 def deprecated_api(
     replace_with: str,
 ) -> Callable[[Callable[..., RT]], Callable[..., RT]]:

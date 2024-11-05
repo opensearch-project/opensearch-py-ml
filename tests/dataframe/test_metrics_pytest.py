@@ -27,14 +27,13 @@ import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal, assert_series_equal
 
+# File called _pytest for PyCharm compatibility
 from opensearch_py_ml.utils import (
     MEAN_ABSOLUTE_DEVIATION,
     STANDARD_DEVIATION,
     VARIANCE,
+    CustomFunctionDispatcher,
 )
-
-# File called _pytest for PyCharm compatibility
-from opensearch_py_ml.utils import CustomFunctionDispatcher
 from tests.common import TestData, assert_almost_equal
 
 

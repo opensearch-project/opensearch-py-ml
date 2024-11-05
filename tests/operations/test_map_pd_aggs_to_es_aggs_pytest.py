@@ -22,12 +22,8 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-from opensearch_py_ml.utils import (
-    MEAN_ABSOLUTE_DEVIATION,
-    STANDARD_DEVIATION,
-    VARIANCE,
-)
 from opensearch_py_ml.operations import Operations
+from opensearch_py_ml.utils import MEAN_ABSOLUTE_DEVIATION, STANDARD_DEVIATION, VARIANCE
 
 
 def test_all_aggs():

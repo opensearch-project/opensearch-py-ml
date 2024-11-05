@@ -32,8 +32,8 @@ from opensearch_py_ml.utils import (
     MEAN_ABSOLUTE_DEVIATION,
     STANDARD_DEVIATION,
     VARIANCE,
+    CustomFunctionDispatcher,
 )
-from opensearch_py_ml.utils import CustomFunctionDispatcher
 from tests.common import TestData
 
 

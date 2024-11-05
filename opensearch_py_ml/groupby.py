@@ -25,12 +25,8 @@
 
 from typing import TYPE_CHECKING, List, Optional, Union
 
-from opensearch_py_ml.utils import (
-    MEAN_ABSOLUTE_DEVIATION,
-    STANDARD_DEVIATION,
-    VARIANCE,
-)
 from opensearch_py_ml.query_compiler import QueryCompiler
+from opensearch_py_ml.utils import MEAN_ABSOLUTE_DEVIATION, STANDARD_DEVIATION, VARIANCE
 
 if TYPE_CHECKING:
     import pandas as pd  # type: ignore

@@ -41,15 +41,11 @@ import numpy as np
 import pandas as pd  # type: ignore
 
 from opensearch_py_ml.common import opensearch_date_to_pandas_date
-from opensearch_py_ml.utils import (
-    MEAN_ABSOLUTE_DEVIATION,
-    STANDARD_DEVIATION,
-    VARIANCE,
-)
 from opensearch_py_ml.field_mappings import FieldMappings
 from opensearch_py_ml.filter import BooleanFilter, QueryFilter
 from opensearch_py_ml.index import Index
 from opensearch_py_ml.operations import Operations
+from opensearch_py_ml.utils import MEAN_ABSOLUTE_DEVIATION, STANDARD_DEVIATION, VARIANCE
 
 if TYPE_CHECKING:
     from opensearchpy import OpenSearch

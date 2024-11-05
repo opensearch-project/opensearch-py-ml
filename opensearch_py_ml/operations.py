@@ -52,11 +52,6 @@ from opensearch_py_ml.common import (
     build_pd_series,
     opensearch_date_to_pandas_date,
 )
-from opensearch_py_ml.utils import (
-    MEAN_ABSOLUTE_DEVIATION,
-    STANDARD_DEVIATION,
-    VARIANCE,
-)
 from opensearch_py_ml.index import Index
 from opensearch_py_ml.query import Query
 from opensearch_py_ml.tasks import (
@@ -70,6 +65,7 @@ from opensearch_py_ml.tasks import (
     SizeTask,
     TailTask,
 )
+from opensearch_py_ml.utils import MEAN_ABSOLUTE_DEVIATION, STANDARD_DEVIATION, VARIANCE
 
 if TYPE_CHECKING:
     from numpy.typing import DTypeLike
