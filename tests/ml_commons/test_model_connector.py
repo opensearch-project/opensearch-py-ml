@@ -52,8 +52,8 @@ def connector_payload():
 
 
 @pytest.fixture
-def test_connector(client: Connector, connector_payload: dict):
-    res = client.create_standalone_connector(connector_payload)
+def test_connector(client: Connector, connector_body: dict):
+    res = client.create_standalone_connector(connector_body)
     connector_id = res["connector_id"]
     yield connector_id
 

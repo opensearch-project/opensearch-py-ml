@@ -8,18 +8,28 @@
 from opensearchpy import OpenSearch
 
 from opensearch_py_ml.ml_commons.ml_common_utils import ML_BASE_URI
+import warnings
 
 
 class Connector:
     def __init__(self, os_client: OpenSearch):
         self.client = os_client
 
-    def create_standalone_connector(self, payload: dict):
-        if not isinstance(payload, dict):
-            raise ValueError("payload needs to be a dictionary")
+    def create_standalone_connector(self, body: dict = None, payload: dict = None):
+        if body is None:
+            if payload is not None:
+                if not isinstance(payload, dict):
+                    raise ValueError("'payload' needs to be a dictionary.")
+                warnings.warn("The 'payload' argument is deprecated; use 'body' instead.", DeprecationWarning)
+                body = payload
+            else:
+                raise ValueError("'body' needs to be provided as a dictionary.")
+
+        elif not isinstance(body, dict):
+            raise ValueError("'body' needs to be a dictionary.")
 
         return self.client.transport.perform_request(
-            method="POST", url=f"{ML_BASE_URI}/connectors/_create", body=payload
+            method="POST", url=f"{ML_BASE_URI}/connectors/_create", body=body
         )
 
     def list_connectors(self):
