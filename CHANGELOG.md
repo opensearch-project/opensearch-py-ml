@@ -63,6 +63,7 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - fix bug in `MLCommonClient_client.upload_model` by @rawwar in ([#336](https://github.com/opensearch-project/opensearch-py-ml/pull/336))
 - fix lint issues on main by @rawwar in ([#374](https://github.com/opensearch-project/opensearch-py-ml/pull/374))
 - fix CVE vulnerability by @rawwar in ([#383](https://github.com/opensearch-project/opensearch-py-ml/pull/383))
+- refactor: replace 'payload' with 'body' in `create_standalone_connector` by @yerzhaisang ([#424](https://github.com/opensearch-project/opensearch-py-ml/pull/424))
 
 ## [1.1.0]
 
