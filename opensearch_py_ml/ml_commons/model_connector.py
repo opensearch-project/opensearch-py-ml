@@ -5,10 +5,11 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
+import warnings
+
 from opensearchpy import OpenSearch
 
 from opensearch_py_ml.ml_commons.ml_common_utils import ML_BASE_URI
-import warnings
 
 
 class Connector:
@@ -20,7 +21,10 @@ class Connector:
             if payload is not None:
                 if not isinstance(payload, dict):
                     raise ValueError("'payload' needs to be a dictionary.")
-                warnings.warn("The 'payload' argument is deprecated; use 'body' instead.", DeprecationWarning)
+                warnings.warn(
+                    "The 'payload' argument is deprecated; use 'body' instead.",
+                    DeprecationWarning,
+                )
                 body = payload
             else:
                 raise ValueError("'body' needs to be provided as a dictionary.")
