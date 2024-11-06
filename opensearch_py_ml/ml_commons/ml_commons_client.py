@@ -567,13 +567,8 @@ class MLCommonClient:
             url=API_URL,
             body=API_BODY,
         )
-    
-    def predict(
-        self, 
-        algorithm_name: str, 
-        model_id: str, 
-        predict_object: dict
-    ) -> dict:
+
+    def predict(self, algorithm_name: str, model_id: str, predict_object: dict) -> dict:
         """
         Generalized predict method to make predictions using different ML algorithms.
 
@@ -588,12 +583,10 @@ class MLCommonClient:
         """
         # Construct the URL for the prediction request
         url = f"{ML_BASE_URI}/_predict/{algorithm_name}/{model_id}"
-        
+
         # Make the POST request to the prediction API
         response = self._client.transport.perform_request(
-            method="POST",
-            url=url,
-            body=predict_object
+            method="POST", url=url, body=predict_object
         )
 
         return response
