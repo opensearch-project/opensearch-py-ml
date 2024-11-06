@@ -31,7 +31,7 @@ def _safe_delete_connector(client, connector_id):
 
 
 @pytest.fixture
-def connector_payload():
+def connector_body():
     return {
         "name": "Test Connector",
         "description": "Connector for testing",
