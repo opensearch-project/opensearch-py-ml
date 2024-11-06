@@ -64,8 +64,8 @@ def test_connector(client: Connector, connector_body: dict):
     OPENSEARCH_VERSION < CONNECTOR_MIN_VERSION,
     reason="Connectors are supported in OpenSearch 2.9.0 and above",
 )
-def test_create_standalone_connector(client: Connector, connector_payload: dict):
-    res = client.create_standalone_connector(connector_payload)
+def test_create_standalone_connector(client: Connector, connector_body: dict):
+    res = client.create_standalone_connector(connector_body)
     assert "connector_id" in res
 
     _safe_delete_connector(client, res["connector_id"])
