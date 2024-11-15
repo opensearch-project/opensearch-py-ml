@@ -1,0 +1,12 @@
+# Ignore data and ingestion directories
+ml_commons/rag_pipeline/data/
+ml_commons/rag_pipeline/ingestion/
+ml_commons/rag_pipeline/rag/config.ini
+# Ignore virtual environment
+.venv/
+# Or, specify the full path
+/Users/hmumtazz/.cursor-tutor/opensearch-py-ml/.venv/
+
+# Ignore Python cache files
+__pycache__/
+*.pyc

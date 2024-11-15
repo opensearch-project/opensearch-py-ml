@@ -1,0 +1,9 @@
+boto3
+opensearch-py
+pandas
+configparser
+PyPDF2
+tiktoken
+tqdm
+colorama
+requests_aws4auth
