@@ -370,7 +370,7 @@ class Setup:
         
         parsed_url = urlparse(self.opensearch_endpoint)
         host = parsed_url.hostname
-        port = parsed_url.port or 443
+        port = 443
 
         if self.is_serverless:
             credentials = boto3.Session().get_credentials()
@@ -383,7 +383,7 @@ class Setup:
 
         try:
             self.opensearch_client = OpenSearch(
-                hosts=[{'host': host, 'portort': port}],
+                hosts=[{'host': host, 'port': port}],
                 http_auth=auth,
                 use_ssl=True,
                 verify_certs=True,
@@ -397,7 +397,7 @@ class Setup:
             return False
 
     def get_knn_index_details(self):
-        # Prompt user for KNN index details (embedding dimension and space type)
+        # Prompt user for KNN index details (embedding dimension, space type, and ef_construction)
         dimension_input = input("Press Enter to use the default embedding size (768), or type a custom size: ")
         
         if dimension_input.strip() == "":
@@ -429,9 +429,24 @@ class Setup:
 
         print(f"Space type set to: {space_type}")
 
-        return embedding_dimension, space_type
+        # New prompt for ef_construction
+        ef_construction_input = input("\nPress Enter to use the default ef_construction value (512), or type a custom value: ")
+        
+        if ef_construction_input.strip() == "":
+            ef_construction = 512
+        else:
+            try:
+                ef_construction = int(ef_construction_input)
+            except ValueError:
+                print("Invalid input. Using default ef_construction of 512.")
+                ef_construction = 512
 
-    def create_index(self, embedding_dimension, space_type):
+        print(f"ef_construction set to: {ef_construction}")
+
+        return embedding_dimension, space_type, ef_construction
+
+
+    def create_index(self, embedding_dimension, space_type, ef_construction):
         # Create the KNN index in OpenSearch
         index_body = {
             "mappings": {
@@ -444,7 +459,7 @@ class Setup:
                             "name": "hnsw",
                             "space_type": space_type,
                             "engine": "nmslib",
-                            "parameters": {"ef_construction": 512, "m": 16},
+                            "parameters": {"ef_construction": ef_construction, "m": 16},
                         },
                     },
                 }
@@ -459,25 +474,30 @@ class Setup:
         }
         try:
             self.opensearch_client.indices.create(index=self.index_name, body=index_body)
-            print(f"KNN index '{self.index_name}' created successfully with dimension {embedding_dimension} and space type {space_type}.")
+            print(f"KNN index '{self.index_name}' created successfully with dimension {embedding_dimension}, space type {space_type}, and ef_construction {ef_construction}.")
         except Exception as e:
             if 'resource_already_exists_exception' in str(e).lower():
                 print(f"Index '{self.index_name}' already exists.")
             else:
                 print(f"Error creating index '{self.index_name}': {e}")
 
-    def verify_and_create_index(self, embedding_dimension, space_type):
-        # Verify if the index exists, create it if it doesn't
+
+
+    def verify_and_create_index(self, embedding_dimension, space_type, ef_construction):
         try:
+            print(f"Attempting to verify index '{self.index_name}'...")
             index_exists = self.opensearch_client.indices.exists(index=self.index_name)
             if index_exists:
                 print(f"KNN index '{self.index_name}' already exists.")
             else:
-                self.create_index(embedding_dimension, space_type)
+                print(f"Index '{self.index_name}' does not exist. Attempting to create...")
+                self.create_index(embedding_dimension, space_type, ef_construction)
             return True
         except Exception as ex:
             print(f"Error verifying or creating index: {ex}")
+            print(f"OpenSearch client config: {self.opensearch_client.transport.hosts}")
             return False
+
 
     def get_truncated_name(self, base_name, max_length=32):
         # Truncate a name to fit within a specified length
@@ -518,11 +538,13 @@ class Setup:
                 return
         
         if self.initialize_opensearch_client():
-            embedding_dimension, space_type = self.get_knn_index_details()
-            if self.verify_and_create_index(embedding_dimension, space_type):
+            print("OpenSearch client initialized successfully. Proceeding with index creation...")
+            embedding_dimension, space_type, ef_construction = self.get_knn_index_details()
+            if self.verify_and_create_index(embedding_dimension, space_type, ef_construction):
                 print("Setup completed successfully.")
-                self.config['embedding_dimension'] = s= str(embedding_dimension)
+                self.config['embedding_dimension'] = str(embedding_dimension)
                 self.config['space_type'] = space_type
+                self.config['ef_construction'] = str(ef_construction)
             else:
                 print("Index verification failed. Please check your index name and permissions.")
         else:

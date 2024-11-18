@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # SPDX-License-Identifier: Apache-2.0
 # The OpenSearch Contributors require contributions made to
 # this file be licensed under the Apache-2.0 license or a
@@ -23,7 +25,7 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-#!/usr/bin/env python3
+
 
 """
 Main CLI script for OpenSearch with Bedrock Integration
