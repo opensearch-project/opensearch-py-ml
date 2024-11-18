@@ -46,6 +46,7 @@ class Ingest:
     EMBEDDING_MODEL_ID = 'amazon.titan-embed-text-v2:0'
 
     def __init__(self, config):
+        # Initialize the Ingest class with configuration
         self.config = config
         self.aws_region = config.get('region')
         self.index_name = config.get('index_name')
@@ -53,6 +54,8 @@ class Ingest:
         self.opensearch = OpenSearchConnector(config)
 
     def initialize_clients(self):
+        # Initialize AWS Bedrock and OpenSearch clients
+        # Returns True if successful, False otherwise
         try:
             self.bedrock_client = boto3.client('bedrock-runtime', region_name=self.aws_region)
             if self.opensearch.initialize_opensearch_client():
@@ -66,6 +69,9 @@ class Ingest:
             return False
 
     def process_file(self, file_path: str) -> List[Dict[str, str]]:
+        # Process a file based on its extension
+        # Supports CSV, TXT, and PDF files
+        # Returns a list of dictionaries containing extracted text
         _, file_extension = os.path.splitext(file_path)
         
         if file_extension.lower() == '.csv':
@@ -79,6 +85,9 @@ class Ingest:
             return []
 
     def process_csv(self, file_path: str) -> List[Dict[str, str]]:
+        # Process a CSV file
+        # Extracts information and formats it into a sentence
+        # Returns a list of dictionaries with the formatted text
         documents = []
         with open(file_path, 'r') as csvfile:
             reader = csv.DictReader(csvfile)
@@ -90,11 +99,17 @@ class Ingest:
         return documents
 
     def process_txt(self, file_path: str) -> List[Dict[str, str]]:
+        # Process a TXT file
+        # Reads the entire content of the file
+        # Returns a list with a single dictionary containing the file content
         with open(file_path, 'r') as txtfile:
             content = txtfile.read()
         return [{"text": content}]
 
     def process_pdf(self, file_path: str) -> List[Dict[str, str]]:
+        # Process a PDF file
+        # Extracts text from each page of the PDF
+        # Returns a list of dictionaries, each containing text from a page
         documents = []
         with open(file_path, 'rb') as pdffile:
             pdf_reader = PyPDF2.PdfReader(pdffile)
@@ -105,6 +120,9 @@ class Ingest:
         return documents
 
     def text_embedding(self, text, max_retries=5, initial_delay=1, backoff_factor=2):
+        # Generate text embedding using AWS Bedrock
+        # Implements exponential backoff for retries in case of failures
+        # Returns the embedding if successful, None otherwise
         if self.bedrock_client is None:
             print("Bedrock client is not initialized. Please run setup first.")
             return None
@@ -139,6 +157,9 @@ class Ingest:
         return None
 
     def process_and_ingest_data(self, file_paths: List[str]):
+        # Process and ingest data from multiple files
+        # Generates embeddings for each document and ingests into OpenSearch
+        # Displays progress and results of the ingestion process
         if not self.initialize_clients():
             print("Failed to initialize clients. Aborting ingestion.")
             return
@@ -197,6 +218,8 @@ class Ingest:
         print(f"{Fore.RED}Failed to ingest {failed} documents.{Style.RESET_ALL}")
 
     def ingest_command(self, paths: List[str]):
+        # Main ingestion command
+        # Processes all valid files in the given paths and initiates ingestion
         all_files = []
         for path in paths:
             if os.path.isfile(path):

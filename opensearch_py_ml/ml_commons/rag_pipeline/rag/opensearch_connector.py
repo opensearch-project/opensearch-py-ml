@@ -30,6 +30,7 @@ from opensearchpy import helpers as opensearch_helpers
 
 class OpenSearchConnector:
     def __init__(self, config):
+        # Initialize the OpenSearchConnector with configuration
         self.config = config
         self.opensearch_client = None
         self.aws_region = config.get('region')
@@ -40,6 +41,9 @@ class OpenSearchConnector:
         self.opensearch_password = config.get('opensearch_password')
 
     def initialize_opensearch_client(self):
+        # Initialize the OpenSearch client
+        # Handles both serverless and non-serverless configurations
+        # Returns True if successful, False otherwise
         if not self.opensearch_endpoint:
             print("OpenSearch endpoint not set. Please run setup first.")
             return False
@@ -73,6 +77,8 @@ class OpenSearchConnector:
             return False
 
     def create_index(self, embedding_dimension, space_type):
+        # Create a new KNN index in OpenSearch
+        # Sets up the mapping for nominee_text and nominee_vector fields
         index_body = {
             "mappings": {
                 "properties": {
@@ -107,6 +113,8 @@ class OpenSearchConnector:
                 print(f"Error creating index '{self.index_name}': {e}")
 
     def verify_and_create_index(self, embedding_dimension, space_type):
+        # Check if the index exists, create it if it doesn't
+        # Returns True if the index exists or was successfully created, False otherwise
         try:
             index_exists = self.opensearch_client.indices.exists(index=self.index_name)
             if index_exists:
@@ -119,6 +127,8 @@ class OpenSearchConnector:
             return False
 
     def bulk_index(self, actions):
+        # Perform bulk indexing of documents
+        # Returns the number of successfully indexed documents and the number of failures
         try:
             success_count, error_info = opensearch_helpers.bulk(self.opensearch_client, actions)
             error_count = len(error_info)
@@ -129,6 +139,8 @@ class OpenSearchConnector:
             return 0, len(actions)
 
     def search(self, vector, k=5):
+        # Perform a KNN search using the provided vector
+        # Returns the top k matching documents
         try:
             response = self.opensearch_client.search(
                 index=self.index_name,

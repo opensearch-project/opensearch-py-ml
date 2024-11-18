@@ -38,17 +38,20 @@ from query import Query
 CONFIG_FILE = 'config.ini'
 
 def load_config():
+    # Load configuration from the config file
     config = configparser.ConfigParser()
     config.read(CONFIG_FILE)
     return config['DEFAULT']
 
 def save_config(config):
+    # Save configuration to the config file
     parser = configparser.ConfigParser()
     parser['DEFAULT'] = config
     with open(CONFIG_FILE, 'w') as f:
         parser.write(f)
     
 def main():
+    # Set up argument parser for CLI
     parser = argparse.ArgumentParser(description="RAG Pipeline CLI")
     parser.add_argument('command', choices=['setup', 'ingest', 'query'], help='Command to run')
     parser.add_argument('--paths', nargs='+', help='Paths to files or directories for ingestion')
@@ -57,14 +60,18 @@ def main():
 
     args = parser.parse_args()
 
+    # Load existing configuration
     config = load_config()
 
     if args.command == 'setup':
+        # Run setup process
         setup = Setup()
         setup.setup_command()
         save_config(setup.config)
     elif args.command == 'ingest':
+        # Handle ingestion command
         if not args.paths:
+            # If no paths provided as arguments, prompt user for input
             paths = []
             while True:
                 path = input("Enter a file or directory path (or press Enter to finish): ")
@@ -76,7 +83,9 @@ def main():
         ingest = Ingest(config)
         ingest.ingest_command(paths)
     elif args.command == 'query':
+        # Handle query command
         if not args.queries:
+            # If no queries provided as arguments, prompt user for input
             queries = []
             while True:
                 query = input("Enter a query (or press Enter to finish): ")
@@ -88,6 +97,7 @@ def main():
         query = Query(config)
         query.query_command(queries, num_results=args.num_results)
     else:
+        # If an invalid command is provided, print help
         parser.print_help()
 
 if __name__ == "__main__":

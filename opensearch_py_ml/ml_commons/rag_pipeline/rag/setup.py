@@ -25,15 +25,23 @@
 
 from setuptools import setup, find_packages, find_namespace_packages
 
-
-
 setup(
+    # Name of the package
     name="rag_pipeline",
+    
+    # Version of the package
     version="0.1.0",
+    
+    # Automatically find and include all packages in the project
+    # This specifically looks for packages within 'opensearch_py_ml' and its subpackages
     packages=find_namespace_packages(include=['opensearch_py_ml', 'opensearch_py_ml.*']),
+    
+    # Define console script entry points
+    # This creates a command-line executable named 'rag' that runs the main() function
+    # from the opensearch_py_ml.ml_commons.rag_pipeline.rag module
     entry_points={
         'console_scripts': [
-        'rag=opensearch_py_ml.ml_commons.rag_pipeline.rag:main',
+            'rag=opensearch_py_ml.ml_commons.rag_pipeline.rag:main',
         ],
     },
 )

@@ -40,6 +40,7 @@ class Query:
     LLM_MODEL_ID = 'amazon.titan-text-express-v1'
 
     def __init__(self, config):
+        # Initialize the Query class with configuration
         self.config = config
         self.aws_region = config.get('region')
         self.index_name = config.get('index_name')
@@ -47,6 +48,8 @@ class Query:
         self.opensearch = OpenSearchConnector(config)
 
     def initialize_clients(self):
+        # Initialize AWS Bedrock and OpenSearch clients
+        # Returns True if successful, False otherwise
         try:
             self.bedrock_client = boto3.client('bedrock-runtime', region_name=self.aws_region)
             if self.opensearch.initialize_opensearch_client():
@@ -60,6 +63,9 @@ class Query:
             return False
 
     def text_embedding(self, text, max_retries=5, initial_delay=1, backoff_factor=2):
+        # Generate text embedding using AWS Bedrock
+        # Implements exponential backoff for retries in case of failures
+        # Returns the embedding if successful, None otherwise
         if self.bedrock_client is None:
             print("Bedrock client is not initialized. Please run setup first.")
             return None
@@ -94,6 +100,9 @@ class Query:
         return None
 
     def bulk_query(self, queries, k=5):
+        # Perform bulk semantic search for multiple queries
+        # Generates embeddings for queries and searches OpenSearch index
+        # Returns a list of results containing query, context, and number of results
         print("Generating embeddings for queries...")
         query_vectors = []
         for query in queries:
@@ -133,6 +142,9 @@ class Query:
         return results
 
     def generate_answer(self, prompt, config):
+        # Generate an answer using the LLM model
+        # Handles token limit and configures LLM parameters
+        # Returns the generated answer or None if an error occurs
         try:
             max_input_tokens = 8192  # Max tokens for the model
             expected_output_tokens = config.get('maxTokenCount', 1000)
@@ -172,6 +184,9 @@ class Query:
             return None
 
     def query_command(self, queries: List[str], num_results=5):
+        # Main query command to process multiple queries
+        # Performs semantic search and generates answers using LLM
+        # Prints results for each query
         if not self.initialize_clients():
             print("Failed to initialize clients. Aborting query.")
             return

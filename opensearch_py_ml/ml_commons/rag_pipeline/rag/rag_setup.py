@@ -37,12 +37,15 @@ import sys
 from urllib.parse import urlparse
 from opensearchpy import OpenSearch, RequestsHttpConnection, AWSV4SignerAuth
 
+# [Existing license and import statements remain unchanged]
+
 class Setup:
     CONFIG_FILE = 'config.ini'
     SERVICE_AOSS = 'opensearchserverless'
     SERVICE_BEDROCK = 'bedrock-runtime'
 
     def __init__(self):
+        # Initialize setup variables
         self.aws_region = None
         self.iam_principal = None
         self.index_name = None
@@ -56,6 +59,7 @@ class Setup:
         self.opensearch_client = None
 
     def check_and_configure_aws(self):
+        # Check if AWS credentials are configured and offer to reconfigure if needed
         try:
             session = boto3.Session()
             credentials = session.get_credentials()
@@ -73,6 +77,7 @@ class Setup:
             self.configure_aws()
 
     def configure_aws(self):
+        # Configure AWS credentials using user input
         print("Let's configure your AWS credentials.")
 
         aws_access_key_id = input("Enter your AWS Access Key ID: ")
@@ -102,20 +107,22 @@ class Setup:
             print(f"An unexpected error occurred: {e}")
 
     def load_config(self):
+        # Load configuration from the config file
         config = configparser.ConfigParser()
         if os.path.exists(self.CONFIG_FILE):
             config.read(self.CONFIG_FILE)
             return dict(config['DEFAULT'])
         return {}
 
-
     def save_config(self, config):
+        # Save configuration to the config file
         parser = configparser.ConfigParser()
         parser['DEFAULT'] = config
         with open(self.CONFIG_FILE, 'w') as f:
             parser.write(f)
 
-    def get_password_with_asterisks(self, prompt="Enter password: "):  # Accept 'prompt'
+    def get_password_with_asterisks(self, prompt="Enter password: "):
+        # Get password input from user, masking it with asterisks
         import sys
         if sys.platform == 'win32':
             import msvcrt
@@ -162,6 +169,7 @@ class Setup:
                 termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
 
     def setup_configuration(self):
+        # Set up the configuration by prompting the user for various settings
         config = self.load_config()
 
         self.aws_region = input(f"Enter your AWS Region [{config.get('region', 'us-west-2')}]: ") or config.get('region', 'us-west-2')
@@ -197,6 +205,7 @@ class Setup:
         print("Configuration saved successfully.")
 
     def initialize_clients(self):
+        # Initialize AWS clients (AOSS and Bedrock)
         try:
             boto_config = Config(
                 region_name=self.aws_region,
@@ -215,6 +224,7 @@ class Setup:
             return False
 
     def create_security_policies(self):
+        # Create security policies for serverless OpenSearch
         if not self.is_serverless:
             print("Security policies are not applicable for managed OpenSearch domains.")
             return
@@ -244,6 +254,7 @@ class Setup:
         self.create_access_policy(self.get_truncated_name(f"{self.collection_name}-access-policy"), f"{self.collection_name} data access policy", data_access_policy)
 
     def create_security_policy(self, policy_type, name, description, policy_body):
+        # Create a specific security policy (encryption or network)
         try:
             if policy_type.lower() == "encryption":
                 self.aoss_client.create_security_policy(description=description, name=name, policy=policy_body, type="encryption")
@@ -258,6 +269,7 @@ class Setup:
             print(f"Error creating {policy_type} policy '{name}': {ex}")
 
     def create_access_policy(self, name, description, policy_body):
+        # Create a data access policy
         try:
             self.aoss_client.create_access_policy(description=description, name=name, policy=policy_body, type="data")
             print(f"Data Access Policy '{name}' created successfully.")
@@ -267,6 +279,7 @@ class Setup:
             print(f"Error creating data access policy '{name}': {ex}")
 
     def create_collection(self, collection_name, max_retries=3):
+        # Create an OpenSearch serverless collection
         for attempt in range(max_retries):
             try:
                 response = self.aoss_client.create_collection(
@@ -287,6 +300,7 @@ class Setup:
         return None
 
     def get_collection_id(self, collection_name):
+        # Retrieve the ID of an existing collection
         try:
             response = self.aoss_client.list_collections()
             for collection in response['collectionSummaries']:
@@ -297,6 +311,7 @@ class Setup:
         return None
 
     def wait_for_collection_active(self, collection_id, max_wait_minutes=30):
+        # Wait for the collection to become active
         print(f"Waiting for collection '{self.collection_name}' to become active...")
         start_time = time.time()
         while time.time() - start_time < max_wait_minutes * 60:
@@ -319,6 +334,7 @@ class Setup:
         return False
 
     def get_collection_endpoint(self):
+        # Retrieve the endpoint URL for the OpenSearch collection
         if not self.is_serverless:
             return self.opensearch_endpoint
         
@@ -347,6 +363,7 @@ class Setup:
             return None
 
     def initialize_opensearch_client(self):
+        # Initialize the OpenSearch client
         if not self.opensearch_endpoint:
             print("OpenSearch endpoint not set. Please run setup first.")
             return False
@@ -366,7 +383,7 @@ class Setup:
 
         try:
             self.opensearch_client = OpenSearch(
-                hosts=[{'host': host, 'port': port}],
+                hosts=[{'host': host, 'portort': port}],
                 http_auth=auth,
                 use_ssl=True,
                 verify_certs=True,
@@ -380,7 +397,7 @@ class Setup:
             return False
 
     def get_knn_index_details(self):
-        # Simplified dimension input
+        # Prompt user for KNN index details (embedding dimension and space type)
         dimension_input = input("Press Enter to use the default embedding size (768), or type a custom size: ")
         
         if dimension_input.strip() == "":
@@ -394,7 +411,6 @@ class Setup:
 
         print(f"\nEmbedding dimension set to: {embedding_dimension}")
 
-        # Space type selection
         print("\nChoose the space type for KNN:")
         print("1. L2 (Euclidean distance)")
         print("2. Cosine similarity")
@@ -415,8 +431,8 @@ class Setup:
 
         return embedding_dimension, space_type
 
-
     def create_index(self, embedding_dimension, space_type):
+        # Create the KNN index in OpenSearch
         index_body = {
             "mappings": {
                 "properties": {
@@ -451,6 +467,7 @@ class Setup:
                 print(f"Error creating index '{self.index_name}': {e}")
 
     def verify_and_create_index(self, embedding_dimension, space_type):
+        # Verify if the index exists, create it if it doesn't
         try:
             index_exists = self.opensearch_client.indices.exists(index=self.index_name)
             if index_exists:
@@ -463,11 +480,13 @@ class Setup:
             return False
 
     def get_truncated_name(self, base_name, max_length=32):
+        # Truncate a name to fit within a specified length
         if len(base_name) <= max_length:
             return base_name
         return base_name[:max_length-3] + "..."
 
     def setup_command(self):
+        # Main setup command that orchestrates the entire setup process
         self.check_and_configure_aws()
         self.setup_configuration()
         
@@ -502,7 +521,7 @@ class Setup:
             embedding_dimension, space_type = self.get_knn_index_details()
             if self.verify_and_create_index(embedding_dimension, space_type):
                 print("Setup completed successfully.")
-                self.config['embedding_dimension'] = str(embedding_dimension)
+                self.config['embedding_dimension'] = s= str(embedding_dimension)
                 self.config['space_type'] = space_type
             else:
                 print("Index verification failed. Please check your index name and permissions.")
