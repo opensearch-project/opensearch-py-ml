@@ -2,10 +2,71 @@
 ml_commons/rag_pipeline/data/
 ml_commons/rag_pipeline/ingestion/
 ml_commons/rag_pipeline/rag/config.ini
-# Ignore virtual environment
-.venv/
-
-
-# Ignore Python cache files
-__pycache__/
+# Compiled python modules.
 *.pyc
+__pycache__/
+
+# Setuptools distribution folder.
+dist/
+
+# Build folder
+build/
+
+# docs build folder
+docs/build/
+
+# pytest results
+tests/dataframe/results/*csv
+result_images/
+
+
+# Python egg metadata, regenerated from source files by setuptools.
+/*.egg-info
+opensearch_py_ml.egg-info/
+
+# PyCharm files
+.idea/
+
+# vscode files
+.vscode/
+
+# pytest files
+.pytest_cache/
+
+# Ignore MacOSX files
+.DS_Store
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# Environments
+.env
+.venv
+.nox
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.mypy_cache
+
+# Coverage
+.coverage
+.coverage.*
+*-junit.xml
+*-codecov.xml
+
+#model file
+all-MiniLM-L6-v2_torchscript_sentence-transformer.zip
+# torch generated files
+tests/test_SentenceTransformerModel
+tests/ml_commons/test_model_files
+tests/ml_models/tests
+docs/source/examples/synthetic_queries

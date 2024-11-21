@@ -43,7 +43,6 @@ from opensearch_connector import OpenSearchConnector
 init(autoreset=True)  # Initialize colorama
 
 class Ingest:
-    EMBEDDING_MODEL_ID = 'amazon.titan-embed-text-v2:0'
 
     def __init__(self, config):
         # Initialize the Ingest class with configuration
@@ -52,21 +51,21 @@ class Ingest:
         self.index_name = config.get('index_name')
         self.bedrock_client = None
         self.opensearch = OpenSearchConnector(config)
+        self.embedding_model_id = config.get('embedding_model_id')
+
+        if not self.embedding_model_id:
+            print("Embedding model ID is not set. Please run setup first.")
+            return
 
     def initialize_clients(self):
-        # Initialize AWS Bedrock and OpenSearch clients
-        # Returns True if successful, False otherwise
-        try:
-            self.bedrock_client = boto3.client('bedrock-runtime', region_name=self.aws_region)
-            if self.opensearch.initialize_opensearch_client():
-                print("Clients initialized successfully.")
-                return True
-            else:
-                print("Failed to initialize OpenSearch client.")
-                return False
-        except Exception as e:
-            print(f"Failed to initialize clients: {e}")
+        # Initialize OpenSearch client
+        if self.opensearch.initialize_opensearch_client():
+            print("OpenSearch client initialized successfully.")
+            return True
+        else:
+            print("Failed to initialize OpenSearch client.")
             return False
+
 
     def process_file(self, file_path: str) -> List[Dict[str, str]]:
         # Process a file based on its extension
@@ -86,17 +85,15 @@ class Ingest:
 
     def process_csv(self, file_path: str) -> List[Dict[str, str]]:
         # Process a CSV file
-        # Extracts information and formats it into a sentence
-        # Returns a list of dictionaries with the formatted text
+        # Extracts information and returns a list of dictionaries
+        # Each dictionary contains the entire row content
         documents = []
-        with open(file_path, 'r') as csvfile:
+        with open(file_path, 'r', newline='', encoding='utf-8') as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
-                text = f"{row['name']} got nominated under the category, {row['category']}, for the film {row['film']}"
-                if row.get('winner', '').lower() != 'true':
-                    text += " but did not win"
-                documents.append({"text": text})
+                documents.append({"text": json.dumps(row)})
         return documents
+
 
     def process_txt(self, file_path: str) -> List[Dict[str, str]]:
         # Process a TXT file
@@ -120,40 +117,54 @@ class Ingest:
         return documents
 
     def text_embedding(self, text, max_retries=5, initial_delay=1, backoff_factor=2):
-        # Generate text embedding using AWS Bedrock
-        # Implements exponential backoff for retries in case of failures
-        # Returns the embedding if successful, None otherwise
-        if self.bedrock_client is None:
-            print("Bedrock client is not initialized. Please run setup first.")
+        if self.opensearch is None:
+            print("OpenSearch client is not initialized. Please run setup first.")
             return None
-        
+
         delay = initial_delay
         for attempt in range(max_retries):
             try:
-                payload = {"inputText": text}
-                response = self.bedrock_client.invoke_model(modelId=self.EMBEDDING_MODEL_ID, body=json.dumps(payload))
-                response_body = json.loads(response['body'].read())
-                embedding = response_body.get('embedding')
-                if embedding is None:
-                    print(f"No embedding returned for text: {text}")
-                    print(f"Response body: {response_body}")
+                payload = {
+                    "text_docs": [text]
+                }
+                response = self.opensearch.opensearch_client.transport.perform_request(
+                    method="POST",
+                    url=f"/_plugins/_ml/_predict/text_embedding/{self.embedding_model_id}",
+                    body=payload
+                )
+                inference_results = response.get('inference_results', [])
+                if not inference_results:
+                    print(f"No inference results returned for text: {text}")
                     return None
-                return embedding
-            except botocore.exceptions.ClientError as e:
-                error_code = e.response['Error']['Code']
-                error_message = e.response['Error']['Message']
-                print(f"ClientError on attempt {attempt + 1}: {error_code} - {error_message}")
-                if error_code == 'ThrottlingException':
-                    if attempt == max_retries - 1:
-                        raise
-                    time.sleep(delay + random.uniform(0, 1))
-                    delay *= backoff_factor
+                output = inference_results[0].get('output')
+
+                # Remove or comment out the debugging print statements
+                # print(f"Output type: {type(output)}")
+                # print(f"Output content: {output}")
+
+                # Adjust the extraction of embedding data
+                if isinstance(output, list) and len(output) > 0:
+                    embedding_dict = output[0]
+                    if isinstance(embedding_dict, dict) and 'data' in embedding_dict:
+                        embedding = embedding_dict['data']
+                    else:
+                        print(f"Unexpected embedding output format: {output}")
+                        return None
+                elif isinstance(output, dict) and 'data' in output:
+                    embedding = output['data']
                 else:
-                    raise
+                    print(f"Unexpected embedding output format: {output}")
+                    return None
+
+                # Optionally, you can also remove this print statement if you prefer
+                # print(f"Extracted embedding of length {len(embedding)}")
+                return embedding
             except Exception as ex:
-                print(f"Unexpected error on attempt {attempt + 1}: {ex}")
+                print(f"Error on attempt {attempt + 1}: {ex}")
                 if attempt == max_retries - 1:
                     raise
+                time.sleep(delay)
+                delay *= backoff_factor
         return None
 
     def process_and_ingest_data(self, file_paths: List[str]):
@@ -208,7 +219,7 @@ class Ingest:
                     "_index": self.index_name,
                     "_source": {
                         "nominee_text": doc['text'],
-                        "nominee_vector": doc['embedding']
+                        "nominee_vector": doc['embedding']  # This is now a list of floats
                     }
                 }
                 actions.append(action)

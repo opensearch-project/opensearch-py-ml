@@ -36,7 +36,6 @@ from opensearch_connector import OpenSearchConnector
 init(autoreset=True)  # Initialize colorama
 
 class Query:
-    EMBEDDING_MODEL_ID = 'amazon.titan-embed-text-v2:0'
     LLM_MODEL_ID = 'amazon.titan-text-express-v1'
 
     def __init__(self, config):
@@ -46,7 +45,7 @@ class Query:
         self.index_name = config.get('index_name')
         self.bedrock_client = None
         self.opensearch = OpenSearchConnector(config)
-
+        self.embedding_model_id = config.get('embedding_model_id')
     def initialize_clients(self):
         # Initialize AWS Bedrock and OpenSearch clients
         # Returns True if successful, False otherwise
@@ -63,40 +62,55 @@ class Query:
             return False
 
     def text_embedding(self, text, max_retries=5, initial_delay=1, backoff_factor=2):
-        # Generate text embedding using AWS Bedrock
-        # Implements exponential backoff for retries in case of failures
-        # Returns the embedding if successful, None otherwise
-        if self.bedrock_client is None:
-            print("Bedrock client is not initialized. Please run setup first.")
+        if self.opensearch is None:
+            print("OpenSearch client is not initialized. Please run setup first.")
             return None
-        
+
         delay = initial_delay
         for attempt in range(max_retries):
             try:
-                payload = {"inputText": text}
-                response = self.bedrock_client.invoke_model(modelId=self.EMBEDDING_MODEL_ID, body=json.dumps(payload))
-                response_body = json.loads(response['body'].read())
-                embedding = response_body.get('embedding')
-                if embedding is None:
-                    print(f"No embedding returned for text: {text}")
-                    print(f"Response body: {response_body}")
+                payload = {
+                    "text_docs": [text]
+                }
+                response = self.opensearch.opensearch_client.transport.perform_request(
+                    method="POST",
+                    url=f"/_plugins/_ml/_predict/text_embedding/{self.embedding_model_id}",
+                    body=payload
+                )
+                inference_results = response.get('inference_results', [])
+                if not inference_results:
+                    print(f"No inference results returned for text: {text}")
                     return None
-                return embedding
-            except botocore.exceptions.ClientError as e:
-                error_code = e.response['Error']['Code']
-                error_message = e.response['Error']['Message']
-                print(f"ClientError on attempt {attempt + 1}: {error_code} - {error_message}")
-                if error_code == 'ThrottlingException':
-                    if attempt == max_retries - 1:
-                        raise
-                    time.sleep(delay + random.uniform(0, 1))
-                    delay *= backoff_factor
+                output = inference_results[0].get('output')
+
+                # Adjust the extraction of embedding data
+                if isinstance(output, list) and len(output) > 0:
+                    embedding_dict = output[0]
+                    if isinstance(embedding_dict, dict) and 'data' in embedding_dict:
+                        embedding = embedding_dict['data']
+                    else:
+                        print(f"Unexpected embedding output format: {output}")
+                        return None
+                elif isinstance(output, dict) and 'data' in output:
+                    embedding = output['data']
                 else:
-                    raise
+                    print(f"Unexpected embedding output format: {output}")
+                    return None
+
+                # Verify that embedding is a list of floats
+                if not isinstance(embedding, list) or not all(isinstance(x, (float, int)) for x in embedding):
+                    print(f"Embedding is not a list of floats: {embedding}")
+                    return None
+
+                # Optionally, remove debugging print statements
+                # print(f"Extracted embedding of length {len(embedding)}")
+                return embedding
             except Exception as ex:
-                print(f"Unexpected error on attempt {attempt + 1}: {ex}")
+                print(f"Error on attempt {attempt + 1}: {ex}")
                 if attempt == max_retries - 1:
                     raise
+                time.sleep(delay)
+                delay *= backoff_factor
         return None
 
     def bulk_query(self, queries, k=5):

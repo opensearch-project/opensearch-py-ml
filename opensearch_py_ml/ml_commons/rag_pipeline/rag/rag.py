@@ -26,7 +26,6 @@
 #  under the License.
 
 
-
 """
 Main CLI script for OpenSearch with Bedrock Integration
 """
@@ -55,7 +54,7 @@ def save_config(config):
 def main():
     # Set up argument parser for CLI
     parser = argparse.ArgumentParser(description="RAG Pipeline CLI")
-    parser.add_argument('command', choices=['setup', 'ingest', 'query'], help='Command to run')
+    parser.add_argument('command', choices=['setup', 'register_model', 'ingest', 'query'], help='Command to run')
     parser.add_argument('--paths', nargs='+', help='Paths to files or directories for ingestion')
     parser.add_argument('--queries', nargs='+', help='Query texts for search and answer generation')
     parser.add_argument('--num_results', type=int, default=5, help='Number of top results to retrieve for each query')
@@ -69,6 +68,11 @@ def main():
         # Run setup process
         setup = Setup()
         setup.setup_command()
+        save_config(setup.config)
+    elif args.command == 'register_model':
+        # Run model registration process
+        setup = Setup()
+        setup.register_model_command()
         save_config(setup.config)
     elif args.command == 'ingest':
         # Handle ingestion command
