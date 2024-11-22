@@ -236,7 +236,9 @@ class Ingest:
             if os.path.isfile(path):
                 all_files.append(path)
             elif os.path.isdir(path):
-                all_files.extend(glob.glob(os.path.join(path, '*')))
+                for root, dirs, files in os.walk(path):
+                    for file in files:
+                        all_files.append(os.path.join(root, file))
             else:
                 print(f"{Fore.YELLOW}Invalid path: {path}{Style.RESET_ALL}")
         

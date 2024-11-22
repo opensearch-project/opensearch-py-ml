@@ -37,9 +37,9 @@ import sys
 from urllib.parse import urlparse
 from opensearchpy import OpenSearch, RequestsHttpConnection, AWSV4SignerAuth
 from AIConnectorHelper import AIConnectorHelper
+from colorama import Fore, Style, init
 
-# [Existing license and import statements remain unchanged]
-
+init(autoreset=True)
 class Setup:
     CONFIG_FILE = 'config.ini'
     SERVICE_AOSS = 'opensearchserverless'
@@ -59,8 +59,6 @@ class Setup:
             self.aoss_client = None
             self.bedrock_client = None
             self.opensearch_client = None
-
-            # Initialize opensearch_domain_name
             self.opensearch_domain_name = self.get_opensearch_domain_name()
 
     def check_and_configure_aws(self):
@@ -558,21 +556,21 @@ class Setup:
         self.setup_configuration()
         
         if not self.initialize_clients():
-            print("Failed to initialize AWS clients. Setup incomplete.")
+            print(f"{Fore.RED}Failed to initialize AWS clients. Setup incomplete.{Style.RESET_ALL}")
             return
         
         if self.is_serverless:
             self.create_security_policies()
             collection_id = self.get_collection_id(self.collection_name)
             if not collection_id:
-                print(f"Collection '{self.collection_name}' not found. Attempting to create it...")
+                print(f"{Fore.YELLOW}Collection '{self.collection_name}' not found. Attempting to create it...{Style.RESET_ALL}")
                 collection_id = self.create_collection(self.collection_name)
             
             if collection_id:
                 if self.wait_for_collection_active(collection_id):
                     self.opensearch_endpoint = self.get_collection_endpoint()
                     if not self.opensearch_endpoint:
-                        print("Failed to retrieve OpenSearch endpoint. Setup incomplete.")
+                        print(f"{Fore.RED}Failed to retrieve OpenSearch endpoint. Setup incomplete.{Style.RESET_ALL}")
                         return
                     else:
                         self.config['opensearch_endpoint'] = self.opensearch_endpoint
@@ -580,48 +578,75 @@ class Setup:
                         # Initialize opensearch_domain_name after setting opensearch_endpoint
                         self.opensearch_domain_name = self.get_opensearch_domain_name()
                 else:
-                    print("Collection is not active. Setup incomplete.")
+                    print(f"{Fore.RED}Collection is not active. Setup incomplete.{Style.RESET_ALL}")
                     return
         else:
             if not self.opensearch_endpoint:
-                print("OpenSearch endpoint not set. Setup incomplete.")
+                print(f"{Fore.RED}OpenSearch endpoint not set. Setup incomplete.{Style.RESET_ALL}")
                 return
             else:
                 # Initialize opensearch_domain_name after setting opensearch_endpoint
                 self.opensearch_domain_name = self.get_opensearch_domain_name()
         
         if self.initialize_opensearch_client():
-            print("OpenSearch client initialized successfully. Proceeding with index creation...")
+            print(f"{Fore.GREEN}OpenSearch client initialized successfully. Proceeding with index creation...{Style.RESET_ALL}")
             embedding_dimension, space_type, ef_construction = self.get_knn_index_details()
             if self.verify_and_create_index(embedding_dimension, space_type, ef_construction):
-                print("Setup completed successfully.")
+                print(f"{Fore.GREEN}KNN index setup completed successfully.{Style.RESET_ALL}")
                 self.config['embedding_dimension'] = str(embedding_dimension)
                 self.config['space_type'] = space_type
                 self.config['ef_construction'] = str(ef_construction)
                 self.save_config(self.config)
+                config_file_path = os.path.abspath(self.CONFIG_FILE)
+                print(f"{Fore.GREEN}Configuration saved successfully at {config_file_path}{Style.RESET_ALL}")
+                
+                # Ask the user if they want to register a model
+                self.prompt_model_registration()
             else:
-                print("Index verification failed. Please check your index name and permissions.")
+                print(f"{Fore.RED}Index verification failed. Please check your index name and permissions.{Style.RESET_ALL}")
         else:
-            print("Failed to initialize OpenSearch client. Setup incomplete.")
+            print(f"{Fore.RED}Failed to initialize OpenSearch client. Setup incomplete.{Style.RESET_ALL}")
 
-    def register_model_command(self):
+    def prompt_model_registration(self):
         """
-        Command method to register a new embedding model.
-        Prompts the user to select a model and gathers necessary inputs.
+        Prompt the user to register a model or input an existing model ID.
+        """
+        print("\nWould you like to register an embedding model now?")
+        print("1. Yes, register a new model")
+        print("2. No, I already have a model ID")
+        print("3. Skip this step")
+        choice = input("Enter your choice (1-2): ").strip()
+
+        if choice == '1':
+            self.register_model_interactive()
+        elif choice == '2':
+            model_id = input("Please enter your existing embedding model ID: ").strip()
+            if model_id:
+                self.config['embedding_model_id'] = model_id
+                self.save_config(self.config)
+                print(f"{Fore.GREEN}Model ID '{model_id}' saved successfully in configuration.{Style.RESET_ALL}")
+            else:
+                print(f"{Fore.RED}No model ID provided. Skipping model registration.{Style.RESET_ALL}")
+        else:
+            print("Skipping model registration.")
+
+    def register_model_interactive(self):
+        """
+        Interactive method to register a new embedding model during setup.
         """
         # Load existing config
         self.config = self.load_config()
 
         # Initialize clients
         if not self.initialize_clients():
-            print("Failed to initialize AWS clients. Cannot proceed.")
+            print(f"{Fore.RED}Failed to initialize AWS clients. Cannot proceed.{Style.RESET_ALL}")
             return
 
         # Ensure opensearch_endpoint is set
         if not self.opensearch_endpoint:
             self.opensearch_endpoint = self.config.get('opensearch_endpoint')
             if not self.opensearch_endpoint:
-                print("OpenSearch endpoint not set. Please run 'setup' command first.")
+                print(f"{Fore.RED}OpenSearch endpoint not set. Please run 'setup' command first.{Style.RESET_ALL}")
                 return
 
         # Initialize opensearch_domain_name
@@ -643,7 +668,6 @@ class Setup:
             aws_user_name=aws_user_name,
             aws_role_name=None  # Set to None or provide if applicable
         )
-        
 
         # Prompt user to select a model
         print("Please select an embedding model to register:")
@@ -663,7 +687,7 @@ class Setup:
         elif model_choice == '4':
             self.register_openai_model(helper)
         else:
-            print("Invalid choice. Exiting.")
+            print(f"{Fore.RED}Invalid choice. Exiting model registration.{Style.RESET_ALL}")
             return
         
     def register_bedrock_model(self, helper):
@@ -714,6 +738,7 @@ class Setup:
         }
 
         # Create connector
+        print("Creating connector...")
         connector_id = helper.create_connector_with_role(
             connector_role_inline_policy,
             connector_role_name,
@@ -723,23 +748,24 @@ class Setup:
         )
 
         if not connector_id:
-            print("Failed to create connector. Aborting.")
+            print(f"{Fore.RED}Failed to create connector. Aborting.{Style.RESET_ALL}")
             return
 
         # Register model
-# Register model
+        print("Registering model...")
         model_name = 'Bedrock embedding model'
         description = 'Bedrock embedding model for semantic search'
         model_id = helper.create_model(model_name, description, connector_id, create_connector_role_name)
 
         if not model_id:
-            print("Failed to create model. Aborting.")
+            print(f"{Fore.RED}Failed to create model. Aborting.{Style.RESET_ALL}")
             return
 
         # Save model_id to config
         self.config['embedding_model_id'] = model_id
         self.save_config(self.config)
-        print(f"Model registered successfully. Model ID: {model_id}")
+        print(f"{Fore.GREEN}Model registered successfully. Model ID '{model_id}' saved in configuration.{Style.RESET_ALL}")
+
 
     def register_sagemaker_model(self, helper):
         """
@@ -799,7 +825,7 @@ class Setup:
         )
 
         if not connector_id:
-            print("Failed to create connector. Aborting.")
+            print(f"{Fore.RED}Failed to create connector. Aborting.{Style.RESET_ALL}")
             return
 
         # Register model
@@ -808,13 +834,14 @@ class Setup:
         model_id = helper.create_model(model_name, description, connector_id, create_connector_role_name)
 
         if not model_id:
-            print("Failed to create model. Aborting.")
+            print(f"{Fore.RED}Failed to create model. Aborting.{Style.RESET_ALL}")
             return
 
         # Save model_id to config
         self.config['embedding_model_id'] = model_id
         self.save_config(self.config)
-        print(f"Model registered successfully. Model ID: {model_id}")
+        print(f"{Fore.GREEN}Model registered successfully. Model ID: {model_id}{Style.RESET_ALL}")
+
 
     def register_cohere_model(self, helper):
         """
@@ -867,7 +894,7 @@ class Setup:
         )
 
         if not connector_id:
-            print("Failed to create connector. Aborting.")
+            print(f"{Fore.RED}Failed to create connector. Aborting.{Style.RESET_ALL}")
             return
 
         # Register model
@@ -876,13 +903,14 @@ class Setup:
         model_id = helper.create_model(model_name, description, connector_id, create_connector_role_name)
 
         if not model_id:
-            print("Failed to create model. Aborting.")
+            print(f"{Fore.RED}Failed to create model. Aborting.{Style.RESET_ALL}")
             return
 
         # Save model_id to config
         self.config['embedding_model_id'] = model_id
         self.save_config(self.config)
-        print(f"Model registered successfully. Model ID: {model_id}")
+        print(f"{Fore.GREEN}Model registered successfully. Model ID: {model_id}{Style.RESET_ALL}")
+
 
     def register_openai_model(self, helper):
         """
@@ -932,7 +960,7 @@ class Setup:
         )
 
         if not connector_id:
-            print("Failed to create connector. Aborting.")
+            print(f"{Fore.RED}Failed to create connector. Aborting.{Style.RESET_ALL}")
             return
 
         # Register model
@@ -941,10 +969,10 @@ class Setup:
         model_id = helper.create_model(model_name, description, connector_id, create_connector_role_name)
 
         if not model_id:
-            print("Failed to create model. Aborting.")
+            print(f"{Fore.RED}Failed to create model. Aborting.{Style.RESET_ALL}")
             return
 
         # Save model_id to config
         self.config['embedding_model_id'] = model_id
         self.save_config(self.config)
-        print(f"Model registered successfully. Model ID: {model_id}")
+        print(f"{Fore.GREEN}Model registered successfully. Model ID: {model_id}{Style.RESET_ALL}")
