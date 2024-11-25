@@ -18,12 +18,12 @@ class Connector:
 
     def create_standalone_connector(self, body: dict = None, payload: dict = None):
         """
-        Create a standalone connector. 
+        Create a standalone connector.
 
         Parameters:
             body (dict): The request body, preferred parameter.
             payload (dict): Deprecated. Use 'body' instead.
-            
+
         Raises:
             ValueError: If neither 'body' nor 'payload' is provided or if the provided argument is not a dictionary.
         """
