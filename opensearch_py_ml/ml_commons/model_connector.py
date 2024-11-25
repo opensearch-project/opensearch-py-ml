@@ -17,19 +17,30 @@ class Connector:
         self.client = os_client
 
     def create_standalone_connector(self, body: dict = None, payload: dict = None):
-        if body is None:
-            if payload is not None:
-                if not isinstance(payload, dict):
-                    raise ValueError("'payload' needs to be a dictionary.")
-                warnings.warn(
-                    "The 'payload' argument is deprecated; use 'body' instead.",
-                    DeprecationWarning,
-                )
-                body = payload
-            else:
-                raise ValueError("'body' needs to be provided as a dictionary.")
+        """
+        Create a standalone connector. 
 
-        elif not isinstance(body, dict):
+        Parameters:
+            body (dict): The request body, preferred parameter.
+            payload (dict): Deprecated. Use 'body' instead.
+            
+        Raises:
+            ValueError: If neither 'body' nor 'payload' is provided or if the provided argument is not a dictionary.
+        """
+        if body is None and payload is None:
+            raise ValueError("A 'body' parameter must be provided as a dictionary.")
+
+        if payload is not None:
+            if not isinstance(payload, dict):
+                raise ValueError("'payload' needs to be a dictionary.")
+            warnings.warn(
+                "'payload' is deprecated. Please use 'body' instead.",
+                DeprecationWarning,
+            )
+            # Use `payload` if `body` is not provided for backward compatibility
+            body = body or payload
+
+        if not isinstance(body, dict):
             raise ValueError("'body' needs to be a dictionary.")
 
         return self.client.transport.perform_request(
