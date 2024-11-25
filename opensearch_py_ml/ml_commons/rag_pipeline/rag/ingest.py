@@ -36,6 +36,7 @@ import boto3
 import botocore
 import time
 import random
+from opensearchpy import exceptions as opensearch_exceptions 
 
 
 from opensearch_connector import OpenSearchConnector
@@ -166,6 +167,38 @@ class Ingest:
                 time.sleep(delay)
                 delay *= backoff_factor
         return None
+    def create_ingest_pipeline(self):
+        pipeline_id = 'text-chunking-ingest-pipeline'
+        # Check if pipeline exists
+        try:
+            response = self.opensearch.opensearch_client.ingest.get_pipeline(id=pipeline_id)
+            print(f"Ingest pipeline '{pipeline_id}' already exists.")
+        except opensearch_exceptions.NotFoundError:
+            # Pipeline does not exist, create it
+            pipeline_body = {
+                "description": "A text chunking ingest pipeline",
+                "processors": [
+                    {
+                        "text_chunking": {
+                            "algorithm": {
+                                "fixed_token_length": {
+                                    "token_limit": 384,
+                                    "overlap_rate": 0.2,
+                                    "tokenizer": "standard"
+                                }
+                            },
+                            "field_map": {
+                                "nominee_text": "passage_chunk"
+                            }
+                        }
+                    }
+                ]
+            }
+            self.opensearch.opensearch_client.ingest.put_pipeline(id=pipeline_id, body=pipeline_body)
+            print(f"Ingest pipeline '{pipeline_id}' created successfully.")
+        except Exception as e:
+            print(f"Error checking or creating ingest pipeline: {e}")
+
 
     def process_and_ingest_data(self, file_paths: List[str]):
         # Process and ingest data from multiple files
@@ -174,6 +207,9 @@ class Ingest:
         if not self.initialize_clients():
             print("Failed to initialize clients. Aborting ingestion.")
             return
+
+        # Create the ingest pipeline
+        self.create_ingest_pipeline()
 
         all_documents = []
         for file_path in file_paths:
@@ -220,7 +256,8 @@ class Ingest:
                     "_source": {
                         "nominee_text": doc['text'],
                         "nominee_vector": doc['embedding']  # This is now a list of floats
-                    }
+                    },
+                    "_pipeline": 'text-chunking-ingest-pipeline'  # Specify the ingest pipeline here
                 }
                 actions.append(action)
         

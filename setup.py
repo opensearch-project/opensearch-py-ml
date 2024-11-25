@@ -25,10 +25,9 @@
 
 # flake8: noqa
 
+from setuptools import setup, find_packages, find_namespace_packages
 from codecs import open
 from os import path
-
-from setuptools import find_packages, setup
 
 here = path.abspath(path.dirname(__file__))
 about = {}
@@ -71,27 +70,49 @@ setup(
     long_description_content_type="text/markdown",
     url=about["__url__"],
     author=about["__author__"],
-    author_email=about["__author_email__"],
+    author_email=about["__author_email"],
     maintainer=about["__maintainer__"],
-    maintainer_email=about["__maintainer_email__"],
+    maintainer_email=about["__maintainer_email"],
     license="Apache-2.0",
     classifiers=CLASSIFIERS,
     keywords="Opensearch opensearch_py_ml pandas python",
-    packages=find_packages(include=["opensearch_py_ml", "opensearch_py_ml.*"]),
+    packages=find_namespace_packages(include=["opensearch_py_ml", "opensearch_py_ml.*"]),
     project_urls={
         "Source Code": "https://github.com/opensearch-project/opensearch-py-ml",
         "Issue Tracker": "https://github.com/opensearch-project/opensearch-py-ml/issues",
     },
     install_requires=[
-        "opensearch-py>=2",
-        "pandas>=1.5,<3",
-        "matplotlib>=3.6.0,<4",
+        "opensearch-py>=2.2.0",
+        "pandas>=1.5.2,<3",
+        "matplotlib>=3.6.2,<4",
         "numpy>=1.24.0,<2",
+        "torch>=2.0.1,<2.1.0",
+        "onnx>=1.15.0",
+        "accelerate>=0.27",
+        "sentence_transformers>=2.5.0,<2.6",
+        "tqdm>=4.66.0,<5",
+        "transformers>=4.36.0,<5",
         "deprecated>=1.2.14,<2",
+        # Additional dependencies for the RAG pipeline
+        "boto3>=1.26.0",
+        "botocore>=1.29.0",
+        "requests>=2.28.0",
+        "requests-aws4auth>=1.1.0",
+        "colorama>=0.4.6",
+        "PyPDF2>=3.0.1",
+        "rich>=13.5.2",
+        "tiktoken>=0.5.0",
+        "termios>=1.0",
     ],
     python_requires=">=3.8",
     package_data={"opensearch_py_ml": ["py.typed"]},
     include_package_data=True,
     zip_safe=False,
     extras_require=extras,
+    # Entry points for console scripts
+    entry_points={
+        'console_scripts': [
+            'rag=opensearch_py_ml.ml_commons.rag_pipeline.rag:main',
+        ],
+    },
 )
