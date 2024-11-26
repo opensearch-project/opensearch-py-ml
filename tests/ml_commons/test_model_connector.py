@@ -6,6 +6,7 @@
 # GitHub history for details.
 
 import os
+import warnings
 
 import pytest
 from opensearchpy.exceptions import NotFoundError, RequestError
@@ -72,6 +73,27 @@ def test_create_standalone_connector(client: Connector, connector_body: dict):
 
     with pytest.raises(ValueError):
         client.create_standalone_connector("")
+
+
+@pytest.mark.parametrize("invalid_body", ["", None, [], 123])
+def test_create_standalone_connector_invalid_body(client: Connector, invalid_body):
+    with pytest.raises(ValueError, match="'body' must be a dictionary"):
+        client.create_standalone_connector(body=invalid_body)
+
+
+@pytest.mark.parametrize("invalid_payload", ["", None, [], 123])
+def test_create_standalone_connector_invalid_payload(
+    client: Connector, invalid_payload
+):
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        with pytest.raises(ValueError, match="'payload' must be a dictionary"):
+            client.create_standalone_connector(payload=invalid_payload)
+        assert any(
+            issubclass(warning.category, DeprecationWarning)
+            and "payload is deprecated" in str(warning.message)
+            for warning in w
+        ), "A DeprecationWarning for 'payload' should have been raised."
 
 
 @pytest.mark.skipif(
