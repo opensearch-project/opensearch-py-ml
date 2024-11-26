@@ -94,7 +94,8 @@ def test_create_standalone_connector_invalid_payload(
             ValueError,
             match=r"A 'body' parameter must be provided as a dictionary|'payload' needs to be a dictionary",
         ):
-            client.create_standalone_connector(payload=invalid_payload)
+            client.create_standalone_connector(body=None, payload=invalid_payload)
+
         assert any(
             issubclass(warning.category, DeprecationWarning)
             and "payload is deprecated" in str(warning.message)
