@@ -77,10 +77,7 @@ def test_create_standalone_connector(client: Connector, connector_body: dict):
 
 @pytest.mark.parametrize("invalid_body", ["", None, [], 123])
 def test_create_standalone_connector_invalid_body(client: Connector, invalid_body):
-    with pytest.raises(
-        ValueError,
-        match="A 'body' parameter must be provided as a dictionary|body needs to be a dictionary",
-    ):
+    with pytest.raises(ValueError, match=r"'body' needs to be a dictionary"):
         client.create_standalone_connector(body=invalid_body)
 
 
@@ -90,10 +87,7 @@ def test_create_standalone_connector_invalid_payload(
 ):
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
-        with pytest.raises(
-            ValueError,
-            match="A 'body' parameter must be provided as a dictionary|payload needs to be a dictionary",
-        ):
+        with pytest.raises(ValueError, match=r"'payload' needs to be a dictionary"):
             client.create_standalone_connector(payload=invalid_payload)
         assert any(
             issubclass(warning.category, DeprecationWarning)
