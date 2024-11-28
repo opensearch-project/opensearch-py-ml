@@ -581,13 +581,8 @@ class MLCommonClient:
         :return: Prediction response from the ML model
         :rtype: dict
         """
-        # Construct the URL for the prediction request
-        url = f"{ML_BASE_URI}/_predict/{algorithm_name}/{model_id}"
-
         # Make the POST request to the prediction API
-        response = self._client.transport.perform_request(
-            method="POST", url=url, body=predict_object
-        )
+        response = self.generate_model_inference(model_id, predict_object)
 
         return response
 
