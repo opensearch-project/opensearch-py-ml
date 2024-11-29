@@ -32,6 +32,7 @@ from opensearchpy import OpenSearch, RequestsHttpConnection
 
 from IAMRoleHelper import IAMRoleHelper
 from SecretsHelper import SecretHelper
+from opensearch_py_ml.ml_commons.model_access_control import ModelAccessControl
 
 class AIConnectorHelper:
     def __init__(self, region, opensearch_domain_name, opensearch_domain_username,
@@ -69,6 +70,9 @@ class AIConnectorHelper:
             verify_certs=True,
             connection_class=RequestsHttpConnection
         )
+
+        # Initialize ModelAccessControl
+        self.model_access_control = ModelAccessControl(self.opensearch_client)
 
         # Initialize IAMRoleHelper and SecretHelper
         self.iam_helper = IAMRoleHelper(
@@ -139,61 +143,31 @@ class AIConnectorHelper:
         return connector_id
 
     def search_model_group(self, model_group_name, create_connector_role_name):
-        payload = {
-            "query": {
-                "term": {
-                    "name.keyword": {
-                        "value": model_group_name
-                    }
-                }
-            }
-        }
-        headers = {"Content-Type": "application/json"}
-
-        # Obtain temporary credentials
-        awsauth = self.get_ml_auth(create_connector_role_name)
-
-        r = requests.post(
-            f'{self.opensearch_domain_url}/_plugins/_ml/model_groups/_search',
-            auth=awsauth,
-            json=payload,
-            headers=headers
-        )
-
-        response = json.loads(r.text)
+        """
+        Utilize ModelAccessControl to search for a model group by name.
+        """
+        response = self.model_access_control.search_model_group_by_name(model_group_name, size=1)
         return response
 
     def create_model_group(self, model_group_name, description, create_connector_role_name):
-        search_model_group_response = self.search_model_group(model_group_name, create_connector_role_name)
-        print("Search Model Group Response:", search_model_group_response)
+        """
+        Utilize ModelAccessControl to create or retrieve an existing model group.
+        """
+        model_group_id = self.model_access_control.get_model_group_id_by_name(model_group_name)
+        print("Search Model Group Response:", model_group_id)
 
-        if 'hits' in search_model_group_response and search_model_group_response['hits']['total']['value'] > 0:
-            return search_model_group_response['hits']['hits'][0]['_id']
+        if model_group_id:
+            return model_group_id
 
-        payload = {
-            "name": model_group_name,
-            "description": description
-        }
-        headers = {"Content-Type": "application/json"}
-
-        # Obtain temporary credentials using the provided role name
-        awsauth = self.get_ml_auth(create_connector_role_name)
-
-        r = requests.post(
-            f'{self.opensearch_domain_url}/_plugins/_ml/model_groups/_register',
-            auth=awsauth,
-            json=payload,
-            headers=headers
-        )
-
-        print(r.text)
-        response = json.loads(r.text)
-
-        if 'model_group_id' in response:
-            return response['model_group_id']
+        # Use ModelAccessControl to register model group
+        self.model_access_control.register_model_group(name=model_group_name, description=description)
+        
+        # Retrieve the newly created model group id
+        model_group_id = self.model_access_control.get_model_group_id_by_name(model_group_name)
+        if model_group_id:
+            return model_group_id
         else:
-            # Handle error gracefully
-            raise KeyError("The response does not contain 'model_group_id'. Response content: {}".format(response))
+            raise Exception("Failed to create model group.")
 
     def get_task(self, task_id, create_connector_role_name):
         try:
@@ -378,7 +352,7 @@ class AIConnectorHelper:
         self.iam_helper.map_iam_role_to_backend_role(create_connector_role_arn)
         print('----------')
 
-        # 4. Create connector
+        # Step 4: Create connector
         print('Step 4: Create connector in OpenSearch')
         # When you create an IAM role, it can take some time for the changes to propagate across AWS systems.
         # During this time, some services might not immediately recognize the new role or its permissions.
@@ -479,7 +453,7 @@ class AIConnectorHelper:
         self.iam_helper.map_iam_role_to_backend_role(create_connector_role_arn)
         print('----------')
 
-        # 3. Create connector
+        # Step 3: Create connector
         print('Step 3: Create connector in OpenSearch')
         # When you create an IAM role, it can take some time for the changes to propagate across AWS systems.
         # During this time, some services might not immediately recognize the new role or its permissions.

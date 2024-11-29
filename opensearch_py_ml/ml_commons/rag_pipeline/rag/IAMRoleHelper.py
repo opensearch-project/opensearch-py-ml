@@ -188,3 +188,13 @@ class IAMRoleHelper:
         else:
             print(f"Failed to map IAM role to OpenSearch role '{os_security_role}'. Status code: {response.status_code}")
             print(f"Response: {response.text}")
+
+    def get_iam_user_name_from_arn(self, iam_principal_arn):
+        """
+        Extract the IAM user name from the IAM principal ARN.
+        """
+        # IAM user ARN format: arn:aws:iam::123456789012:user/user-name
+        if iam_principal_arn and ':user/' in iam_principal_arn:
+            return iam_principal_arn.split(':user/')[-1]
+        else:
+            return None

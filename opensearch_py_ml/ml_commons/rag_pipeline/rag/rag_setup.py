@@ -2,25 +2,22 @@
 # The OpenSearch Contributors require contributions made to
 # this file be licensed under the Apache-2.0 license or a
 # compatible open source license.
-# Any modifications Copyright OpenSearch Contributors. See
-# GitHub history for details.
-
-#  Licensed to Elasticsearch B.V. under one or more contributor
-#  license agreements. See the NOTICE file distributed with
-#  this work for additional information regarding copyright
-#  ownership. Elasticsearch B.V. licenses this file to you under
-#  the Apache License, Version 2.0 (the "License"); you may
-#  not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
-#
-# 	http://www.apache.org/licenses/LICENSE-2.0
-#
-#  Unless required by applicable law or agreed to in writing,
-#  software distributed under the License is distributed on an
-#  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-#  KIND, either express or implied.  See the License for the
-#  specific language governing permissions and limitations
-#  under the License.
+# Any modifications Copyright OpenSearch Contributors.
+# See GitHub history for details.
+# Licensed to Elasticsearch B.V. under one or more contributor
+# license agreements. See the NOTICE file distributed with
+# this work for additional information regarding copyright
+# ownership. Elasticsearch B.V. licenses this file to you under
+# the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# http://www.apache.org/licenses/LICENSE-2.0
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations
+# under the License.
 
 import boto3
 import botocore
@@ -41,6 +38,7 @@ from colorama import Fore, Style, init
 import ssl
 
 init(autoreset=True)
+
 class Setup:
     CONFIG_FILE = 'config.ini'
     SERVICE_AOSS = 'opensearchserverless'
@@ -172,13 +170,12 @@ class Setup:
                         sys.stdout.flush()
             finally:
                 termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+
     def setup_configuration(self):
         # Set up the configuration by prompting the user for various settings
         config = self.load_config()
 
-        self.aws_region = input(f"Enter your AWS Region [{config.get('region', 'us-west-2')}]: ") or config.get('region', 'us-west-2')
-        self.iam_principal = input(f"Enter your IAM Principal ARN [{config.get('iam_principal', '')}]: ") or config.get('iam_principal', '')
-
+        # First, prompt for service type
         print("Choose OpenSearch service type:")
         print("1. Serverless")
         print("2. Managed")
@@ -195,20 +192,29 @@ class Setup:
             print("Invalid choice. Defaulting to 'managed'")
             self.service_type = 'managed'
 
-        if self.service_type == 'serverless':
-            self.collection_name = input("Enter the name for your OpenSearch collection: ")
-            self.opensearch_endpoint = None
-            self.opensearch_username = None
-            self.opensearch_password = None
-        elif self.service_type == 'managed':
-            self.opensearch_endpoint = input("Enter your OpenSearch domain endpoint: ")
-            self.opensearch_username = input("Enter your OpenSearch username: ")
-            self.opensearch_password = self.get_password_with_asterisks("Enter your OpenSearch password: ")
-            self.collection_name = ''
+        # Based on service type, prompt for different configurations
+        if self.service_type in ['serverless', 'managed']:
+            # For 'serverless' and 'managed', prompt for AWS credentials and related info
+            self.check_and_configure_aws()
+
+            self.aws_region = input(f"Enter your AWS Region [{config.get('region', 'us-west-2')}]: ") or config.get('region', 'us-west-2')
+            self.iam_principal = input(f"Enter your IAM Principal ARN [{config.get('iam_principal', '')}]: ") or config.get('iam_principal', '')
+
+            if self.service_type == 'serverless':
+                self.collection_name = input("Enter the name for your OpenSearch collection: ")
+                self.opensearch_endpoint = None
+                self.opensearch_username = None
+                self.opensearch_password = None
+            elif self.service_type == 'managed':
+                self.opensearch_endpoint = input("Enter your OpenSearch domain endpoint: ")
+                self.opensearch_username = input("Enter your OpenSearch username: ")
+                self.opensearch_password = self.get_password_with_asterisks("Enter your OpenSearch password: ")
+                self.collection_name = ''
         elif self.service_type == 'open-source':
-            # For open-source, allow default endpoint
+            # For 'open-source', skip AWS configurations
+            print("\n--- Open-source OpenSearch Setup ---")
             default_endpoint = 'https://localhost:9200'
-            self.opensearch_endpoint = input(f"Press Enter to use the default endpoint(or type your custom endpoint) [{default_endpoint}]: ").strip() or default_endpoint
+            self.opensearch_endpoint = input(f"Press Enter to use the default endpoint (or type your custom endpoint) [{default_endpoint}]: ").strip() or default_endpoint
             auth_required = input("Does your OpenSearch instance require authentication? (yes/no): ").strip().lower()
             if auth_required == 'yes':
                 self.opensearch_username = input("Enter your OpenSearch username: ")
@@ -217,25 +223,28 @@ class Setup:
                 self.opensearch_username = None
                 self.opensearch_password = None
             self.collection_name = ''
-            # For open-source, we may not need AWS region and IAM principal
+            # For open-source, AWS region and IAM principal are not needed
             self.aws_region = ''
             self.iam_principal = ''
 
-        # Remove index_name from configuration at this point
+        # Update configuration dictionary
         self.config = {
+            'service_type': self.service_type,
             'region': self.aws_region,
             'iam_principal': self.iam_principal,
             'collection_name': self.collection_name if self.collection_name else '',
-            'service_type': self.service_type,
             'opensearch_endpoint': self.opensearch_endpoint if self.opensearch_endpoint else '',
             'opensearch_username': self.opensearch_username if self.opensearch_username else '',
             'opensearch_password': self.opensearch_password if self.opensearch_password else ''
         }
         self.save_config(self.config)
-        print("Configuration saved successfully.")
+        print("Configuration saved successfully.\n")
 
     def initialize_clients(self):
-        # Initialize AWS clients (AOSS and Bedrock)
+        # Initialize AWS clients (AOSS and Bedrock) only if not open-source
+        if self.service_type == 'open-source':
+            return True  # No AWS clients needed
+
         try:
             boto_config = Config(
                 region_name=self.aws_region,
@@ -247,7 +256,7 @@ class Setup:
             self.bedrock_client = boto3.client(self.SERVICE_BEDROCK, region_name=self.aws_region)
             
             time.sleep(7)
-            print("AWS clients initialized successfully.")
+            print("AWS clients initialized successfully.\n")
             return True
         except Exception as e:
             print(f"Failed to initialize AWS clients: {e}")
@@ -256,7 +265,7 @@ class Setup:
     def create_security_policies(self):
         # Create security policies for serverless OpenSearch
         if not self.is_serverless:
-            print("Security policies are not applicable for managed OpenSearch domains.")
+            print("Security policies are not applicable for managed OpenSearch domains.\n")
             return
         
         encryption_policy = json.dumps({
@@ -302,11 +311,11 @@ class Setup:
         # Create a data access policy
         try:
             self.aoss_client.create_access_policy(description=description, name=name, policy=policy_body, type="data")
-            print(f"Data Access Policy '{name}' created successfully.")
+            print(f"Data Access Policy '{name}' created successfully.\n")
         except self.aoss_client.exceptions.ConflictException:
-            print(f"Data Access Policy '{name}' already exists.")
+            print(f"Data Access Policy '{name}' already exists.\n")
         except Exception as ex:
-            print(f"Error creating data access policy '{name}': {ex}")
+            print(f"Error creating data access policy '{name}': {ex}\n")
 
     def create_collection(self, collection_name, max_retries=3):
         # Create an OpenSearch serverless collection
@@ -339,6 +348,7 @@ class Setup:
         except Exception as ex:
             print(f"Error getting collection ID: {ex}")
         return None
+
     def get_opensearch_domain_name(self):
         """
         Extract the domain name from the OpenSearch endpoint URL.
@@ -355,9 +365,11 @@ class Setup:
                     domain_part = domain_part[len('search-'):]
                 # Remove the unique ID suffix after the domain name
                 domain_name = domain_part.rsplit('-', 1)[0]
-                print(f"Extracted domain name: {domain_name}")
+                print(f"Extracted domain name: {domain_name}\n")
                 return domain_name
         return None
+
+    @staticmethod
     def get_opensearch_domain_info(region, domain_name):
         """
         Retrieve the OpenSearch domain endpoint and ARN based on the domain name and region.
@@ -382,10 +394,10 @@ class Setup:
                 response = self.aoss_client.batch_get_collection(ids=[collection_id])
                 status = response['collectionDetails'][0]['status']
                 if status == 'ACTIVE':
-                    print(f"Collection '{self.collection_name}' is now active.")
+                    print(f"Collection '{self.collection_name}' is now active.\n")
                     return True
                 elif status in ['FAILED', 'DELETED']:
-                    print(f"Collection creation failed or was deleted. Status: {status}")
+                    print(f"Collection creation failed or was deleted. Status: {status}\n")
                     return False
                 else:
                     print(f"Collection status: {status}. Waiting...")
@@ -393,7 +405,7 @@ class Setup:
             except Exception as ex:
                 print(f"Error checking collection status: {ex}")
                 time.sleep(30)
-        print(f"Timed out waiting for collection to become active after {max_wait_minutes} minutes.")
+        print(f"Timed out waiting for collection to become active after {max_wait_minutes} minutes.\n")
         return False
 
     def get_collection_endpoint(self):
@@ -404,26 +416,27 @@ class Setup:
         try:
             collection_id = self.get_collection_id(self.collection_name)
             if not collection_id:
-                print(f"Collection '{self.collection_name}' not found.")
+                print(f"Collection '{self.collection_name}' not found.\n")
                 return None
             
             batch_get_response = self.aoss_client.batch_get_collection(ids=[collection_id])
             collection_details = batch_get_response.get('collectionDetails', [])
             
             if not collection_details:
-                print(f"No details found for collection ID '{collection_id}'.")
+                print(f"No details found for collection ID '{collection_id}'.\n")
                 return None
             
             self.opensearch_endpoint = collection_details[0].get('collectionEndpoint')
             if self.opensearch_endpoint:
-                print(f"Collection '{self.collection_name}' has endpoint URL: {self.opensearch_endpoint}")
+                print(f"Collection '{self.collection_name}' has endpoint URL: {self.opensearch_endpoint}\n")
                 return self.opensearch_endpoint
             else:
-                print(f"No endpoint URL found in collection '{self.collection_name}'.")
+                print(f"No endpoint URL found in collection '{self.collection_name}'.\n")
                 return None
         except Exception as ex:
-            print(f"Error retrieving collection endpoint: {ex}")
+            print(f"Error retrieving collection endpoint: {ex}\n")
             return None
+
     def get_iam_user_name_from_arn(self, iam_principal_arn):
         """
         Extract the IAM user name from the IAM principal ARN.
@@ -433,23 +446,23 @@ class Setup:
             return iam_principal_arn.split(':user/')[-1]
         else:
             return None
-        
+
     def initialize_opensearch_client(self):
         # Initialize the OpenSearch client
         if not self.opensearch_endpoint:
-            print("OpenSearch endpoint not set. Please run setup first.")
+            print("OpenSearch endpoint not set. Please run setup first.\n")
             return False
 
         parsed_url = urlparse(self.opensearch_endpoint)
         host = parsed_url.hostname
         port = parsed_url.port or (443 if parsed_url.scheme == 'https' else 9200)  # Default ports
 
-        if self.is_serverless:
+        if self.service_type in ['managed', 'serverless']:
             credentials = boto3.Session().get_credentials()
-            auth = AWSV4SignerAuth(credentials, self.aws_region, 'aoss')
+            auth = AWSV4SignerAuth(credentials, self.aws_region, 'aoss') if self.is_serverless else AWSV4SignerAuth(credentials, self.aws_region, 'es')
         else:
             if not self.opensearch_username or not self.opensearch_password:
-                print("OpenSearch username or password not set. Please run setup first.")
+                print("OpenSearch username or password not set. Please run setup first.\n")
                 return False
             auth = (self.opensearch_username, self.opensearch_password)
 
@@ -475,10 +488,10 @@ class Setup:
                 connection_class=RequestsHttpConnection,
                 pool_maxsize=20
             )
-            print(f"Initialized OpenSearch client with host: {host} and port: {port}")
+            print(f"Initialized OpenSearch client with host: {host} and port: {port}\n")
             return True
         except Exception as ex:
-            print(f"Error initializing OpenSearch client: {ex}")
+            print(f"Error initializing OpenSearch client: {ex}\n")
             return False
 
     def get_knn_index_details(self):
@@ -526,10 +539,9 @@ class Setup:
                 print("Invalid input. Using default ef_construction of 512.")
                 ef_construction = 512
 
-        print(f"ef_construction set to: {ef_construction}")
+        print(f"ef_construction set to: {ef_construction}\n")
 
         return embedding_dimension, space_type, ef_construction
-
 
     def create_index(self, embedding_dimension, space_type, ef_construction):
         # Create the KNN index in OpenSearch
@@ -559,30 +571,27 @@ class Setup:
         }
         try:
             self.opensearch_client.indices.create(index=self.index_name, body=index_body)
-            print(f"KNN index '{self.index_name}' created successfully with dimension {embedding_dimension}, space type {space_type}, and ef_construction {ef_construction}.")
+            print(f"KNN index '{self.index_name}' created successfully with dimension {embedding_dimension}, space type {space_type}, and ef_construction {ef_construction}.\n")
         except Exception as e:
             if 'resource_already_exists_exception' in str(e).lower():
-                print(f"Index '{self.index_name}' already exists.")
+                print(f"Index '{self.index_name}' already exists.\n")
             else:
-                print(f"Error creating index '{self.index_name}': {e}")
-
-
+                print(f"Error creating index '{self.index_name}': {e}\n")
 
     def verify_and_create_index(self, embedding_dimension, space_type, ef_construction):
         try:
             print(f"Attempting to verify index '{self.index_name}'...")
             index_exists = self.opensearch_client.indices.exists(index=self.index_name)
             if index_exists:
-                print(f"KNN index '{self.index_name}' already exists.")
+                print(f"KNN index '{self.index_name}' already exists.\n")
             else:
-                print(f"Index '{self.index_name}' does not exist. Attempting to create...")
+                print(f"Index '{self.index_name}' does not exist. Attempting to create...\n")
                 self.create_index(embedding_dimension, space_type, ef_construction)
             return True
         except Exception as ex:
             print(f"Error verifying or creating index: {ex}")
-            print(f"OpenSearch client config: {self.opensearch_client.transport.hosts}")
+            print(f"OpenSearch client config: {self.opensearch_client.transport.hosts}\n")
             return False
-
 
     def get_truncated_name(self, base_name, max_length=32):
         # Truncate a name to fit within a specified length
@@ -591,11 +600,11 @@ class Setup:
         return base_name[:max_length-3] + "..."
 
     def setup_command(self):
-        self.check_and_configure_aws()
+        # Main setup command
         self.setup_configuration()
         
         if self.service_type != 'open-source' and not self.initialize_clients():
-            print(f"{Fore.RED}Failed to initialize AWS clients. Setup incomplete.{Style.RESET_ALL}")
+            print(f"{Fore.RED}Failed to initialize AWS clients. Setup incomplete.{Style.RESET_ALL}\n")
             return
         
         if self.service_type == 'serverless':
@@ -609,35 +618,35 @@ class Setup:
                 if self.wait_for_collection_active(collection_id):
                     self.opensearch_endpoint = self.get_collection_endpoint()
                     if not self.opensearch_endpoint:
-                        print(f"{Fore.RED}Failed to retrieve OpenSearch endpoint. Setup incomplete.{Style.RESET_ALL}")
+                        print(f"{Fore.RED}Failed to retrieve OpenSearch endpoint. Setup incomplete.{Style.RESET_ALL}\n")
                         return
                     else:
                         self.config['opensearch_endpoint'] = self.opensearch_endpoint
                         self.save_config(self.config)
                         self.opensearch_domain_name = self.get_opensearch_domain_name()
                 else:
-                    print(f"{Fore.RED}Collection is not active. Setup incomplete.{Style.RESET_ALL}")
+                    print(f"{Fore.RED}Collection is not active. Setup incomplete.{Style.RESET_ALL}\n")
                     return
         elif self.service_type == 'managed':
             if not self.opensearch_endpoint:
-                print(f"{Fore.RED}OpenSearch endpoint not set. Setup incomplete.{Style.RESET_ALL}")
+                print(f"{Fore.RED}OpenSearch endpoint not set. Setup incomplete.{Style.RESET_ALL}\n")
                 return
             else:
                 self.opensearch_domain_name = self.get_opensearch_domain_name()
         elif self.service_type == 'open-source':
             # Open-source setup
             if not self.opensearch_endpoint:
-                print(f"{Fore.RED}OpenSearch endpoint not set. Setup incomplete.{Style.RESET_ALL}")
+                print(f"{Fore.RED}OpenSearch endpoint not set. Setup incomplete.{Style.RESET_ALL}\n")
                 return
             else:
                 self.opensearch_domain_name = None  # Not required for open-source
 
         # Initialize OpenSearch client
         if self.initialize_opensearch_client():
-            print(f"{Fore.GREEN}OpenSearch client initialized successfully.{Style.RESET_ALL}")
+            print(f"{Fore.GREEN}OpenSearch client initialized successfully.{Style.RESET_ALL}\n")
             
             # Prompt user to choose between creating a new index or using an existing one
-            print("\nDo you want to create a new KNN index or use an existing one?")
+            print("Do you want to create a new KNN index or use an existing one?")
             print("1. Create a new KNN index")
             print("2. Use an existing KNN index")
             index_choice = input("Enter your choice (1-2): ").strip()
@@ -650,36 +659,45 @@ class Setup:
                 self.config['index_name'] = self.index_name
                 self.save_config(self.config)
         
-                print("Proceeding with index creation...")
+                print("Proceeding with index creation...\n")
                 embedding_dimension, space_type, ef_construction = self.get_knn_index_details()
                 
                 if self.verify_and_create_index(embedding_dimension, space_type, ef_construction):
-                    print(f"{Fore.GREEN}KNN index '{self.index_name}' created successfully.{Style.RESET_ALL}")
+                    print(f"{Fore.GREEN}KNN index '{self.index_name}' created successfully.{Style.RESET_ALL}\n")
                     # Save index details to config
                     self.config['embedding_dimension'] = str(embedding_dimension)
                     self.config['space_type'] = space_type
                     self.config['ef_construction'] = str(ef_construction)
                     self.save_config(self.config)
                 else:
-                    print(f"{Fore.RED}Index creation failed. Please check your permissions and try again.{Style.RESET_ALL}")
+                    print(f"{Fore.RED}Index creation failed. Please check your permissions and try again.{Style.RESET_ALL}\n")
                     return
             elif index_choice == '2':
                 # Use existing index
                 existing_index_name = input("Enter the name of your existing KNN index: ").strip()
                 if not existing_index_name:
-                    print(f"{Fore.RED}Index name cannot be empty. Aborting.{Style.RESET_ALL}")
+                    print(f"{Fore.RED}Index name cannot be empty. Aborting.{Style.RESET_ALL}\n")
                     return
                 self.index_name = existing_index_name
                 self.config['index_name'] = self.index_name
                 self.save_config(self.config)
                 # Load index details from config or prompt for them
                 if 'embedding_dimension' in self.config and 'space_type' in self.config and 'ef_construction' in self.config:
-                    embedding_dimension = int(self.config['embedding_dimension'])
-                    space_type = self.config['space_type']
-                    ef_construction = int(self.config['ef_construction'])
-                    print(f"Using existing index '{self.index_name}' with embedding dimension {embedding_dimension}, space type '{space_type}', and ef_construction {ef_construction}.")
+                    try:
+                        embedding_dimension = int(self.config['embedding_dimension'])
+                        space_type = self.config['space_type']
+                        ef_construction = int(self.config['ef_construction'])
+                        print(f"Using existing index '{self.index_name}' with embedding dimension {embedding_dimension}, space type '{space_type}', and ef_construction {ef_construction}.\n")
+                    except ValueError:
+                        print("Invalid index details in configuration. Prompting for details again.\n")
+                        embedding_dimension, space_type, ef_construction = self.get_knn_index_details()
+                        # Save index details to config
+                        self.config['embedding_dimension'] = str(embedding_dimension)
+                        self.config['space_type'] = space_type
+                        self.config['ef_construction'] = str(ef_construction)
+                        self.save_config(self.config)
                 else:
-                    print("Index details not found in configuration.")
+                    print("Index details not found in configuration. Prompting for details.\n")
                     embedding_dimension, space_type, ef_construction = self.get_knn_index_details()
                     # Save index details to config
                     self.config['embedding_dimension'] = str(embedding_dimension)
@@ -688,10 +706,10 @@ class Setup:
                     self.save_config(self.config)
                 # Verify that the index exists
                 if not self.opensearch_client.indices.exists(index=self.index_name):
-                    print(f"{Fore.RED}Index '{self.index_name}' does not exist in OpenSearch. Aborting.{Style.RESET_ALL}")
+                    print(f"{Fore.RED}Index '{self.index_name}' does not exist in OpenSearch. Aborting.{Style.RESET_ALL}\n")
                     return
             else:
-                print(f"{Fore.RED}Invalid choice. Please run setup again and select a valid option.{Style.RESET_ALL}")
+                print(f"{Fore.RED}Invalid choice. Please run setup again and select a valid option.{Style.RESET_ALL}\n")
                 return
 
             # Proceed with model registration
@@ -710,4 +728,4 @@ class Setup:
                 # Open-source OpenSearch: Provide instructions or automate model registration
                 self.model_register.prompt_opensource_model_registration()
         else:
-            print(f"{Fore.RED}Failed to initialize OpenSearch client. Setup incomplete.{Style.RESET_ALL}")
+            print(f"{Fore.RED}Failed to initialize OpenSearch client. Setup incomplete.{Style.RESET_ALL}\n")
