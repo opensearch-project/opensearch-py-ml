@@ -5,7 +5,6 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
-
 #  Licensed to Elasticsearch B.V. under one or more contributor
 #  license agreements. See the NOTICE file distributed with
 #  this work for additional information regarding copyright
@@ -39,34 +38,41 @@ class OpenSearchConnector:
         self.opensearch_endpoint = config.get('opensearch_endpoint')
         self.opensearch_username = config.get('opensearch_username')
         self.opensearch_password = config.get('opensearch_password')
+        self.service_type = config.get('service_type')
 
     def initialize_opensearch_client(self):
         # Initialize the OpenSearch client
-        # Handles both serverless and non-serverless configurations
-        # Returns True if successful, False otherwise
         if not self.opensearch_endpoint:
             print("OpenSearch endpoint not set. Please run setup first.")
             return False
-        
+
         parsed_url = urlparse(self.opensearch_endpoint)
         host = parsed_url.hostname
-        port = parsed_url.port or 443
+        port = parsed_url.port or (443 if parsed_url.scheme == 'https' else 9200)  # Default ports
 
-        if self.is_serverless:
+        if self.service_type == 'serverless':
             credentials = boto3.Session().get_credentials()
             auth = AWSV4SignerAuth(credentials, self.aws_region, 'aoss')
-        else:
+        elif self.service_type == 'managed':
             if not self.opensearch_username or not self.opensearch_password:
                 print("OpenSearch username or password not set. Please run setup first.")
                 return False
             auth = (self.opensearch_username, self.opensearch_password)
+        elif self.service_type == 'open-source':
+            if self.opensearch_username and self.opensearch_password:
+                auth = (self.opensearch_username, self.opensearch_password)
+            else:
+                auth = None  # No authentication
+        else:
+            print("Invalid service type. Please check your configuration.")
+            return False
 
         try:
             self.opensearch_client = OpenSearch(
                 hosts=[{'host': host, 'port': port}],
                 http_auth=auth,
-                use_ssl=True,
-                verify_certs=True,
+                use_ssl=parsed_url.scheme == 'https',
+                verify_certs=False if parsed_url.scheme == 'https' else True,
                 connection_class=RequestsHttpConnection,
                 pool_maxsize=20
             )
@@ -77,12 +83,11 @@ class OpenSearchConnector:
             return False
 
     def create_index(self, embedding_dimension, space_type):
-        # Create a new KNN index in OpenSearch
-        # Sets up the mapping for nominee_text and nominee_vector fields
         index_body = {
             "mappings": {
                 "properties": {
                     "nominee_text": {"type": "text"},
+                    "passage_chunk": {"type": "text"},
                     "nominee_vector": {
                         "type": "knn_vector",
                         "dimension": embedding_dimension,
@@ -138,19 +143,18 @@ class OpenSearchConnector:
             print(f"Error during bulk indexing: {e}")
             return 0, len(actions)
 
-    def search(self, vector, k=5):
-        # Perform a KNN search using the provided vector
-        # Returns the top k matching documents
+    def search(self, query_text, model_id, k=5):
         try:
             response = self.opensearch_client.search(
                 index=self.index_name,
                 body={
                     "size": k,
-                    "_source": ["nominee_text"],
+                    "_source": ["passage_chunk"],
                     "query": {
-                        "knn": {
+                        "neural": {
                             "nominee_vector": {
-                                "vector": vector,
+                                "query_text": query_text,
+                                "model_id": model_id,
                                 "k": k
                             }
                         }
@@ -161,3 +165,11 @@ class OpenSearchConnector:
         except Exception as e:
             print(f"Error during search: {e}")
             return []
+
+    def check_connection(self):
+        try:
+            self.opensearch_client.info()
+            return True
+        except Exception as e:
+            print(f"Error connecting to OpenSearch: {e}")
+            return False

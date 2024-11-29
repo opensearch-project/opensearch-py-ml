@@ -5,7 +5,6 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
-
 #  Licensed to Elasticsearch B.V. under one or more contributor
 #  license agreements. See the NOTICE file distributed with
 #  this work for additional information regarding copyright
@@ -37,7 +36,9 @@ import sys
 from urllib.parse import urlparse
 from opensearchpy import OpenSearch, RequestsHttpConnection, AWSV4SignerAuth
 from AIConnectorHelper import AIConnectorHelper
+from model_register import ModelRegister
 from colorama import Fore, Style, init
+import ssl
 
 init(autoreset=True)
 class Setup:
@@ -46,20 +47,21 @@ class Setup:
     SERVICE_BEDROCK = 'bedrock-runtime'
 
     def __init__(self):
-            # Initialize setup variables
-            self.config = self.load_config()
-            self.aws_region = self.config.get('region')
-            self.iam_principal = self.config.get('iam_principal')
-            self.index_name = self.config.get('index_name')
-            self.collection_name = self.config.get('collection_name', '')
-            self.opensearch_endpoint = self.config.get('opensearch_endpoint', '')
-            self.is_serverless = self.config.get('is_serverless', 'False') == 'True'
-            self.opensearch_username = self.config.get('opensearch_username', '')
-            self.opensearch_password = self.config.get('opensearch_password', '')
-            self.aoss_client = None
-            self.bedrock_client = None
-            self.opensearch_client = None
-            self.opensearch_domain_name = self.get_opensearch_domain_name()
+        # Initialize setup variables
+        self.config = self.load_config()
+        self.aws_region = self.config.get('region')
+        self.iam_principal = self.config.get('iam_principal')
+        self.collection_name = self.config.get('collection_name', '')
+        self.opensearch_endpoint = self.config.get('opensearch_endpoint', '')
+        self.service_type = self.config.get('service_type', 'managed')
+        self.is_serverless = self.service_type == 'serverless'
+        self.opensearch_username = self.config.get('opensearch_username', '')
+        self.opensearch_password = self.config.get('opensearch_password', '')
+        self.aoss_client = None
+        self.bedrock_client = None
+        self.opensearch_client = None
+        self.opensearch_domain_name = self.get_opensearch_domain_name()
+        self.model_register = None
 
     def check_and_configure_aws(self):
         # Check if AWS credentials are configured and offer to reconfigure if needed
@@ -170,7 +172,6 @@ class Setup:
                         sys.stdout.flush()
             finally:
                 termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-
     def setup_configuration(self):
         # Set up the configuration by prompting the user for various settings
         config = self.load_config()
@@ -178,28 +179,54 @@ class Setup:
         self.aws_region = input(f"Enter your AWS Region [{config.get('region', 'us-west-2')}]: ") or config.get('region', 'us-west-2')
         self.iam_principal = input(f"Enter your IAM Principal ARN [{config.get('iam_principal', '')}]: ") or config.get('iam_principal', '')
 
-        service_type = input("Choose OpenSearch service type (1 for Serverless, 2 for Managed): ")
-        self.is_serverless = service_type == '1'
+        print("Choose OpenSearch service type:")
+        print("1. Serverless")
+        print("2. Managed")
+        print("3. Open-source")
+        service_choice = input("Enter your choice (1-3): ")
 
-        if self.is_serverless:
-            self.index_name = input("Enter a name for your KNN index in OpenSearch: ")
+        if service_choice == '1':
+            self.service_type = 'serverless'
+        elif service_choice == '2':
+            self.service_type = 'managed'
+        elif service_choice == '3':
+            self.service_type = 'open-source'
+        else:
+            print("Invalid choice. Defaulting to 'managed'")
+            self.service_type = 'managed'
+
+        if self.service_type == 'serverless':
             self.collection_name = input("Enter the name for your OpenSearch collection: ")
             self.opensearch_endpoint = None
             self.opensearch_username = None
             self.opensearch_password = None
-        else:
-            self.index_name = input("Enter a name for your KNN index in OpenSearch: ")
+        elif self.service_type == 'managed':
             self.opensearch_endpoint = input("Enter your OpenSearch domain endpoint: ")
             self.opensearch_username = input("Enter your OpenSearch username: ")
             self.opensearch_password = self.get_password_with_asterisks("Enter your OpenSearch password: ")
             self.collection_name = ''
+        elif self.service_type == 'open-source':
+            # For open-source, allow default endpoint
+            default_endpoint = 'https://localhost:9200'
+            self.opensearch_endpoint = input(f"Press Enter to use the default endpoint(or type your custom endpoint) [{default_endpoint}]: ").strip() or default_endpoint
+            auth_required = input("Does your OpenSearch instance require authentication? (yes/no): ").strip().lower()
+            if auth_required == 'yes':
+                self.opensearch_username = input("Enter your OpenSearch username: ")
+                self.opensearch_password = self.get_password_with_asterisks("Enter your OpenSearch password: ")
+            else:
+                self.opensearch_username = None
+                self.opensearch_password = None
+            self.collection_name = ''
+            # For open-source, we may not need AWS region and IAM principal
+            self.aws_region = ''
+            self.iam_principal = ''
 
+        # Remove index_name from configuration at this point
         self.config = {
             'region': self.aws_region,
             'iam_principal': self.iam_principal,
-            'index_name': self.index_name,
             'collection_name': self.collection_name if self.collection_name else '',
-            'is_serverless': str(self.is_serverless),
+            'service_type': self.service_type,
             'opensearch_endpoint': self.opensearch_endpoint if self.opensearch_endpoint else '',
             'opensearch_username': self.opensearch_username if self.opensearch_username else '',
             'opensearch_password': self.opensearch_password if self.opensearch_password else ''
@@ -412,10 +439,10 @@ class Setup:
         if not self.opensearch_endpoint:
             print("OpenSearch endpoint not set. Please run setup first.")
             return False
-        
+
         parsed_url = urlparse(self.opensearch_endpoint)
         host = parsed_url.hostname
-        port = 443
+        port = parsed_url.port or (443 if parsed_url.scheme == 'https' else 9200)  # Default ports
 
         if self.is_serverless:
             credentials = boto3.Session().get_credentials()
@@ -426,12 +453,25 @@ class Setup:
                 return False
             auth = (self.opensearch_username, self.opensearch_password)
 
+        use_ssl = parsed_url.scheme == 'https'
+        verify_certs = False if use_ssl else True
+
+        # Create an SSL context that does not verify certificates
+        if use_ssl and not verify_certs:
+            ssl_context = ssl.create_default_context()
+            ssl_context.check_hostname = False
+            ssl_context.verify_mode = ssl.CERT_NONE
+        else:
+            ssl_context = None
+
         try:
             self.opensearch_client = OpenSearch(
                 hosts=[{'host': host, 'port': port}],
                 http_auth=auth,
-                use_ssl=True,
-                verify_certs=True,
+                use_ssl=use_ssl,
+                verify_certs=verify_certs,
+                ssl_show_warn=False,          # Suppress SSL warnings
+                ssl_context=ssl_context,      # Use the custom SSL context
                 connection_class=RequestsHttpConnection,
                 pool_maxsize=20
             )
@@ -551,15 +591,14 @@ class Setup:
         return base_name[:max_length-3] + "..."
 
     def setup_command(self):
-        # Main setup command that orchestrates the entire setup process
         self.check_and_configure_aws()
         self.setup_configuration()
         
-        if not self.initialize_clients():
+        if self.service_type != 'open-source' and not self.initialize_clients():
             print(f"{Fore.RED}Failed to initialize AWS clients. Setup incomplete.{Style.RESET_ALL}")
             return
         
-        if self.is_serverless:
+        if self.service_type == 'serverless':
             self.create_security_policies()
             collection_id = self.get_collection_id(self.collection_name)
             if not collection_id:
@@ -575,404 +614,100 @@ class Setup:
                     else:
                         self.config['opensearch_endpoint'] = self.opensearch_endpoint
                         self.save_config(self.config)
-                        # Initialize opensearch_domain_name after setting opensearch_endpoint
                         self.opensearch_domain_name = self.get_opensearch_domain_name()
                 else:
                     print(f"{Fore.RED}Collection is not active. Setup incomplete.{Style.RESET_ALL}")
                     return
-        else:
+        elif self.service_type == 'managed':
             if not self.opensearch_endpoint:
                 print(f"{Fore.RED}OpenSearch endpoint not set. Setup incomplete.{Style.RESET_ALL}")
                 return
             else:
-                # Initialize opensearch_domain_name after setting opensearch_endpoint
                 self.opensearch_domain_name = self.get_opensearch_domain_name()
-        
-        if self.initialize_opensearch_client():
-            print(f"{Fore.GREEN}OpenSearch client initialized successfully. Proceeding with index creation...{Style.RESET_ALL}")
-            embedding_dimension, space_type, ef_construction = self.get_knn_index_details()
-            if self.verify_and_create_index(embedding_dimension, space_type, ef_construction):
-                print(f"{Fore.GREEN}KNN index setup completed successfully.{Style.RESET_ALL}")
-                self.config['embedding_dimension'] = str(embedding_dimension)
-                self.config['space_type'] = space_type
-                self.config['ef_construction'] = str(ef_construction)
-                self.save_config(self.config)
-                config_file_path = os.path.abspath(self.CONFIG_FILE)
-                print(f"{Fore.GREEN}Configuration saved successfully at {config_file_path}{Style.RESET_ALL}")
-                
-                # Ask the user if they want to register a model
-                self.prompt_model_registration()
-            else:
-                print(f"{Fore.RED}Index verification failed. Please check your index name and permissions.{Style.RESET_ALL}")
-        else:
-            print(f"{Fore.RED}Failed to initialize OpenSearch client. Setup incomplete.{Style.RESET_ALL}")
-
-    def prompt_model_registration(self):
-        """
-        Prompt the user to register a model or input an existing model ID.
-        """
-        print("\nWould you like to register an embedding model now?")
-        print("1. Yes, register a new model")
-        print("2. No, I already have a model ID")
-        print("3. Skip this step")
-        choice = input("Enter your choice (1-2): ").strip()
-
-        if choice == '1':
-            self.register_model_interactive()
-        elif choice == '2':
-            model_id = input("Please enter your existing embedding model ID: ").strip()
-            if model_id:
-                self.config['embedding_model_id'] = model_id
-                self.save_config(self.config)
-                print(f"{Fore.GREEN}Model ID '{model_id}' saved successfully in configuration.{Style.RESET_ALL}")
-            else:
-                print(f"{Fore.RED}No model ID provided. Skipping model registration.{Style.RESET_ALL}")
-        else:
-            print("Skipping model registration.")
-
-    def register_model_interactive(self):
-        """
-        Interactive method to register a new embedding model during setup.
-        """
-        # Load existing config
-        self.config = self.load_config()
-
-        # Initialize clients
-        if not self.initialize_clients():
-            print(f"{Fore.RED}Failed to initialize AWS clients. Cannot proceed.{Style.RESET_ALL}")
-            return
-
-        # Ensure opensearch_endpoint is set
-        if not self.opensearch_endpoint:
-            self.opensearch_endpoint = self.config.get('opensearch_endpoint')
+        elif self.service_type == 'open-source':
+            # Open-source setup
             if not self.opensearch_endpoint:
-                print(f"{Fore.RED}OpenSearch endpoint not set. Please run 'setup' command first.{Style.RESET_ALL}")
+                print(f"{Fore.RED}OpenSearch endpoint not set. Setup incomplete.{Style.RESET_ALL}")
+                return
+            else:
+                self.opensearch_domain_name = None  # Not required for open-source
+
+        # Initialize OpenSearch client
+        if self.initialize_opensearch_client():
+            print(f"{Fore.GREEN}OpenSearch client initialized successfully.{Style.RESET_ALL}")
+            
+            # Prompt user to choose between creating a new index or using an existing one
+            print("\nDo you want to create a new KNN index or use an existing one?")
+            print("1. Create a new KNN index")
+            print("2. Use an existing KNN index")
+            index_choice = input("Enter your choice (1-2): ").strip()
+            
+            if index_choice == '1':
+                # Proceed to create a new index
+                self.index_name = input("Enter a name for your new KNN index in OpenSearch: ").strip()
+        
+                # Save the index name in the configuration
+                self.config['index_name'] = self.index_name
+                self.save_config(self.config)
+        
+                print("Proceeding with index creation...")
+                embedding_dimension, space_type, ef_construction = self.get_knn_index_details()
+                
+                if self.verify_and_create_index(embedding_dimension, space_type, ef_construction):
+                    print(f"{Fore.GREEN}KNN index '{self.index_name}' created successfully.{Style.RESET_ALL}")
+                    # Save index details to config
+                    self.config['embedding_dimension'] = str(embedding_dimension)
+                    self.config['space_type'] = space_type
+                    self.config['ef_construction'] = str(ef_construction)
+                    self.save_config(self.config)
+                else:
+                    print(f"{Fore.RED}Index creation failed. Please check your permissions and try again.{Style.RESET_ALL}")
+                    return
+            elif index_choice == '2':
+                # Use existing index
+                existing_index_name = input("Enter the name of your existing KNN index: ").strip()
+                if not existing_index_name:
+                    print(f"{Fore.RED}Index name cannot be empty. Aborting.{Style.RESET_ALL}")
+                    return
+                self.index_name = existing_index_name
+                self.config['index_name'] = self.index_name
+                self.save_config(self.config)
+                # Load index details from config or prompt for them
+                if 'embedding_dimension' in self.config and 'space_type' in self.config and 'ef_construction' in self.config:
+                    embedding_dimension = int(self.config['embedding_dimension'])
+                    space_type = self.config['space_type']
+                    ef_construction = int(self.config['ef_construction'])
+                    print(f"Using existing index '{self.index_name}' with embedding dimension {embedding_dimension}, space type '{space_type}', and ef_construction {ef_construction}.")
+                else:
+                    print("Index details not found in configuration.")
+                    embedding_dimension, space_type, ef_construction = self.get_knn_index_details()
+                    # Save index details to config
+                    self.config['embedding_dimension'] = str(embedding_dimension)
+                    self.config['space_type'] = space_type
+                    self.config['ef_construction'] = str(ef_construction)
+                    self.save_config(self.config)
+                # Verify that the index exists
+                if not self.opensearch_client.indices.exists(index=self.index_name):
+                    print(f"{Fore.RED}Index '{self.index_name}' does not exist in OpenSearch. Aborting.{Style.RESET_ALL}")
+                    return
+            else:
+                print(f"{Fore.RED}Invalid choice. Please run setup again and select a valid option.{Style.RESET_ALL}")
                 return
 
-        # Initialize opensearch_domain_name
-        self.opensearch_domain_name = self.get_opensearch_domain_name()
-
-        # Extract the IAM user name from the IAM principal ARN
-        aws_user_name = self.get_iam_user_name_from_arn(self.iam_principal)
-
-        if not aws_user_name:
-            print("Could not extract IAM user name from IAM principal ARN.")
-            aws_user_name = input("Enter your AWS IAM user name: ")
-
-        # Instantiate AIConnectorHelper
-        helper = AIConnectorHelper(
-            region=self.aws_region,
-            opensearch_domain_name=self.opensearch_domain_name,
-            opensearch_domain_username=self.opensearch_username,
-            opensearch_domain_password=self.opensearch_password,
-            aws_user_name=aws_user_name,
-            aws_role_name=None  # Set to None or provide if applicable
-        )
-
-        # Prompt user to select a model
-        print("Please select an embedding model to register:")
-        print("1. Bedrock Titan Embedding Model")
-        print("2. SageMaker Embedding Model")
-        print("3. Cohere Embedding Model")
-        print("4. OpenAI Embedding Model")
-        model_choice = input("Enter your choice (1-4): ")
-
-        # Call the appropriate method based on the user's choice
-        if model_choice == '1':
-            self.register_bedrock_model(helper)
-        elif model_choice == '2':
-            self.register_sagemaker_model(helper)
-        elif model_choice == '3':
-            self.register_cohere_model(helper)
-        elif model_choice == '4':
-            self.register_openai_model(helper)
+            # Proceed with model registration
+            # Initialize ModelRegister now that OpenSearch client and domain name are available
+            self.model_register = ModelRegister(
+                self.config,
+                self.opensearch_client,
+                self.opensearch_domain_name
+            )
+            
+            # Model Registration
+            if self.service_type != 'open-source':
+                # AWS-managed OpenSearch: Proceed with model registration
+                self.model_register.prompt_model_registration()
+            else:
+                # Open-source OpenSearch: Provide instructions or automate model registration
+                self.model_register.prompt_opensource_model_registration()
         else:
-            print(f"{Fore.RED}Invalid choice. Exiting model registration.{Style.RESET_ALL}")
-            return
-        
-    def register_bedrock_model(self, helper):
-        """
-        Register a Bedrock embedding model by creating the necessary connector and model in OpenSearch.
-        """
-        # Prompt for necessary inputs
-        bedrock_region = input(f"Enter your Bedrock region [{self.aws_region}]: ") or self.aws_region
-        connector_role_name = "my_test_bedrock_connector_role"
-        create_connector_role_name = "my_test_create_bedrock_connector_role"
-
-        # Set up connector role inline policy
-        connector_role_inline_policy = {
-            "Version": "2012-10-17",
-            "Statement": [
-                {
-                    "Action": ["bedrock:InvokeModel"],
-                    "Effect": "Allow",
-                    "Resource": "arn:aws:bedrock:*::foundation-model/amazon.titan-embed-text-v1"
-                }
-            ]
-        }
-
-        # Create connector input
-        create_connector_input = {
-            "name": "Amazon Bedrock Connector: titan embedding v1",
-            "description": "The connector to Bedrock Titan embedding model",
-            "version": 1,
-            "protocol": "aws_sigv4",
-            "parameters": {
-                "region": bedrock_region,
-                "service_name": "bedrock"
-            },
-            "actions": [
-                {
-                    "action_type": "predict",
-                    "method": "POST",
-                    "url": f"https://bedrock-runtime.{bedrock_region}.amazonaws.com/model/amazon.titan-embed-text-v1/invoke",
-                    "headers": {
-                        "content-type": "application/json",
-                        "x-amz-content-sha256": "required"
-                    },
-                    "request_body": "{ \"inputText\": \"${parameters.inputText}\" }",
-                    "pre_process_function": "\n    StringBuilder builder = new StringBuilder();\n    builder.append(\"\\\"\");\n    String first = params.text_docs[0];\n    builder.append(first);\n    builder.append(\"\\\"\");\n    def parameters = \"{\" +\"\\\"inputText\\\":\" + builder + \"}\";\n    return  \"{\" +\"\\\"parameters\\\":\" + parameters + \"}\";",
-                    "post_process_function": "\n      def name = \"sentence_embedding\";\n      def dataType = \"FLOAT32\";\n      if (params.embedding == null || params.embedding.length == 0) {\n        return params.message;\n      }\n      def shape = [params.embedding.length];\n      def json = \"{\" +\n                 \"\\\"name\\\":\\\"\" + name + \"\\\",\" +\n                 \"\\\"data_type\\\":\\\"\" + dataType + \"\\\",\" +\n                 \"\\\"shape\\\":\" + shape + \",\" +\n                 \"\\\"data\\\":\" + params.embedding +\n                 \"}\";\n      return json;\n    "
-                }
-            ]
-        }
-
-        # Create connector
-        print("Creating connector...")
-        connector_id = helper.create_connector_with_role(
-            connector_role_inline_policy,
-            connector_role_name,
-            create_connector_role_name,
-            create_connector_input,
-            sleep_time_in_seconds=10
-        )
-
-        if not connector_id:
-            print(f"{Fore.RED}Failed to create connector. Aborting.{Style.RESET_ALL}")
-            return
-
-        # Register model
-        print("Registering model...")
-        model_name = 'Bedrock embedding model'
-        description = 'Bedrock embedding model for semantic search'
-        model_id = helper.create_model(model_name, description, connector_id, create_connector_role_name)
-
-        if not model_id:
-            print(f"{Fore.RED}Failed to create model. Aborting.{Style.RESET_ALL}")
-            return
-
-        # Save model_id to config
-        self.config['embedding_model_id'] = model_id
-        self.save_config(self.config)
-        print(f"{Fore.GREEN}Model registered successfully. Model ID '{model_id}' saved in configuration.{Style.RESET_ALL}")
-
-
-    def register_sagemaker_model(self, helper):
-        """
-        Register a SageMaker embedding model by creating the necessary connector and model in OpenSearch.
-        """
-        # Prompt for necessary inputs
-        sagemaker_endpoint_arn = input("Enter your SageMaker inference endpoint ARN: ")
-        sagemaker_endpoint_url = input("Enter your SageMaker inference endpoint URL: ")
-        sagemaker_region = input(f"Enter your SageMaker region [{self.aws_region}]: ") or self.aws_region
-        connector_role_name = "my_test_sagemaker_connector_role"
-        create_connector_role_name = "my_test_create_sagemaker_connector_role"
-
-        # Set up connector role inline policy
-        connector_role_inline_policy = {
-            "Version": "2012-10-17",
-            "Statement": [
-                {
-                    "Action": ["sagemaker:InvokeEndpoint"],
-                    "Effect": "Allow",
-                    "Resource": sagemaker_endpoint_arn
-                }
-            ]
-        }
-
-        # Create connector input
-        create_connector_input = {
-            "name": "SageMaker embedding model connector",
-            "description": "Connector for my SageMaker embedding model",
-            "version": "1.0",
-            "protocol": "aws_sigv4",
-            "parameters": {
-                "region": sagemaker_region,
-                "service_name": "sagemaker"
-            },
-            "actions": [
-                {
-                    "action_type": "predict",
-                    "method": "POST",
-                    "headers": {
-                        "content-type": "application/json"
-                    },
-                    "url": sagemaker_endpoint_url,
-                    "request_body": "${parameters.input}",
-                    "pre_process_function": "connector.pre_process.default.embedding",
-                    "post_process_function": "connector.post_process.default.embedding"
-                }
-            ]
-        }
-
-        # Create connector
-        connector_id = helper.create_connector_with_role(
-            connector_role_inline_policy,
-            connector_role_name,
-            create_connector_role_name,
-            create_connector_input,
-            sleep_time_in_seconds=10
-        )
-
-        if not connector_id:
-            print(f"{Fore.RED}Failed to create connector. Aborting.{Style.RESET_ALL}")
-            return
-
-        # Register model
-        model_name = 'SageMaker embedding model'
-        description = 'SageMaker embedding model for semantic search'
-        model_id = helper.create_model(model_name, description, connector_id, create_connector_role_name)
-
-        if not model_id:
-            print(f"{Fore.RED}Failed to create model. Aborting.{Style.RESET_ALL}")
-            return
-
-        # Save model_id to config
-        self.config['embedding_model_id'] = model_id
-        self.save_config(self.config)
-        print(f"{Fore.GREEN}Model registered successfully. Model ID: {model_id}{Style.RESET_ALL}")
-
-
-    def register_cohere_model(self, helper):
-        """
-        Register a Cohere embedding model by creating the necessary connector and model in OpenSearch.
-        """
-        # Prompt for necessary inputs
-        secret_name = input("Enter a name for the AWS Secrets Manager secret: ")
-        secret_key = 'cohere_api_key'
-        cohere_api_key = input("Enter your Cohere API key: ")
-        secret_value = {secret_key: cohere_api_key}
-
-        connector_role_name = "my_test_cohere_connector_role"
-        create_connector_role_name = "my_test_create_cohere_connector_role"
-
-        # Create connector input
-        create_connector_input = {
-            "name": "Cohere Embedding Model Connector",
-            "description": "Connector for Cohere embedding model",
-            "version": "1.0",
-            "protocol": "http",
-            "parameters": {
-                "model": "embed-english-v3.0",
-                "input_type": "search_document",
-                "truncate": "END"
-            },
-            "actions": [
-                {
-                    "action_type": "predict",
-                    "method": "POST",
-                    "url": "https://api.cohere.ai/v1/embed",
-                    "headers": {
-                        "Authorization": f"Bearer ${{credential.secretArn.{secret_key}}}",
-                        "Request-Source": "unspecified:opensearch"
-                    },
-                    "request_body": "{ \"texts\": ${parameters.texts}, \"truncate\": \"${parameters.truncate}\", \"model\": \"${parameters.model}\", \"input_type\": \"${parameters.input_type}\" }",
-                    "pre_process_function": "connector.pre_process.cohere.embedding",
-                    "post_process_function": "connector.post_process.cohere.embedding"
-                }
-            ]
-        }
-
-        # Create connector
-        connector_id = helper.create_connector_with_secret(
-            secret_name,
-            secret_value,
-            connector_role_name,
-            create_connector_role_name,
-            create_connector_input,
-            sleep_time_in_seconds=10
-        )
-
-        if not connector_id:
-            print(f"{Fore.RED}Failed to create connector. Aborting.{Style.RESET_ALL}")
-            return
-
-        # Register model
-        model_name = 'Cohere embedding model'
-        description = 'Cohere embedding model for semantic search'
-        model_id = helper.create_model(model_name, description, connector_id, create_connector_role_name)
-
-        if not model_id:
-            print(f"{Fore.RED}Failed to create model. Aborting.{Style.RESET_ALL}")
-            return
-
-        # Save model_id to config
-        self.config['embedding_model_id'] = model_id
-        self.save_config(self.config)
-        print(f"{Fore.GREEN}Model registered successfully. Model ID: {model_id}{Style.RESET_ALL}")
-
-
-    def register_openai_model(self, helper):
-        """
-        Register an OpenAI embedding model by creating the necessary connector and model in OpenSearch.
-        """
-        # Prompt for necessary inputs
-        secret_name = input("Enter a name for the AWS Secrets Manager secret: ")
-        secret_key = 'openai_api_key'
-        openai_api_key = input("Enter your OpenAI API key: ")
-        secret_value = {secret_key: openai_api_key}
-
-        connector_role_name = "my_test_openai_connector_role"
-        create_connector_role_name = "my_test_create_openai_connector_role"
-
-        # Create connector input
-        create_connector_input = {
-            "name": "OpenAI Embedding Model Connector",
-            "description": "Connector for OpenAI embedding model",
-            "version": "1.0",
-            "protocol": "http",
-            "parameters": {
-                "model": "text-embedding-ada-002"
-            },
-            "actions": [
-                {
-                    "action_type": "predict",
-                    "method": "POST",
-                    "url": "https://api.openai.com/v1/embeddings",
-                    "headers": {
-                        "Authorization": f"Bearer ${{credential.secretArn.{secret_key}}}",
-                    },
-                    "request_body": "{ \"input\": ${parameters.input}, \"model\": \"${parameters.model}\" }",
-                    "pre_process_function": "connector.pre_process.openai.embedding",
-                    "post_process_function": "connector.post_process.openai.embedding"
-                }
-            ]
-        }
-
-        # Create connector
-        connector_id = helper.create_connector_with_secret(
-            secret_name,
-            secret_value,
-            connector_role_name,
-            create_connector_role_name,
-            create_connector_input,
-            sleep_time_in_seconds=10
-        )
-
-        if not connector_id:
-            print(f"{Fore.RED}Failed to create connector. Aborting.{Style.RESET_ALL}")
-            return
-
-        # Register model
-        model_name = 'OpenAI embedding model'
-        description = 'OpenAI embedding model for semantic search'
-        model_id = helper.create_model(model_name, description, connector_id, create_connector_role_name)
-
-        if not model_id:
-            print(f"{Fore.RED}Failed to create model. Aborting.{Style.RESET_ALL}")
-            return
-
-        # Save model_id to config
-        self.config['embedding_model_id'] = model_id
-        self.save_config(self.config)
-        print(f"{Fore.GREEN}Model registered successfully. Model ID: {model_id}{Style.RESET_ALL}")
+            print(f"{Fore.RED}Failed to initialize OpenSearch client. Setup incomplete.{Style.RESET_ALL}")

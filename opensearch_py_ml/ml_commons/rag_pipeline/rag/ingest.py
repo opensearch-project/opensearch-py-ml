@@ -201,9 +201,6 @@ class Ingest:
 
 
     def process_and_ingest_data(self, file_paths: List[str]):
-        # Process and ingest data from multiple files
-        # Generates embeddings for each document and ingests into OpenSearch
-        # Displays progress and results of the ingestion process
         if not self.initialize_clients():
             print("Failed to initialize clients. Aborting ingestion.")
             return
@@ -255,16 +252,15 @@ class Ingest:
                     "_index": self.index_name,
                     "_source": {
                         "nominee_text": doc['text'],
-                        "nominee_vector": doc['embedding']  # This is now a list of floats
+                        "nominee_vector": doc['embedding']
                     },
-                    "_pipeline": 'text-chunking-ingest-pipeline'  # Specify the ingest pipeline here
+                    "pipeline": 'text-chunking-ingest-pipeline'  # Use "pipeline" instead of "_pipeline"
                 }
                 actions.append(action)
         
         success, failed = self.opensearch.bulk_index(actions)
         print(f"{Fore.GREEN}Successfully ingested {success} documents.{Style.RESET_ALL}")
         print(f"{Fore.RED}Failed to ingest {failed} documents.{Style.RESET_ALL}")
-
     def ingest_command(self, paths: List[str]):
         # Main ingestion command
         # Processes all valid files in the given paths and initiates ingestion

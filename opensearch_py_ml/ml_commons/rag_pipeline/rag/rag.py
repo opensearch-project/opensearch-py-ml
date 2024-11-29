@@ -25,7 +25,7 @@
 # under the License.
 
 """
-Main CLI script for OpenSearch with Bedrock Integration
+Main CLI script for OpenSearch PY ML
 """
 
 import argparse
