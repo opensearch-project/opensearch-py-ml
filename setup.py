@@ -103,7 +103,6 @@ setup(
         "PyPDF2>=3.0.1",
         "rich>=13.5.2",
         "tiktoken>=0.5.0",
-        "termios>=1.0",
     ],
     python_requires=">=3.8",
     package_data={"opensearch_py_ml": ["py.typed"]},

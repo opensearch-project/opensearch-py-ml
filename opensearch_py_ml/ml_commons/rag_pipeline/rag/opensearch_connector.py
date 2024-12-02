@@ -173,3 +173,26 @@ class OpenSearchConnector:
         except Exception as e:
             print(f"Error connecting to OpenSearch: {e}")
             return False
+        
+
+    def search_by_vector(self, vector, k=5):
+        try:
+            response = self.opensearch_client.search(
+                index=self.index_name,
+                body={
+                    "size": k,
+                    "_source": ["nominee_text", "passage_chunk"],
+                    "query": {
+                        "knn": {
+                            "nominee_vector": {
+                                "vector": vector,
+                                "k": k
+                            }
+                        }
+                    }
+                }
+            )
+            return response['hits']['hits']
+        except Exception as e:
+            print(f"Error during search: {e}")
+            return []

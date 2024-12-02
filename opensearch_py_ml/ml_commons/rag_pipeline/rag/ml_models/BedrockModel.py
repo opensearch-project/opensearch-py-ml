@@ -141,16 +141,6 @@ class BedrockModel:
         save_config_method(config)
 
     def get_custom_model_details(self, default_input):
-        """
-        Prompt the user to enter custom model details or use default.
-        Returns a dictionary with the model details.
-
-        Args:
-            default_input (dict): Default model configuration.
-
-        Returns:
-            dict or None: Custom or default model configuration, or None if invalid input.
-        """
         print("\nDo you want to use the default configuration or provide custom model settings?")
         print("1. Use default configuration")
         print("2. Provide custom model settings")
@@ -167,8 +157,8 @@ class BedrockModel:
                 custom_details = json.loads(json_input)
                 return custom_details
             except json.JSONDecodeError as e:
-                print(f"{Fore.RED}Invalid JSON input: {e}{Style.RESET_ALL}")
+                print(f"Invalid JSON input: {e}")
                 return None
         else:
-            print(f"{Fore.RED}Invalid choice. Aborting model registration.{Style.RESET_ALL}")
+            print("Invalid choice. Aborting model registration.")
             return None

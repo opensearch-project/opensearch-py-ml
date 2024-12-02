@@ -21,9 +21,13 @@
 #  KIND, either express or implied.  See the License for the
 #  specific language governing permissions and limitations
 #  under the License.
+
+import logging
 import boto3
 import json
-from botocore.exceptions import BotoCoreError
+from botocore.exceptions import ClientError
+
+logger = logging.getLogger(__name__)
 
 class SecretHelper:
     def __init__(self, region):
@@ -32,50 +36,50 @@ class SecretHelper:
     def secret_exists(self, secret_name):
         secretsmanager = boto3.client('secretsmanager', region_name=self.region)
         try:
-            # Try to get the secret
             secretsmanager.get_secret_value(SecretId=secret_name)
-            # If no exception was raised by get_secret_value, the secret exists
             return True
-        except secretsmanager.exceptions.ResourceNotFoundException:
-            # If a ResourceNotFoundException was raised, the secret does not exist
-            return False
+        except ClientError as e:
+            if e.response['Error']['Code'] == 'ResourceNotFoundException':
+                return False
+            else:
+                logger.error(f"An error occurred: {e}")
+                return False
 
     def get_secret_arn(self, secret_name):
         secretsmanager = boto3.client('secretsmanager', region_name=self.region)
         try:
             response = secretsmanager.describe_secret(SecretId=secret_name)
-            # Return ARN of the secret 
             return response['ARN']
-        except secretsmanager.exceptions.ResourceNotFoundException:
-            print(f"The requested secret {secret_name} was not found")
-            return None
-        except Exception as e:
-            print(f"An error occurred: {e}")
-            return None
+        except ClientError as e:
+            if e.response['Error']['Code'] == 'ResourceNotFoundException':
+                logger.warning(f"The requested secret {secret_name} was not found")
+                return None
+            else:
+                logger.error(f"An error occurred: {e}")
+                return None
 
     def get_secret(self, secret_name):
         secretsmanager = boto3.client('secretsmanager', region_name=self.region)
         try:
             response = secretsmanager.get_secret_value(SecretId=secret_name)
-        except secretsmanager.exceptions.NoSuchEntityException:
-            print("The requested secret was not found")
-            return None
-        except Exception as e:
-            print(f"An error occurred: {e}")
-            return None
-        else:
             return response.get('SecretString')
+        except ClientError as e:
+            if e.response['Error']['Code'] == 'ResourceNotFoundException':
+                logger.warning("The requested secret was not found")
+                return None
+            else:
+                logger.error(f"An error occurred: {e}")
+                return None
 
     def create_secret(self, secret_name, secret_value):
         secretsmanager = boto3.client('secretsmanager', region_name=self.region)
-
         try:
             response = secretsmanager.create_secret(
                 Name=secret_name,
                 SecretString=json.dumps(secret_value),
             )
-            print(f'Secret {secret_name} created successfully.')
-            return response['ARN']  # Return the ARN of the created secret
-        except BotoCoreError as e:
-            print(f'Error creating secret: {e}')
+            logger.info(f'Secret {secret_name} created successfully.')
+            return response['ARN']
+        except ClientError as e:
+            logger.error(f'Error creating secret: {e}')
             return None

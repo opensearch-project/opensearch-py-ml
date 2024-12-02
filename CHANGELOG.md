@@ -46,6 +46,7 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - updating listing file with three v2 sparse model - by @dhrubo-os ([#412](https://github.com/opensearch-project/opensearch-py-ml/pull/412))
 - Update model upload history -  opensearch-project/opensearch-neural-sparse-encoding-doc-v2-mini (v.1.0.0)(TORCH_SCRIPT) by @dhrubo-os ([#417](https://github.com/opensearch-project/opensearch-py-ml/pull/417))
 - Update model upload history -  opensearch-project/opensearch-neural-sparse-encoding-v2-distill (v.1.0.0)(TORCH_SCRIPT) by @dhrubo-os ([#419](https://github.com/opensearch-project/opensearch-py-ml/pull/419))
+- Added RAG functionality into `opensearch-py-ml` by @hmumtazz in ([#427](https://github.com/opensearch-project/opensearch-py-ml/pull/427))
 
 ### Fixed
 - Fix the wrong final zip file name in model_uploader workflow, now will name it by the upload_prefix alse.([#413](https://github.com/opensearch-project/opensearch-py-ml/pull/413/files))

@@ -1,4 +1,3 @@
-# ModelRegister.py
 # SPDX-License-Identifier: Apache-2.0
 # The OpenSearch Contributors require contributions made to
 # this file be licensed under the Apache-2.0 license or a
@@ -37,7 +36,7 @@ from ml_models.BedrockModel import BedrockModel
 from ml_models.OpenAIModel import OpenAIModel
 from ml_models.CohereModel import CohereModel
 from ml_models.HuggingFaceModel import HuggingFaceModel
-from ml_models.CustomPyTorchModel import CustomPyTorchModel
+from ml_models.PyTorchModel import CustomPyTorchModel
 import sys
 
 init(autoreset=True)

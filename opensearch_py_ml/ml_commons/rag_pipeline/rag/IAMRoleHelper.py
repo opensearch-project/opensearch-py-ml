@@ -24,7 +24,7 @@
 
 import boto3
 import json
-from botocore.exceptions import BotoCoreError
+from botocore.exceptions import ClientError
 import requests
 
 class IAMRoleHelper:
@@ -44,8 +44,12 @@ class IAMRoleHelper:
         try:
             iam_client.get_role(RoleName=role_name)
             return True
-        except iam_client.exceptions.NoSuchEntityException:
-            return False
+        except ClientError as e:
+            if e.response['Error']['Code'] == 'NoSuchEntity':
+                return False
+            else:
+                print(f"An error occurred: {e}")
+                return False
 
     def delete_role(self, role_name):
         iam_client = boto3.client('iam')
@@ -67,8 +71,11 @@ class IAMRoleHelper:
             iam_client.delete_role(RoleName=role_name)
             print(f'Role {role_name} deleted.')
 
-        except iam_client.exceptions.NoSuchEntityException:
-            print(f'Role {role_name} does not exist.')
+        except ClientError as e:
+            if e.response['Error']['Code'] == 'NoSuchEntity':
+                print(f'Role {role_name} does not exist.')
+            else:
+                print(f"An error occurred: {e}")
 
     def create_iam_role(self, role_name, trust_policy_json, inline_policy_json):
         iam_client = boto3.client('iam')
@@ -94,7 +101,7 @@ class IAMRoleHelper:
             print(f'Created role: {role_name}')
             return role_arn
 
-        except Exception as e:
+        except ClientError as e:
             print(f"Error creating the role: {e}")
             return None
 
@@ -106,12 +113,13 @@ class IAMRoleHelper:
             response = iam_client.get_role(RoleName=role_name)
             # Return ARN of the role
             return response['Role']['Arn']
-        except iam_client.exceptions.NoSuchEntityException:
-            print(f"The requested role {role_name} does not exist")
-            return None
-        except Exception as e:
-            print(f"An error occurred: {e}")
-            return None
+        except ClientError as e:
+            if e.response['Error']['Code'] == 'NoSuchEntity':
+                print(f"The requested role {role_name} does not exist")
+                return None
+            else:
+                print(f"An error occurred: {e}")
+                return None
 
     def get_role_details(self, role_name):
         iam = boto3.client('iam')
@@ -135,36 +143,45 @@ class IAMRoleHelper:
                 print("Role Policy Document:")
                 print(json.dumps(get_role_policy_response['PolicyDocument'], indent=4, sort_keys=True))
 
-        except iam.exceptions.NoSuchEntityException:
-            print(f'Role {role_name} does not exist.')
+        except ClientError as e:
+            if e.response['Error']['Code'] == 'NoSuchEntity':
+                print(f'Role {role_name} does not exist.')
+            else:
+                print(f"An error occurred: {e}")
 
     def get_user_arn(self, username):
         if not username:
             return None
-        # Create a boto3 client for IAM
         iam_client = boto3.client('iam')
 
         try:
-            # Get information about the IAM user
             response = iam_client.get_user(UserName=username)
             user_arn = response['User']['Arn']
             return user_arn
-        except iam_client.exceptions.NoSuchEntityException:
-            print(f"IAM user '{username}' not found.")
-            return None
+        except ClientError as e:
+            if e.response['Error']['Code'] == 'NoSuchEntity':
+                print(f"IAM user '{username}' not found.")
+                return None
+            else:
+                print(f"An error occurred: {e}")
+                return None
 
     def assume_role(self, role_arn, role_session_name="your_session_name"):
         sts_client = boto3.client('sts')
 
-        assumed_role_object = sts_client.assume_role(
-            RoleArn=role_arn,
-            RoleSessionName=role_session_name,
-        )
+        try:
+            assumed_role_object = sts_client.assume_role(
+                RoleArn=role_arn,
+                RoleSessionName=role_session_name,
+            )
 
-        # Obtain the temporary credentials from the assumed role 
-        temp_credentials = assumed_role_object["Credentials"]
+            # Obtain the temporary credentials from the assumed role 
+            temp_credentials = assumed_role_object["Credentials"]
 
-        return temp_credentials
+            return temp_credentials
+        except ClientError as e:
+            print(f"Error assuming role: {e}")
+            return None
 
     def map_iam_role_to_backend_role(self, iam_role_arn):
         os_security_role = 'ml_full_access'  # Changed from 'all_access' to 'ml_full_access'
@@ -175,19 +192,22 @@ class IAMRoleHelper:
         }
         headers = {'Content-Type': 'application/json'}
 
-        response = requests.put(
-            url,
-            auth=(self.opensearch_domain_username, self.opensearch_domain_password),
-            json=payload,
-            headers=headers,
-            verify=True
-        )
+        try:
+            response = requests.put(
+                url,
+                auth=(self.opensearch_domain_username, self.opensearch_domain_password),
+                json=payload,
+                headers=headers,
+                verify=True
+            )
 
-        if response.status_code == 200:
-            print(f"Successfully mapped IAM role to OpenSearch role '{os_security_role}'.")
-        else:
-            print(f"Failed to map IAM role to OpenSearch role '{os_security_role}'. Status code: {response.status_code}")
-            print(f"Response: {response.text}")
+            if response.status_code == 200:
+                print(f"Successfully mapped IAM role to OpenSearch role '{os_security_role}'.")
+            else:
+                print(f"Failed to map IAM role to OpenSearch role '{os_security_role}'. Status code: {response.status_code}")
+                print(f"Response: {response.text}")
+        except requests.exceptions.RequestException as e:
+            print(f"HTTP request failed: {e}")
 
     def get_iam_user_name_from_arn(self, iam_principal_arn):
         """
