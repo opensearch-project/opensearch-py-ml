@@ -370,12 +370,21 @@ def test_DEPRECATED_integration_model_train_upload_full_cycle():
                             "target_response": target_response,
                         },
                     )
+                    prediction_result_2 = ml_client.generate_model_inference(
+                        model_id=model_id,
+                        predict_object={
+                            "text_docs": text_docs,
+                            "return_number": return_number,
+                            "target_response": target_response,
+                        },
+                    )
                     inference_results = prediction_result.get("inference_results")
                     output_1 = inference_results[0].get("output")
                     output_2 = inference_results[1].get("output")
                 except Exception as ex:  # noqa: E722
                     pytest.fail(f"Exception occurred when predicting: {ex}")
                 else:
+                    assert prediction_result == prediction_result_2
                     assert output_1[0].get("name") == "sentence_embedding"
                     assert output_1[0].get("data_type") == "FLOAT32"
                     assert output_1[0].get("shape")[0] == 384
@@ -514,12 +523,21 @@ def test_integration_model_train_register_full_cycle():
                             "target_response": target_response,
                         },
                     )
+                    prediction_result_2 = ml_client.generate_model_inference(
+                        model_id=model_id,
+                        predict_object={
+                            "text_docs": text_docs,
+                            "return_number": return_number,
+                            "target_response": target_response,
+                        },
+                    )
                     inference_results = prediction_result.get("inference_results")
                     output_1 = inference_results[0].get("output")
                     output_2 = inference_results[1].get("output")
                 except Exception as ex:  # noqa: E722
                     pytest.fail(f"Exception occurred when predicting: {ex}")
                 else:
+                    assert prediction_result == prediction_result_2
                     assert output_1[0].get("name") == "sentence_embedding"
                     assert output_1[0].get("data_type") == "FLOAT32"
                     assert output_1[0].get("shape")[0] == 384
