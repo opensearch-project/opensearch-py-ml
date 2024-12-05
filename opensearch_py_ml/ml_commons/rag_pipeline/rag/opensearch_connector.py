@@ -262,18 +262,28 @@ class OpenSearchConnector:
         :param k: The number of top results to retrieve.
         :return: A list of search hits.
         """
+        # Retrieve field names from the config
+        embedding_field = self.config.get('embedding_field', 'passage_embedding')
+        passage_text_field = self.config.get('passage_text_field', 'passage_text')
+        passage_chunk_field = self.config.get('passage_chunk_field', 'passage_chunk')
+
         try:
-            # Execute the KNN search query
+            # Execute the KNN search query using the correct field name
             response = self.opensearch_client.search(
                 index=self.index_name,
                 body={
                     "size": k,
-                    "_source": ["nominee_text", "passage_chunk"],
+                    "_source": [passage_text_field, passage_chunk_field],
                     "query": {
-                        "knn": {
-                            "nominee_vector": {
-                                "vector": vector,
-                                "k": k
+                        "nested": {
+                            "path": embedding_field,
+                            "query": {
+                                "knn": {
+                                    f"{embedding_field}.knn": {
+                                        "vector": vector,
+                                        "k": k
+                                    }
+                                }
                             }
                         }
                     }

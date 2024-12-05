@@ -19,7 +19,6 @@ import sys
 from urllib.parse import urlparse
 from opensearchpy import OpenSearch, RequestsHttpConnection, AWSV4SignerAuth
 from colorama import Fore, Style, init
-import ssl
 
 from opensearch_py_ml.ml_commons.rag_pipeline.rag.opensearch_connector import OpenSearchConnector
 from opensearch_py_ml.ml_commons.rag_pipeline.rag.serverless import Serverless  

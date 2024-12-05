@@ -8,6 +8,7 @@
 import os
 import glob
 import json
+import tiktoken
 from tqdm import tqdm
 from colorama import Fore, Style, init
 from typing import List, Dict
@@ -201,10 +202,8 @@ class Ingest:
                     {
                         "text_chunking": {
                             "algorithm": {
-                                "fixed_token_length": {
-                                    "token_limit": token_limit,
-                                    "overlap_rate": overlap_rate,
-                                    "tokenizer": tokenizer
+                                "delimiter": {
+                                    "delimiter": "."
                                 }
                             },
                             "field_map": {

@@ -211,7 +211,9 @@ class Query:
                 # Perform vector-based search
                 hits = self.opensearch.search_by_vector(vector, k)
                 # Concatenate the retrieved passages as context
-                context = '\n'.join([hit['_source']['nominee_text'] for hit in hits])
+                context = '\n'.join(
+                    [chunk for hit in hits for chunk in hit['_source'].get('passage_chunk', [])]
+                )
                 results.append({
                     'query': queries[i],
                     'context': context,
