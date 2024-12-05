@@ -5,31 +5,30 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
-#  Licensed to Elasticsearch B.V. under one or more contributor
-#  license agreements. See the NOTICE file distributed with
-#  this work for additional information regarding copyright
-#  ownership. Elasticsearch B.V. licenses this file to you under
-#  the Apache License, Version 2.0 (the "License"); you may
-#  not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
-#
-# 	http://www.apache.org/licenses/LICENSE-2.0
-#
-#  Unless required by applicable law or agreed to in writing,
-#  software distributed under the License is distributed on an
-#  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-#  KIND, either express or implied.  See the License for the
-#  specific language governing permissions and limitations
-#  under the License.
-
 import boto3
 import json
 from botocore.exceptions import ClientError
 import requests
 
+
 class IAMRoleHelper:
+    """
+    Helper class for managing IAM roles and their interactions with OpenSearch.
+    """
+
     def __init__(self, region, opensearch_domain_url=None, opensearch_domain_username=None,
                  opensearch_domain_password=None, aws_user_name=None, aws_role_name=None, opensearch_domain_arn=None):
+        """
+        Initialize the IAMRoleHelper with AWS and OpenSearch configurations.
+        
+        :param region: AWS region.
+        :param opensearch_domain_url: URL of the OpenSearch domain.
+        :param opensearch_domain_username: Username for OpenSearch domain authentication.
+        :param opensearch_domain_password: Password for OpenSearch domain authentication.
+        :param aws_user_name: AWS IAM user name.
+        :param aws_role_name: AWS IAM role name.
+        :param opensearch_domain_arn: ARN of the OpenSearch domain.
+        """
         self.region = region
         self.opensearch_domain_url = opensearch_domain_url
         self.opensearch_domain_username = opensearch_domain_username
@@ -39,6 +38,12 @@ class IAMRoleHelper:
         self.opensearch_domain_arn = opensearch_domain_arn
 
     def role_exists(self, role_name):
+        """
+        Check if an IAM role exists.
+        
+        :param role_name: Name of the IAM role.
+        :return: True if the role exists, False otherwise.
+        """
         iam_client = boto3.client('iam')
 
         try:
@@ -52,22 +57,27 @@ class IAMRoleHelper:
                 return False
 
     def delete_role(self, role_name):
+        """
+        Delete an IAM role along with its attached policies.
+        
+        :param role_name: Name of the IAM role to delete.
+        """
         iam_client = boto3.client('iam')
 
         try:
-            # Detach managed policies
+            # Detach managed policies from the role
             policies = iam_client.list_attached_role_policies(RoleName=role_name)['AttachedPolicies']
             for policy in policies:
                 iam_client.detach_role_policy(RoleName=role_name, PolicyArn=policy['PolicyArn'])
             print(f'All managed policies detached from role {role_name}.')
 
-            # Delete inline policies
+            # Delete inline policies associated with the role
             inline_policies = iam_client.list_role_policies(RoleName=role_name)['PolicyNames']
             for policy_name in inline_policies:
                 iam_client.delete_role_policy(RoleName=role_name, PolicyName=policy_name)
             print(f'All inline policies deleted from role {role_name}.')
 
-            # Now, delete the role
+            # Finally, delete the IAM role
             iam_client.delete_role(RoleName=role_name)
             print(f'Role {role_name} deleted.')
 
@@ -78,23 +88,31 @@ class IAMRoleHelper:
                 print(f"An error occurred: {e}")
 
     def create_iam_role(self, role_name, trust_policy_json, inline_policy_json):
+        """
+        Create a new IAM role with specified trust and inline policies.
+        
+        :param role_name: Name of the IAM role to create.
+        :param trust_policy_json: Trust policy document in JSON format.
+        :param inline_policy_json: Inline policy document in JSON format.
+        :return: ARN of the created role or None if creation failed.
+        """
         iam_client = boto3.client('iam')
 
         try:
-            # Create the role with the trust policy
+            # Create the role with the provided trust policy
             create_role_response = iam_client.create_role(
                 RoleName=role_name,
                 AssumeRolePolicyDocument=json.dumps(trust_policy_json),
                 Description='Role with custom trust and inline policies',
             )
 
-            # Get the ARN of the newly created role
+            # Retrieve the ARN of the newly created role
             role_arn = create_role_response['Role']['Arn']
 
             # Attach the inline policy to the role
             iam_client.put_role_policy(
                 RoleName=role_name,
-                PolicyName='InlinePolicy',  # you can replace this with your preferred policy name
+                PolicyName='InlinePolicy',  # Replace with preferred policy name if needed
                 PolicyDocument=json.dumps(inline_policy_json)
             )
 
@@ -106,12 +124,17 @@ class IAMRoleHelper:
             return None
 
     def get_role_arn(self, role_name):
+        """
+        Retrieve the ARN of an IAM role.
+        
+        :param role_name: Name of the IAM role.
+        :return: ARN of the role or None if not found.
+        """
         if not role_name:
             return None
         iam_client = boto3.client('iam')
         try:
             response = iam_client.get_role(RoleName=role_name)
-            # Return ARN of the role
             return response['Role']['Arn']
         except ClientError as e:
             if e.response['Error']['Code'] == 'NoSuchEntity':
@@ -122,6 +145,11 @@ class IAMRoleHelper:
                 return None
 
     def get_role_details(self, role_name):
+        """
+        Print detailed information about an IAM role.
+        
+        :param role_name: Name of the IAM role.
+        """
         iam = boto3.client('iam')
 
         try:
@@ -135,6 +163,7 @@ class IAMRoleHelper:
             print("Assume Role Policy Document:")
             print(json.dumps(role['AssumeRolePolicyDocument'], indent=4, sort_keys=True))
 
+            # List and print all inline policies attached to the role
             list_role_policies_response = iam.list_role_policies(RoleName=role_name)
 
             for policy_name in list_role_policies_response['PolicyNames']:
@@ -150,6 +179,12 @@ class IAMRoleHelper:
                 print(f"An error occurred: {e}")
 
     def get_user_arn(self, username):
+        """
+        Retrieve the ARN of an IAM user.
+        
+        :param username: Name of the IAM user.
+        :return: ARN of the user or None if not found.
+        """
         if not username:
             return None
         iam_client = boto3.client('iam')
@@ -167,6 +202,13 @@ class IAMRoleHelper:
                 return None
 
     def assume_role(self, role_arn, role_session_name="your_session_name"):
+        """
+        Assume an IAM role and obtain temporary security credentials.
+        
+        :param role_arn: ARN of the IAM role to assume.
+        :param role_session_name: Identifier for the assumed role session.
+        :return: Temporary security credentials or None if the operation fails.
+        """
         sts_client = boto3.client('sts')
 
         try:
@@ -175,7 +217,7 @@ class IAMRoleHelper:
                 RoleSessionName=role_session_name,
             )
 
-            # Obtain the temporary credentials from the assumed role 
+            # Extract temporary credentials from the assumed role
             temp_credentials = assumed_role_object["Credentials"]
 
             return temp_credentials
@@ -184,7 +226,12 @@ class IAMRoleHelper:
             return None
 
     def map_iam_role_to_backend_role(self, iam_role_arn):
-        os_security_role = 'ml_full_access'  # Changed from 'all_access' to 'ml_full_access'
+        """
+        Map an IAM role to an OpenSearch backend role for access control.
+        
+        :param iam_role_arn: ARN of the IAM role to map.
+        """
+        os_security_role = 'ml_full_access'  # Defines the OpenSearch security role to map to
         url = f'{self.opensearch_domain_url}/_plugins/_security/api/rolesmapping/{os_security_role}'
 
         payload = {
@@ -211,7 +258,10 @@ class IAMRoleHelper:
 
     def get_iam_user_name_from_arn(self, iam_principal_arn):
         """
-        Extract the IAM user name from the IAM principal ARN.
+        Extract the IAM user name from an IAM principal ARN.
+        
+        :param iam_principal_arn: ARN of the IAM principal.
+        :return: IAM user name or None if extraction fails.
         """
         # IAM user ARN format: arn:aws:iam::123456789012:user/user-name
         if iam_principal_arn and ':user/' in iam_principal_arn:

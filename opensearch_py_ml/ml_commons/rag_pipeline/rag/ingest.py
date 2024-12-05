@@ -5,23 +5,6 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
-#  Licensed to Elasticsearch B.V. under one or more contributor
-#  license agreements. See the NOTICE file distributed with
-#  this work for additional information regarding copyright
-#  ownership. Elasticsearch B.V. licenses this file to you under
-#  the Apache License, Version 2.0 (the "License"); you may
-#  not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
-#
-# 	http://www.apache.org/licenses/LICENSE-2.0
-#
-#  Unless required by applicable law or agreed to in writing,
-#  software distributed under the License is distributed on an
-#  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-#  KIND, either express or implied.  See the License for the
-#  specific language governing permissions and limitations
-#  under the License.
-
 import os
 import glob
 import json
@@ -36,39 +19,59 @@ import botocore
 import time
 import random
 from opensearchpy import exceptions as opensearch_exceptions
+from opensearch_py_ml.ml_commons.rag_pipeline.rag.embedding_client import EmbeddingClient
+from opensearch_py_ml.ml_commons.rag_pipeline.rag.opensearch_connector import OpenSearchConnector
 
-from opensearch_connector import OpenSearchConnector
-
+# Initialize colorama for colored terminal output
 init(autoreset=True)  # Initialize colorama
 
+
 class Ingest:
+    """
+    Helper class for ingesting various file types into OpenSearch.
+    """
+
     def __init__(self, config):
-        # Initialize the Ingest class with configuration
+        """
+        Initialize the Ingest class with configuration.
+
+        :param config: Configuration dictionary containing necessary parameters.
+        """
         self.config = config
         self.aws_region = config.get('region')
         self.index_name = config.get('index_name')
         self.bedrock_client = None
         self.opensearch = OpenSearchConnector(config)
         self.embedding_model_id = config.get('embedding_model_id')
+        self.embedding_client = None  # Will be initialized after OpenSearch client is ready
         self.pipeline_name = config.get('ingest_pipeline_name', 'text-chunking-ingest-pipeline')
 
-        if not self.embedding_model_id:
-            print("Embedding model ID is not set. Please run setup first.")
-            return
+    def initialize_clients(self) -> bool:
+        """
+        Initialize the OpenSearch client and the EmbeddingClient.
 
-    def initialize_clients(self):
-        # Initialize OpenSearch client
+        :return: True if initialization is successful, False otherwise.
+        """
         if self.opensearch.initialize_opensearch_client():
             print("OpenSearch client initialized successfully.")
+
+            # Now that OpenSearch client is initialized, initialize the embedding client
+            if not self.embedding_model_id:
+                print("Embedding model ID is not set. Please run setup first.")
+                return False
+
+            self.embedding_client = EmbeddingClient(self.opensearch.opensearch_client, self.embedding_model_id)
             return True
         else:
             print("Failed to initialize OpenSearch client.")
             return False
-
+        
     def ingest_command(self, paths: List[str]):
-        # Main ingestion command
-        # Processes all valid files in the given paths and initiates ingestion
+        """
+        Main ingestion command that processes and ingests all valid files from the provided paths.
 
+        :param paths: List of file or directory paths to ingest.
+        """
         all_files = []
         for path in paths:
             if os.path.isfile(path):
@@ -80,24 +83,36 @@ class Ingest:
             else:
                 print(f"{Fore.YELLOW}Invalid path: {path}{Style.RESET_ALL}")
 
+        # Define supported file extensions
         supported_extensions = ['.csv', '.txt', '.pdf']
         valid_files = [f for f in all_files if any(f.lower().endswith(ext) for ext in supported_extensions)]
 
+        # Check if there are valid files to ingest
         if not valid_files:
             print(f"{Fore.RED}No valid files found for ingestion.{Style.RESET_ALL}")
             return
 
         print(f"{Fore.GREEN}Found {len(valid_files)} valid files for ingestion.{Style.RESET_ALL}")
 
+        # Process and ingest data from valid files
         self.process_and_ingest_data(valid_files)
 
     def process_and_ingest_data(self, file_paths: List[str]):
+        """
+        Processes the provided files, generates embeddings, and ingests the data into OpenSearch.
+        """
+        # Initialize clients before ingestion
         if not self.initialize_clients():
             print("Failed to initialize clients. Aborting ingestion.")
             return
 
         # Create the ingest pipeline
         self.create_ingest_pipeline(self.pipeline_name)
+
+        # Retrieve field names from the config
+        passage_text_field = self.config.get('passage_text_field', 'passage_text')
+        passage_chunk_field = self.config.get('passage_chunk_field', 'passage_chunk')
+        embedding_field = self.config.get('embedding_field', 'passage_embedding')
 
         all_documents = []
         for file_path in file_paths:
@@ -111,10 +126,12 @@ class Ingest:
         print("\nGenerating embeddings for the documents...")
         success_count = 0
         error_count = 0
+
+        # Progress bar for embedding generation
         with tqdm(total=total_documents, bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}]') as pbar:
             for doc in all_documents:
                 try:
-                    embedding = self.text_embedding(doc['text'])
+                    embedding = self.embedding_client.get_text_embedding(doc['text'])
                     if embedding is not None:
                         doc['embedding'] = embedding
                         success_count += 1
@@ -130,6 +147,7 @@ class Ingest:
         print(f"\n{Fore.GREEN}Documents with successful embeddings: {success_count}{Style.RESET_ALL}")
         print(f"{Fore.RED}Documents with failed embeddings: {error_count}{Style.RESET_ALL}")
 
+        # Check if there are documents to ingest
         if success_count == 0:
             print(f"{Fore.RED}No documents to ingest. Aborting ingestion.{Style.RESET_ALL}")
             return
@@ -142,52 +160,82 @@ class Ingest:
                     "_op_type": "index",
                     "_index": self.index_name,
                     "_source": {
-                        "nominee_text": doc['text'],
-                        "nominee_vector": doc['embedding']
+                        passage_text_field: doc['text'],
+                        embedding_field: {
+                            "knn": doc['embedding']
+                        }
                     },
-                    "pipeline": self.pipeline_name  # Use the pipeline name specified in the config
+                    "pipeline": self.pipeline_name
                 }
                 actions.append(action)
 
+        # Bulk index the documents into OpenSearch
         success, failed = self.opensearch.bulk_index(actions)
         print(f"\n{Fore.GREEN}Successfully ingested {success} documents.{Style.RESET_ALL}")
         print(f"{Fore.RED}Failed to ingest {failed} documents.{Style.RESET_ALL}")
 
-    def create_ingest_pipeline(self, pipeline_id):
-        # Check if pipeline exists
+
+    def create_ingest_pipeline(self, pipeline_id: str):
+        """
+        Creates an ingest pipeline in OpenSearch if it does not already exist.
+        :param pipeline_id: ID of the ingest pipeline to create.
+        """
         try:
-            response = self.opensearch.opensearch_client.ingest.get_pipeline(id=pipeline_id)
+            # Check if the pipeline already exists
+            self.opensearch.opensearch_client.ingest.get_pipeline(id=pipeline_id)
             print(f"\nIngest pipeline '{pipeline_id}' already exists.")
         except opensearch_exceptions.NotFoundError:
             # Pipeline does not exist, create it
+            embedding_dimension = int(self.config.get('embedding_dimension', 768))
+            # Calculate token_limit based on embedding dimension if not set
+            token_limit = int(self.config.get('token_limit', int(embedding_dimension * 0.75)))
+            tokenizer = self.config.get('tokenizer', 'standard')
+            overlap_rate = float(self.config.get('overlap_rate', 0.2))
+            source_field = self.config.get('passage_text_field', 'passage_text')
+            target_field = self.config.get('passage_chunk_field', 'passage_chunk')
+            embedding_field = self.config.get('embedding_field', 'passage_embedding')
+            model_id = self.embedding_model_id
+
             pipeline_body = {
-                "description": "A text chunking ingest pipeline",
+                "description": "A text chunking and embedding ingest pipeline",
                 "processors": [
                     {
                         "text_chunking": {
                             "algorithm": {
                                 "fixed_token_length": {
-                                    "token_limit": 384,
-                                    "overlap_rate": 0.2,
-                                    "tokenizer": "standard"
+                                    "token_limit": token_limit,
+                                    "overlap_rate": overlap_rate,
+                                    "tokenizer": tokenizer
                                 }
                             },
                             "field_map": {
-                                "nominee_text": "passage_chunk"
+                                source_field: target_field
+                            }
+                        }
+                    },
+                    {
+                        "text_embedding": {
+                            "model_id": model_id,
+                            "field_map": {
+                                target_field: embedding_field
                             }
                         }
                     }
                 ]
             }
+            # Create the ingest pipeline
             self.opensearch.opensearch_client.ingest.put_pipeline(id=pipeline_id, body=pipeline_body)
             print(f"\nIngest pipeline '{pipeline_id}' created successfully.")
         except Exception as e:
             print(f"\nError checking or creating ingest pipeline: {e}")
 
     def process_file(self, file_path: str) -> List[Dict[str, str]]:
-        # Process a file based on its extension
-        # Supports CSV, TXT, and PDF files
-        # Returns a list of dictionaries containing extracted text
+        """
+        Processes a file based on its extension and extracts text.
+
+        :param file_path: Path to the file to process.
+        :return: List of dictionaries containing extracted text.
+        """
         _, file_extension = os.path.splitext(file_path)
 
         if file_extension.lower() == '.csv':
@@ -201,9 +249,12 @@ class Ingest:
             return []
 
     def process_csv(self, file_path: str) -> List[Dict[str, str]]:
-        # Process a CSV file
-        # Extracts information and returns a list of dictionaries
-        # Each dictionary contains the entire row content
+        """
+        Processes a CSV file and extracts each row as a JSON string.
+
+        :param file_path: Path to the CSV file.
+        :return: List of dictionaries with extracted text.
+        """
         documents = []
         with open(file_path, 'r', newline='', encoding='utf-8') as csvfile:
             reader = csv.DictReader(csvfile)
@@ -212,17 +263,23 @@ class Ingest:
         return documents
 
     def process_txt(self, file_path: str) -> List[Dict[str, str]]:
-        # Process a TXT file
-        # Reads the entire content of the file
-        # Returns a list with a single dictionary containing the file content
+        """
+        Processes a TXT file and reads its entire content.
+
+        :param file_path: Path to the TXT file.
+        :return: List containing a single dictionary with the file content.
+        """
         with open(file_path, 'r') as txtfile:
             content = txtfile.read()
         return [{"text": content}]
 
     def process_pdf(self, file_path: str) -> List[Dict[str, str]]:
-        # Process a PDF file
-        # Extracts text from each page of the PDF
-        # Returns a list of dictionaries, each containing text from a page
+        """
+        Processes a PDF file and extracts text from each page.
+
+        :param file_path: Path to the PDF file.
+        :return: List of dictionaries, each containing text from a page.
+        """
         documents = []
         with open(file_path, 'rb') as pdffile:
             pdf_reader = PyPDF2.PdfReader(pdffile)
@@ -232,47 +289,3 @@ class Ingest:
                     documents.append({"text": extracted_text})
         return documents
 
-    def text_embedding(self, text, max_retries=5, initial_delay=1, backoff_factor=2):
-        if self.opensearch is None:
-            print("OpenSearch client is not initialized. Please run setup first.")
-            return None
-
-        delay = initial_delay
-        for attempt in range(max_retries):
-            try:
-                payload = {
-                    "text_docs": [text]
-                }
-                response = self.opensearch.opensearch_client.transport.perform_request(
-                    method="POST",
-                    url=f"/_plugins/_ml/_predict/text_embedding/{self.embedding_model_id}",
-                    body=payload
-                )
-                inference_results = response.get('inference_results', [])
-                if not inference_results:
-                    print(f"No inference results returned for text: {text}")
-                    return None
-                output = inference_results[0].get('output')
-
-                # Adjust the extraction of embedding data
-                if isinstance(output, list) and len(output) > 0:
-                    embedding_dict = output[0]
-                    if isinstance(embedding_dict, dict) and 'data' in embedding_dict:
-                        embedding = embedding_dict['data']
-                    else:
-                        print(f"Unexpected embedding output format: {output}")
-                        return None
-                elif isinstance(output, dict) and 'data' in output:
-                    embedding = output['data']
-                else:
-                    print(f"Unexpected embedding output format: {output}")
-                    return None
-
-                return embedding
-            except Exception as ex:
-                print(f"Error on attempt {attempt + 1}: {ex}")
-                if attempt == max_retries - 1:
-                    raise
-                time.sleep(delay)
-                delay *= backoff_factor
-        return None

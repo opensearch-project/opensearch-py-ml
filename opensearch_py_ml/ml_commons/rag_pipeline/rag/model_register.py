@@ -6,53 +6,51 @@
 # GitHub history for details.
 
 
-#  Licensed to Elasticsearch B.V. under one or more contributor
-#  license agreements. See the NOTICE file distributed with
-#  this work for additional information regarding copyright
-#  ownership. Elasticsearch B.V. licenses this file to you under
-#  the Apache License, Version 2.0 (the "License"); you may
-#  not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
-#
-# 	http://www.apache.org/licenses/LICENSE-2.0
-#
-#  Unless required by applicable law or agreed to in writing,
-#  software distributed under the License is distributed on an
-#  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-#  KIND, either express or implied.  See the License for the
-#  specific language governing permissions and limitations
-#  under the License.
-
-
 import os
 import json
 import time
 import boto3
 from urllib.parse import urlparse
 from colorama import Fore, Style, init
-from AIConnectorHelper import AIConnectorHelper
-from IAMRoleHelper import IAMRoleHelper
-from ml_models.BedrockModel import BedrockModel
-from ml_models.OpenAIModel import OpenAIModel
-from ml_models.CohereModel import CohereModel
-from ml_models.HuggingFaceModel import HuggingFaceModel
-from ml_models.PyTorchModel import CustomPyTorchModel
+from opensearch_py_ml.ml_commons.rag_pipeline.rag.AIConnectorHelper import AIConnectorHelper
+from opensearch_py_ml.ml_commons.rag_pipeline.rag.IAMRoleHelper import IAMRoleHelper
+from opensearch_py_ml.ml_commons.rag_pipeline.rag.ml_models.BedrockModel import BedrockModel
+from opensearch_py_ml.ml_commons.rag_pipeline.rag.ml_models.OpenAIModel import OpenAIModel
+from opensearch_py_ml.ml_commons.rag_pipeline.rag.ml_models.CohereModel import CohereModel
+from opensearch_py_ml.ml_commons.rag_pipeline.rag.ml_models.HuggingFaceModel import HuggingFaceModel
+from opensearch_py_ml.ml_commons.rag_pipeline.rag.ml_models.PyTorchModel import CustomPyTorchModel
 import sys
 
+# Initialize colorama for colored terminal output
 init(autoreset=True)
 
+
 class ModelRegister:
+    """
+    Handles the registration of various embedding models with OpenSearch.
+    Supports multiple model providers and manages their integration.
+    """
+
     def __init__(self, config, opensearch_client, opensearch_domain_name):
-        # Initialize ModelRegister with necessary configurations
+        """
+        Initialize ModelRegister with necessary configurations.
+
+        :param config: Configuration dictionary containing necessary parameters.
+        :param opensearch_client: Instance of the OpenSearch client.
+        :param opensearch_domain_name: Name of the OpenSearch domain.
+        """
         self.config = config
         self.aws_region = config.get('region')
         self.opensearch_client = opensearch_client
         self.opensearch_domain_name = opensearch_domain_name
+        self.opensearch_endpoint = config.get('opensearch_endpoint')
         self.opensearch_username = config.get('opensearch_username')
         self.opensearch_password = config.get('opensearch_password')
         self.iam_principal = config.get('iam_principal')
         self.embedding_dimension = int(config.get('embedding_dimension', 768))
         self.service_type = config.get('service_type', 'managed')
+
+        # Initialize IAMRoleHelper with necessary parameters
         self.iam_role_helper = IAMRoleHelper(
             self.aws_region,
             self.opensearch_domain_name,
@@ -60,8 +58,12 @@ class ModelRegister:
             self.opensearch_password,
             self.iam_principal
         )
+
+        # Initialize AWS clients if the service type is not open-source
         if self.service_type != 'open-source':
             self.initialize_clients()
+
+        # Initialize instances of different model providers
         self.bedrock_model = BedrockModel(
             aws_region=self.aws_region,
             opensearch_domain_name=self.opensearch_domain_name,
@@ -98,13 +100,18 @@ class ModelRegister:
             iam_role_helper=self.iam_role_helper
         )
 
-    def initialize_clients(self):
-        # Initialize AWS clients only if necessary
+    def initialize_clients(self) -> bool:
+        """
+        Initialize AWS clients based on the service type.
+
+        :return: True if clients are initialized successfully, False otherwise.
+        """
         if self.service_type in ['managed', 'serverless']:
             try:
+                # Initialize Bedrock client for managed services
                 self.bedrock_client = boto3.client('bedrock-runtime', region_name=self.aws_region)
                 # Add any other clients initialization if needed
-                time.sleep(7)
+                time.sleep(7)  # Wait for client initialization
                 print("AWS clients initialized successfully.")
                 return True
             except Exception as e:
@@ -116,7 +123,7 @@ class ModelRegister:
 
     def prompt_model_registration(self):
         """
-        Prompt the user to register a model or input an existing model ID.
+        Prompt the user to either register a new embedding model or use an existing model ID.
         """
         print("\nTo proceed, you need to configure an embedding model.")
         print("1. Register a new embedding model")
@@ -139,7 +146,11 @@ class ModelRegister:
             sys.exit(1)  # Exit the setup as we cannot proceed without a valid choice
 
     def save_config(self, config):
-        # Save configuration to the config file
+        """
+        Save the updated configuration to the config file.
+
+        :param config: Configuration dictionary to save.
+        """
         import configparser
         parser = configparser.ConfigParser()
         parser['DEFAULT'] = config
@@ -168,13 +179,15 @@ class ModelRegister:
             aws_user_name = input("Enter your AWS IAM user name: ")
 
         # Instantiate AIConnectorHelper
+
         helper = AIConnectorHelper(
             region=self.aws_region,
             opensearch_domain_name=self.opensearch_domain_name,
             opensearch_domain_username=self.opensearch_username,
             opensearch_domain_password=self.opensearch_password,
             aws_user_name=aws_user_name,
-            aws_role_name=None  # Set to None or provide if applicable
+            aws_role_name=None,  # Set to None or provide if applicable
+            opensearch_domain_url=self.opensearch_endpoint  # Pass the endpoint from config
         )
 
         # Prompt user to select a model
@@ -215,7 +228,7 @@ class ModelRegister:
 
     def prompt_opensource_model_registration(self):
         """
-        Handle model registration for open-source OpenSearch.
+        Handle model registration specifically for open-source OpenSearch.
         """
         print("\nWould you like to register an embedding model now?")
         print("1. Yes, register a new model")

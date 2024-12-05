@@ -5,23 +5,6 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
-#  Licensed to Elasticsearch B.V. under one or more contributor
-#  license agreements. See the NOTICE file distributed with
-#  this work for additional information regarding copyright
-#  ownership. Elasticsearch B.V. licenses this file to you under
-#  the Apache License, Version 2.0 (the "License"); you may
-#  not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
-#
-# 	http://www.apache.org/licenses/LICENSE-2.0
-#
-#  Unless required by applicable law or agreed to in writing,
-#  software distributed under the License is distributed on an
-#  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-#  KIND, either express or implied.  See the License for the
-#  specific language governing permissions and limitations
-#  under the License.
-
 import boto3
 import json
 import requests
@@ -29,14 +12,20 @@ from requests.auth import HTTPBasicAuth
 from requests_aws4auth import AWS4Auth
 import time
 from opensearchpy import OpenSearch, RequestsHttpConnection
+from urllib.parse import urlparse
 
-from IAMRoleHelper import IAMRoleHelper
-from SecretsHelper import SecretHelper
+from opensearch_py_ml.ml_commons.rag_pipeline.rag.IAMRoleHelper import IAMRoleHelper
+from opensearch_py_ml.ml_commons.rag_pipeline.rag.SecretsHelper import SecretHelper
 from opensearch_py_ml.ml_commons.model_access_control import ModelAccessControl
 
+
 class AIConnectorHelper:
+    """
+    Helper class for managing AI connectors and models in OpenSearch.
+    """
+
     def __init__(self, region, opensearch_domain_name, opensearch_domain_username,
-                 opensearch_domain_password, aws_user_name, aws_role_name):
+                 opensearch_domain_password, aws_user_name, aws_role_name, opensearch_domain_url):
         """
         Initialize the AIConnectorHelper with necessary AWS and OpenSearch configurations.
         """
@@ -46,8 +35,9 @@ class AIConnectorHelper:
         self.opensearch_domain_password = opensearch_domain_password
         self.aws_user_name = aws_user_name
         self.aws_role_name = aws_role_name
+        self.opensearch_domain_url = opensearch_domain_url
 
-        # Retrieve the OpenSearch domain endpoint and ARN
+        # Retrieve OpenSearch domain information
         domain_endpoint, domain_arn = self.get_opensearch_domain_info(self.region, self.opensearch_domain_name)
         if domain_arn:
             self.opensearch_domain_arn = domain_arn
@@ -55,26 +45,24 @@ class AIConnectorHelper:
             print("Warning: Could not retrieve OpenSearch domain ARN.")
             self.opensearch_domain_arn = None
 
-        if domain_endpoint:
-            # Construct the full domain URL
-            self.opensearch_domain_url = f'https://{domain_endpoint}'
-        else:
-            print("Warning: Could not retrieve OpenSearch domain endpoint.")
-            self.opensearch_domain_url = None
+        # Parse the OpenSearch domain URL to extract host and port
+        parsed_url = urlparse(self.opensearch_domain_url)
+        host = parsed_url.hostname
+        port = parsed_url.port or (443 if parsed_url.scheme == 'https' else 9200)
 
-        # Initialize the OpenSearch client
+        # Initialize OpenSearch client
         self.opensearch_client = OpenSearch(
-            hosts=[{'host': domain_endpoint, 'port': 443}],
+            hosts=[{'host': host, 'port': port}],
             http_auth=(self.opensearch_domain_username, self.opensearch_domain_password),
-            use_ssl=True,
+            use_ssl=(parsed_url.scheme == 'https'),
             verify_certs=True,
             connection_class=RequestsHttpConnection
         )
 
-        # Initialize ModelAccessControl
+        # Initialize ModelAccessControl for managing model groups
         self.model_access_control = ModelAccessControl(self.opensearch_client)
 
-        # Initialize IAMRoleHelper and SecretHelper
+        # Initialize helpers for IAM roles and secrets management
         self.iam_helper = IAMRoleHelper(
             region=self.region,
             opensearch_domain_url=self.opensearch_domain_url,
@@ -91,6 +79,10 @@ class AIConnectorHelper:
     def get_opensearch_domain_info(region, domain_name):
         """
         Retrieve the OpenSearch domain endpoint and ARN based on the domain name and region.
+        
+        :param region: AWS region.
+        :param domain_name: Name of the OpenSearch domain.
+        :return: Tuple containing domain endpoint and ARN.
         """
         try:
             opensearch_client = boto3.client('opensearch', region_name=region)
@@ -106,6 +98,9 @@ class AIConnectorHelper:
     def get_ml_auth(self, create_connector_role_name):
         """
         Obtain AWS4Auth credentials for ML API calls using the specified IAM role.
+        
+        :param create_connector_role_name: Name of the IAM role to assume.
+        :return: AWS4Auth object with temporary credentials.
         """
         create_connector_role_arn = self.iam_helper.get_role_arn(create_connector_role_name)
         if not create_connector_role_arn:
@@ -122,6 +117,13 @@ class AIConnectorHelper:
         return awsauth
 
     def create_connector(self, create_connector_role_name, payload):
+        """
+        Create a connector in OpenSearch using the specified role and payload.
+        
+        :param create_connector_role_name: Name of the IAM role to assume.
+        :param payload: Payload data for creating the connector.
+        :return: ID of the created connector.
+        """
         create_connector_role_arn = self.iam_helper.get_role_arn(create_connector_role_name)
         temp_credentials = self.iam_helper.assume_role(create_connector_role_arn)
         awsauth = AWS4Auth(
@@ -137,21 +139,30 @@ class AIConnectorHelper:
 
         headers = {"Content-Type": "application/json"}
 
-        r = requests.post(url, auth=awsauth, json=payload, headers=headers)
-        print(r.text)
-        connector_id = json.loads(r.text)['connector_id']
+        response = requests.post(url, auth=awsauth, json=payload, headers=headers)
+        print(response.text)
+        connector_id = json.loads(response.text).get('connector_id')
         return connector_id
 
     def search_model_group(self, model_group_name, create_connector_role_name):
         """
-        Utilize ModelAccessControl to search for a model group by name.
+        Search for a model group by name using ModelAccessControl.
+        
+        :param model_group_name: Name of the model group to search.
+        :param create_connector_role_name: Name of the IAM role to assume.
+        :return: Search response from OpenSearch.
         """
         response = self.model_access_control.search_model_group_by_name(model_group_name, size=1)
         return response
 
     def create_model_group(self, model_group_name, description, create_connector_role_name):
         """
-        Utilize ModelAccessControl to create or retrieve an existing model group.
+        Create or retrieve an existing model group using ModelAccessControl.
+        
+        :param model_group_name: Name of the model group.
+        :param description: Description of the model group.
+        :param create_connector_role_name: Name of the IAM role to assume.
+        :return: ID of the created or existing model group.
         """
         model_group_id = self.model_access_control.get_model_group_id_by_name(model_group_name)
         print("Search Model Group Response:", model_group_id)
@@ -159,10 +170,10 @@ class AIConnectorHelper:
         if model_group_id:
             return model_group_id
 
-        # Use ModelAccessControl to register model group
+        # Register a new model group
         self.model_access_control.register_model_group(name=model_group_name, description=description)
         
-        # Retrieve the newly created model group id
+        # Retrieve the newly created model group ID
         model_group_id = self.model_access_control.get_model_group_id_by_name(model_group_name)
         if model_group_id:
             return model_group_id
@@ -170,19 +181,36 @@ class AIConnectorHelper:
             raise Exception("Failed to create model group.")
 
     def get_task(self, task_id, create_connector_role_name):
+        """
+        Retrieve the status of a specific task using its ID.
+        
+        :param task_id: ID of the task to retrieve.
+        :param create_connector_role_name: Name of the IAM role to assume.
+        :return: Response from the task retrieval request.
+        """
         try:
             awsauth = self.get_ml_auth(create_connector_role_name)
-            r = requests.get(
+            response = requests.get(
                 f'{self.opensearch_domain_url}/_plugins/_ml/tasks/{task_id}',
                 auth=awsauth
             )
-            print("Get Task Response:", r.text)
-            return r
+            print("Get Task Response:", response.text)
+            return response
         except Exception as e:
             print(f"Error in get_task: {e}")
             raise
 
     def create_model(self, model_name, description, connector_id, create_connector_role_name, deploy=True):
+        """
+        Create a new model in OpenSearch and optionally deploy it.
+        
+        :param model_name: Name of the model to create.
+        :param description: Description of the model.
+        :param connector_id: ID of the connector to associate with the model.
+        :param create_connector_role_name: Name of the IAM role to assume.
+        :param deploy: Boolean indicating whether to deploy the model immediately.
+        :return: ID of the created model.
+        """
         try:
             model_group_id = self.create_model_group(model_name, description, create_connector_role_name)
             payload = {
@@ -197,37 +225,43 @@ class AIConnectorHelper:
 
             awsauth = self.get_ml_auth(create_connector_role_name)
 
-            r = requests.post(
+            response = requests.post(
                 f'{self.opensearch_domain_url}/_plugins/_ml/models/_register?deploy={deploy_str}',
                 auth=awsauth,
                 json=payload,
                 headers=headers
             )
 
-            print("Create Model Response:", r.text)
-            response = json.loads(r.text)
+            print("Create Model Response:", response.text)
+            response_data = json.loads(response.text)
 
-            if 'model_id' in response:
-                return response['model_id']
-            elif 'task_id' in response:
+            if 'model_id' in response_data:
+                return response_data['model_id']
+            elif 'task_id' in response_data:
                 # Handle asynchronous task
                 time.sleep(2)  # Wait for task to complete
-                task_response = self.get_task(response['task_id'], create_connector_role_name)
+                task_response = self.get_task(response_data['task_id'], create_connector_role_name)
                 print("Task Response:", task_response.text)
                 task_result = json.loads(task_response.text)
                 if 'model_id' in task_result:
                     return task_result['model_id']
                 else:
                     raise KeyError(f"'model_id' not found in task response: {task_result}")
-            elif 'error' in response:
-                raise Exception(f"Error creating model: {response['error']}")
+            elif 'error' in response_data:
+                raise Exception(f"Error creating model: {response_data['error']}")
             else:
-                raise KeyError(f"The response does not contain 'model_id' or 'task_id'. Response content: {response}")
+                raise KeyError(f"The response does not contain 'model_id' or 'task_id'. Response content: {response_data}")
         except Exception as e:
             print(f"Error in create_model: {e}")
             raise
 
     def deploy_model(self, model_id):
+        """
+        Deploy a specified model in OpenSearch.
+        
+        :param model_id: ID of the model to deploy.
+        :return: Response from the deployment request.
+        """
         headers = {"Content-Type": "application/json"}
         response = requests.post(
             f'{self.opensearch_domain_url}/_plugins/_ml/models/{model_id}/_deploy',
@@ -238,19 +272,37 @@ class AIConnectorHelper:
         return response
 
     def predict(self, model_id, payload):
+        """
+        Make a prediction using the specified model and input payload.
+        
+        :param model_id: ID of the model to use for prediction.
+        :param payload: Input data for prediction.
+        :return: Response from the prediction request.
+        """
         headers = {"Content-Type": "application/json"}
-        r = requests.post(
+        response = requests.post(
             f'{self.opensearch_domain_url}/_plugins/_ml/models/{model_id}/_predict',
             auth=HTTPBasicAuth(self.opensearch_domain_username, self.opensearch_domain_password),
             json=payload,
             headers=headers
         )
-        print("Predict Response:", r.text)
-        return r
+        print("Predict Response:", response.text)
+        return response
 
     def create_connector_with_secret(self, secret_name, secret_value, connector_role_name, create_connector_role_name,
                                      create_connector_input, sleep_time_in_seconds=10):
-        # Step1: Create Secret
+        """
+        Create a connector in OpenSearch using a secret for credentials.
+        
+        :param secret_name: Name of the secret to create or use.
+        :param secret_value: Value of the secret.
+        :param connector_role_name: Name of the IAM role for the connector.
+        :param create_connector_role_name: Name of the IAM role to assume for creating the connector.
+        :param create_connector_input: Input payload for creating the connector.
+        :param sleep_time_in_seconds: Time to wait for IAM role propagation.
+        :return: ID of the created connector.
+        """
+        # Step 1: Create Secret
         print('Step1: Create Secret')
         if not self.secret_helper.secret_exists(secret_name):
             secret_arn = self.secret_helper.create_secret(secret_name, secret_value)
@@ -259,7 +311,7 @@ class AIConnectorHelper:
             secret_arn = self.secret_helper.get_secret_arn(secret_name)
         print('----------')
 
-        # Step2: Create IAM role configured in connector
+        # Step 2: Create IAM role configured in connector
         trust_policy = {
             "Version": "2012-10-17",
             "Statement": [
@@ -296,7 +348,7 @@ class AIConnectorHelper:
         print('----------')
 
         # Step 3: Configure IAM role in OpenSearch
-        # 3.1 Create IAM role for Signing create connector request
+        # 3.1 Create IAM role for signing create connector request
         user_arn = self.iam_helper.get_user_arn(self.aws_user_name)
         role_arn = self.iam_helper.get_role_arn(self.aws_role_name)
         statements = []
@@ -347,20 +399,14 @@ class AIConnectorHelper:
             create_connector_role_arn = self.iam_helper.get_role_arn(create_connector_role_name)
         print('----------')
 
-        # 3.2 Map backend role
+        # 3.2 Map IAM role to backend role in OpenSearch
         print(f'Step 3.2: Map IAM role {create_connector_role_name} to OpenSearch permission role')
         self.iam_helper.map_iam_role_to_backend_role(create_connector_role_arn)
         print('----------')
 
         # Step 4: Create connector
         print('Step 4: Create connector in OpenSearch')
-        # When you create an IAM role, it can take some time for the changes to propagate across AWS systems.
-        # During this time, some services might not immediately recognize the new role or its permissions.
-        # So we wait for some time before creating connector.
-        # If you see such error: ClientError: An error occurred (AccessDenied) when calling the AssumeRole operation
-        # you can rerun this function.
-
-        # Wait for some time
+        # Wait to ensure IAM role propagation
         time.sleep(sleep_time_in_seconds)
         payload = create_connector_input
         payload['credential'] = {
@@ -373,7 +419,17 @@ class AIConnectorHelper:
 
     def create_connector_with_role(self, connector_role_inline_policy, connector_role_name, create_connector_role_name,
                                    create_connector_input, sleep_time_in_seconds=10):
-        # Step1: Create IAM role configured in connector
+        """
+        Create a connector in OpenSearch using an IAM role for credentials.
+        
+        :param connector_role_inline_policy: Inline policy for the connector IAM role.
+        :param connector_role_name: Name of the IAM role for the connector.
+        :param create_connector_role_name: Name of the IAM role to assume for creating the connector.
+        :param create_connector_input: Input payload for creating the connector.
+        :param sleep_time_in_seconds: Time to wait for IAM role propagation.
+        :return: ID of the created connector.
+        """
+        # Step 1: Create IAM role configured in connector
         trust_policy = {
             "Version": "2012-10-17",
             "Statement": [
@@ -397,7 +453,7 @@ class AIConnectorHelper:
         print('----------')
 
         # Step 2: Configure IAM role in OpenSearch
-        # 2.1 Create IAM role for Signing create connector request
+        # 2.1 Create IAM role for signing create connector request
         user_arn = self.iam_helper.get_user_arn(self.aws_user_name)
         role_arn = self.iam_helper.get_role_arn(self.aws_role_name)
         statements = []
@@ -448,20 +504,14 @@ class AIConnectorHelper:
             create_connector_role_arn = self.iam_helper.get_role_arn(create_connector_role_name)
         print('----------')
 
-        # 2.2 Map backend role
+        # 2.2 Map IAM role to backend role in OpenSearch
         print(f'Step 2.2: Map IAM role {create_connector_role_name} to OpenSearch permission role')
         self.iam_helper.map_iam_role_to_backend_role(create_connector_role_arn)
         print('----------')
 
         # Step 3: Create connector
         print('Step 3: Create connector in OpenSearch')
-        # When you create an IAM role, it can take some time for the changes to propagate across AWS systems.
-        # During this time, some services might not immediately recognize the new role or its permissions.
-        # So we wait for some time before creating connector.
-        # If you see such error: ClientError: An error occurred (AccessDenied) when calling the AssumeRole operation
-        # you can rerun this function.
-
-        # Wait for some time
+        # Wait to ensure IAM role propagation
         time.sleep(sleep_time_in_seconds)
         payload = create_connector_input
         payload['credential'] = {

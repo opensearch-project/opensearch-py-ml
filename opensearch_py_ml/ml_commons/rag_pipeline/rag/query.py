@@ -5,27 +5,11 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
-#  Licensed to Elasticsearch B.V. under one or more contributor
-#  license agreements. See the NOTICE file distributed with
-#  this work for additional information regarding copyright
-#  ownership. Elasticsearch B.V. licenses this file to you under
-#  the Apache License, Version 2.0 (the "License"); you may
-#  not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
-#
-# 	http://www.apache.org/licenses/LICENSE-2.0
-#
-#  Unless required by applicable law or agreed to in writing,
-#  software distributed under the License is distributed on an
-#  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-#  KIND, either express or implied.  See the License for the
-#  specific language governing permissions and limitations
-#  under the License.
-
 import json
 from colorama import Fore, Style, init
 from typing import List
-from opensearch_connector import OpenSearchConnector
+from opensearch_py_ml.ml_commons.rag_pipeline.rag.opensearch_connector import OpenSearchConnector
+from opensearch_py_ml.ml_commons.rag_pipeline.rag.embedding_client import EmbeddingClient
 import requests
 import os
 import urllib3
@@ -33,13 +17,26 @@ import boto3
 import time
 import tiktoken
 
+# Disable insecure request warnings
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+# Initialize colorama for colored terminal output
 init(autoreset=True)  # Initialize colorama
 
+
 class Query:
+    """
+    Handles querying operations using OpenSearch and integrates with Large Language Models (LLMs) for generating responses.
+    Supports both neural and semantic search methods.
+    """
+
     def __init__(self, config):
-        # Initialize the Query class with configuration
+        """
+        Initialize the Query class with the provided configuration.
+
+        :param config: Configuration dictionary containing necessary parameters.
+        """
+        # Store the configuration
         self.config = config
         self.index_name = config.get('index_name')
         self.opensearch = OpenSearchConnector(config)
@@ -47,9 +44,7 @@ class Query:
         self.llm_model_id = config.get('llm_model_id')  # Get the LLM model ID from config
         self.aws_region = config.get('region')
         self.bedrock_client = None
-
-        # Initialize the default search method from config
-        self.default_search_method = self.config.get('default_search_method', 'neural')
+        self.embedding_client = None  # Will be initialized after OpenSearch client is ready
 
         # Load LLM configurations from config
         self.llm_config = {
@@ -59,7 +54,10 @@ class Query:
             "stopSequences": [s.strip() for s in config.get('llm_stop_sequences', '').split(',') if s.strip()]
         }
 
-        # Initialize OpenSearch client
+        # Set the default search method
+        self.default_search_method = self.config.get('default_search_method', 'neural')
+
+        # Initialize clients
         if not self.initialize_clients():
             print("Failed to initialize clients. Aborting.")
             return
@@ -69,24 +67,44 @@ class Query:
             print("Failed to connect to OpenSearch. Please check your configuration.")
             return
 
-    def initialize_clients(self):
-        # Initialize OpenSearch client and Bedrock client if needed
+    def initialize_clients(self) -> bool:
+        """
+        Initialize the OpenSearch client and Bedrock client if LLM is configured.
+
+        :return: True if clients are initialized successfully, False otherwise.
+        """
+        # Initialize OpenSearch client
         if self.opensearch.initialize_opensearch_client():
             print("OpenSearch client initialized successfully.")
-            # Initialize Bedrock client only if needed
+
+            # Initialize EmbeddingClient now that OpenSearch client is ready
+            if not self.embedding_model_id:
+                print("Embedding model ID is not set. Please run setup first.")
+                return False
+
+            self.embedding_client = EmbeddingClient(self.opensearch.opensearch_client, self.embedding_model_id)
+
+            # Initialize Bedrock client only if LLM model ID is provided
             if self.llm_model_id:
                 try:
                     self.bedrock_client = boto3.client('bedrock-runtime', region_name=self.aws_region)
                     print("Bedrock client initialized successfully.")
                 except Exception as e:
-                    print(f"Failed to initialize Bedrock client: {e}")
+                    print(f"{Fore.RED}Failed to initialize Bedrock client: {e}{Style.RESET_ALL}")
                     return False
             return True
         else:
-            print("Failed to initialize OpenSearch client.")
+            print(f"{Fore.RED}Failed to initialize OpenSearch client.{Style.RESET_ALL}")
             return False
 
-    def extract_relevant_sentences(self, query, text):
+    def extract_relevant_sentences(self, query: str, text: str) -> List[str]:
+        """
+        Extract relevant sentences from the text based on the query.
+
+        :param query: The user's query.
+        :param text: The text from which to extract sentences.
+        :return: A list of relevant sentences.
+        """
         # Lowercase and remove punctuation from query
         query_processed = ''.join(c.lower() if c.isalnum() or c.isspace() else ' ' for c in query)
         query_words = set(query_processed.split())
@@ -115,10 +133,18 @@ class Query:
         top_sentences = [sentence for score, sentence in sentence_scores]
         return top_sentences
 
-    def bulk_query_neural(self, queries, k=5):
+    def bulk_query_neural(self, queries: List[str], k: int = 5) -> List[dict]:
+        """
+        Perform bulk neural searches for a list of queries.
+
+        :param queries: List of query strings.
+        :param k: Number of top results to retrieve per query.
+        :return: List of results containing query, documents, and number of results.
+        """
         results = []
         for query_text in queries:
             try:
+                # Perform search using the neural method
                 hits = self.opensearch.search(query_text, self.embedding_model_id, k)
                 if hits:
                     # Collect the content from the retrieved documents
@@ -142,6 +168,7 @@ class Query:
                     'num_results': num_results
                 })
             except Exception as ex:
+                # Handle search errors
                 print(f"{Fore.RED}Error performing search for query '{query_text}': {str(ex)}{Style.RESET_ALL}")
                 results.append({
                     'query': query_text,
@@ -151,12 +178,19 @@ class Query:
 
         return results
 
-    def bulk_query_semantic(self, queries, k=5):
+    def bulk_query_semantic(self, queries: List[str], k: int = 5) -> List[dict]:
+        """
+        Perform bulk semantic searches for a list of queries by generating embeddings.
+
+        :param queries: List of query strings.
+        :param k: Number of top results to retrieve per query.
+        :return: List of results containing query, context, and number of results.
+        """
         # Generate embeddings for queries and search OpenSearch index
         # Returns a list of results containing query, context, and number of results
         query_vectors = []
         for query in queries:
-            embedding = self.text_embedding(query)
+            embedding = self.embedding_client.get_text_embedding(query)
             if embedding:
                 query_vectors.append(embedding)
             else:
@@ -166,6 +200,7 @@ class Query:
         results = []
         for i, vector in enumerate(query_vectors):
             if vector is None:
+                # Handle cases where embedding generation failed
                 results.append({
                     'query': queries[i],
                     'context': "",
@@ -173,7 +208,9 @@ class Query:
                 })
                 continue
             try:
+                # Perform vector-based search
                 hits = self.opensearch.search_by_vector(vector, k)
+                # Concatenate the retrieved passages as context
                 context = '\n'.join([hit['_source']['nominee_text'] for hit in hits])
                 results.append({
                     'query': queries[i],
@@ -181,6 +218,7 @@ class Query:
                     'num_results': len(hits)
                 })
             except Exception as ex:
+                # Handle search errors
                 print(f"{Fore.RED}Error performing search for query '{queries[i]}': {ex}{Style.RESET_ALL}")
                 results.append({
                     'query': queries[i],
@@ -189,66 +227,22 @@ class Query:
                 })
         return results
 
-    def text_embedding(self, text, max_retries=5, initial_delay=1, backoff_factor=2):
-        if self.opensearch.opensearch_client is None:
-            print("OpenSearch client is not initialized. Please run setup first.")
-            return None
 
-        delay = initial_delay
-        for attempt in range(max_retries):
-            try:
-                payload = {
-                    "text_docs": [text]
-                }
-                response = self.opensearch.opensearch_client.transport.perform_request(
-                    method="POST",
-                    url=f"/_plugins/_ml/_predict/text_embedding/{self.embedding_model_id}",
-                    body=payload
-                )
-                inference_results = response.get('inference_results', [])
-                if not inference_results:
-                    print(f"No inference results returned for text: {text}")
-                    return None
-                output = inference_results[0].get('output')
+    def generate_answer(self, prompt: str, llm_config: dict) -> str:
+        """
+        Generate an answer using the configured Large Language Model (LLM).
 
-                # Adjust the extraction of embedding data
-                if isinstance(output, list) and len(output) > 0:
-                    embedding_dict = output[0]
-                    if isinstance(embedding_dict, dict) and 'data' in embedding_dict:
-                        embedding = embedding_dict['data']
-                    else:
-                        print(f"Unexpected embedding output format: {output}")
-                        return None
-                elif isinstance(output, dict) and 'data' in output:
-                    embedding = output['data']
-                else:
-                    print(f"Unexpected embedding output format: {output}")
-                    return None
-
-                # Verify that embedding is a list of floats
-                if not isinstance(embedding, list) or not all(isinstance(x, (float, int)) for x in embedding):
-                    print(f"Embedding is not a list of floats: {embedding}")
-                    return None
-
-                return embedding
-            except Exception as ex:
-                print(f"Error on attempt {attempt + 1}: {ex}")
-                if attempt == max_retries - 1:
-                    raise
-                time.sleep(delay)
-                delay *= backoff_factor
-        return None
-
-    def generate_answer(self, prompt, llm_config):
-        # Generate an answer using the LLM model
-        # Handles token limit and configures LLM parameters
-        # Returns the generated answer or None if an error occurs
+        :param prompt: The prompt to send to the LLM.
+        :param llm_config: Configuration dictionary for the LLM parameters.
+        :return: Generated answer as a string or None if generation fails.
+        """
         try:
             max_input_tokens = 8192  # Max tokens for the model
             expected_output_tokens = llm_config.get('maxTokenCount', 1000)
             # Adjust the encoding based on the model
             encoding = tiktoken.get_encoding("cl100k_base")  # Use appropriate encoding
 
+            # Encode the prompt to count tokens
             prompt_tokens = encoding.encode(prompt)
             allowable_input_tokens = max_input_tokens - expected_output_tokens
 
@@ -256,40 +250,52 @@ class Query:
                 # Truncate the prompt to fit within the model's token limit
                 prompt_tokens = prompt_tokens[:allowable_input_tokens]
                 prompt = encoding.decode(prompt_tokens)
-                print(f"Prompt truncated to {allowable_input_tokens} tokens.")
+                print(f"{Fore.YELLOW}Prompt truncated to {allowable_input_tokens} tokens.{Style.RESET_ALL}")
 
             # Simplified LLM config with only supported parameters
-            llm_config = {
+            llm_config_simplified = {
                 'maxTokenCount': expected_output_tokens,
                 'temperature': llm_config.get('temperature', 0.7),
                 'topP': llm_config.get('topP', 1.0),
                 'stopSequences': llm_config.get('stopSequences', [])
             }
 
+            # Prepare the body for the LLM inference request
             body = json.dumps({
                 'inputText': prompt,
-                'textGenerationConfig': llm_config
+                'textGenerationConfig': llm_config_simplified
             })
+
+            # Invoke the LLM model using Bedrock client
             response = self.bedrock_client.invoke_model(modelId=self.llm_model_id, body=body)
             response_body = json.loads(response['body'].read())
             results = response_body.get('results', [])
             if not results:
-                print("No results returned from LLM.")
+                print(f"{Fore.YELLOW}No results returned from LLM.{Style.RESET_ALL}")
                 return None
             answer = results[0].get('outputText', '').strip()
             return answer
         except Exception as ex:
-            print(f"Error generating answer from LLM: {ex}")
+            # Handle errors during answer generation
+            print(f"{Fore.RED}Error generating answer from LLM: {ex}{Style.RESET_ALL}")
             return None
 
-    def query_command(self, queries: List[str], num_results=5):
+    def query_command(self, queries: List[str], num_results: int = 5):
+        """
+        Handle the querying process by performing either neural or semantic searches and generating answers using LLM.
+
+        :param queries: List of query strings.
+        :param num_results: Number of top results to retrieve per query.
+        """
+        # Retrieve the default search method from config
         search_method = self.default_search_method
 
         print(f"\nUsing the default search method: {search_method.capitalize()} Search")
 
-        # Keep the session active until the user types 'exit' or presses Enter without input
+        # Process each query until the user decides to exit
         while True:
             if not queries:
+                # Prompt the user for a new query
                 query_text = input("\nEnter a query (or type 'exit' to finish): ").strip()
                 if not query_text or query_text.lower() == 'exit':
                     print("\nExiting query session.")
@@ -309,6 +315,7 @@ class Query:
                             if not passage_chunks:
                                 continue
                             for passage in passage_chunks:
+                                # Extract relevant sentences from each passage
                                 relevant_sentences = self.extract_relevant_sentences(result['query'], passage)
                                 all_relevant_sentences.extend(relevant_sentences)
 
@@ -330,16 +337,17 @@ class Query:
                 # Use the LLM configurations from setup
                 llm_config = self.llm_config
 
+                # Perform semantic search
                 results = self.bulk_query_semantic(queries, k=num_results)
 
                 for result in results:
                     print(f"\nQuery: {result['query']}")
-                    print(f"Found {result['num_results']} results.")
 
                     if not result['context']:
                         print(f"\n{Fore.RED}No context available for this query.{Style.RESET_ALL}")
                         continue
 
+                    # Prepare the augmented prompt with context
                     augmented_prompt = f"""Context: {result['context']}
 Based on the above context, please provide a detailed and insightful answer to the following question. Feel free to make reasonable inferences or connections if the context doesn't provide all the information:
 
@@ -348,9 +356,11 @@ Question: {result['query']}
 Answer:"""
 
                     print("\nGenerating answer using LLM...")
+                    # Generate the answer using the LLM
                     answer = self.generate_answer(augmented_prompt, llm_config)
 
                     if answer:
+                        # Display the generated answer
                         print("\nGenerated Answer:")
                         print(answer)
                     else:

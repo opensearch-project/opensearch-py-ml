@@ -5,23 +5,6 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
-#  Licensed to Elasticsearch B.V. under one or more contributor
-#  license agreements. See the NOTICE file distributed with
-#  this work for additional information regarding copyright
-#  ownership. Elasticsearch B.V. licenses this file to you under
-#  the Apache License, Version 2.0 (the "License"); you may
-#  not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
-#
-# 	http://www.apache.org/licenses/LICENSE-2.0
-#
-#  Unless required by applicable law or agreed to in writing,
-#  software distributed under the License is distributed on an
-#  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-#  KIND, either express or implied.  See the License for the
-#  specific language governing permissions and limitations
-#  under the License.
-
 import boto3
 import botocore
 from botocore.config import Config
@@ -38,19 +21,31 @@ from opensearchpy import OpenSearch, RequestsHttpConnection, AWSV4SignerAuth
 from colorama import Fore, Style, init
 import ssl
 
-from serverless import Serverless  
-from AIConnectorHelper import AIConnectorHelper 
-from model_register import ModelRegister
+from opensearch_py_ml.ml_commons.rag_pipeline.rag.opensearch_connector import OpenSearchConnector
+from opensearch_py_ml.ml_commons.rag_pipeline.rag.serverless import Serverless  
+from opensearch_py_ml.ml_commons.rag_pipeline.rag.AIConnectorHelper import AIConnectorHelper 
+from opensearch_py_ml.ml_commons.rag_pipeline.rag.model_register import ModelRegister
 
+# Initialize colorama for colored terminal output
 init(autoreset=True)
 
+
 class Setup:
+    """
+    Handles the setup and configuration of the OpenSearch environment.
+    Manages AWS credentials, OpenSearch client initialization, index creation,
+    and model registration.
+    """
+    
     CONFIG_FILE = 'config.ini'
     SERVICE_AOSS = 'opensearchserverless'
     SERVICE_BEDROCK = 'bedrock-runtime'
 
     def __init__(self):
-        # Initialize setup variables
+        """
+        Initialize the Setup class with default or existing configurations.
+        """
+        # Load existing configuration
         self.config = self.load_config()
         self.aws_region = self.config.get('region', 'us-west-2')
         self.iam_principal = self.config.get('iam_principal', '')
@@ -94,10 +89,11 @@ class Setup:
         print("Let's configure your AWS credentials.")
 
         aws_access_key_id = input("Enter your AWS Access Key ID: ").strip()
-        aws_secret_access_key = input("Enter your AWS Secret Access Key: ").strip()
-        aws_region_input = input("Enter your preferred AWS region (e.g., us-west-2): ").strip()
+        aws_secret_access_key = self.get_password_with_asterisks("Enter your AWS Secret Access Key: ")
+        aws_region_input = input(f"Enter your preferred AWS region [{self.aws_region}]: ").strip() or self.aws_region
 
         try:
+            # Configure AWS credentials using subprocess to call AWS CLI
             subprocess.run([
                 'aws', 'configure', 'set', 
                 'aws_access_key_id', aws_access_key_id
@@ -119,7 +115,7 @@ class Setup:
         except Exception as e:
             print(f"{Fore.RED}An unexpected error occurred: {e}{Style.RESET_ALL}")
 
-    def load_config(self):
+    def load_config(self) -> dict:
         """
         Load configuration from the config file.
 
@@ -131,7 +127,7 @@ class Setup:
             return dict(config['DEFAULT'])
         return {}
 
-    def get_password_with_asterisks(self, prompt="Enter password: "):
+    def get_password_with_asterisks(self, prompt="Enter password: ") -> str:
         """
         Get password input from user, masking it with asterisks.
 
@@ -153,9 +149,13 @@ class Setup:
                         sys.stdout.write('\b \b')  # Erase the last asterisk
                         sys.stdout.flush()
                 else:
-                    password += key.decode('utf-8')
-                    sys.stdout.write('*')  # Mask input with '*'
-                    sys.stdout.flush()
+                    try:
+                        char = key.decode('utf-8')
+                        password += char
+                        sys.stdout.write('*')  # Mask input with '*'
+                        sys.stdout.flush()
+                    except UnicodeDecodeError:
+                        continue
         else:
             import termios, tty
             fd = sys.stdin.fileno()
@@ -188,7 +188,6 @@ class Setup:
         """
         config = self.load_config()
 
-        print("\nStarting setup process...")
 
         # First, prompt for service type
         print("\nChoose OpenSearch service type:")
@@ -336,7 +335,7 @@ class Setup:
         print(f"\n{Fore.GREEN}Configuration saved successfully to {os.path.abspath(self.CONFIG_FILE)}.{Style.RESET_ALL}\n")
 
 
-    def initialize_clients(self):
+    def initialize_clients(self) -> bool:
         """
         Initialize AWS clients (AOSS and Bedrock) only if not open-source.
 
@@ -352,17 +351,20 @@ class Setup:
                 retries={'max_attempts': 10, 'mode': 'standard'}
             )
             if self.is_serverless:
+                # Initialize AOSS client for serverless service
                 self.aoss_client = boto3.client(self.SERVICE_AOSS, config=boto_config)
+            # Initialize Bedrock client for managed or serverless services
             self.bedrock_client = boto3.client(self.SERVICE_BEDROCK, region_name=self.aws_region)
             
             time.sleep(7)  # Wait for clients to initialize
             print(f"{Fore.GREEN}AWS clients initialized successfully.{Style.RESET_ALL}\n")
             return True
         except Exception as e:
+            # Handle initialization errors
             print(f"{Fore.RED}Failed to initialize AWS clients: {e}{Style.RESET_ALL}")
             return False
 
-    def get_opensearch_domain_name(self):
+    def get_opensearch_domain_name(self) -> str:
         """
         Extract the domain name from the OpenSearch endpoint URL.
 
@@ -385,7 +387,7 @@ class Setup:
         return None
 
     @staticmethod
-    def get_opensearch_domain_info(region, domain_name):
+    def get_opensearch_domain_info(region: str, domain_name: str) -> tuple:
         """
         Retrieve the OpenSearch domain endpoint and ARN based on the domain name and region.
 
@@ -404,7 +406,13 @@ class Setup:
             print(f"{Fore.RED}Error retrieving OpenSearch domain info: {e}{Style.RESET_ALL}")
             return None, None
 
-    def initialize_opensearch_client(self):
+# In Setup class, modify the initialize_opensearch_client method
+    def initialize_opensearch_client(self) -> bool:
+        """
+        Initialize the OpenSearch client based on the service type and configuration.
+
+        :return: True if the client is initialized successfully, False otherwise.
+        """
         if not self.opensearch_endpoint:
             print(f"{Fore.RED}OpenSearch endpoint not set. Please run setup first.{Style.RESET_ALL}\n")
             return False
@@ -413,6 +421,7 @@ class Setup:
         host = parsed_url.hostname
         port = parsed_url.port or (443 if parsed_url.scheme == 'https' else 9200)  # Default ports
 
+        # Determine the authentication method based on the service type
         if self.service_type == 'serverless':
             credentials = boto3.Session().get_credentials()
             auth = AWSV4SignerAuth(credentials, self.aws_region, 'aoss')
@@ -430,42 +439,90 @@ class Setup:
             print("Invalid service type. Please check your configuration.")
             return False
 
+        # Determine SSL settings based on the endpoint scheme
         use_ssl = parsed_url.scheme == 'https'
-        verify_certs = False if use_ssl else True
-
-        # Create an SSL context that does not verify certificates if needed
-        if use_ssl and not verify_certs:
-            ssl_context = ssl.create_default_context()
-            ssl_context.check_hostname = False
-            ssl_context.verify_mode = ssl.CERT_NONE
-        else:
-            ssl_context = None
+        verify_certs = True  # Always verify certificates unless you have a specific reason not to
 
         try:
+            # Initialize the OpenSearch client
             self.opensearch_client = OpenSearch(
                 hosts=[{'host': host, 'port': port}],
                 http_auth=auth,
                 use_ssl=use_ssl,
                 verify_certs=verify_certs,
                 ssl_show_warn=False,          # Suppress SSL warnings
-                ssl_context=ssl_context,      # Use the custom SSL context
+                # ssl_context=ssl_context,      # Not needed unless you have custom certificates
                 connection_class=RequestsHttpConnection,
                 pool_maxsize=20
             )
             print(f"{Fore.GREEN}Initialized OpenSearch client with host: {host} and port: {port}{Style.RESET_ALL}\n")
             return True
         except Exception as ex:
+            # Handle initialization errors
             print(f"{Fore.RED}Error initializing OpenSearch client: {ex}{Style.RESET_ALL}\n")
             return False
-        
-    def get_knn_index_details(self):
-        """
-        Prompt user for KNN index details (embedding dimension, space type, and ef_construction).
 
-        :return: Tuple of (embedding_dimension, space_type, ef_construction)
+    def initialize_opensearch_client(self) -> bool:
+        """
+        Initialize the OpenSearch client based on the service type and configuration.
+
+        :return: True if the client is initialized successfully, False otherwise.
+        """
+        if not self.opensearch_endpoint:
+            print(f"{Fore.RED}OpenSearch endpoint not set. Please run setup first.{Style.RESET_ALL}\n")
+            return False
+
+        parsed_url = urlparse(self.opensearch_endpoint)
+        host = parsed_url.hostname
+        port = parsed_url.port or (443 if parsed_url.scheme == 'https' else 9200)  # Default ports
+
+        # Determine the authentication method based on the service type
+        if self.service_type == 'serverless':
+            credentials = boto3.Session().get_credentials()
+            auth = AWSV4SignerAuth(credentials, self.aws_region, 'aoss')
+        elif self.service_type == 'managed':
+            if not self.opensearch_username or not self.opensearch_password:
+                print(f"{Fore.RED}OpenSearch username or password not set. Please run setup first.{Style.RESET_ALL}\n")
+                return False
+            auth = (self.opensearch_username, self.opensearch_password)
+        elif self.service_type == 'open-source':
+            if self.opensearch_username and self.opensearch_password:
+                auth = (self.opensearch_username, self.opensearch_password)
+            else:
+                auth = None  # No authentication
+        else:
+            print("Invalid service type. Please check your configuration.")
+            return False
+
+        # Determine SSL settings based on the endpoint scheme
+        use_ssl = parsed_url.scheme == 'https'
+        verify_certs = True  # Always verify certificates unless you have a specific reason not to
+
+        try:
+            # Initialize the OpenSearch client
+            self.opensearch_client = OpenSearch(
+                hosts=[{'host': host, 'port': port}],
+                http_auth=auth,
+                use_ssl=use_ssl,
+                verify_certs=verify_certs,
+                ssl_show_warn=False,          # Suppress SSL warnings
+                # ssl_context=ssl_context,      # Not needed unless you have custom certificates
+                connection_class=RequestsHttpConnection,
+                pool_maxsize=20
+            )
+            print(f"{Fore.GREEN}Initialized OpenSearch client with host: {host} and port: {port}{Style.RESET_ALL}\n")
+            return True
+        except Exception as ex:
+            # Handle initialization errors
+            print(f"{Fore.RED}Error initializing OpenSearch client: {ex}{Style.RESET_ALL}\n")
+            return False
+
+    def get_knn_index_details(self) -> tuple:
+        """
+        Prompt user for KNN index details (embedding dimension, space type, ef_construction,
+        number of shards, number of replicas, and field names).
         """
         dimension_input = input("Press Enter to use the default embedding size (768), or type a custom size: ").strip()
-        
         if dimension_input == "":
             embedding_dimension = 768
         else:
@@ -477,6 +534,7 @@ class Setup:
 
         print(f"\nEmbedding dimension set to: {embedding_dimension}")
 
+        # Prompt for space type
         print("\nChoose the space type for KNN:")
         print("1. L2 (Euclidean distance)")
         print("2. Cosine similarity")
@@ -495,9 +553,8 @@ class Setup:
 
         print(f"Space type set to: {space_type}")
 
-        # New prompt for ef_construction
+        # Prompt for ef_construction
         ef_construction_input = input("\nPress Enter to use the default ef_construction value (512), or type a custom value: ").strip()
-        
         if ef_construction_input == "":
             ef_construction = 512
         else:
@@ -509,8 +566,51 @@ class Setup:
 
         print(f"ef_construction set to: {ef_construction}\n")
 
-        return embedding_dimension, space_type, ef_construction
-    def save_config(self, config):
+        # Prompt for number of shards
+        shards_input = input("\nEnter number of shards (Press Enter for default value 2): ").strip()
+        if shards_input == "":
+            number_of_shards = 2
+        else:
+            try:
+                number_of_shards = int(shards_input)
+            except ValueError:
+                print("Invalid input. Using default number of shards: 2.")
+                number_of_shards = 2
+        print(f"Number of shards set to: {number_of_shards}")
+
+        # Prompt for number of replicas
+        replicas_input = input("\nEnter number of replicas (Press Enter for default value 2): ").strip()
+        if replicas_input == "":
+            number_of_replicas = 2
+        else:
+            try:
+                number_of_replicas = int(replicas_input)
+            except ValueError:
+                print("Invalid input. Using default number of replicas: 2.")
+                number_of_replicas = 2
+        print(f"Number of replicas set to: {number_of_replicas}")
+
+        # Prompt for passage_text field name
+        passage_text_field = input("\nEnter the field name for text content (Press Enter for default 'passage_text'): ").strip()
+        if passage_text_field == "":
+            passage_text_field = "passage_text"
+        print(f"Text content field name set to: {passage_text_field}")
+
+        # Prompt for passage_chunk field name
+        passage_chunk_field = input("\nEnter the field name for passage chunks (Press Enter for default 'passage_chunk'): ").strip()
+        if passage_chunk_field == "":
+            passage_chunk_field = "passage_chunk"
+        print(f"Passage chunk field name set to: {passage_chunk_field}")
+
+        # Prompt for embedding field name
+        embedding_field = input("\nEnter the field name for embeddings (Press Enter for default 'passage_embedding'): ").strip()
+        if embedding_field == "":
+            embedding_field = "passage_embedding"
+        print(f"Embedding field name set to: {embedding_field}")
+
+        return embedding_dimension, space_type, ef_construction, number_of_shards, number_of_replicas, passage_text_field, passage_chunk_field, embedding_field
+
+    def save_config(self, config: dict):
         """
         Save configuration to the config file.
 
@@ -521,73 +621,7 @@ class Setup:
         config_path = os.path.abspath(self.CONFIG_FILE)
         with open(self.CONFIG_FILE, 'w') as f:
             parser.write(f)
-        # Removed duplicate message
-        # Only one message is printed where this method is called
-    def create_index(self, embedding_dimension, space_type, ef_construction):
-        """
-        Create the KNN index in OpenSearch.
-
-        :param embedding_dimension: Dimension of the embedding vectors
-        :param space_type: Type of space for KNN
-        :param ef_construction: ef_construction parameter for KNN
-        """
-        index_body = {
-            "mappings": {
-                "properties": {
-                    "nominee_text": {"type": "text"},
-                    "nominee_vector": {
-                        "type": "knn_vector",
-                        "dimension": embedding_dimension,
-                        "method": {
-                            "name": "hnsw",
-                            "space_type": space_type,
-                            "engine": "nmslib",
-                            "parameters": {"ef_construction": ef_construction, "m": 16},
-                        },
-                    },
-                }
-            },
-            "settings": {
-                "index": {
-                    "number_of_shards": 2,
-                    "knn.algo_param": {"ef_search": 512},
-                    "knn": True,
-                }
-            },
-        }
-        try:
-            self.opensearch_client.indices.create(index=self.index_name, body=index_body)
-            print(f"\n{Fore.GREEN}KNN index '{self.index_name}' created successfully with dimension {embedding_dimension}, space type {space_type}, and ef_construction {ef_construction}.{Style.RESET_ALL}\n")
-        except Exception as e:
-            if 'resource_already_exists_exception' in str(e).lower():
-                print(f"\n{Fore.YELLOW}Index '{self.index_name}' already exists.{Style.RESET_ALL}\n")
-            else:
-                print(f"\n{Fore.RED}Error creating index '{self.index_name}': {e}{Style.RESET_ALL}\n")
-
-    def verify_and_create_index(self, embedding_dimension, space_type, ef_construction):
-        """
-        Verify if the index exists; if not, create it.
-
-        :param embedding_dimension: Dimension of the embedding vectors
-        :param space_type: Type of space for KNN
-        :param ef_construction: ef_construction parameter for KNN
-        :return: True if index exists or is created successfully, False otherwise
-        """
-        try:
-            print(f"Attempting to verify index '{self.index_name}'...")
-            index_exists = self.opensearch_client.indices.exists(index=self.index_name)
-            if index_exists:
-                print(f"{Fore.GREEN}KNN index '{self.index_name}' already exists.{Style.RESET_ALL}\n")
-            else:
-                print(f"{Fore.YELLOW}Index '{self.index_name}' does not exist. Attempting to create...{Style.RESET_ALL}\n")
-                self.create_index(embedding_dimension, space_type, ef_construction)
-            return True
-        except Exception as ex:
-            print(f"{Fore.RED}Error verifying or creating index: {ex}{Style.RESET_ALL}")
-            print(f"OpenSearch client config: {self.opensearch_client.transport.hosts}\n")
-            return False
-
-    def get_truncated_name(self, base_name, max_length=32):
+    def get_truncated_name(self, base_name: str, max_length: int = 32) -> str:
         """
         Truncate a name to fit within a specified length.
 
@@ -603,6 +637,7 @@ class Setup:
         """
         Main setup command that orchestrates the entire setup process.
         """
+        # Begin setup by configuring necessary parameters
         self.setup_configuration()
 
         if self.service_type != 'open-source' and not self.initialize_clients():
@@ -610,7 +645,7 @@ class Setup:
             return
 
         if self.service_type == 'serverless':
-
+            # Serverless-specific setup can be added here if needed
             pass
         elif self.service_type == 'managed':
             if not self.opensearch_endpoint:
@@ -644,14 +679,29 @@ class Setup:
                 self.save_config(self.config)
 
                 print("\nProceeding with index creation...\n")
-                embedding_dimension, space_type, ef_construction = self.get_knn_index_details()
+                embedding_dimension, space_type, ef_construction, number_of_shards, number_of_replicas, \
+                passage_text_field, passage_chunk_field, embedding_field = self.get_knn_index_details()
 
-                if self.verify_and_create_index(embedding_dimension, space_type, ef_construction):
+                # Create an instance of OpenSearchConnector
+                self.opensearch_connector = OpenSearchConnector(self.config)
+                self.opensearch_connector.opensearch_client = self.opensearch_client  # Use the initialized client
+                self.opensearch_connector.index_name = self.index_name  # Set the index name
+
+                # Verify and create the index
+                if self.opensearch_connector.verify_and_create_index(
+                    embedding_dimension, space_type, ef_construction, number_of_shards,
+                    number_of_replicas, passage_text_field, passage_chunk_field, embedding_field
+                ):
                     print(f"\n{Fore.GREEN}KNN index '{self.index_name}' created successfully.{Style.RESET_ALL}\n")
                     # Save index details to config
                     self.config['embedding_dimension'] = str(embedding_dimension)
                     self.config['space_type'] = space_type
                     self.config['ef_construction'] = str(ef_construction)
+                    self.config['number_of_shards'] = str(number_of_shards)
+                    self.config['number_of_replicas'] = str(number_of_replicas)
+                    self.config['passage_text_field'] = passage_text_field
+                    self.config['passage_chunk_field'] = passage_chunk_field
+                    self.config['embedding_field'] = embedding_field
                     self.save_config(self.config)
                 else:
                     print(f"\n{Fore.RED}Index creation failed. Please check your permissions and try again.{Style.RESET_ALL}\n")
@@ -665,36 +715,56 @@ class Setup:
                 self.index_name = existing_index_name
                 self.config['index_name'] = self.index_name
                 self.save_config(self.config)
-                # Load index details from config or prompt for them
-                if 'embedding_dimension' in self.config and 'space_type' in self.config and 'ef_construction' in self.config:
-                    try:
-                        embedding_dimension = int(self.config['embedding_dimension'])
-                        space_type = self.config['space_type']
-                        ef_construction = int(self.config['ef_construction'])
-                        print(f"\nUsing existing index '{self.index_name}' with embedding dimension {embedding_dimension}, space type '{space_type}', and ef_construction {ef_construction}.\n")
-                    except ValueError:
-                        print("\nInvalid index details in configuration. Prompting for details again.\n")
-                        embedding_dimension, space_type, ef_construction = self.get_knn_index_details()
+
+                # Verify that the index exists
+                try:
+                    if not self.opensearch_client.indices.exists(index=self.index_name):
+                        print(f"\n{Fore.RED}Index '{self.index_name}' does not exist in OpenSearch. Aborting.{Style.RESET_ALL}\n")
+                        return
+                    else:
+                        print(f"\n{Fore.GREEN}Index '{self.index_name}' exists in OpenSearch.{Style.RESET_ALL}\n")
+                        # Attempt to retrieve index settings and mappings
+                        index_info = self.opensearch_client.indices.get(index=self.index_name)
+                        settings = index_info[self.index_name]['settings']['index']
+                        mappings = index_info[self.index_name]['mappings']['properties']
+
+                        # Extract embedding dimension from the mapping
+                        embedding_field_mappings = mappings.get('passage_embedding', {})
+                        knn_mappings = embedding_field_mappings.get('properties', {}).get('knn', {})
+                        embedding_dimension = knn_mappings.get('dimension', 768)
+                        method = knn_mappings.get('method', {})
+                        space_type = method.get('space_type', 'l2')
+                        ef_construction = method.get('parameters', {}).get('ef_construction', 512)
+                        number_of_shards = settings.get('number_of_shards', '2')
+                        number_of_replicas = settings.get('number_of_replicas', '2')
+                        passage_text_field = 'passage_text'  # Assuming default, or you can extract if stored differently
+                        passage_chunk_field = 'passage_chunk'  # Assuming default
+                        embedding_field = 'passage_embedding'  # Assuming default
+
+                        print(f"\nUsing existing index '{self.index_name}' with the following settings:")
+                        print(f"Embedding Dimension: {embedding_dimension}")
+                        print(f"Space Type: {space_type}")
+                        print(f"ef_construction: {ef_construction}")
+                        print(f"Number of Shards: {number_of_shards}")
+                        print(f"Number of Replicas: {number_of_replicas}")
+                        print(f"Text Field: '{passage_text_field}'")
+                        print(f"Passage Chunk Field: '{passage_chunk_field}'")
+                        print(f"Embedding Field: '{embedding_field}'\n")
+
                         # Save index details to config
                         self.config['embedding_dimension'] = str(embedding_dimension)
                         self.config['space_type'] = space_type
                         self.config['ef_construction'] = str(ef_construction)
+                        self.config['number_of_shards'] = str(number_of_shards)
+                        self.config['number_of_replicas'] = str(number_of_replicas)
+                        self.config['passage_text_field'] = passage_text_field
+                        self.config['passage_chunk_field'] = passage_chunk_field
+                        self.config['embedding_field'] = embedding_field
                         self.save_config(self.config)
-                else:
-                    print("\nIndex details not found in configuration. Prompting for details.\n")
-                    embedding_dimension, space_type, ef_construction = self.get_knn_index_details()
-                    # Save index details to config
-                    self.config['embedding_dimension'] = str(embedding_dimension)
-                    self.config['space_type'] = space_type
-                    self.config['ef_construction'] = str(ef_construction)
-                    self.save_config(self.config)
-                # Verify that the index exists
-                if not self.opensearch_client.indices.exists(index=self.index_name):
-                    print(f"\n{Fore.RED}Index '{self.index_name}' does not exist in OpenSearch. Aborting.{Style.RESET_ALL}\n")
+
+                except Exception as ex:
+                    print(f"\n{Fore.RED}Error retrieving index details: {ex}{Style.RESET_ALL}\n")
                     return
-            else:
-                print(f"\n{Fore.RED}Invalid choice. Please run setup again and select a valid option.{Style.RESET_ALL}\n")
-                return
 
             # Proceed with model registration
             # Initialize ModelRegister now that OpenSearch client and domain name are available
@@ -712,4 +782,5 @@ class Setup:
                 # Open-source OpenSearch: Provide instructions or automate model registration
                 self.model_register.prompt_opensource_model_registration()
         else:
+            # Handle failure to initialize OpenSearch client
             print(f"\n{Fore.RED}Failed to initialize OpenSearch client. Setup incomplete.{Style.RESET_ALL}\n")
