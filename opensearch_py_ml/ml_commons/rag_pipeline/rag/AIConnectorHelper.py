@@ -79,7 +79,7 @@ class AIConnectorHelper:
     def get_opensearch_domain_info(region, domain_name):
         """
         Retrieve the OpenSearch domain endpoint and ARN based on the domain name and region.
-        
+
         :param region: AWS region.
         :param domain_name: Name of the OpenSearch domain.
         :return: Tuple containing domain endpoint and ARN.
@@ -98,7 +98,7 @@ class AIConnectorHelper:
     def get_ml_auth(self, create_connector_role_name):
         """
         Obtain AWS4Auth credentials for ML API calls using the specified IAM role.
-        
+
         :param create_connector_role_name: Name of the IAM role to assume.
         :return: AWS4Auth object with temporary credentials.
         """
@@ -119,7 +119,7 @@ class AIConnectorHelper:
     def create_connector(self, create_connector_role_name, payload):
         """
         Create a connector in OpenSearch using the specified role and payload.
-        
+
         :param create_connector_role_name: Name of the IAM role to assume.
         :param payload: Payload data for creating the connector.
         :return: ID of the created connector.
@@ -144,46 +144,10 @@ class AIConnectorHelper:
         connector_id = json.loads(response.text).get('connector_id')
         return connector_id
 
-    def search_model_group(self, model_group_name, create_connector_role_name):
-        """
-        Search for a model group by name using ModelAccessControl.
-        
-        :param model_group_name: Name of the model group to search.
-        :param create_connector_role_name: Name of the IAM role to assume.
-        :return: Search response from OpenSearch.
-        """
-        response = self.model_access_control.search_model_group_by_name(model_group_name, size=1)
-        return response
-
-    def create_model_group(self, model_group_name, description, create_connector_role_name):
-        """
-        Create or retrieve an existing model group using ModelAccessControl.
-        
-        :param model_group_name: Name of the model group.
-        :param description: Description of the model group.
-        :param create_connector_role_name: Name of the IAM role to assume.
-        :return: ID of the created or existing model group.
-        """
-        model_group_id = self.model_access_control.get_model_group_id_by_name(model_group_name)
-        print("Search Model Group Response:", model_group_id)
-
-        if model_group_id:
-            return model_group_id
-
-        # Register a new model group
-        self.model_access_control.register_model_group(name=model_group_name, description=description)
-        
-        # Retrieve the newly created model group ID
-        model_group_id = self.model_access_control.get_model_group_id_by_name(model_group_name)
-        if model_group_id:
-            return model_group_id
-        else:
-            raise Exception("Failed to create model group.")
-
     def get_task(self, task_id, create_connector_role_name):
         """
         Retrieve the status of a specific task using its ID.
-        
+
         :param task_id: ID of the task to retrieve.
         :param create_connector_role_name: Name of the IAM role to assume.
         :return: Response from the task retrieval request.
@@ -203,7 +167,7 @@ class AIConnectorHelper:
     def create_model(self, model_name, description, connector_id, create_connector_role_name, deploy=True):
         """
         Create a new model in OpenSearch and optionally deploy it.
-        
+
         :param model_name: Name of the model to create.
         :param description: Description of the model.
         :param connector_id: ID of the connector to associate with the model.
@@ -212,7 +176,17 @@ class AIConnectorHelper:
         :return: ID of the created model.
         """
         try:
-            model_group_id = self.create_model_group(model_name, description, create_connector_role_name)
+            # Use ModelAccessControl methods directly without wrapping
+            model_group_id = self.model_access_control.get_model_group_id_by_name(model_name)
+            if not model_group_id:
+                self.model_access_control.register_model_group(
+                    name=model_name,
+                    description=description
+                )
+                model_group_id = self.model_access_control.get_model_group_id_by_name(model_name)
+                if not model_group_id:
+                    raise Exception("Failed to create model group.")
+
             payload = {
                 "name": model_name,
                 "function_name": "remote",
@@ -258,7 +232,7 @@ class AIConnectorHelper:
     def deploy_model(self, model_id):
         """
         Deploy a specified model in OpenSearch.
-        
+
         :param model_id: ID of the model to deploy.
         :return: Response from the deployment request.
         """
@@ -274,7 +248,7 @@ class AIConnectorHelper:
     def predict(self, model_id, payload):
         """
         Make a prediction using the specified model and input payload.
-        
+
         :param model_id: ID of the model to use for prediction.
         :param payload: Input data for prediction.
         :return: Response from the prediction request.
@@ -293,7 +267,7 @@ class AIConnectorHelper:
                                      create_connector_input, sleep_time_in_seconds=10):
         """
         Create a connector in OpenSearch using a secret for credentials.
-        
+
         :param secret_name: Name of the secret to create or use.
         :param secret_value: Value of the secret.
         :param connector_role_name: Name of the IAM role for the connector.
@@ -421,7 +395,7 @@ class AIConnectorHelper:
                                    create_connector_input, sleep_time_in_seconds=10):
         """
         Create a connector in OpenSearch using an IAM role for credentials.
-        
+
         :param connector_role_inline_policy: Inline policy for the connector IAM role.
         :param connector_role_name: Name of the IAM role for the connector.
         :param create_connector_role_name: Name of the IAM role to assume for creating the connector.
