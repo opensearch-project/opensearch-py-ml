@@ -8,7 +8,6 @@
 import os
 import glob
 import json
-import tiktoken
 from tqdm import tqdm
 from colorama import Fore, Style, init
 from typing import List, Dict

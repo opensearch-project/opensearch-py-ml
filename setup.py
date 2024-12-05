@@ -112,7 +112,7 @@ setup(
     # Entry points for console scripts
     entry_points={
         'console_scripts': [
-            'rag=opensearch_py_ml.ml_commons.rag_pipeline.rag:main',
+            'rag=opensearch_py_ml.ml_commons.rag_pipeline.rag.rag:main',
         ],
     },
 )

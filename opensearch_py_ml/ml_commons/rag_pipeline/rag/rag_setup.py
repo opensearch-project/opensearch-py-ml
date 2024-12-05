@@ -462,60 +462,6 @@ class Setup:
             print(f"{Fore.RED}Error initializing OpenSearch client: {ex}{Style.RESET_ALL}\n")
             return False
 
-    def initialize_opensearch_client(self) -> bool:
-        """
-        Initialize the OpenSearch client based on the service type and configuration.
-
-        :return: True if the client is initialized successfully, False otherwise.
-        """
-        if not self.opensearch_endpoint:
-            print(f"{Fore.RED}OpenSearch endpoint not set. Please run setup first.{Style.RESET_ALL}\n")
-            return False
-
-        parsed_url = urlparse(self.opensearch_endpoint)
-        host = parsed_url.hostname
-        port = parsed_url.port or (443 if parsed_url.scheme == 'https' else 9200)  # Default ports
-
-        # Determine the authentication method based on the service type
-        if self.service_type == 'serverless':
-            credentials = boto3.Session().get_credentials()
-            auth = AWSV4SignerAuth(credentials, self.aws_region, 'aoss')
-        elif self.service_type == 'managed':
-            if not self.opensearch_username or not self.opensearch_password:
-                print(f"{Fore.RED}OpenSearch username or password not set. Please run setup first.{Style.RESET_ALL}\n")
-                return False
-            auth = (self.opensearch_username, self.opensearch_password)
-        elif self.service_type == 'open-source':
-            if self.opensearch_username and self.opensearch_password:
-                auth = (self.opensearch_username, self.opensearch_password)
-            else:
-                auth = None  # No authentication
-        else:
-            print("Invalid service type. Please check your configuration.")
-            return False
-
-        # Determine SSL settings based on the endpoint scheme
-        use_ssl = parsed_url.scheme == 'https'
-        verify_certs = True  # Always verify certificates unless you have a specific reason not to
-
-        try:
-            # Initialize the OpenSearch client
-            self.opensearch_client = OpenSearch(
-                hosts=[{'host': host, 'port': port}],
-                http_auth=auth,
-                use_ssl=use_ssl,
-                verify_certs=verify_certs,
-                ssl_show_warn=False,          # Suppress SSL warnings
-                # ssl_context=ssl_context,      # Not needed unless you have custom certificates
-                connection_class=RequestsHttpConnection,
-                pool_maxsize=20
-            )
-            print(f"{Fore.GREEN}Initialized OpenSearch client with host: {host} and port: {port}{Style.RESET_ALL}\n")
-            return True
-        except Exception as ex:
-            # Handle initialization errors
-            print(f"{Fore.RED}Error initializing OpenSearch client: {ex}{Style.RESET_ALL}\n")
-            return False
 
     def get_knn_index_details(self) -> tuple:
         """
@@ -621,17 +567,6 @@ class Setup:
         config_path = os.path.abspath(self.CONFIG_FILE)
         with open(self.CONFIG_FILE, 'w') as f:
             parser.write(f)
-    def get_truncated_name(self, base_name: str, max_length: int = 32) -> str:
-        """
-        Truncate a name to fit within a specified length.
-
-        :param base_name: Original name
-        :param max_length: Maximum allowed length
-        :return: Truncated name
-        """
-        if len(base_name) <= max_length:
-            return base_name
-        return base_name[:max_length-3] + "..."
 
     def setup_command(self):
         """
