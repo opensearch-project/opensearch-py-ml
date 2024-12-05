@@ -1,9 +1,10 @@
 # SPDX-License-Identifier: Apache-2.0
+
 # The OpenSearch Contributors require contributions made to
 # this file be licensed under the Apache-2.0 license or a
 # compatible open source license.
-# Any modifications Copyright OpenSearch Contributors. See
-# GitHub history for details.
+# Any modifications Copyright OpenSearch Contributors.
+# See GitHub history for details.
 
 import boto3
 import botocore
@@ -21,8 +22,7 @@ from opensearchpy import OpenSearch, RequestsHttpConnection, AWSV4SignerAuth
 from colorama import Fore, Style, init
 
 from opensearch_py_ml.ml_commons.rag_pipeline.rag.opensearch_connector import OpenSearchConnector
-from opensearch_py_ml.ml_commons.rag_pipeline.rag.serverless import Serverless  
-from opensearch_py_ml.ml_commons.rag_pipeline.rag.AIConnectorHelper import AIConnectorHelper 
+from opensearch_py_ml.ml_commons.rag_pipeline.rag.AIConnectorHelper import AIConnectorHelper
 from opensearch_py_ml.ml_commons.rag_pipeline.rag.model_register import ModelRegister
 
 # Initialize colorama for colored terminal output
@@ -32,12 +32,11 @@ init(autoreset=True)
 class Setup:
     """
     Handles the setup and configuration of the OpenSearch environment.
-    Manages AWS credentials, OpenSearch client initialization, index creation,
+    Manages AWS credentials (if managed), OpenSearch client initialization, index creation,
     and model registration.
     """
     
     CONFIG_FILE = 'config.ini'
-    SERVICE_AOSS = 'opensearchserverless'
     SERVICE_BEDROCK = 'bedrock-runtime'
 
     def __init__(self):
@@ -51,15 +50,12 @@ class Setup:
         self.collection_name = self.config.get('collection_name', '')
         self.opensearch_endpoint = self.config.get('opensearch_endpoint', '')
         self.service_type = self.config.get('service_type', 'managed')
-        self.is_serverless = self.service_type == 'serverless'
         self.opensearch_username = self.config.get('opensearch_username', '')
         self.opensearch_password = self.config.get('opensearch_password', '')
-        self.aoss_client = None
         self.bedrock_client = None
         self.opensearch_client = None
         self.opensearch_domain_name = self.get_opensearch_domain_name()
         self.model_register = None
-        self.serverless = None  # Will be initialized if service_type is 'serverless'
 
     def check_and_configure_aws(self):
         """
@@ -117,8 +113,6 @@ class Setup:
     def load_config(self) -> dict:
         """
         Load configuration from the config file.
-
-        :return: Dictionary of configuration parameters
         """
         config = configparser.ConfigParser()
         if os.path.exists(self.CONFIG_FILE):
@@ -129,9 +123,6 @@ class Setup:
     def get_password_with_asterisks(self, prompt="Enter password: ") -> str:
         """
         Get password input from user, masking it with asterisks.
-
-        :param prompt: Prompt message
-        :return: Entered password as a string
         """
         if sys.platform == 'win32':
             import msvcrt
@@ -156,7 +147,6 @@ class Setup:
                     except UnicodeDecodeError:
                         continue
         else:
-            import termios, tty
             fd = sys.stdin.fileno()
             old_settings = termios.tcgetattr(fd)
             try:
@@ -187,44 +177,31 @@ class Setup:
         """
         config = self.load_config()
 
-
-        # First, prompt for service type
+        # Prompt for service type
         print("\nChoose OpenSearch service type:")
-        print("1. Serverless")
-        print("2. Managed")
-        print("3. Open-source")
-        service_choice = input("Enter your choice (1-3): ").strip()
+        print("1. Managed")
+        print("2. Open-source")
+        service_choice = input("Enter your choice (1-2): ").strip()
 
         if service_choice == '1':
-            self.service_type = 'serverless'
-        elif service_choice == '2':
             self.service_type = 'managed'
-        elif service_choice == '3':
+        elif service_choice == '2':
             self.service_type = 'open-source'
         else:
             print(f"\n{Fore.YELLOW}Invalid choice. Defaulting to 'managed'.{Style.RESET_ALL}")
             self.service_type = 'managed'
 
         # Based on service type, prompt for different configurations
-        if self.service_type in ['serverless', 'managed']:
-            # For 'serverless' and 'managed', prompt for AWS credentials and related info
+        if self.service_type == 'managed':
             self.check_and_configure_aws()
-
             self.aws_region = input(f"\nEnter your AWS Region [{self.aws_region}]: ").strip() or self.aws_region
             self.iam_principal = input(f"Enter your IAM Principal ARN [{self.iam_principal}]: ").strip() or self.iam_principal
-
-            if self.service_type == 'serverless':
-                self.collection_name = input("\nEnter the name for your OpenSearch collection: ").strip()
-                self.opensearch_endpoint = None
-                self.opensearch_username = None
-                self.opensearch_password = None
-            elif self.service_type == 'managed':
-                self.opensearch_endpoint = input("\nEnter your OpenSearch domain endpoint: ").strip()
-                self.opensearch_username = input("Enter your OpenSearch username: ").strip()
-                self.opensearch_password = self.get_password_with_asterisks("Enter your OpenSearch password: ")
-                self.collection_name = ''
+            self.opensearch_endpoint = input("\nEnter your OpenSearch domain endpoint: ").strip()
+            self.opensearch_username = input("Enter your OpenSearch username: ").strip()
+            self.opensearch_password = self.get_password_with_asterisks("Enter your OpenSearch password: ")
+            self.collection_name = ''
         elif self.service_type == 'open-source':
-            # For 'open-source', skip AWS configurations
+            # For open-source, skip AWS configurations
             print("\n--- Open-source OpenSearch Setup ---")
             default_endpoint = 'https://localhost:9200'
             self.opensearch_endpoint = input(f"\nPress Enter to use the default endpoint (or type your custom endpoint) [{default_endpoint}]: ").strip() or default_endpoint
@@ -236,7 +213,7 @@ class Setup:
                 self.opensearch_username = None
                 self.opensearch_password = None
             self.collection_name = ''
-            # For open-source, AWS region and IAM principal are not needed
+            # AWS region and IAM principal not needed
             self.aws_region = ''
             self.iam_principal = ''
 
@@ -252,23 +229,21 @@ class Setup:
         }
 
         # Now, prompt for default search method
-        print("\nChoose the default search method:")
-        print("1. Neural Search")
-        print("2. Semantic Search")
+        # We only do semantic search now
+        print("\nSince we're only using semantic search, choose one:")
+        print("1. Semantic search WITH LLM")
+        print("2. Semantic search WITHOUT LLM")
         search_choice = input("Enter your choice (1-2): ").strip()
 
         if search_choice == '1':
-            default_search_method = 'neural'
-        elif search_choice == '2':
-            default_search_method = 'semantic'
+            default_search_method = 'semantic_with_llm'
         else:
-            print(f"\n{Fore.YELLOW}Invalid choice. Defaulting to 'neural'.{Style.RESET_ALL}")
-            default_search_method = 'neural'
+            default_search_method = 'semantic_no_llm'
 
         self.config['default_search_method'] = default_search_method
 
-        if default_search_method == 'semantic':
-            # Prompt the user to select an LLM model for semantic search
+        # If semantic with LLM chosen and we are in managed mode, prompt for LLM configuration
+        if default_search_method == 'semantic_with_llm' and self.service_type == 'managed':
             print("\nSelect an LLM model for semantic search:")
             available_models = [
                 ("amazon.titan-text-lite-v1", "Bedrock Titan Text Lite V1"),
@@ -319,6 +294,13 @@ class Setup:
             self.config['llm_temperature'] = str(temperature)
             self.config['llm_top_p'] = str(topP)
             self.config['llm_stop_sequences'] = ','.join(stopSequences)
+        else:
+            # No LLM configurations needed
+            self.config['llm_model_id'] = ''
+            self.config['llm_max_token_count'] = ''
+            self.config['llm_temperature'] = ''
+            self.config['llm_top_p'] = ''
+            self.config['llm_stop_sequences'] = ''
 
         # Prompt for ingest pipeline name
         default_pipeline_name = 'text-chunking-ingest-pipeline'
@@ -333,53 +315,40 @@ class Setup:
         self.save_config(self.config)
         print(f"\n{Fore.GREEN}Configuration saved successfully to {os.path.abspath(self.CONFIG_FILE)}.{Style.RESET_ALL}\n")
 
-
     def initialize_clients(self) -> bool:
         """
-        Initialize AWS clients (AOSS and Bedrock) only if not open-source.
-
-        :return: True if clients initialized successfully or open-source, False otherwise
+        Initialize AWS clients (Bedrock) only if managed. No AWS clients needed for open-source.
         """
         if self.service_type == 'open-source':
             return True  # No AWS clients needed
-
+        # Managed: Initialize Bedrock
         try:
             boto_config = Config(
                 region_name=self.aws_region,
                 signature_version='v4',
                 retries={'max_attempts': 10, 'mode': 'standard'}
             )
-            if self.is_serverless:
-                # Initialize AOSS client for serverless service
-                self.aoss_client = boto3.client(self.SERVICE_AOSS, config=boto_config)
-            # Initialize Bedrock client for managed or serverless services
-            self.bedrock_client = boto3.client(self.SERVICE_BEDROCK, region_name=self.aws_region)
-            
-            time.sleep(7)  # Wait for clients to initialize
-            print(f"{Fore.GREEN}AWS clients initialized successfully.{Style.RESET_ALL}\n")
+            self.bedrock_client = boto3.client(self.SERVICE_BEDROCK, region_name=self.aws_region, config=boto_config)
+            time.sleep(2)
+            print(f"{Fore.GREEN}AWS Bedrock client initialized successfully.{Style.RESET_ALL}\n")
             return True
         except Exception as e:
-            # Handle initialization errors
-            print(f"{Fore.RED}Failed to initialize AWS clients: {e}{Style.RESET_ALL}")
+            print(f"{Fore.RED}Failed to initialize AWS Bedrock client: {e}{Style.RESET_ALL}")
             return False
 
     def get_opensearch_domain_name(self) -> str:
         """
         Extract the domain name from the OpenSearch endpoint URL.
-
-        :return: Domain name if extraction is successful, None otherwise
         """
         if self.opensearch_endpoint:
             parsed_url = urlparse(self.opensearch_endpoint)
-            hostname = parsed_url.hostname  # e.g., 'search-your-domain-name-uniqueid.region.es.amazonaws.com'
-            if hostname:
-                # Split the hostname into parts
+            hostname = parsed_url.hostname
+            if hostname and 'amazonaws.com' in hostname:
+                # Attempt to parse a managed domain name
                 parts = hostname.split('.')
-                domain_part = parts[0]  # e.g., 'search-your-domain-name-uniqueid'
-                # Remove the 'search-' prefix if present
+                domain_part = parts[0]
                 if domain_part.startswith('search-'):
                     domain_part = domain_part[len('search-'):]
-                # Remove the unique ID suffix after the domain name
                 domain_name = domain_part.rsplit('-', 1)[0]
                 print(f"Extracted domain name: {domain_name}\n")
                 return domain_name
@@ -388,11 +357,7 @@ class Setup:
     @staticmethod
     def get_opensearch_domain_info(region: str, domain_name: str) -> tuple:
         """
-        Retrieve the OpenSearch domain endpoint and ARN based on the domain name and region.
-
-        :param region: AWS region
-        :param domain_name: Name of the OpenSearch domain
-        :return: Tuple of (domain_endpoint, domain_arn) if successful, (None, None) otherwise
+        Retrieve the OpenSearch domain endpoint and ARN for a managed domain.
         """
         try:
             client = boto3.client('opensearch', region_name=region)
@@ -405,12 +370,9 @@ class Setup:
             print(f"{Fore.RED}Error retrieving OpenSearch domain info: {e}{Style.RESET_ALL}")
             return None, None
 
-# In Setup class, modify the initialize_opensearch_client method
     def initialize_opensearch_client(self) -> bool:
         """
         Initialize the OpenSearch client based on the service type and configuration.
-
-        :return: True if the client is initialized successfully, False otherwise.
         """
         if not self.opensearch_endpoint:
             print(f"{Fore.RED}OpenSearch endpoint not set. Please run setup first.{Style.RESET_ALL}\n")
@@ -418,13 +380,10 @@ class Setup:
 
         parsed_url = urlparse(self.opensearch_endpoint)
         host = parsed_url.hostname
-        port = parsed_url.port or (443 if parsed_url.scheme == 'https' else 9200)  # Default ports
+        port = parsed_url.port or (443 if parsed_url.scheme == 'https' else 9200) 
 
-        # Determine the authentication method based on the service type
-        if self.service_type == 'serverless':
-            credentials = boto3.Session().get_credentials()
-            auth = AWSV4SignerAuth(credentials, self.aws_region, 'aoss')
-        elif self.service_type == 'managed':
+        # Determine auth based on service type
+        if self.service_type == 'managed':
             if not self.opensearch_username or not self.opensearch_password:
                 print(f"{Fore.RED}OpenSearch username or password not set. Please run setup first.{Style.RESET_ALL}\n")
                 return False
@@ -433,39 +392,33 @@ class Setup:
             if self.opensearch_username and self.opensearch_password:
                 auth = (self.opensearch_username, self.opensearch_password)
             else:
-                auth = None  # No authentication
+                auth = None
         else:
             print("Invalid service type. Please check your configuration.")
             return False
 
-        # Determine SSL settings based on the endpoint scheme
         use_ssl = parsed_url.scheme == 'https'
-        verify_certs = True  # Always verify certificates unless you have a specific reason not to
+        verify_certs = True
 
         try:
-            # Initialize the OpenSearch client
             self.opensearch_client = OpenSearch(
                 hosts=[{'host': host, 'port': port}],
                 http_auth=auth,
                 use_ssl=use_ssl,
                 verify_certs=verify_certs,
-                ssl_show_warn=False,          # Suppress SSL warnings
-                # ssl_context=ssl_context,      # Not needed unless you have custom certificates
+                ssl_show_warn=False,
                 connection_class=RequestsHttpConnection,
                 pool_maxsize=20
             )
             print(f"{Fore.GREEN}Initialized OpenSearch client with host: {host} and port: {port}{Style.RESET_ALL}\n")
             return True
         except Exception as ex:
-            # Handle initialization errors
             print(f"{Fore.RED}Error initializing OpenSearch client: {ex}{Style.RESET_ALL}\n")
             return False
 
-
     def get_knn_index_details(self) -> tuple:
         """
-        Prompt user for KNN index details (embedding dimension, space type, ef_construction,
-        number of shards, number of replicas, and field names).
+        Prompt user for KNN index details.
         """
         dimension_input = input("Press Enter to use the default embedding size (768), or type a custom size: ").strip()
         if dimension_input == "":
@@ -493,7 +446,7 @@ class Setup:
         elif space_choice == "3":
             space_type = "innerproduct"
         else:
-            print("Invalid choice. Using default space type of L2 (Euclidean distance).")
+            print("Invalid choice. Using default space type of L2.")
             space_type = "l2"
 
         print(f"Space type set to: {space_type}")
@@ -558,8 +511,6 @@ class Setup:
     def save_config(self, config: dict):
         """
         Save configuration to the config file.
-
-        :param config: Dictionary of configuration parameters
         """
         parser = configparser.ConfigParser()
         parser['DEFAULT'] = config
@@ -574,14 +525,11 @@ class Setup:
         # Begin setup by configuring necessary parameters
         self.setup_configuration()
 
-        if self.service_type != 'open-source' and not self.initialize_clients():
+        if self.service_type == 'managed' and not self.initialize_clients():
             print(f"\n{Fore.RED}Failed to initialize AWS clients. Setup incomplete.{Style.RESET_ALL}\n")
             return
 
-        if self.service_type == 'serverless':
-            # Serverless-specific setup can be added here if needed
-            pass
-        elif self.service_type == 'managed':
+        if self.service_type == 'managed':
             if not self.opensearch_endpoint:
                 print(f"\n{Fore.RED}OpenSearch endpoint not set. Setup incomplete.{Style.RESET_ALL}\n")
                 return
@@ -593,11 +541,10 @@ class Setup:
                 print(f"\n{Fore.RED}OpenSearch endpoint not set. Setup incomplete.{Style.RESET_ALL}\n")
                 return
             else:
-                self.opensearch_domain_name = None  # Not required for open-source
+                self.opensearch_domain_name = None
 
         # Initialize OpenSearch client
         if self.initialize_opensearch_client():
-
             # Prompt user to choose between creating a new index or using an existing one
             print("Do you want to create a new KNN index or use an existing one?")
             print("1. Create a new KNN index")
@@ -605,10 +552,7 @@ class Setup:
             index_choice = input("Enter your choice (1-2): ").strip()
 
             if index_choice == '1':
-                # Proceed to create a new index
                 self.index_name = input("\nEnter a name for your new KNN index in OpenSearch: ").strip()
-
-                # Save the index name in the configuration
                 self.config['index_name'] = self.index_name
                 self.save_config(self.config)
 
@@ -616,18 +560,16 @@ class Setup:
                 embedding_dimension, space_type, ef_construction, number_of_shards, number_of_replicas, \
                 passage_text_field, passage_chunk_field, embedding_field = self.get_knn_index_details()
 
-                # Create an instance of OpenSearchConnector
                 self.opensearch_connector = OpenSearchConnector(self.config)
-                self.opensearch_connector.opensearch_client = self.opensearch_client  # Use the initialized client
-                self.opensearch_connector.index_name = self.index_name  # Set the index name
+                self.opensearch_connector.opensearch_client = self.opensearch_client
+                self.opensearch_connector.index_name = self.index_name
 
-                # Verify and create the index
                 if self.opensearch_connector.verify_and_create_index(
                     embedding_dimension, space_type, ef_construction, number_of_shards,
                     number_of_replicas, passage_text_field, passage_chunk_field, embedding_field
                 ):
                     print(f"\n{Fore.GREEN}KNN index '{self.index_name}' created successfully.{Style.RESET_ALL}\n")
-                    # Save index details to config
+                    # Save index details
                     self.config['embedding_dimension'] = str(embedding_dimension)
                     self.config['space_type'] = space_type
                     self.config['ef_construction'] = str(ef_construction)
@@ -641,7 +583,6 @@ class Setup:
                     print(f"\n{Fore.RED}Index creation failed. Please check your permissions and try again.{Style.RESET_ALL}\n")
                     return
             elif index_choice == '2':
-                # Use existing index
                 existing_index_name = input("\nEnter the name of your existing KNN index: ").strip()
                 if not existing_index_name:
                     print(f"\n{Fore.RED}Index name cannot be empty. Aborting.{Style.RESET_ALL}\n")
@@ -662,18 +603,25 @@ class Setup:
                         settings = index_info[self.index_name]['settings']['index']
                         mappings = index_info[self.index_name]['mappings']['properties']
 
-                        # Extract embedding dimension from the mapping
-                        embedding_field_mappings = mappings.get('passage_embedding', {})
-                        knn_mappings = embedding_field_mappings.get('properties', {}).get('knn', {})
-                        embedding_dimension = knn_mappings.get('dimension', 768)
-                        method = knn_mappings.get('method', {})
-                        space_type = method.get('space_type', 'l2')
-                        ef_construction = method.get('parameters', {}).get('ef_construction', 512)
+                        # Attempt to retrieve known fields
+                        # For simplicity, assume defaults if they don't exist
+                        embedding_field = 'passage_embedding'
+                        embedding_field_mappings = mappings.get(embedding_field, {})
+                        knn_mappings = embedding_field_mappings.get('method', {})
+                        # These values might not be perfectly retrievable depending on the index mapping
+                        # We'll do best-effort.
+                        embedding_dimension = 768
+                        space_type = 'l2'
+                        ef_construction = 512
+                        if 'method' in embedding_field_mappings:
+                            method = embedding_field_mappings['method']
+                            space_type = method.get('space_type', 'l2')
+                            ef_construction = method.get('parameters', {}).get('ef_construction', 512)
+
                         number_of_shards = settings.get('number_of_shards', '2')
                         number_of_replicas = settings.get('number_of_replicas', '2')
-                        passage_text_field = 'passage_text'  # Assuming default, or you can extract if stored differently
-                        passage_chunk_field = 'passage_chunk'  # Assuming default
-                        embedding_field = 'passage_embedding'  # Assuming default
+                        passage_text_field = 'passage_text'
+                        passage_chunk_field = 'passage_chunk'
 
                         print(f"\nUsing existing index '{self.index_name}' with the following settings:")
                         print(f"Embedding Dimension: {embedding_dimension}")
@@ -685,7 +633,7 @@ class Setup:
                         print(f"Passage Chunk Field: '{passage_chunk_field}'")
                         print(f"Embedding Field: '{embedding_field}'\n")
 
-                        # Save index details to config
+                        # Save index details
                         self.config['embedding_dimension'] = str(embedding_dimension)
                         self.config['space_type'] = space_type
                         self.config['ef_construction'] = str(ef_construction)
@@ -700,21 +648,20 @@ class Setup:
                     print(f"\n{Fore.RED}Error retrieving index details: {ex}{Style.RESET_ALL}\n")
                     return
 
-            # Proceed with model registration
-            # Initialize ModelRegister now that OpenSearch client and domain name are available
+            # Proceed with model registration if managed and semantic_with_llm
             self.model_register = ModelRegister(
                 self.config,
                 self.opensearch_client,
                 self.opensearch_domain_name
             )
 
-            # Model Registration
-            if self.service_type != 'open-source':
-                # AWS-managed OpenSearch: Proceed with model registration
+            if self.service_type == 'managed' and self.config['default_search_method'] == 'semantic_with_llm':
+                # Managed OpenSearch: Proceed with model registration for LLM
                 self.model_register.prompt_model_registration()
             else:
-                # Open-source OpenSearch: Provide instructions or automate model registration
-                self.model_register.prompt_opensource_model_registration()
+                # Open-source or semantic without LLM: no model registration needed
+                print(f"{Fore.GREEN}Setup complete. No LLM model registration required.{Style.RESET_ALL}")
+
         else:
             # Handle failure to initialize OpenSearch client
             print(f"\n{Fore.RED}Failed to initialize OpenSearch client. Setup incomplete.{Style.RESET_ALL}\n")
