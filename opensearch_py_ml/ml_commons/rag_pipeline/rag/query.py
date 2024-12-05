@@ -304,7 +304,7 @@ class Query:
                     break
                 queries = [query_text]
 
-            if search_method == 'neural':
+            if search_method == 'semantic_no_llm':
                 # Proceed with neural search
                 results = self.bulk_query_neural(queries, k=num_results)
 
@@ -330,7 +330,7 @@ class Query:
                             print("\nNo relevant sentences found.")
                     else:
                         print("\nNo documents found for this query.")
-            elif search_method == 'semantic':
+            elif search_method == 'semantic_with_llm':
                 # Proceed with semantic search
                 if not self.bedrock_client or not self.llm_model_id:
                     print(f"\n{Fore.RED}LLM model is not configured. Please run setup to select an LLM model.{Style.RESET_ALL}")
