@@ -14,8 +14,8 @@ import time
 from opensearchpy import OpenSearch, RequestsHttpConnection
 from urllib.parse import urlparse
 
-from opensearch_py_ml.ml_commons.rag_pipeline.rag.IAMRoleHelper import IAMRoleHelper
-from opensearch_py_ml.ml_commons.rag_pipeline.rag.SecretsHelper import SecretHelper
+from opensearch_py_ml.ml_commons.IAMRoleHelper import IAMRoleHelper
+from opensearch_py_ml.ml_commons.SecretsHelper import SecretHelper
 from opensearch_py_ml.ml_commons.model_access_control import ModelAccessControl
 
 

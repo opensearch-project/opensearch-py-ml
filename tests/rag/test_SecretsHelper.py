@@ -28,7 +28,7 @@ from botocore.exceptions import ClientError
 import json
 import logging
 # Adjust the import path as necessary
-from opensearch_py_ml.ml_commons.rag_pipeline.rag.SecretsHelper import SecretHelper
+from opensearch_py_ml.ml_commons.SecretsHelper import SecretHelper
 
 class TestSecretHelper(unittest.TestCase):
     @classmethod

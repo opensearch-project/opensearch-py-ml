@@ -13,7 +13,7 @@ import boto3
 from urllib.parse import urlparse
 from colorama import Fore, Style, init
 from opensearch_py_ml.ml_commons.rag_pipeline.rag.AIConnectorHelper import AIConnectorHelper
-from opensearch_py_ml.ml_commons.rag_pipeline.rag.IAMRoleHelper import IAMRoleHelper
+from opensearch_py_ml.ml_commons.IAMRoleHelper import IAMRoleHelper
 from opensearch_py_ml.ml_commons.rag_pipeline.rag.ml_models.BedrockModel import BedrockModel
 from opensearch_py_ml.ml_commons.rag_pipeline.rag.ml_models.OpenAIModel import OpenAIModel
 from opensearch_py_ml.ml_commons.rag_pipeline.rag.ml_models.CohereModel import CohereModel

@@ -339,20 +339,26 @@ class Setup:
     def get_opensearch_domain_name(self) -> str:
         """
         Extract the domain name from the OpenSearch endpoint URL.
+
+        :return: Domain name if extraction is successful, None otherwise
         """
         if self.opensearch_endpoint:
             parsed_url = urlparse(self.opensearch_endpoint)
-            hostname = parsed_url.hostname
-            if hostname and 'amazonaws.com' in hostname:
-                # Attempt to parse a managed domain name
+            hostname = parsed_url.hostname  # e.g., 'search-your-domain-name-uniqueid.region.es.amazonaws.com'
+            if hostname:
+                # Split the hostname into parts
                 parts = hostname.split('.')
-                domain_part = parts[0]
+                domain_part = parts[0]  # e.g., 'search-your-domain-name-uniqueid'
+                # Remove the 'search-' prefix if present
                 if domain_part.startswith('search-'):
                     domain_part = domain_part[len('search-'):]
+                # Remove the unique ID suffix after the domain name
                 domain_name = domain_part.rsplit('-', 1)[0]
                 print(f"Extracted domain name: {domain_name}\n")
                 return domain_name
         return None
+    
+
 
     @staticmethod
     def get_opensearch_domain_info(region: str, domain_name: str) -> tuple:
@@ -465,9 +471,9 @@ class Setup:
         print(f"ef_construction set to: {ef_construction}\n")
 
         # Prompt for number of shards
-        shards_input = input("\nEnter number of shards (Press Enter for default value 2): ").strip()
+        shards_input = input("\nEnter number of shards (Press Enter for default value 1): ").strip()
         if shards_input == "":
-            number_of_shards = 2
+            number_of_shards = 1
         else:
             try:
                 number_of_shards = int(shards_input)

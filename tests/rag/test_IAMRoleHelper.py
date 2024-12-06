@@ -29,7 +29,7 @@ import json
 import logging
 
 # Assuming IAMRoleHelper is defined in iam_role_helper.py
-from opensearch_py_ml.ml_commons.rag_pipeline.rag.IAMRoleHelper import IAMRoleHelper  # Replace with the actual module path if different
+from opensearch_py_ml.ml_commons.IAMRoleHelper import IAMRoleHelper  # Replace with the actual module path if different
 
 class TestIAMRoleHelper(unittest.TestCase):
 
