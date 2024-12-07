@@ -6,20 +6,31 @@
 # GitHub history for details.
 
 
-import os
-import json
-import time
-import boto3
-from urllib.parse import urlparse
-from colorama import Fore, Style, init
-from opensearch_py_ml.ml_commons.rag_pipeline.rag.AIConnectorHelper import AIConnectorHelper
-from opensearch_py_ml.ml_commons.IAMRoleHelper import IAMRoleHelper
-from opensearch_py_ml.ml_commons.rag_pipeline.rag.ml_models.BedrockModel import BedrockModel
-from opensearch_py_ml.ml_commons.rag_pipeline.rag.ml_models.OpenAIModel import OpenAIModel
-from opensearch_py_ml.ml_commons.rag_pipeline.rag.ml_models.CohereModel import CohereModel
-from opensearch_py_ml.ml_commons.rag_pipeline.rag.ml_models.HuggingFaceModel import HuggingFaceModel
-from opensearch_py_ml.ml_commons.rag_pipeline.rag.ml_models.PyTorchModel import CustomPyTorchModel
 import sys
+import time
+
+import boto3
+from colorama import Fore, Style, init
+
+from opensearch_py_ml.ml_commons.IAMRoleHelper import IAMRoleHelper
+from opensearch_py_ml.ml_commons.rag_pipeline.rag.AIConnectorHelper import (
+    AIConnectorHelper,
+)
+from opensearch_py_ml.ml_commons.rag_pipeline.rag.ml_models.BedrockModel import (
+    BedrockModel,
+)
+from opensearch_py_ml.ml_commons.rag_pipeline.rag.ml_models.CohereModel import (
+    CohereModel,
+)
+from opensearch_py_ml.ml_commons.rag_pipeline.rag.ml_models.HuggingFaceModel import (
+    HuggingFaceModel,
+)
+from opensearch_py_ml.ml_commons.rag_pipeline.rag.ml_models.OpenAIModel import (
+    OpenAIModel,
+)
+from opensearch_py_ml.ml_commons.rag_pipeline.rag.ml_models.PyTorchModel import (
+    CustomPyTorchModel,
+)
 
 # Initialize colorama for colored terminal output
 init(autoreset=True)
@@ -40,15 +51,15 @@ class ModelRegister:
         :param opensearch_domain_name: Name of the OpenSearch domain.
         """
         self.config = config
-        self.aws_region = config.get('region')
+        self.aws_region = config.get("region")
         self.opensearch_client = opensearch_client
         self.opensearch_domain_name = opensearch_domain_name
-        self.opensearch_endpoint = config.get('opensearch_endpoint')
-        self.opensearch_username = config.get('opensearch_username')
-        self.opensearch_password = config.get('opensearch_password')
-        self.iam_principal = config.get('iam_principal')
-        self.embedding_dimension = int(config.get('embedding_dimension', 768))
-        self.service_type = config.get('service_type', 'managed')
+        self.opensearch_endpoint = config.get("opensearch_endpoint")
+        self.opensearch_username = config.get("opensearch_username")
+        self.opensearch_password = config.get("opensearch_password")
+        self.iam_principal = config.get("iam_principal")
+        self.embedding_dimension = int(config.get("embedding_dimension", 768))
+        self.service_type = config.get("service_type", "managed")
 
         # Initialize IAMRoleHelper with necessary parameters
         self.iam_role_helper = IAMRoleHelper(
@@ -56,11 +67,11 @@ class ModelRegister:
             self.opensearch_domain_name,
             self.opensearch_username,
             self.opensearch_password,
-            self.iam_principal
+            self.iam_principal,
         )
 
         # Initialize AWS clients if the service type is not open-source
-        if self.service_type != 'open-source':
+        if self.service_type != "open-source":
             self.initialize_clients()
 
         # Initialize instances of different model providers
@@ -69,35 +80,35 @@ class ModelRegister:
             opensearch_domain_name=self.opensearch_domain_name,
             opensearch_username=self.opensearch_username,
             opensearch_password=self.opensearch_password,
-            iam_role_helper=self.iam_role_helper
+            iam_role_helper=self.iam_role_helper,
         )
         self.openai_model = OpenAIModel(
             aws_region=self.aws_region,
             opensearch_domain_name=self.opensearch_domain_name,
             opensearch_username=self.opensearch_username,
             opensearch_password=self.opensearch_password,
-            iam_role_helper=self.iam_role_helper
+            iam_role_helper=self.iam_role_helper,
         )
         self.cohere_model = CohereModel(
             aws_region=self.aws_region,
             opensearch_domain_name=self.opensearch_domain_name,
             opensearch_username=self.opensearch_username,
             opensearch_password=self.opensearch_password,
-            iam_role_helper=self.iam_role_helper
+            iam_role_helper=self.iam_role_helper,
         )
         self.huggingface_model = HuggingFaceModel(
             aws_region=self.aws_region,
             opensearch_domain_name=self.opensearch_domain_name,
             opensearch_username=self.opensearch_username,
             opensearch_password=self.opensearch_password,
-            iam_role_helper=self.iam_role_helper
+            iam_role_helper=self.iam_role_helper,
         )
         self.custom_pytorch_model = CustomPyTorchModel(
             aws_region=self.aws_region,
             opensearch_domain_name=self.opensearch_domain_name,
             opensearch_username=self.opensearch_username,
             opensearch_password=self.opensearch_password,
-            iam_role_helper=self.iam_role_helper
+            iam_role_helper=self.iam_role_helper,
         )
 
     def initialize_clients(self) -> bool:
@@ -106,10 +117,12 @@ class ModelRegister:
 
         :return: True if clients are initialized successfully, False otherwise.
         """
-        if self.service_type in ['managed', 'serverless']:
+        if self.service_type in ["managed", "serverless"]:
             try:
                 # Initialize Bedrock client for managed services
-                self.bedrock_client = boto3.client('bedrock-runtime', region_name=self.aws_region)
+                self.bedrock_client = boto3.client(
+                    "bedrock-runtime", region_name=self.aws_region
+                )
                 # Add any other clients initialization if needed
                 time.sleep(7)  # Wait for client initialization
                 print("AWS clients initialized successfully.")
@@ -130,19 +143,25 @@ class ModelRegister:
         print("2. Use an existing embedding model ID")
         choice = input("Enter your choice (1-2): ").strip()
 
-        if choice == '1':
+        if choice == "1":
             self.register_model_interactive()
-        elif choice == '2':
+        elif choice == "2":
             model_id = input("Please enter your existing embedding model ID: ").strip()
             if model_id:
-                self.config['embedding_model_id'] = model_id
+                self.config["embedding_model_id"] = model_id
                 self.save_config(self.config)
-                print(f"{Fore.GREEN}Model ID '{model_id}' saved successfully in configuration.{Style.RESET_ALL}")
+                print(
+                    f"{Fore.GREEN}Model ID '{model_id}' saved successfully in configuration.{Style.RESET_ALL}"
+                )
             else:
-                print(f"{Fore.RED}No model ID provided. Cannot proceed without an embedding model.{Style.RESET_ALL}")
+                print(
+                    f"{Fore.RED}No model ID provided. Cannot proceed without an embedding model.{Style.RESET_ALL}"
+                )
                 sys.exit(1)  # Exit the setup as we cannot proceed without a model ID
         else:
-            print(f"{Fore.RED}Invalid choice. Please run setup again and select a valid option.{Style.RESET_ALL}")
+            print(
+                f"{Fore.RED}Invalid choice. Please run setup again and select a valid option.{Style.RESET_ALL}"
+            )
             sys.exit(1)  # Exit the setup as we cannot proceed without a valid choice
 
     def save_config(self, config):
@@ -152,9 +171,10 @@ class ModelRegister:
         :param config: Configuration dictionary to save.
         """
         import configparser
+
         parser = configparser.ConfigParser()
-        parser['DEFAULT'] = config
-        with open('config.ini', 'w') as f:
+        parser["DEFAULT"] = config
+        with open("config.ini", "w") as f:
             parser.write(f)
 
     def register_model_interactive(self):
@@ -163,16 +183,22 @@ class ModelRegister:
         """
         # Initialize clients
         if not self.initialize_clients():
-            print(f"{Fore.RED}Failed to initialize AWS clients. Cannot proceed.{Style.RESET_ALL}")
+            print(
+                f"{Fore.RED}Failed to initialize AWS clients. Cannot proceed.{Style.RESET_ALL}"
+            )
             return
 
         # Ensure opensearch_endpoint is set
-        if not self.config.get('opensearch_endpoint'):
-            print(f"{Fore.RED}OpenSearch endpoint not set. Please run 'setup' command first.{Style.RESET_ALL}")
+        if not self.config.get("opensearch_endpoint"):
+            print(
+                f"{Fore.RED}OpenSearch endpoint not set. Please run 'setup' command first.{Style.RESET_ALL}"
+            )
             return
 
         # Extract the IAM user name from the IAM principal ARN
-        aws_user_name = self.iam_role_helper.get_iam_user_name_from_arn(self.iam_principal)
+        aws_user_name = self.iam_role_helper.get_iam_user_name_from_arn(
+            self.iam_principal
+        )
 
         if not aws_user_name:
             print("Could not extract IAM user name from IAM principal ARN.")
@@ -187,7 +213,7 @@ class ModelRegister:
             opensearch_domain_password=self.opensearch_password,
             aws_user_name=aws_user_name,
             aws_role_name=None,  # Set to None or provide if applicable
-            opensearch_domain_url=self.opensearch_endpoint  # Pass the endpoint from config
+            opensearch_domain_url=self.opensearch_endpoint,  # Pass the endpoint from config
         )
 
         # Prompt user to select a model
@@ -200,30 +226,50 @@ class ModelRegister:
         model_choice = input("Enter your choice (1-5): ")
 
         # Call the appropriate method based on the user's choice
-        if model_choice == '1':
-            self.bedrock_model.register_bedrock_model(helper, self.config, self.save_config)
-        elif model_choice == '2':
-            if self.service_type != 'open-source':
-                self.openai_model.register_openai_model(helper, self.config, self.save_config)
+        if model_choice == "1":
+            self.bedrock_model.register_bedrock_model(
+                helper, self.config, self.save_config
+            )
+        elif model_choice == "2":
+            if self.service_type != "open-source":
+                self.openai_model.register_openai_model(
+                    helper, self.config, self.save_config
+                )
             else:
-                self.openai_model.register_openai_model_opensource(self.opensearch_client, self.config, self.save_config)
-        elif model_choice == '3':
-            if self.service_type != 'open-source':
-                self.cohere_model.register_cohere_model(helper, self.config, self.save_config)
+                self.openai_model.register_openai_model_opensource(
+                    self.opensearch_client, self.config, self.save_config
+                )
+        elif model_choice == "3":
+            if self.service_type != "open-source":
+                self.cohere_model.register_cohere_model(
+                    helper, self.config, self.save_config
+                )
             else:
-                self.cohere_model.register_cohere_model_opensource(self.opensearch_client, self.config, self.save_config)
-        elif model_choice == '4':
-            if self.service_type != 'open-source':
-                print(f"{Fore.RED}Hugging Face Transformers models are only supported in open-source OpenSearch.{Style.RESET_ALL}")
+                self.cohere_model.register_cohere_model_opensource(
+                    self.opensearch_client, self.config, self.save_config
+                )
+        elif model_choice == "4":
+            if self.service_type != "open-source":
+                print(
+                    f"{Fore.RED}Hugging Face Transformers models are only supported in open-source OpenSearch.{Style.RESET_ALL}"
+                )
             else:
-                self.huggingface_model.register_huggingface_model(self.opensearch_client, self.config, self.save_config)
-        elif model_choice == '5':
-            if self.service_type != 'open-source':
-                print(f"{Fore.RED}Custom PyTorch models are only supported in open-source OpenSearch.{Style.RESET_ALL}")
+                self.huggingface_model.register_huggingface_model(
+                    self.opensearch_client, self.config, self.save_config
+                )
+        elif model_choice == "5":
+            if self.service_type != "open-source":
+                print(
+                    f"{Fore.RED}Custom PyTorch models are only supported in open-source OpenSearch.{Style.RESET_ALL}"
+                )
             else:
-                self.custom_pytorch_model.register_custom_pytorch_model(self.opensearch_client, self.config, self.save_config)
+                self.custom_pytorch_model.register_custom_pytorch_model(
+                    self.opensearch_client, self.config, self.save_config
+                )
         else:
-            print(f"{Fore.RED}Invalid choice. Exiting model registration.{Style.RESET_ALL}")
+            print(
+                f"{Fore.RED}Invalid choice. Exiting model registration.{Style.RESET_ALL}"
+            )
             return
 
     def prompt_opensource_model_registration(self):
@@ -235,12 +281,16 @@ class ModelRegister:
         print("2. No, I will register the model later")
         choice = input("Enter your choice (1-2): ").strip()
 
-        if choice == '1':
+        if choice == "1":
             self.register_model_opensource_interactive()
-        elif choice == '2':
-            print("Skipping model registration. You can register models later using the appropriate commands.")
+        elif choice == "2":
+            print(
+                "Skipping model registration. You can register models later using the appropriate commands."
+            )
         else:
-            print(f"{Fore.RED}Invalid choice. Skipping model registration.{Style.RESET_ALL}")
+            print(
+                f"{Fore.RED}Invalid choice. Skipping model registration.{Style.RESET_ALL}"
+            )
 
     def register_model_opensource_interactive(self):
         """
@@ -248,7 +298,9 @@ class ModelRegister:
         """
         # Ensure OpenSearch client is initialized
         if not self.opensearch_client:
-            print(f"{Fore.RED}OpenSearch client is not initialized. Please run setup again.{Style.RESET_ALL}")
+            print(
+                f"{Fore.RED}OpenSearch client is not initialized. Please run setup again.{Style.RESET_ALL}"
+            )
             return
 
         # Prompt user to select a model
@@ -259,14 +311,24 @@ class ModelRegister:
         print("4. Custom PyTorch Model")
         model_choice = input("Enter your choice (1-4): ")
 
-        if model_choice == '1':
-            self.openai_model.register_openai_model_opensource(self.opensearch_client, self.config, self.save_config)
-        elif model_choice == '2':
-            self.cohere_model.register_cohere_model_opensource(self.opensearch_client, self.config, self.save_config)
-        elif model_choice == '3':
-            self.huggingface_model.register_huggingface_model(self.opensearch_client, self.config, self.save_config)
-        elif model_choice == '4':
-            self.custom_pytorch_model.register_custom_pytorch_model(self.opensearch_client, self.config, self.save_config)
+        if model_choice == "1":
+            self.openai_model.register_openai_model_opensource(
+                self.opensearch_client, self.config, self.save_config
+            )
+        elif model_choice == "2":
+            self.cohere_model.register_cohere_model_opensource(
+                self.opensearch_client, self.config, self.save_config
+            )
+        elif model_choice == "3":
+            self.huggingface_model.register_huggingface_model(
+                self.opensearch_client, self.config, self.save_config
+            )
+        elif model_choice == "4":
+            self.custom_pytorch_model.register_custom_pytorch_model(
+                self.opensearch_client, self.config, self.save_config
+            )
         else:
-            print(f"{Fore.RED}Invalid choice. Exiting model registration.{Style.RESET_ALL}")
+            print(
+                f"{Fore.RED}Invalid choice. Exiting model registration.{Style.RESET_ALL}"
+            )
             return

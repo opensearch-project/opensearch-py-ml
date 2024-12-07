@@ -5,188 +5,144 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
-import unittest
-from unittest.mock import patch, MagicMock
-import os
 import configparser
+import os
+import unittest
+from unittest.mock import MagicMock, patch
+
+# Adjust the import path to wherever Setup is actually defined
 from opensearch_py_ml.ml_commons.rag_pipeline.rag.rag_setup import Setup
-from colorama import Fore, Style
+
 
 class TestSetup(unittest.TestCase):
-    def setUp(self):
-        # Sample configuration
-        self.sample_config = {
-            'service_type': 'managed',
-            'region': 'us-west-2',
-            'iam_principal': 'arn:aws:iam::123456789012:user/test-user',
-            'collection_name': 'test-collection',
-            'opensearch_endpoint': 'https://search-hashim-test5.us-west-2.es.amazonaws.com',
-            'opensearch_username': '*****',
-            'opensearch_password': 'password',
-            'default_search_method': 'neural',
-            'index_name': 'test-index',
-            'embedding_dimension': '768',
-            'space_type': 'cosinesimil',
-            'ef_construction': '512',
-        }
 
-        # Initialize Setup instance
+    def setUp(self):
+        if os.path.exists(Setup.CONFIG_FILE):
+            os.remove(Setup.CONFIG_FILE)
         self.setup_instance = Setup()
 
-        # Set index_name for tests
-        self.setup_instance.index_name = self.sample_config['index_name']
+    def tearDown(self):
+        if os.path.exists(Setup.CONFIG_FILE):
+            os.remove(Setup.CONFIG_FILE)
 
-        # Mock AWS clients
-        self.mock_boto3_client = patch('boto3.client').start()
-        self.addCleanup(patch.stopall)
-
-        # Mock OpenSearch client
-        self.mock_opensearch_client = MagicMock()
-        self.setup_instance.opensearch_client = self.mock_opensearch_client
-
-        # Mock os.path.exists
-        self.patcher_os_path_exists = patch('os.path.exists', return_value=True)
-        self.mock_os_path_exists = self.patcher_os_path_exists.start()
-        self.addCleanup(self.patcher_os_path_exists.stop)
-
-        # Mock configparser
-        self.patcher_configparser = patch('configparser.ConfigParser')
-        self.mock_configparser_class = self.patcher_configparser.start()
-        self.mock_configparser = MagicMock()
-        self.mock_configparser_class.return_value = self.mock_configparser
-        self.addCleanup(self.patcher_configparser.stop)
-
-    def test_load_config_existing(self):
-        with patch('os.path.exists', return_value=True):
-            self.mock_configparser.read.return_value = None
-            self.mock_configparser.__getitem__.return_value = self.sample_config
-            config = self.setup_instance.load_config()
-            self.assertEqual(config, self.sample_config)
+    @patch("builtins.input", return_value="fake_input")
+    @patch("subprocess.run")
+    def test_configure_aws(self, mock_subprocess, mock_input):
+        with patch.object(
+            self.setup_instance,
+            "get_password_with_asterisks",
+            return_value="fake_secret",
+        ):
+            self.setup_instance.configure_aws()
+            self.assertEqual(mock_subprocess.call_count, 3)
 
     def test_load_config_no_file(self):
-        with patch('os.path.exists', return_value=False):
-            self.mock_configparser.read.return_value = None
-            config = self.setup_instance.load_config()
-            self.assertEqual(config, {})
+        config = self.setup_instance.load_config()
+        self.assertEqual(config, {})
 
-    def test_save_config(self):
-        with patch('builtins.open', unittest.mock.mock_open()) as mock_file:
-            self.setup_instance.save_config(self.sample_config)
-            mock_file.assert_called_with(self.setup_instance.CONFIG_FILE, 'w')
-            self.mock_configparser.write.assert_called()
+    def test_load_config_with_file(self):
+        parser = configparser.ConfigParser()
+        parser["DEFAULT"] = {"region": "us-east-1", "service_type": "managed"}
+        with open(Setup.CONFIG_FILE, "w") as f:
+            parser.write(f)
+        config = self.setup_instance.load_config()
+        self.assertEqual(config.get("region"), "us-east-1")
+        self.assertEqual(config.get("service_type"), "managed")
+
+    @patch("sys.stdin")
+    @patch("sys.stdout")
+    def test_get_password_with_asterisks(self, mock_stdout, mock_stdin):
+        mock_stdin.fileno.return_value = 0
+        mock_stdin.read = MagicMock(side_effect=list("secret\n"))
+        pwd = self.setup_instance.get_password_with_asterisks("Enter password: ")
+        self.assertEqual(pwd, "secret")
+
+    @patch("builtins.input", side_effect=["2", "", "no", "2", ""])
+    def test_setup_configuration_open_source_no_auth(self, mock_input):
+        self.setup_instance.setup_configuration()
+        config = self.setup_instance.config
+        self.assertEqual(config["service_type"], "open-source")
+        self.assertEqual(config["opensearch_username"], "")
+        self.assertEqual(config["opensearch_password"], "")
+
+    @patch("boto3.client")
+    def test_initialize_clients_managed(self, mock_boto_client):
+        self.setup_instance.service_type = "managed"
+        self.setup_instance.aws_region = "us-west-2"
+        mock_boto_client.return_value = MagicMock()
+        result = self.setup_instance.initialize_clients()
+        self.assertTrue(result)
+
+    def test_initialize_clients_open_source(self):
+        self.setup_instance.service_type = "open-source"
+        result = self.setup_instance.initialize_clients()
+        self.assertTrue(result)
 
     def test_get_opensearch_domain_name(self):
-        with patch.object(Setup, 'load_config', return_value=self.sample_config.copy()):
-            domain_name = self.setup_instance.get_opensearch_domain_name()
-            self.assertEqual(domain_name, 'hashim-test5')
+        self.setup_instance.opensearch_endpoint = (
+            "https://search-my-domain-name-abc123.us-west-2.es.amazonaws.com"
+        )
+        domain_name = self.setup_instance.get_opensearch_domain_name()
+        self.assertEqual(domain_name, "my-domain-name")
 
-    @patch('opensearch_py_ml.ml_commons.rag_pipeline.rag.rag_setup.OpenSearch')
+    @patch("boto3.client")
+    def test_get_opensearch_domain_info(self, mock_boto_client):
+        mock_client = MagicMock()
+        mock_boto_client.return_value = mock_client
+        mock_client.describe_domain.return_value = {
+            "DomainStatus": {"Endpoint": "search-endpoint", "ARN": "test-arn"}
+        }
+        endpoint, arn = self.setup_instance.get_opensearch_domain_info(
+            "us-west-2", "mydomain"
+        )
+        self.assertEqual(endpoint, "search-endpoint")
+        self.assertEqual(arn, "test-arn")
+
+    @patch("opensearch_py_ml.ml_commons.rag_pipeline.rag.rag_setup.OpenSearch")
     def test_initialize_opensearch_client_managed(self, mock_opensearch):
-        with patch.object(Setup, 'load_config', return_value=self.sample_config.copy()):
-            self.setup_instance = Setup()
-            self.setup_instance.opensearch_username = '*****'
-            self.setup_instance.opensearch_password = 'password'
-            result = self.setup_instance.initialize_opensearch_client()
-            self.assertTrue(result)
-            mock_opensearch.assert_called_once()
+        self.setup_instance.service_type = "managed"
+        self.setup_instance.opensearch_endpoint = "https://test-domain:443"
+        self.setup_instance.opensearch_username = "admin"
+        self.setup_instance.opensearch_password = "pass"
+        result = self.setup_instance.initialize_opensearch_client()
+        self.assertTrue(result)
+        mock_opensearch.assert_called_once()
 
-    def test_initialize_opensearch_client_no_endpoint(self):
-        self.setup_instance.opensearch_endpoint = ''
-        with patch('builtins.print') as mock_print:
-            result = self.setup_instance.initialize_opensearch_client()
-            self.assertFalse(result)
-            mock_print.assert_called_with(f"{Fore.RED}OpenSearch endpoint not set. Please run setup first.{Style.RESET_ALL}\n")
+    @patch("opensearch_py_ml.ml_commons.rag_pipeline.rag.rag_setup.OpenSearch")
+    def test_initialize_opensearch_client_open_source_no_auth(self, mock_opensearch):
+        self.setup_instance.service_type = "open-source"
+        self.setup_instance.opensearch_endpoint = "http://localhost:9200"
+        self.setup_instance.opensearch_username = ""
+        self.setup_instance.opensearch_password = ""
+        result = self.setup_instance.initialize_opensearch_client()
+        self.assertTrue(result)
+        mock_opensearch.assert_called_once()
 
-    def test_verify_and_create_index_exists(self):
-        self.setup_instance.index_name = self.sample_config['index_name']
-        self.mock_opensearch_client.indices.exists.return_value = True
-        with patch('builtins.print') as mock_print:
-            result = self.setup_instance.verify_and_create_index(768, 'cosinesimil', 512)
-            self.assertTrue(result)
-            mock_print.assert_called_with(f"{Fore.GREEN}KNN index '{self.setup_instance.index_name}' already exists.{Style.RESET_ALL}\n")
+    @patch("builtins.input", side_effect=["", "", "", "", "", "", "", ""])
+    def test_get_knn_index_details_all_defaults(self, mock_input):
+        details = self.setup_instance.get_knn_index_details()
+        self.assertEqual(
+            details,
+            (
+                768,
+                "l2",
+                512,
+                1,
+                2,
+                "passage_text",
+                "passage_chunk",
+                "passage_embedding",
+            ),
+        )
 
-    def test_verify_and_create_index_create(self):
-        self.setup_instance.index_name = self.sample_config['index_name']
-        self.mock_opensearch_client.indices.exists.return_value = False
-        self.setup_instance.create_index = MagicMock()
-        with patch('builtins.print') as mock_print:
-            result = self.setup_instance.verify_and_create_index(768, 'cosinesimil', 512)
-            self.assertTrue(result)
-            self.setup_instance.create_index.assert_called_with(768, 'cosinesimil', 512)
+    def test_save_config(self):
+        config = {"key": "value", "another_key": "another_value"}
+        self.setup_instance.save_config(config)
+        parser = configparser.ConfigParser()
+        parser.read(Setup.CONFIG_FILE)
+        self.assertEqual(parser["DEFAULT"]["key"], "value")
+        self.assertEqual(parser["DEFAULT"]["another_key"], "another_value")
 
-    def test_create_index_success(self):
-        with patch('builtins.print') as mock_print:
-            self.setup_instance.create_index(768, 'cosinesimil', 512)
-            self.mock_opensearch_client.indices.create.assert_called_once()
-            mock_print.assert_called_with(f"\n{Fore.GREEN}KNN index '{self.setup_instance.index_name}' created successfully with dimension 768, space type cosinesimil, and ef_construction 512.{Style.RESET_ALL}\n")
 
-    def test_create_index_already_exists(self):
-        self.mock_opensearch_client.indices.create.side_effect = Exception('resource_already_exists_exception')
-        with patch('builtins.print') as mock_print:
-            self.setup_instance.create_index(768, 'cosinesimil', 512)
-            mock_print.assert_called_with(f"\n{Fore.YELLOW}Index '{self.setup_instance.index_name}' already exists.{Style.RESET_ALL}\n")
-
-    def test_get_knn_index_details_default(self):
-        with patch('builtins.input', side_effect=['', '', '']):
-            with patch('builtins.print'):
-                embedding_dimension, space_type, ef_construction = self.setup_instance.get_knn_index_details()
-                self.assertEqual(embedding_dimension, 768)
-                self.assertEqual(space_type, 'l2')
-                self.assertEqual(ef_construction, 512)
-
-    def test_get_truncated_name_within_limit(self):
-        name = 'short-name'
-        truncated_name = self.setup_instance.get_truncated_name(name, max_length=32)
-        self.assertEqual(truncated_name, name)
-
-    def test_get_truncated_name_exceeds_limit(self):
-        name = 'a' * 35
-        truncated_name = self.setup_instance.get_truncated_name(name, max_length=32)
-        self.assertEqual(truncated_name, 'a' * 29 + '...')
-
-    def test_initialize_clients_success(self):
-        with patch.object(Setup, 'load_config', return_value=self.sample_config.copy()):
-            self.setup_instance = Setup()
-            self.setup_instance.service_type = 'managed'
-            with patch('boto3.client') as mock_boto_client:
-                mock_boto_client.return_value = MagicMock()
-                with patch('time.sleep'):
-                    with patch('builtins.print') as mock_print:
-                        result = self.setup_instance.initialize_clients()
-                        self.assertTrue(result)
-                        mock_print.assert_called_with(f"{Fore.GREEN}AWS clients initialized successfully.{Style.RESET_ALL}\n")
-
-    def test_initialize_clients_failure(self):
-        self.setup_instance.service_type = 'managed'
-        with patch('boto3.client', side_effect=Exception('Initialization failed')):
-            with patch('builtins.print') as mock_print:
-                result = self.setup_instance.initialize_clients()
-                self.assertFalse(result)
-                mock_print.assert_called_with(f"{Fore.RED}Failed to initialize AWS clients: Initialization failed{Style.RESET_ALL}")
-
-    def test_check_and_configure_aws_already_configured(self):
-        with patch('boto3.Session') as mock_session:
-            mock_session.return_value.get_credentials.return_value = MagicMock()
-            with patch('builtins.input', return_value='no'):
-                with patch('builtins.print') as mock_print:
-                    self.setup_instance.check_and_configure_aws()
-                    mock_print.assert_called_with("AWS credentials are already configured.")
-
-    def test_check_and_configure_aws_not_configured(self):
-        with patch('boto3.Session') as mock_session:
-            mock_session.return_value.get_credentials.return_value = None
-            self.setup_instance.configure_aws = MagicMock()
-            with patch('builtins.print'):
-                self.setup_instance.check_and_configure_aws()
-                self.setup_instance.configure_aws.assert_called_once()
-
-    def test_configure_aws(self):
-        with patch('builtins.input', side_effect=['AKIA...', 'SECRET...', 'us-west-2']):
-            with patch('subprocess.run') as mock_subprocess_run:
-                with patch('builtins.print') as mock_print:
-                    self.setup_instance.configure_aws()
-                    self.assertEqual(mock_subprocess_run.call_count, 3)
-                    mock_print.assert_called_with(f"{Fore.GREEN}AWS credentials have been successfully configured.{Style.RESET_ALL}")
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -5,12 +5,11 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
-import boto3
-import botocore
 import json
 import time
-from urllib.parse import urlparse
+
 from colorama import Fore, Style
+
 
 class Serverless:
     def __init__(self, aoss_client, collection_name, iam_principal, aws_region):
@@ -31,29 +30,73 @@ class Serverless:
         """
         Create security policies for serverless OpenSearch.
         """
-        encryption_policy = json.dumps({
-            "Rules": [{"Resource": [f"collection/{self.collection_name}"], "ResourceType": "collection"}],
-            "AWSOwnedKey": True
-        })
-        
-        network_policy = json.dumps([{
-            "Rules": [{"Resource": [f"collection/{self.collection_name}"], "ResourceType": "collection"}],
-            "AllowFromPublic": True
-        }])
-        
-        data_access_policy = json.dumps([{
-            "Rules": [
-                {"Resource": ["collection/*"], "Permission": ["aoss:*"], "ResourceType": "collection"},
-                {"Resource": ["index/*/*"], "Permission": ["aoss:*"], "ResourceType": "index"}
-            ],
-            "Principal": [self.iam_principal],
-            "Description": f"Data access policy for {self.collection_name}"
-        }])
-        
-        encryption_policy_name = self.get_truncated_name(f"{self.collection_name}-enc-policy")
-        self.create_security_policy("encryption", encryption_policy_name, f"{self.collection_name} encryption security policy", encryption_policy)
-        self.create_security_policy("network", f"{self.collection_name}-net-policy", f"{self.collection_name} network security policy", network_policy)
-        self.create_access_policy(self.get_truncated_name(f"{self.collection_name}-access-policy"), f"{self.collection_name} data access policy", data_access_policy)
+        encryption_policy = json.dumps(
+            {
+                "Rules": [
+                    {
+                        "Resource": [f"collection/{self.collection_name}"],
+                        "ResourceType": "collection",
+                    }
+                ],
+                "AWSOwnedKey": True,
+            }
+        )
+
+        network_policy = json.dumps(
+            [
+                {
+                    "Rules": [
+                        {
+                            "Resource": [f"collection/{self.collection_name}"],
+                            "ResourceType": "collection",
+                        }
+                    ],
+                    "AllowFromPublic": True,
+                }
+            ]
+        )
+
+        data_access_policy = json.dumps(
+            [
+                {
+                    "Rules": [
+                        {
+                            "Resource": ["collection/*"],
+                            "Permission": ["aoss:*"],
+                            "ResourceType": "collection",
+                        },
+                        {
+                            "Resource": ["index/*/*"],
+                            "Permission": ["aoss:*"],
+                            "ResourceType": "index",
+                        },
+                    ],
+                    "Principal": [self.iam_principal],
+                    "Description": f"Data access policy for {self.collection_name}",
+                }
+            ]
+        )
+
+        encryption_policy_name = self.get_truncated_name(
+            f"{self.collection_name}-enc-policy"
+        )
+        self.create_security_policy(
+            "encryption",
+            encryption_policy_name,
+            f"{self.collection_name} encryption security policy",
+            encryption_policy,
+        )
+        self.create_security_policy(
+            "network",
+            f"{self.collection_name}-net-policy",
+            f"{self.collection_name} network security policy",
+            network_policy,
+        )
+        self.create_access_policy(
+            self.get_truncated_name(f"{self.collection_name}-access-policy"),
+            f"{self.collection_name} data access policy",
+            data_access_policy,
+        )
 
     def create_security_policy(self, policy_type, name, description, policy_body):
         """
@@ -70,22 +113,28 @@ class Serverless:
                     description=description,
                     name=name,
                     policy=policy_body,
-                    type="encryption"
+                    type="encryption",
                 )
             elif policy_type.lower() == "network":
                 self.aoss_client.create_security_policy(
                     description=description,
                     name=name,
                     policy=policy_body,
-                    type="network"
+                    type="network",
                 )
             else:
                 raise ValueError("Invalid policy type specified.")
-            print(f"{Fore.GREEN}{policy_type.capitalize()} Policy '{name}' created successfully.{Style.RESET_ALL}")
+            print(
+                f"{Fore.GREEN}{policy_type.capitalize()} Policy '{name}' created successfully.{Style.RESET_ALL}"
+            )
         except self.aoss_client.exceptions.ConflictException:
-            print(f"{Fore.YELLOW}{policy_type.capitalize()} Policy '{name}' already exists.{Style.RESET_ALL}")
+            print(
+                f"{Fore.YELLOW}{policy_type.capitalize()} Policy '{name}' already exists.{Style.RESET_ALL}"
+            )
         except Exception as ex:
-            print(f"{Fore.RED}Error creating {policy_type} policy '{name}': {ex}{Style.RESET_ALL}")
+            print(
+                f"{Fore.RED}Error creating {policy_type} policy '{name}': {ex}{Style.RESET_ALL}"
+            )
 
     def create_access_policy(self, name, description, policy_body):
         """
@@ -97,16 +146,19 @@ class Serverless:
         """
         try:
             self.aoss_client.create_access_policy(
-                description=description,
-                name=name,
-                policy=policy_body,
-                type="data"
+                description=description, name=name, policy=policy_body, type="data"
             )
-            print(f"{Fore.GREEN}Data Access Policy '{name}' created successfully.{Style.RESET_ALL}\n")
+            print(
+                f"{Fore.GREEN}Data Access Policy '{name}' created successfully.{Style.RESET_ALL}\n"
+            )
         except self.aoss_client.exceptions.ConflictException:
-            print(f"{Fore.YELLOW}Data Access Policy '{name}' already exists.{Style.RESET_ALL}\n")
+            print(
+                f"{Fore.YELLOW}Data Access Policy '{name}' already exists.{Style.RESET_ALL}\n"
+            )
         except Exception as ex:
-            print(f"{Fore.RED}Error creating data access policy '{name}': {ex}{Style.RESET_ALL}\n")
+            print(
+                f"{Fore.RED}Error creating data access policy '{name}': {ex}{Style.RESET_ALL}\n"
+            )
 
     def create_collection(self, collection_name, max_retries=3):
         """
@@ -121,15 +173,21 @@ class Serverless:
                 response = self.aoss_client.create_collection(
                     description=f"{collection_name} collection",
                     name=collection_name,
-                    type="VECTORSEARCH"
+                    type="VECTORSEARCH",
                 )
-                print(f"{Fore.GREEN}Collection '{collection_name}' creation initiated.{Style.RESET_ALL}")
-                return response['createCollectionDetail']['id']
+                print(
+                    f"{Fore.GREEN}Collection '{collection_name}' creation initiated.{Style.RESET_ALL}"
+                )
+                return response["createCollectionDetail"]["id"]
             except self.aoss_client.exceptions.ConflictException:
-                print(f"{Fore.YELLOW}Collection '{collection_name}' already exists.{Style.RESET_ALL}")
+                print(
+                    f"{Fore.YELLOW}Collection '{collection_name}' already exists.{Style.RESET_ALL}"
+                )
                 return self.get_collection_id(collection_name)
             except Exception as ex:
-                print(f"{Fore.RED}Error creating collection '{collection_name}' (Attempt {attempt+1}/{max_retries}): {ex}{Style.RESET_ALL}")
+                print(
+                    f"{Fore.RED}Error creating collection '{collection_name}' (Attempt {attempt+1}/{max_retries}): {ex}{Style.RESET_ALL}"
+                )
                 if attempt == max_retries - 1:
                     return None
                 time.sleep(5)
@@ -144,9 +202,9 @@ class Serverless:
         """
         try:
             response = self.aoss_client.list_collections()
-            for collection in response.get('collectionSummaries', []):
-                if collection.get('name') == collection_name:
-                    return collection.get('id')
+            for collection in response.get("collectionSummaries", []):
+                if collection.get("name") == collection_name:
+                    return collection.get("id")
         except Exception as ex:
             print(f"{Fore.RED}Error getting collection ID: {ex}{Style.RESET_ALL}")
         return None
@@ -164,20 +222,28 @@ class Serverless:
         while time.time() - start_time < max_wait_minutes * 60:
             try:
                 response = self.aoss_client.batch_get_collection(ids=[collection_id])
-                status = response['collectionDetails'][0]['status']
-                if status == 'ACTIVE':
-                    print(f"{Fore.GREEN}Collection '{self.collection_name}' is now active.{Style.RESET_ALL}\n")
+                status = response["collectionDetails"][0]["status"]
+                if status == "ACTIVE":
+                    print(
+                        f"{Fore.GREEN}Collection '{self.collection_name}' is now active.{Style.RESET_ALL}\n"
+                    )
                     return True
-                elif status in ['FAILED', 'DELETED']:
-                    print(f"{Fore.RED}Collection creation failed or was deleted. Status: {status}{Style.RESET_ALL}\n")
+                elif status in ["FAILED", "DELETED"]:
+                    print(
+                        f"{Fore.RED}Collection creation failed or was deleted. Status: {status}{Style.RESET_ALL}\n"
+                    )
                     return False
                 else:
                     print(f"Collection status: {status}. Waiting...")
                     time.sleep(30)
             except Exception as ex:
-                print(f"{Fore.RED}Error checking collection status: {ex}{Style.RESET_ALL}")
+                print(
+                    f"{Fore.RED}Error checking collection status: {ex}{Style.RESET_ALL}"
+                )
                 time.sleep(30)
-        print(f"{Fore.RED}Timed out waiting for collection to become active after {max_wait_minutes} minutes.{Style.RESET_ALL}\n")
+        print(
+            f"{Fore.RED}Timed out waiting for collection to become active after {max_wait_minutes} minutes.{Style.RESET_ALL}\n"
+        )
         return False
 
     def get_collection_endpoint(self):
@@ -189,25 +255,37 @@ class Serverless:
         try:
             collection_id = self.get_collection_id(self.collection_name)
             if not collection_id:
-                print(f"{Fore.RED}Collection '{self.collection_name}' not found.{Style.RESET_ALL}\n")
+                print(
+                    f"{Fore.RED}Collection '{self.collection_name}' not found.{Style.RESET_ALL}\n"
+                )
                 return None
-            
-            batch_get_response = self.aoss_client.batch_get_collection(ids=[collection_id])
-            collection_details = batch_get_response.get('collectionDetails', [])
-            
+
+            batch_get_response = self.aoss_client.batch_get_collection(
+                ids=[collection_id]
+            )
+            collection_details = batch_get_response.get("collectionDetails", [])
+
             if not collection_details:
-                print(f"{Fore.RED}No details found for collection ID '{collection_id}'.{Style.RESET_ALL}\n")
+                print(
+                    f"{Fore.RED}No details found for collection ID '{collection_id}'.{Style.RESET_ALL}\n"
+                )
                 return None
-            
-            endpoint = collection_details[0].get('collectionEndpoint')
+
+            endpoint = collection_details[0].get("collectionEndpoint")
             if endpoint:
-                print(f"Collection '{self.collection_name}' has endpoint URL: {endpoint}\n")
+                print(
+                    f"Collection '{self.collection_name}' has endpoint URL: {endpoint}\n"
+                )
                 return endpoint
             else:
-                print(f"{Fore.RED}No endpoint URL found in collection '{self.collection_name}'.{Style.RESET_ALL}\n")
+                print(
+                    f"{Fore.RED}No endpoint URL found in collection '{self.collection_name}'.{Style.RESET_ALL}\n"
+                )
                 return None
         except Exception as ex:
-            print(f"{Fore.RED}Error retrieving collection endpoint: {ex}{Style.RESET_ALL}\n")
+            print(
+                f"{Fore.RED}Error retrieving collection endpoint: {ex}{Style.RESET_ALL}\n"
+            )
             return None
 
     @staticmethod
@@ -221,4 +299,4 @@ class Serverless:
         """
         if len(base_name) <= max_length:
             return base_name
-        return base_name[:max_length-3] + "..."
+        return base_name[: max_length - 3] + "..."

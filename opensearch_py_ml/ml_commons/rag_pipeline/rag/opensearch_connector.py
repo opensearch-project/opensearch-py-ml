@@ -5,9 +5,11 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
-from opensearchpy import OpenSearch, RequestsHttpConnection, AWSV4SignerAuth, exceptions as opensearch_exceptions
-import boto3
 from urllib.parse import urlparse
+
+import boto3
+from opensearchpy import AWSV4SignerAuth, OpenSearch, RequestsHttpConnection
+from opensearchpy import exceptions as opensearch_exceptions
 from opensearchpy import helpers as opensearch_helpers
 
 
@@ -26,13 +28,13 @@ class OpenSearchConnector:
         # Store the configuration
         self.config = config
         self.opensearch_client = None
-        self.aws_region = config.get('region')
-        self.index_name = config.get('index_name')
-        self.is_serverless = config.get('is_serverless', 'False') == 'True'
-        self.opensearch_endpoint = config.get('opensearch_endpoint')
-        self.opensearch_username = config.get('opensearch_username')
-        self.opensearch_password = config.get('opensearch_password')
-        self.service_type = config.get('service_type')
+        self.aws_region = config.get("region")
+        self.index_name = config.get("index_name")
+        self.is_serverless = config.get("is_serverless", "False") == "True"
+        self.opensearch_endpoint = config.get("opensearch_endpoint")
+        self.opensearch_username = config.get("opensearch_username")
+        self.opensearch_password = config.get("opensearch_password")
+        self.service_type = config.get("service_type")
 
     def initialize_opensearch_client(self) -> bool:
         """
@@ -48,20 +50,24 @@ class OpenSearchConnector:
         # Parse the OpenSearch endpoint URL
         parsed_url = urlparse(self.opensearch_endpoint)
         host = parsed_url.hostname
-        port = parsed_url.port or (443 if parsed_url.scheme == 'https' else 9200)  # Default ports
+        port = parsed_url.port or (
+            443 if parsed_url.scheme == "https" else 9200
+        )  # Default ports
 
         # Determine the authentication method based on the service type
-        if self.service_type == 'serverless':
+        if self.service_type == "serverless":
             # Use AWS V4 Signer Authentication for serverless
             credentials = boto3.Session().get_credentials()
-            auth = AWSV4SignerAuth(credentials, self.aws_region, 'aoss')
-        elif self.service_type == 'managed':
+            auth = AWSV4SignerAuth(credentials, self.aws_region, "aoss")
+        elif self.service_type == "managed":
             # Use basic authentication for managed services
             if not self.opensearch_username or not self.opensearch_password:
-                print("OpenSearch username or password not set. Please run setup first.")
+                print(
+                    "OpenSearch username or password not set. Please run setup first."
+                )
                 return False
             auth = (self.opensearch_username, self.opensearch_password)
-        elif self.service_type == 'open-source':
+        elif self.service_type == "open-source":
             # Use basic authentication if credentials are provided, else no authentication
             if self.opensearch_username and self.opensearch_password:
                 auth = (self.opensearch_username, self.opensearch_password)
@@ -73,20 +79,22 @@ class OpenSearchConnector:
             return False
 
         # Determine SSL settings based on the endpoint scheme
-        use_ssl = parsed_url.scheme == 'https'
-        verify_certs = True  # Always verify certificates unless you have a specific reason not to
+        use_ssl = parsed_url.scheme == "https"
+        verify_certs = (
+            True  # Always verify certificates unless you have a specific reason not to
+        )
 
         try:
             # Initialize the OpenSearch client
             self.opensearch_client = OpenSearch(
-                hosts=[{'host': host, 'port': port}],
+                hosts=[{"host": host, "port": port}],
                 http_auth=auth,
                 use_ssl=use_ssl,
                 verify_certs=verify_certs,
-                ssl_show_warn=False,          # Suppress SSL warnings
+                ssl_show_warn=False,  # Suppress SSL warnings
                 # ssl_context=ssl_context,      # Not needed unless you have custom certificates
                 connection_class=RequestsHttpConnection,
-                pool_maxsize=20
+                pool_maxsize=20,
             )
             print(f"Initialized OpenSearch client with host: {host} and port: {port}")
             return True
@@ -95,19 +103,26 @@ class OpenSearchConnector:
             print(f"Error initializing OpenSearch client: {ex}")
             return False
 
-
-    def create_index(self, embedding_dimension: int, space_type: str, ef_construction: int,
-                    number_of_shards: int, number_of_replicas: int,
-                    passage_text_field: str, passage_chunk_field: str, embedding_field: str):
+    def create_index(
+        self,
+        embedding_dimension: int,
+        space_type: str,
+        ef_construction: int,
+        number_of_shards: int,
+        number_of_replicas: int,
+        passage_text_field: str,
+        passage_chunk_field: str,
+        embedding_field: str,
+    ):
         """
-            Create a KNN index in OpenSearch with the specified parameters.
+        Create a KNN index in OpenSearch with the specified parameters.
 
-            :param embedding_dimension: The dimension of the embedding vectors.
-            :param space_type: The space type for the KNN algorithm (e.g., 'cosinesimil', 'l2').
-            :param ef_construction: ef_construction parameter for KNN
-            :param number_of_shards: Number of shards for the index
-            :param number_of_replicas: Number of replicas for the index
-            :param nominee_text_field: Field name for nominee text
+        :param embedding_dimension: The dimension of the embedding vectors.
+        :param space_type: The space type for the KNN algorithm (e.g., 'cosinesimil', 'l2').
+        :param ef_construction: ef_construction parameter for KNN
+        :param number_of_shards: Number of shards for the index
+        :param number_of_replicas: Number of replicas for the index
+        :param nominee_text_field: Field name for nominee text
         """
         # Define the index mapping and settings
         index_body = {
@@ -120,10 +135,10 @@ class OpenSearchConnector:
                         "properties": {
                             "knn": {
                                 "type": "knn_vector",
-                                "dimension": embedding_dimension
+                                "dimension": embedding_dimension,
                             }
-                        }
-                    }
+                        },
+                    },
                 }
             },
             "settings": {
@@ -138,8 +153,12 @@ class OpenSearchConnector:
 
         try:
             # Attempt to create the index
-            self.opensearch_client.indices.create(index=self.index_name, body=index_body)
-            print(f"KNN index '{self.index_name}' created successfully with the following settings:")
+            self.opensearch_client.indices.create(
+                index=self.index_name, body=index_body
+            )
+            print(
+                f"KNN index '{self.index_name}' created successfully with the following settings:"
+            )
             print(f"Embedding Dimension: {embedding_dimension}")
             print(f"Space Type: {space_type}")
             print(f"ef_construction: {ef_construction}")
@@ -150,15 +169,23 @@ class OpenSearchConnector:
             print(f"Embedding Field: '{embedding_field}'")
         except opensearch_exceptions.RequestError as e:
             # Handle cases where the index already exists
-            if 'resource_already_exists_exception' in str(e).lower():
+            if "resource_already_exists_exception" in str(e).lower():
                 print(f"Index '{self.index_name}' already exists.")
             else:
                 # Handle other index creation errors
                 print(f"Error creating index '{self.index_name}': {e}")
 
-    def verify_and_create_index(self, embedding_dimension: int, space_type: str, ef_construction: int,
-                                number_of_shards: int, number_of_replicas: int,
-                                passage_text_field: str, passage_chunk_field: str, embedding_field: str) -> bool:
+    def verify_and_create_index(
+        self,
+        embedding_dimension: int,
+        space_type: str,
+        ef_construction: int,
+        number_of_shards: int,
+        number_of_replicas: int,
+        passage_text_field: str,
+        passage_chunk_field: str,
+        embedding_field: str,
+    ) -> bool:
         """
         Verify if the index exists; if not, create it.
 
@@ -177,8 +204,16 @@ class OpenSearchConnector:
                 print(f"KNN index '{self.index_name}' already exists.")
             else:
                 # Create the index if it doesn't exist
-                self.create_index(embedding_dimension, space_type, ef_construction,
-                                number_of_shards, number_of_replicas, passage_text_field, passage_chunk_field, embedding_field)
+                self.create_index(
+                    embedding_dimension,
+                    space_type,
+                    ef_construction,
+                    number_of_shards,
+                    number_of_replicas,
+                    passage_text_field,
+                    passage_chunk_field,
+                    embedding_field,
+                )
             return True
         except Exception as ex:
             # Handle errors during verification or creation
@@ -194,9 +229,13 @@ class OpenSearchConnector:
         """
         try:
             # Execute bulk indexing using OpenSearch helpers
-            success_count, error_info = opensearch_helpers.bulk(self.opensearch_client, actions)
+            success_count, error_info = opensearch_helpers.bulk(
+                self.opensearch_client, actions
+            )
             error_count = len(error_info)
-            print(f"Indexed {success_count} documents successfully. Failed to index {error_count} documents.")
+            print(
+                f"Indexed {success_count} documents successfully. Failed to index {error_count} documents."
+            )
             return success_count, error_count
         except Exception as e:
             # Handle bulk indexing errors
@@ -207,7 +246,7 @@ class OpenSearchConnector:
         """
         Perform a neural search based on the query text and model ID.
         """
-        embedding_field = self.config.get('embedding_field', 'passage_embedding')
+        embedding_field = self.config.get("embedding_field", "passage_embedding")
 
         try:
             # Execute the search query using nested query
@@ -225,15 +264,15 @@ class OpenSearchConnector:
                                     f"{embedding_field}.knn": {
                                         "query_text": query_text,
                                         "model_id": model_id,
-                                        "k": k
+                                        "k": k,
                                     }
                                 }
-                            }
+                            },
                         }
-                    }
-                }
+                    },
+                },
             )
-            return response['hits']['hits']
+            return response["hits"]["hits"]
         except Exception as e:
             # Handle search errors
             print(f"Error during search: {e}")
@@ -263,9 +302,9 @@ class OpenSearchConnector:
         :return: A list of search hits.
         """
         # Retrieve field names from the config
-        embedding_field = self.config.get('embedding_field', 'passage_embedding')
-        passage_text_field = self.config.get('passage_text_field', 'passage_text')
-        passage_chunk_field = self.config.get('passage_chunk_field', 'passage_chunk')
+        embedding_field = self.config.get("embedding_field", "passage_embedding")
+        passage_text_field = self.config.get("passage_text_field", "passage_text")
+        passage_chunk_field = self.config.get("passage_chunk_field", "passage_chunk")
 
         try:
             # Execute the KNN search query using the correct field name
@@ -279,17 +318,14 @@ class OpenSearchConnector:
                             "path": embedding_field,
                             "query": {
                                 "knn": {
-                                    f"{embedding_field}.knn": {
-                                        "vector": vector,
-                                        "k": k
-                                    }
+                                    f"{embedding_field}.knn": {"vector": vector, "k": k}
                                 }
-                            }
+                            },
                         }
-                    }
-                }
+                    },
+                },
             )
-            return response['hits']['hits']
+            return response["hits"]["hits"]
         except Exception as e:
             # Handle search errors
             print(f"Error during search: {e}")

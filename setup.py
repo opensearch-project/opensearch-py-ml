@@ -5,7 +5,6 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
-
 #  Licensed to Elasticsearch B.V. under one or more contributor
 #  license agreements. See the NOTICE file distributed with
 #  this work for additional information regarding copyright
@@ -111,8 +110,8 @@ setup(
     extras_require=extras,
     # Entry points for console scripts
     entry_points={
-        'console_scripts': [
-            'rag=opensearch_py_ml.ml_commons.rag_pipeline.rag.rag:main',
+        "console_scripts": [
+            "rag=opensearch_py_ml.ml_commons.rag_pipeline.rag.rag:main",
         ],
     },
 )

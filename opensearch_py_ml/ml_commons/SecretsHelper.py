@@ -5,9 +5,10 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
-import logging
-import boto3
 import json
+import logging
+
+import boto3
 from botocore.exceptions import ClientError
 
 # Configure the logger for this module
@@ -36,14 +37,14 @@ class SecretHelper:
         :return: True if the secret exists, False otherwise.
         """
         # Initialize the Secrets Manager client
-        secretsmanager = boto3.client('secretsmanager', region_name=self.region)
+        secretsmanager = boto3.client("secretsmanager", region_name=self.region)
         try:
             # Attempt to retrieve the secret value
             secretsmanager.get_secret_value(SecretId=secret_name)
             return True
         except ClientError as e:
             # If the secret does not exist, return False
-            if e.response['Error']['Code'] == 'ResourceNotFoundException':
+            if e.response["Error"]["Code"] == "ResourceNotFoundException":
                 return False
             else:
                 # Log other client errors and return False
@@ -58,14 +59,14 @@ class SecretHelper:
         :return: ARN of the secret if found, None otherwise.
         """
         # Initialize the Secrets Manager client
-        secretsmanager = boto3.client('secretsmanager', region_name=self.region)
+        secretsmanager = boto3.client("secretsmanager", region_name=self.region)
         try:
             # Describe the secret to get its details
             response = secretsmanager.describe_secret(SecretId=secret_name)
-            return response['ARN']
+            return response["ARN"]
         except ClientError as e:
             # Handle the case where the secret does not exist
-            if e.response['Error']['Code'] == 'ResourceNotFoundException':
+            if e.response["Error"]["Code"] == "ResourceNotFoundException":
                 logger.warning(f"The requested secret {secret_name} was not found")
                 return None
             else:
@@ -81,14 +82,14 @@ class SecretHelper:
         :return: Secret value as a string if found, None otherwise.
         """
         # Initialize the Secrets Manager client
-        secretsmanager = boto3.client('secretsmanager', region_name=self.region)
+        secretsmanager = boto3.client("secretsmanager", region_name=self.region)
         try:
             # Get the secret value
             response = secretsmanager.get_secret_value(SecretId=secret_name)
-            return response.get('SecretString')
+            return response.get("SecretString")
         except ClientError as e:
             # Handle the case where the secret does not exist
-            if e.response['Error']['Code'] == 'ResourceNotFoundException':
+            if e.response["Error"]["Code"] == "ResourceNotFoundException":
                 logger.warning("The requested secret was not found")
                 return None
             else:
@@ -105,7 +106,7 @@ class SecretHelper:
         :return: ARN of the created secret if successful, None otherwise.
         """
         # Initialize the Secrets Manager client
-        secretsmanager = boto3.client('secretsmanager', region_name=self.region)
+        secretsmanager = boto3.client("secretsmanager", region_name=self.region)
         try:
             # Create the secret with the provided name and value
             response = secretsmanager.create_secret(
@@ -113,9 +114,9 @@ class SecretHelper:
                 SecretString=json.dumps(secret_value),
             )
             # Log success and return the secret's ARN
-            logger.info(f'Secret {secret_name} created successfully.')
-            return response['ARN']
+            logger.info(f"Secret {secret_name} created successfully.")
+            return response["ARN"]
         except ClientError as e:
             # Log errors during secret creation and return None
-            logger.error(f'Error creating secret: {e}')
+            logger.error(f"Error creating secret: {e}")
             return None
