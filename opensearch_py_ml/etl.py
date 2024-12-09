@@ -121,7 +121,7 @@ def pandas_to_opensearch(
     A           float64
     B             int64
     C            object
-    D    datetime64[ns]
+    D     datetime64[s]
     E           float64
     F              bool
     G             int64
