@@ -31,7 +31,7 @@ def _safe_delete_connector(client, connector_id):
 
 
 @pytest.fixture
-def connector_payload():
+def connector_body():
     return {
         "name": "Test Connector",
         "description": "Connector for testing",
@@ -52,8 +52,8 @@ def connector_payload():
 
 
 @pytest.fixture
-def test_connector(client: Connector, connector_payload: dict):
-    res = client.create_standalone_connector(connector_payload)
+def test_connector(client: Connector, connector_body: dict):
+    res = client.create_standalone_connector(connector_body)
     connector_id = res["connector_id"]
     yield connector_id
 
@@ -64,14 +64,23 @@ def test_connector(client: Connector, connector_payload: dict):
     OPENSEARCH_VERSION < CONNECTOR_MIN_VERSION,
     reason="Connectors are supported in OpenSearch 2.9.0 and above",
 )
-def test_create_standalone_connector(client: Connector, connector_payload: dict):
-    res = client.create_standalone_connector(connector_payload)
+def test_create_standalone_connector(client: Connector, connector_body: dict):
+    res = client.create_standalone_connector(connector_body)
     assert "connector_id" in res
 
     _safe_delete_connector(client, res["connector_id"])
 
     with pytest.raises(ValueError):
         client.create_standalone_connector("")
+
+
+@pytest.mark.parametrize("invalid_body", ["", None, [], 123])
+def test_create_standalone_connector_invalid_body(client: Connector, invalid_body):
+    with pytest.raises(
+        ValueError,
+        match=r"A 'body' parameter must be provided as a dictionary|'body' needs to be a dictionary",
+    ):
+        client.create_standalone_connector(body=invalid_body)
 
 
 @pytest.mark.skipif(
