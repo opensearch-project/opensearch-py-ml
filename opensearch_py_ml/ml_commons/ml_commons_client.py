@@ -568,7 +568,9 @@ class MLCommonClient:
             body=API_BODY,
         )
 
-    def predict(self, algorithm_name: str, model_id: str, predict_object: dict) -> dict:
+    def predict(
+        self, model_id: str, predict_object: dict, algorithm_name: str = None
+    ) -> dict:
         """
         Generalized predict method to make predictions using different ML algorithms.
 
