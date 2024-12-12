@@ -24,6 +24,7 @@
 
 import pandas as pd
 
+from opensearch_py_ml.utils import STANDARD_DEVIATION
 from tests.common import TestData, assert_series_equal
 
 
@@ -42,7 +43,7 @@ class TestSeriesDescribe(TestData):
 
         # Percentiles calculations vary for Elasticsearch
         assert_series_equal(
-            oml_desc[["count", "mean", "std", "min", "max"]],
-            pd_desc[["count", "mean", "std", "min", "max"]],
+            oml_desc[["count", "mean", STANDARD_DEVIATION, "min", "max"]],
+            pd_desc[["count", "mean", STANDARD_DEVIATION, "min", "max"]],
             rtol=0.2,
         )

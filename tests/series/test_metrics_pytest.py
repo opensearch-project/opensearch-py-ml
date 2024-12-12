@@ -31,15 +31,30 @@ import pandas as pd
 import pytest
 from pandas.testing import assert_series_equal
 
+from opensearch_py_ml.utils import (
+    MEAN_ABSOLUTE_DEVIATION,
+    STANDARD_DEVIATION,
+    VARIANCE,
+    CustomFunctionDispatcher,
+)
 from tests.common import TestData, assert_almost_equal
 
 
 class TestSeriesMetrics(TestData):
-    all_funcs = ["max", "min", "mean", "sum", "nunique", "var", "std", "mad"]
+    all_funcs = [
+        "max",
+        "min",
+        "mean",
+        "sum",
+        "nunique",
+        VARIANCE,
+        STANDARD_DEVIATION,
+        MEAN_ABSOLUTE_DEVIATION,
+    ]
     timestamp_funcs = ["max", "min", "mean", "nunique"]
 
     def assert_almost_equal_for_agg(self, func, pd_metric, oml_metric):
-        if func in ("nunique", "var", "mad"):
+        if func in ("nunique", VARIANCE, MEAN_ABSOLUTE_DEVIATION):
             np.testing.assert_almost_equal(pd_metric, oml_metric, decimal=-3)
         else:
             np.testing.assert_almost_equal(pd_metric, oml_metric, decimal=2)
@@ -49,7 +64,12 @@ class TestSeriesMetrics(TestData):
         oml_flights = self.oml_flights()["AvgTicketPrice"]
 
         for func in self.all_funcs:
-            pd_metric = getattr(pd_flights, func)()
+            if func in CustomFunctionDispatcher.customFunctionMap:
+                pd_metric = pd_flights.agg(
+                    lambda x: CustomFunctionDispatcher.apply_custom_function(func, x)
+                )
+            else:
+                pd_metric = getattr(pd_flights, func)()
             oml_metric = getattr(oml_flights, func)()
 
             self.assert_almost_equal_for_agg(func, pd_metric, oml_metric)
@@ -94,7 +114,14 @@ class TestSeriesMetrics(TestData):
             oml_ecommerce = self.oml_ecommerce()[column]
 
             for func in self.all_funcs:
-                pd_metric = getattr(pd_ecommerce, func)()
+                if func in CustomFunctionDispatcher.customFunctionMap:
+                    pd_metric = pd_ecommerce.agg(
+                        lambda x: CustomFunctionDispatcher.apply_custom_function(
+                            func, x
+                        )
+                    )
+                else:
+                    pd_metric = getattr(pd_ecommerce, func)()
                 oml_metric = getattr(oml_ecommerce, func)(
                     **({"numeric_only": True} if (func != "nunique") else {})
                 )

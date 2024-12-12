@@ -30,8 +30,13 @@ from collections.abc import Collection as ABCCollection
 from typing import Any, Callable, Collection, Iterable, List, TypeVar, Union, cast
 
 import pandas as pd  # type: ignore
+from pandas.core.dtypes.common import is_list_like  # type: ignore
 
 RT = TypeVar("RT")
+
+MEAN_ABSOLUTE_DEVIATION = "mad"
+VARIANCE = "var"
+STANDARD_DEVIATION = "std"
 
 
 def deprecated_api(
@@ -61,6 +66,29 @@ def is_valid_attr_name(s: str) -> bool:
     )
 
 
+def to_list_if_needed(value):
+    """
+    Converts the input to a list if necessary.
+
+    If the input is a pandas Index, it converts it to a list.
+    If the input is not list-like (e.g., a single value), it wraps it in a list.
+    If the input is None or already list-like, it returns it as is.
+
+    Parameters:
+    value: The input to potentially convert to a list.
+
+    Returns:
+    The input converted to a list if needed, or the original input if no conversion is necessary.
+    """
+    if value is None:
+        return None
+    if isinstance(value, pd.Index):
+        return value.tolist()
+    if not is_list_like(value):
+        return [value]
+    return value
+
+
 def to_list(x: Union[Collection[Any], pd.Series]) -> List[Any]:
     if isinstance(x, ABCCollection):
         return list(x)
@@ -77,3 +105,23 @@ def try_sort(iterable: Iterable[str]) -> Iterable[str]:
         return sorted(listed)
     except TypeError:
         return listed
+
+
+class CustomFunctionDispatcher:
+    # Define custom functions in a dictionary
+    customFunctionMap = {
+        MEAN_ABSOLUTE_DEVIATION: lambda x: (x - x.median()).abs().mean(),
+    }
+
+    @classmethod
+    def apply_custom_function(cls, func, data):
+        """
+        Apply a custom function if available, else return None.
+        :param func: Function name as a string
+        :param data: Data on which function is applied
+        :return: Result of custom function or None if func not found
+        """
+        custom_func = cls.customFunctionMap.get(func)
+        if custom_func:
+            return custom_func(data)
+        return None

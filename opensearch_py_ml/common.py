@@ -55,14 +55,33 @@ with warnings.catch_warnings():
 
 
 def build_pd_series(
-    data: Dict[str, Any], dtype: Optional["DTypeLike"] = None, **kwargs: Any
+    data: Dict[str, Any],
+    dtype: Optional["DTypeLike"] = None,
+    index_name: Optional[str] = None,
+    **kwargs: Any,
 ) -> pd.Series:
-    """Builds a pd.Series while squelching the warning
-    for unspecified dtype on empty series
     """
+    Builds a pandas Series from a dictionary, optionally setting an index name.
+
+    Parameters:
+    data : Dict[str, Any]
+        The data to build the Series from, with keys as the index.
+    dtype : Optional[DTypeLike]
+        The desired data type of the Series. If not specified, uses EMPTY_SERIES_DTYPE if data is empty.
+    index_name : Optional[str]
+        Name to assign to the Series index, similar to `index_name` in `value_counts`.
+
+    Returns:
+    pd.Series
+        A pandas Series constructed from the given data, with the specified dtype and index name.
+    """
+
     dtype = dtype or (EMPTY_SERIES_DTYPE if not data else dtype)
     if dtype is not None:
         kwargs["dtype"] = dtype
+    if index_name is not None:
+        index = pd.Index(data.keys(), name=index_name)
+        kwargs["index"] = index
     return pd.Series(data, **kwargs)
 
 
