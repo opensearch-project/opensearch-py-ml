@@ -49,7 +49,6 @@ class TestSetup(unittest.TestCase):
         self.assertEqual(config.get("region"), "us-east-1")
         self.assertEqual(config.get("service_type"), "managed")
 
-
     @patch("builtins.input", side_effect=["2", "", "no", "2", ""])
     def test_setup_configuration_open_source_no_auth(self, mock_input):
         self.setup_instance.setup_configuration()
