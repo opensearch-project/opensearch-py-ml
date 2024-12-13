@@ -49,10 +49,13 @@ class TestSetup(unittest.TestCase):
         self.assertEqual(config.get("region"), "us-east-1")
         self.assertEqual(config.get("service_type"), "managed")
 
+    @patch("termios.tcsetattr")
+    @patch("termios.tcgetattr", return_value=[0,0,0,0,0,0])
     @patch("sys.stdin")
     @patch("sys.stdout")
-    def test_get_password_with_asterisks(self, mock_stdout, mock_stdin):
+    def test_get_password_with_asterisks(self, mock_stdout, mock_stdin, mock_tcgetattr, mock_tcsetattr):
         mock_stdin.fileno.return_value = 0
+        mock_stdin.isatty = MagicMock(return_value=True)
         mock_stdin.read = MagicMock(side_effect=list("secret\n"))
         pwd = self.setup_instance.get_password_with_asterisks("Enter password: ")
         self.assertEqual(pwd, "secret")
