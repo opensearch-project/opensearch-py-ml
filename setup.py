@@ -5,7 +5,6 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
-
 #  Licensed to Elasticsearch B.V. under one or more contributor
 #  license agreements. See the NOTICE file distributed with
 #  this work for additional information regarding copyright
@@ -88,10 +87,29 @@ setup(
         "matplotlib>=3.6.0,<4",
         "numpy>=1.24.0,<2",
         "deprecated>=1.2.14,<2",
+        # Additional dependencies for the RAG pipeline
+        "accelerate>=0.27",
+        "sentence_transformers>=2.5.0,<2.6",
+        "tqdm>=4.66.0,<5",
+        "transformers>=4.36.0,<5",
+        "boto3>=1.26.0",
+        "botocore>=1.29.0",
+        "requests>=2.28.0",
+        "requests-aws4auth>=1.1.0",
+        "colorama>=0.4.6",
+        "PyPDF2>=3.0.1",
+        "rich>=13.5.2",
+        "tiktoken>=0.5.0",
     ],
     python_requires=">=3.8",
     package_data={"opensearch_py_ml": ["py.typed"]},
     include_package_data=True,
     zip_safe=False,
     extras_require=extras,
+    # Entry points for console scripts
+    entry_points={
+        "console_scripts": [
+            "rag=opensearch_py_ml.ml_commons.rag_pipeline.rag.rag:main",
+        ],
+    },
 )
