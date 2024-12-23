@@ -118,7 +118,6 @@ def pandas_to_opensearch(
     <BLANKLINE>
     [3 rows x 8 columns]
     >>> pd_df.dtypes
-    dtype: object
     A          float64
     B            int64
     C           object
