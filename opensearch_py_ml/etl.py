@@ -118,14 +118,15 @@ def pandas_to_opensearch(
     <BLANKLINE>
     [3 rows x 8 columns]
     >>> pd_df.dtypes
-    A           float64
-    B             int64
-    C            object
-    D     datetime64[s]
-    E           float64
-    F              bool
-    G             int64
-    H            object
+    dtype: object
+    A          float64
+    B            int64
+    C           object
+    D    datetime64[s]
+    E          float64
+    F             bool
+    G            int64
+    H           object
     dtype: object
 
     Convert `pandas.DataFrame` to `opensearch_py_ml.DataFrame` - this creates an OpenSearch index called
