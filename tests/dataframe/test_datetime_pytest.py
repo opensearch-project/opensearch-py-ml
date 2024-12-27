@@ -124,6 +124,8 @@ class TestDataFrameDateTime(TestData):
             os_refresh=True,
         )
 
+        df['D'] = df['D'].astype('datetime64[ns]')
+
         assert_series_equal(df.dtypes, oml_df.dtypes)
 
         assert_pandas_opensearch_py_ml_frame_equal(df, oml_df)
