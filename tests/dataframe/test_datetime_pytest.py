@@ -124,7 +124,7 @@ class TestDataFrameDateTime(TestData):
             os_refresh=True,
         )
 
-        df['D'] = df['D'].astype('datetime64[ns]')
+        df["D"] = df["D"].astype("datetime64[ns]")
 
         assert_series_equal(df.dtypes, oml_df.dtypes)
 
