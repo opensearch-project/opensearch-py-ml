@@ -98,7 +98,8 @@ class TestDataFrameUtils(TestData):
                 "E": [1.0, 2.0, 3.0],
                 "F": False,
                 "G": [1, 2, 3],
-                "H": pd.to_datetime("2019-01-02", utc=True),
+                "H": "Long text",  # text
+                "I": "52.36,4.83",  # geo point
             },
             index=["0", "1", "2"],
         )
