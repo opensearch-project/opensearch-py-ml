@@ -542,7 +542,9 @@ class TestDataFrameMetrics(TestData):
         pd_idxmin = list(pd_flights.idxmin())
         oml_idxmin = list(oml_flights.idxmin())
 
-        pd_filtered_min = pd_flights.filter(items=pd_idxmin, axis=0).reset_index()
+        pd_filtered_min = (
+            pd_flights.filter(items=pd_idxmin, axis=0).reset_index().drop_duplicates()
+        )
         oml_filtered_min = (
             oml_flights.filter(items=oml_idxmin, axis=0)
             .to_pandas()
