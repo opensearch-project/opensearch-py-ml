@@ -550,11 +550,6 @@ class TestDataFrameMetrics(TestData):
             .drop_duplicates()
         )
 
-        # oml_filtered_min = oml_filtered_min.astype({
-        #     'FlightDelayMin': 'int64',
-        #     'dayOfWeek': 'int64'
-        # })
-
         assert_frame_equal(pd_filtered_min, oml_filtered_min)
 
     def test_flights_idx_on_columns(self):
