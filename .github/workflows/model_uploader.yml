@@ -146,7 +146,7 @@ jobs:
     environment: opensearch-py-ml-cicd-env
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Set Up Python
         uses: actions/setup-python@v2
         with:
@@ -199,7 +199,7 @@ jobs:
           - { opensearch_version: 2.11.0 }
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Export Arguments
         run: | 
           echo "MODEL_ID=${{ github.event.inputs.model_id }}" >> $GITHUB_ENV
@@ -240,7 +240,7 @@ jobs:
           echo "model_description_info=- Model Description: $model_description_info" >> $GITHUB_OUTPUT
           echo "$model_description_info"
       - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with: 
           name: upload
           path: ./upload/
@@ -276,7 +276,7 @@ jobs:
       issues: write
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Get Approvers
         id: get_approvers
         run: |
@@ -347,7 +347,7 @@ jobs:
       model_info: ${{ github.event.inputs.model_id }} (v.${{ github.event.inputs.model_version }})(${{ github.event.inputs.tracing_format }})
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Set Up Python
         uses: actions/setup-python@v2
         with:
@@ -398,7 +398,7 @@ jobs:
             ./utils/model_uploader/upload_history/MODEL_UPLOAD_HISTORY.md
             ./utils/model_uploader/upload_history/supported_models.json
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: model-uploader/${{ github.run_id }}
       - name: Create a line for updating CHANGELOG.md
@@ -449,7 +449,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Trigger Jenkins Workflow with Generic Webhook
         run: |
           jenkins_trigger_token=${{ secrets.JENKINS_ML_MODELS_RELEASE_GENERIC_WEBHOOK_TOKEN }}

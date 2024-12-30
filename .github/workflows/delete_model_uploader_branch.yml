@@ -12,7 +12,7 @@ jobs:
       # Compared to backport.yml, this GitHub action will delete branch
       # of a PR that is closed, but not merged as well.
       - name: Delete closed PR branch
-        uses: dawidd6/action-delete-branch@v3
+        uses: dawidd6/action-delete-branch@v4
         with:
           GITHUB_TOKEN: ${{github.token}}
           numbers: ${{github.event.pull_request.number}}
