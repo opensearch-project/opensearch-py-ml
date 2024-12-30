@@ -96,7 +96,12 @@
 <h1>Demo Notebook for deploying CLIPTextModel to OpenSearch<a class="headerlink" href="#Demo-Notebook-for-deploying-CLIPTextModel-to-OpenSearch" title="Link to this heading"></a></h1>
 <section id="Download-notebook">
 <h2><a class="reference external" href="https://github.com/opensearch-project/opensearch-py-ml/blob/main/docs/source/examples/demo_deploy_cliptextmodel.ipynb">Download notebook</a><a class="headerlink" href="#Download-notebook" title="Link to this heading"></a></h2>
-<p>Related Docs: * <a class="reference external" href="https://opensearch.org/docs/latest/ml-commons-plugin/ml-framework/">OpenSearch ML Framework</a> * <a class="reference external" href="https://huggingface.co/docs/transformers/model_doc/clip">Huggingface - CLIP</a> * <a class="reference external" href="https://huggingface.co/docs/transformers/torchscript">Huggingface - export to torchscript</a></p>
+<p>Related Docs:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://opensearch.org/docs/latest/ml-commons-plugin/ml-framework/">OpenSearch ML Framework</a></p></li>
+<li><p><a class="reference external" href="https://huggingface.co/docs/transformers/model_doc/clip">Huggingface - CLIP</a></p></li>
+<li><p><a class="reference external" href="https://huggingface.co/docs/transformers/torchscript">Huggingface - export to torchscript</a></p></li>
+</ul>
 <p>This notebook provides a walkthrough for users to trace, register, and deploy a CLIPTextModel from a local file. CLIPTextModel can be used with the <a class="reference external" href="https://opensearch.org/docs/latest/search-plugins/neural-search/">Neural Search</a> plugin to generate embeddings of documents and ingest time and of user queries at search time.</p>
 <p>Step 0: Import packages and set up client</p>
 <p>Step 1: Trace CLIPTextModel and export to TorchScript</p>
@@ -195,7 +200,11 @@
 </section>
 <section id="Step-2:-Prep-files-for-registration">
 <h3>Step 2: Prep files for registration<a class="headerlink" href="#Step-2:-Prep-files-for-registration" title="Link to this heading"></a></h3>
-<p>OpenSearch requires two files zipped together for registration: * Model in TorchScript format * tokenizor.json file</p>
+<p>OpenSearch requires two files zipped together for registration:</p>
+<ul class="simple">
+<li><p>Model in TorchScript format</p></li>
+<li><p>tokenizor.json file</p></li>
+</ul>
 <p>The tokenizor for the model used in this example can be found <a class="reference external" href="https://huggingface.co/openai/clip-vit-base-patch32/tree/main">here</a></p>
 <p>Additionally, a config.json file with the following details must be passed with the .zip. More info on <a class="reference external" href="https://opensearch.org/docs/latest/ml-commons-plugin/api/#request-fields">model config</a></p>
 <div class="nbinput nblast docutils container">
