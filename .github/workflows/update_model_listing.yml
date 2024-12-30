@@ -52,7 +52,7 @@ jobs:
         done
         echo $(ls config_folder)
     - name: Set Up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
         python-version: '3.x'
     - name: Update pretrained_models_all_versions.json
