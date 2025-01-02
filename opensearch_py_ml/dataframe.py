@@ -55,6 +55,9 @@ if TYPE_CHECKING:
     from .query_compiler import QueryCompiler
 
 
+PANDAS_MAJOR_VERSION = int(pd.__version__.split(".")[0])
+
+
 class DataFrame(NDFrame):
     """
     Two-dimensional size-mutable, potentially heterogeneous tabular data structure with labeled axes
@@ -1346,6 +1349,10 @@ class DataFrame(NDFrame):
         --------
         :pandas_api_docs:`pandas.DataFrame.to_csv`
         """
+        if PANDAS_MAJOR_VERSION < 2:
+            line_terminator_keyword = "line_terminator"
+        else:
+            line_terminator_keyword = "lineterminator"
         kwargs = {
             "path_or_buf": path_or_buf,
             "sep": sep,
@@ -1360,7 +1367,7 @@ class DataFrame(NDFrame):
             "compression": compression,
             "quoting": quoting,
             "quotechar": quotechar,
-            "line_terminator": line_terminator,
+            line_terminator_keyword: line_terminator,
             "chunksize": chunksize,
             "date_format": date_format,
             "doublequote": doublequote,

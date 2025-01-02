@@ -67,8 +67,6 @@ from opensearch_py_ml.tasks import (
 )
 from opensearch_py_ml.utils import MEAN_ABSOLUTE_DEVIATION, STANDARD_DEVIATION, VARIANCE
 
-PANDAS_MAJOR_VERSION = int(pd.__version__.split(".")[0])
-
 if TYPE_CHECKING:
     from numpy.typing import DTypeLike
 
