@@ -84,7 +84,7 @@ setup(
     },
     install_requires=[
         "opensearch-py>=2",
-        "pandas==1.5.3",
+        "pandas==2.0.0",
         "matplotlib>=3.6.0,<4",
         "numpy>=1.24.0,<2",
         "deprecated>=1.2.14,<2",
