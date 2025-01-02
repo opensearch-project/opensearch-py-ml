@@ -67,6 +67,8 @@ from opensearch_py_ml.tasks import (
 )
 from opensearch_py_ml.utils import MEAN_ABSOLUTE_DEVIATION, STANDARD_DEVIATION, VARIANCE
 
+PANDAS_MAJOR_VERSION = int(pd.__version__.split(".")[0])
+
 if TYPE_CHECKING:
     from numpy.typing import DTypeLike
 
@@ -75,6 +77,8 @@ if TYPE_CHECKING:
     from opensearch_py_ml.filter import BooleanFilter
     from opensearch_py_ml.query_compiler import QueryCompiler
     from opensearch_py_ml.tasks import Task
+
+PANDAS_MAJOR_VERSION = int(pd.__version__.split(".")[0])
 
 
 class QueryParams:
@@ -476,7 +480,10 @@ class Operations:
         except IndexError:
             name = None
 
-        return build_pd_series(results, index_name=name, name="count")
+        if PANDAS_MAJOR_VERSION < 2:
+            return build_pd_series(results, name=name)
+        else:
+            return build_pd_series(results, index_name=name, name="count")
 
     def _hist_aggs(
         self, query_compiler: "QueryCompiler", num_bins: int
@@ -1229,21 +1236,35 @@ class Operations:
 
         df = pd.concat([df1, df2])
 
-        # Note: In recent pandas versions, `describe()` returns a different index order
-        # for one-column DataFrames compared to multi-column DataFrames.
-        # We adjust the order manually to ensure consistency.
-        if df.shape[1] == 1:
-            # For single-column DataFrames, `describe()` typically outputs:
-            # ["count", "mean", "std", "min", "25%", "50%", "75%", "max"]
-            return df.reindex(
-                ["count", "mean", STANDARD_DEVIATION, "min", "25%", "50%", "75%", "max"]
+        if PANDAS_MAJOR_VERSION < 2:
+            return pd.concat([df1, df2]).reindex(
+                ["count", "mean", "std", "min", "25%", "50%", "75%", "max"]
             )
+        else:
+            # Note: In recent pandas versions, `describe()` returns a different index order
+            # for one-column DataFrames compared to multi-column DataFrames.
+            # We adjust the order manually to ensure consistency.
+            if df.shape[1] == 1:
+                # For single-column DataFrames, `describe()` typically outputs:
+                # ["count", "mean", "std", "min", "25%", "50%", "75%", "max"]
+                return df.reindex(
+                    [
+                        "count",
+                        "mean",
+                        STANDARD_DEVIATION,
+                        "min",
+                        "25%",
+                        "50%",
+                        "75%",
+                        "max",
+                    ]
+                )
 
-        # For multi-column DataFrames, `describe()` typically outputs:
-        # ["count", "mean", "min", "25%", "50%", "75%", "max", "std"]
-        return df.reindex(
-            ["count", "mean", "min", "25%", "50%", "75%", "max", STANDARD_DEVIATION]
-        )
+            # For multi-column DataFrames, `describe()` typically outputs:
+            # ["count", "mean", "min", "25%", "50%", "75%", "max", "std"]
+            return df.reindex(
+                ["count", "mean", "min", "25%", "50%", "75%", "max", STANDARD_DEVIATION]
+            )
 
     def to_pandas(
         self, query_compiler: "QueryCompiler", show_progress: bool = False

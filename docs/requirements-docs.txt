@@ -1,5 +1,5 @@
 opensearch-py>=2
-pandas>=2.0.2,<=2.2.3,!=2.1.0
+pandas==1.5.2
 matplotlib>=3.6.0,<4
 nbval
 sphinx

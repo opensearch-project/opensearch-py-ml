@@ -23,10 +23,12 @@
 #  under the License.
 
 # File called _pytest for PyCharm compatability
-
+import pandas as pd
 from pandas.testing import assert_frame_equal
 
 from tests.common import TestData
+
+PANDAS_MAJOR_VERSION = int(pd.__version__.split(".")[0])
 
 
 class TestDataFrameDescribe(TestData):
@@ -34,7 +36,10 @@ class TestDataFrameDescribe(TestData):
         pd_flights = self.pd_flights()
         oml_flights = self.oml_flights()
 
-        pd_describe = pd_flights.describe().drop(["timestamp"], axis=1)
+        if PANDAS_MAJOR_VERSION < 2:
+            pd_describe = pd_flights.describe()
+        else:
+            pd_describe = pd_flights.describe().drop(["timestamp"], axis=1)
         # We remove bool columns to match pandas output
         oml_describe = oml_flights.describe().drop(
             ["Cancelled", "FlightDelay"], axis="columns"
