@@ -568,6 +568,26 @@ class MLCommonClient:
             body=API_BODY,
         )
 
+    def predict(
+        self, model_id: str, predict_object: dict, algorithm_name: str = None
+    ) -> dict:
+        """
+        Generalized predict method to make predictions using different ML algorithms.
+
+        :param algorithm_name: The name of the algorithm, e.g., 'kmeans', 'text_embedding'
+        :type algorithm_name: str
+        :param model_id: Unique identifier of the deployed model
+        :type model_id: str
+        :param predict_object: JSON object containing the input data and parameters for prediction
+        :type predict_object: dict
+        :return: Prediction response from the ML model
+        :rtype: dict
+        """
+        # Make the POST request to the prediction API
+        response = self.generate_model_inference(model_id, predict_object)
+
+        return response
+
     def undeploy_model(self, model_id: str, node_ids: List[str] = []) -> object:
         """
         This method undeploys a model from all the nodes or from the given list of nodes (using ml commons _undeploy api)

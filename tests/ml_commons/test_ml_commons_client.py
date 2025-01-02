@@ -357,6 +357,44 @@ def test_DEPRECATED_integration_model_train_upload_full_cycle():
                     assert len(embedding_result.get("inference_results")) == 2
 
                 try:
+                    text_docs = ["First test sentence", "Second test sentence"]
+                    return_number = True
+                    target_response = ["sentence_embedding"]
+                    algorithm_name = "text_embedding"
+                    prediction_result = ml_client.predict(
+                        algorithm_name=algorithm_name,
+                        model_id=model_id,
+                        predict_object={
+                            "text_docs": text_docs,
+                            "return_number": return_number,
+                            "target_response": target_response,
+                        },
+                    )
+                    prediction_result_2 = ml_client.generate_model_inference(
+                        model_id=model_id,
+                        predict_object={
+                            "text_docs": text_docs,
+                            "return_number": return_number,
+                            "target_response": target_response,
+                        },
+                    )
+                    inference_results = prediction_result.get("inference_results")
+                    output_1 = inference_results[0].get("output")
+                    output_2 = inference_results[1].get("output")
+                except Exception as ex:  # noqa: E722
+                    pytest.fail(f"Exception occurred when predicting: {ex}")
+                else:
+                    assert prediction_result == prediction_result_2
+                    assert output_1[0].get("name") == "sentence_embedding"
+                    assert output_1[0].get("data_type") == "FLOAT32"
+                    assert output_1[0].get("shape")[0] == 384
+                    assert isinstance(output_1[0].get("data"), list)
+                    assert output_2[0].get("name") == "sentence_embedding"
+                    assert output_2[0].get("data_type") == "FLOAT32"
+                    assert output_2[0].get("shape")[0] == 384
+                    assert isinstance(output_2[0].get("data"), list)
+
+                try:
                     delete_task_obj = ml_client.delete_task(task_id)
                 except Exception as ex:  # noqa: E722
                     pytest.fail(f"Exception occurred when deleting task: {ex}")
@@ -470,6 +508,44 @@ def test_integration_model_train_register_full_cycle():
                     )
                 else:
                     assert len(embedding_result.get("inference_results")) == 2
+
+                try:
+                    text_docs = ["First test sentence", "Second test sentence"]
+                    return_number = True
+                    target_response = ["sentence_embedding"]
+                    algorithm_name = "text_embedding"
+                    prediction_result = ml_client.predict(
+                        algorithm_name=algorithm_name,
+                        model_id=model_id,
+                        predict_object={
+                            "text_docs": text_docs,
+                            "return_number": return_number,
+                            "target_response": target_response,
+                        },
+                    )
+                    prediction_result_2 = ml_client.generate_model_inference(
+                        model_id=model_id,
+                        predict_object={
+                            "text_docs": text_docs,
+                            "return_number": return_number,
+                            "target_response": target_response,
+                        },
+                    )
+                    inference_results = prediction_result.get("inference_results")
+                    output_1 = inference_results[0].get("output")
+                    output_2 = inference_results[1].get("output")
+                except Exception as ex:  # noqa: E722
+                    pytest.fail(f"Exception occurred when predicting: {ex}")
+                else:
+                    assert prediction_result == prediction_result_2
+                    assert output_1[0].get("name") == "sentence_embedding"
+                    assert output_1[0].get("data_type") == "FLOAT32"
+                    assert output_1[0].get("shape")[0] == 384
+                    assert isinstance(output_1[0].get("data"), list)
+                    assert output_2[0].get("name") == "sentence_embedding"
+                    assert output_2[0].get("data_type") == "FLOAT32"
+                    assert output_2[0].get("shape")[0] == 384
+                    assert isinstance(output_2[0].get("data"), list)
 
                 try:
                     delete_task_obj = ml_client.delete_task(task_id)

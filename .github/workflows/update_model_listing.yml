@@ -22,7 +22,7 @@ jobs:
          echo "This workflow should only be triggered on 'main' branch"
          exit 1
     - name: Checkout Main Branch
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v2
       with:
@@ -94,7 +94,7 @@ jobs:
     - name: Checkout PR Branch
       id: checkout_pr_branch
       continue-on-error: true
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         ref: model-listing-uploader/${{ github.run_id }}
     - name: Create a line for updating CHANGELOG.md
