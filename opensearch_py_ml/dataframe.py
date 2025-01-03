@@ -278,7 +278,7 @@ class DataFrame(NDFrame):
         >>> from tests import OPENSEARCH_TEST_CLIENT
 
         >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights', columns=['Origin', 'Dest'])
-        >>> df.tail().to_string(index=False).strip()
+        >>> print(df.tail().to_string(index=False).strip())
         """
         return DataFrame(_query_compiler=self._query_compiler.tail(n))
 
