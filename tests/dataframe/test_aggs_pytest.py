@@ -30,7 +30,7 @@ from pandas.testing import assert_frame_equal, assert_series_equal
 
 from opensearch_py_ml.utils import STANDARD_DEVIATION, VARIANCE
 from tests.common import TestData
- 
+
 
 class TestDataFrameAggs(TestData):
     def test_basic_aggs(self):
