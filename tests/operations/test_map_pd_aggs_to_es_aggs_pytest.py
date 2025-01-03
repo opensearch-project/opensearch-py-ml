@@ -23,6 +23,7 @@
 #  under the License.
 
 from opensearch_py_ml.operations import Operations
+from opensearch_py_ml.utils import MEAN_ABSOLUTE_DEVIATION, STANDARD_DEVIATION, VARIANCE
 
 
 def test_all_aggs():
@@ -31,9 +32,9 @@ def test_all_aggs():
             "min",
             "max",
             "mean",
-            "std",
-            "var",
-            "mad",
+            STANDARD_DEVIATION,
+            VARIANCE,
+            MEAN_ABSOLUTE_DEVIATION,
             "count",
             "nunique",
             "median",
@@ -69,7 +70,7 @@ def test_extended_stats_optimization():
     os_aggs = Operations._map_pd_aggs_to_os_aggs(["count", "nunique"])
     assert os_aggs == ["value_count", "cardinality"]
 
-    for pd_agg in ["var", "std"]:
+    for pd_agg in [VARIANCE, STANDARD_DEVIATION]:
         extended_os_agg = Operations._map_pd_aggs_to_os_aggs([pd_agg])[0]
 
         os_aggs = Operations._map_pd_aggs_to_os_aggs([pd_agg, "nunique"])

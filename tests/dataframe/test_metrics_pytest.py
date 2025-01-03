@@ -24,17 +24,22 @@
 
 import numpy as np
 import pandas as pd
-
-# File called _pytest for PyCharm compatibility
 import pytest
 from pandas.testing import assert_frame_equal, assert_series_equal
 
+# File called _pytest for PyCharm compatibility
+from opensearch_py_ml.utils import (
+    MEAN_ABSOLUTE_DEVIATION,
+    STANDARD_DEVIATION,
+    VARIANCE,
+    CustomFunctionDispatcher,
+)
 from tests.common import TestData, assert_almost_equal
 
 
 class TestDataFrameMetrics(TestData):
     funcs = ["max", "min", "mean", "sum"]
-    extended_funcs = ["median", "mad", "var", "std"]
+    extended_funcs = ["median", MEAN_ABSOLUTE_DEVIATION, VARIANCE, STANDARD_DEVIATION]
     filter_data = [
         "AvgTicketPrice",
         "Cancelled",
@@ -81,9 +86,12 @@ class TestDataFrameMetrics(TestData):
         logger.setLevel(logging.DEBUG)
 
         for func in self.extended_funcs:
-            pd_metric = getattr(pd_flights, func)(
-                **({"numeric_only": True} if func != "mad" else {})
-            )
+            if func in CustomFunctionDispatcher.customFunctionMap:
+                pd_metric = CustomFunctionDispatcher.apply_custom_function(
+                    func, pd_flights
+                )
+            else:
+                pd_metric = getattr(pd_flights, func)(**({"numeric_only": True}))
             oml_metric = getattr(oml_flights, func)(numeric_only=True)
 
             pd_value = pd_metric["AvgTicketPrice"]
@@ -101,7 +109,12 @@ class TestDataFrameMetrics(TestData):
         ]
 
         for func in self.extended_funcs:
-            pd_metric = getattr(pd_flights_1, func)()
+            if func in CustomFunctionDispatcher.customFunctionMap:
+                pd_metric = pd_flights_1.apply(
+                    lambda x: CustomFunctionDispatcher.apply_custom_function(func, x)
+                )
+            else:
+                pd_metric = getattr(pd_flights_1, func)()
             oml_metric = getattr(oml_flights_1, func)(numeric_only=False)
 
             assert_series_equal(pd_metric, oml_metric, check_exact=False)
@@ -111,7 +124,12 @@ class TestDataFrameMetrics(TestData):
         oml_flights_0 = oml_flights[oml_flights.FlightNum == "XXX"][["AvgTicketPrice"]]
 
         for func in self.extended_funcs:
-            pd_metric = getattr(pd_flights_0, func)()
+            if func in CustomFunctionDispatcher.customFunctionMap:
+                pd_metric = pd_flights_0.apply(
+                    lambda x: CustomFunctionDispatcher.apply_custom_function(func, x)
+                )
+            else:
+                pd_metric = getattr(pd_flights_0, func)()
             oml_metric = getattr(oml_flights_0, func)(numeric_only=False)
 
             assert_series_equal(pd_metric, oml_metric, check_exact=False)
@@ -177,9 +195,9 @@ class TestDataFrameMetrics(TestData):
             "min": pd.Timestamp("2018-01-01 00:00:00"),
             "mean": pd.Timestamp("2018-01-21 19:20:45.564438232"),
             "sum": pd.NaT,
-            "mad": pd.NaT,
-            "var": pd.NaT,
-            "std": pd.NaT,
+            MEAN_ABSOLUTE_DEVIATION: pd.NaT,
+            VARIANCE: pd.NaT,
+            STANDARD_DEVIATION: pd.NaT,
             "nunique": 12236,
         }
 
@@ -288,7 +306,7 @@ class TestDataFrameMetrics(TestData):
         agg_data = oml_flights.agg(filtered_aggs, numeric_only=True).transpose()
         for agg in filtered_aggs:
             # Explicitly check for mad because it returns nan for bools
-            if agg == "mad":
+            if agg == MEAN_ABSOLUTE_DEVIATION:
                 assert np.isnan(agg_data[agg]["Cancelled"])
             else:
                 assert_series_equal(
@@ -304,7 +322,7 @@ class TestDataFrameMetrics(TestData):
         for agg in self.funcs + self.extended_funcs:
             result = getattr(oml_flights, agg)(numeric_only=True)
             assert result.dtype == np.dtype("float64")
-            assert result.shape == ((3,) if agg != "mad" else (2,))
+            assert result.shape == ((3,) if agg != MEAN_ABSOLUTE_DEVIATION else (2,))
 
     # check dtypes and shape of min, max and median for numeric_only=False | None
     @pytest.mark.parametrize("agg", ["min", "max", "median"])
@@ -498,7 +516,8 @@ class TestDataFrameMetrics(TestData):
             ["AvgTicketPrice", "FlightDelayMin", "dayOfWeek"]
         )
 
-        pd_quantile = pd_flights.agg(["quantile", "min"], numeric_only=numeric_only)
+        pd_quantile = pd_flights.agg([lambda x: x.quantile(0.5), lambda x: x.min()])
+        pd_quantile.index = ["quantile", "min"]
         oml_quantile = oml_flights.agg(["quantile", "min"], numeric_only=numeric_only)
 
         assert_frame_equal(
@@ -522,10 +541,18 @@ class TestDataFrameMetrics(TestData):
 
         pd_idxmin = list(pd_flights.idxmin())
         oml_idxmin = list(oml_flights.idxmin())
-        assert_frame_equal(
-            pd_flights.filter(items=pd_idxmin, axis=0).reset_index(),
-            oml_flights.filter(items=oml_idxmin, axis=0).to_pandas().reset_index(),
+
+        pd_filtered_min = (
+            pd_flights.filter(items=pd_idxmin, axis=0).reset_index().drop_duplicates()
         )
+        oml_filtered_min = (
+            oml_flights.filter(items=oml_idxmin, axis=0)
+            .to_pandas()
+            .reset_index()
+            .drop_duplicates()
+        )
+
+        assert_frame_equal(pd_filtered_min, oml_filtered_min)
 
     def test_flights_idx_on_columns(self):
         match = "This feature is not implemented yet for 'axis = 1'"

@@ -108,6 +108,7 @@ def pandas_to_opensearch(
     ...                            'G': [1, 2, 3],
     ...                            'H': 'Long text - to be indexed as os type text'},
     ...                      index=['0', '1', '2'])
+    >>> pd_df['D'] = pd_df['D'].astype('datetime64[ns]')
     >>> type(pd_df)
     <class 'pandas.core.frame.DataFrame'>
     >>> pd_df
