@@ -279,6 +279,12 @@ class DataFrame(NDFrame):
 
         >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights', columns=['Origin', 'Dest'])
         >>> print(df.tail().to_string(index=False).strip())
+                Origin                                     Dest
+                                        Pisa International Airport     Xi'an Xianyang International Airport
+        Winnipeg / James Armstrong Richardson International Airport                           Zurich Airport
+                    Licenciado Benito Juarez International Airport                        Ukrainka Air Base
+                                                    Itami Airport Ministro Pistarini International Airport
+                                    Adelaide International Airport  Washington Dulles International Airport
         """
         return DataFrame(_query_compiler=self._query_compiler.tail(n))
 
