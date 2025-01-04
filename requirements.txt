@@ -1,7 +1,7 @@
 #
 # Basic requirements
 #
-pandas==1.5.3
+pandas==2.0.0
 matplotlib>=3.6.2,<4
 numpy>=1.24.0,<2
 opensearch-py>=2.2.0
