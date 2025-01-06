@@ -80,9 +80,7 @@ class TestSeriesArithmetics(TestData):
             # "type cast" to modified class (inherits from ed.Series) that overrides the `to_pandas` function
             oml_series.__class__ = ModifiedOMLSeries
 
-            assert_pandas_opensearch_py_ml_series_equal(
-                pd_series, oml_series, check_less_precise=True
-            )
+            assert_pandas_opensearch_py_ml_series_equal(pd_series, oml_series)
 
     def test_ecommerce_series_invalid_div(self):
         pd_df = self.pd_ecommerce()
