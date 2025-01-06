@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>opensearch_py_ml.series &mdash; Opensearch-py-ml 1.1.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
 
@@ -113,25 +113,25 @@
 <span class="sd">Based on NDFrame which underpins opensearch_py_ml.DataFrame</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
-<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Collection</span>
-<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
-<span class="kn">from</span> <span class="nn">io</span> <span class="kn">import</span> <span class="n">StringIO</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections.abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Collection</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">io</span><span class="w"> </span><span class="kn">import</span> <span class="n">StringIO</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>  <span class="c1"># type: ignore</span>
-<span class="kn">from</span> <span class="nn">pandas.io.common</span> <span class="kn">import</span> <span class="n">_expand_user</span><span class="p">,</span> <span class="n">stringify_path</span>  <span class="c1"># type: ignore</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>  <span class="c1"># type: ignore</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pandas.io.common</span><span class="w"> </span><span class="kn">import</span> <span class="n">_expand_user</span><span class="p">,</span> <span class="n">stringify_path</span>  <span class="c1"># type: ignore</span>
 
-<span class="kn">import</span> <span class="nn">opensearch_py_ml.plotting</span>
-<span class="kn">from</span> <span class="nn">opensearch_py_ml.arithmetics</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">opensearch_py_ml.plotting</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">opensearch_py_ml.arithmetics</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">ArithmeticNumber</span><span class="p">,</span>
     <span class="n">ArithmeticSeries</span><span class="p">,</span>
     <span class="n">ArithmeticString</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">opensearch_py_ml.common</span> <span class="kn">import</span> <span class="n">DEFAULT_NUM_ROWS_DISPLAYED</span><span class="p">,</span> <span class="n">docstring_parameter</span>
-<span class="kn">from</span> <span class="nn">opensearch_py_ml.filter</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">opensearch_py_ml.common</span><span class="w"> </span><span class="kn">import</span> <span class="n">DEFAULT_NUM_ROWS_DISPLAYED</span><span class="p">,</span> <span class="n">docstring_parameter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">opensearch_py_ml.filter</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">BooleanFilter</span><span class="p">,</span>
     <span class="n">Equal</span><span class="p">,</span>
     <span class="n">Greater</span><span class="p">,</span>
@@ -145,22 +145,22 @@
     <span class="n">QueryFilter</span><span class="p">,</span>
     <span class="n">ScriptFilter</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span> <span class="nn">opensearch_py_ml.ndframe</span> <span class="kn">import</span> <span class="n">NDFrame</span>
-<span class="kn">from</span> <span class="nn">opensearch_py_ml.utils</span> <span class="kn">import</span> <span class="n">to_list</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">opensearch_py_ml.ndframe</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDFrame</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">opensearch_py_ml.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">to_list</span>
 
 <span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">opensearchpy</span> <span class="kn">import</span> <span class="n">OpenSearch</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">opensearchpy</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpenSearch</span>
 
-    <span class="kn">from</span> <span class="nn">opensearch_py_ml.query_compiler</span> <span class="kn">import</span> <span class="n">QueryCompiler</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">opensearch_py_ml.query_compiler</span><span class="w"> </span><span class="kn">import</span> <span class="n">QueryCompiler</span>
 
 
-<span class="k">def</span> <span class="nf">_get_method_name</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_method_name</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
     <span class="k">return</span> <span class="n">sys</span><span class="o">.</span><span class="n">_getframe</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">f_code</span><span class="o">.</span><span class="n">co_name</span>
 
 
 <div class="viewcode-block" id="Series">
 <a class="viewcode-back" href="../../reference/api/Series.html#opensearch_py_ml.Series">[docs]</a>
-<span class="k">class</span> <span class="nc">Series</span><span class="p">(</span><span class="n">NDFrame</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Series</span><span class="p">(</span><span class="n">NDFrame</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    pandas.Series like API that proxies into OpenSearch index(os).</span>
 
@@ -202,7 +202,7 @@
 <span class="sd">    Name: Carrier, Length: 13059, dtype: object</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">os_client</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;OpenSearch&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">os_index_pattern</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -227,7 +227,7 @@
     <span class="n">hist</span> <span class="o">=</span> <span class="n">opensearch_py_ml</span><span class="o">.</span><span class="n">plotting</span><span class="o">.</span><span class="n">oml_hist_series</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">empty</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">empty</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Determines if the Series is empty.</span>
 
 <span class="sd">        Returns:</span>
@@ -237,7 +237,7 @@
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">shape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">shape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return a tuple representing the dimensionality of the Series.</span>
 
@@ -267,7 +267,7 @@
         <span class="k">return</span> <span class="n">num_rows</span><span class="p">,</span> <span class="n">num_columns</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">os_field_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">os_field_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -277,16 +277,16 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">get_field_names</span><span class="p">(</span><span class="n">include_scripted_fields</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">columns</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="nd">@name</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">rename</span><span class="p">({</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">name</span><span class="p">},</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Series.rename">
 <a class="viewcode-back" href="../../reference/api/Series.rename.html#opensearch_py_ml.Series.rename">[docs]</a>
-    <span class="k">def</span> <span class="nf">rename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Rename name of series. Only column rename is supported. This does not change the underlying</span>
 <span class="sd">        index, but adds a symbolic link from the new name (column) to the OpenSearch field name.</span>
@@ -345,19 +345,19 @@
 
 <div class="viewcode-block" id="Series.head">
 <a class="viewcode-back" href="../../reference/api/Series.head.html#opensearch_py_ml.Series.head">[docs]</a>
-    <span class="k">def</span> <span class="nf">head</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">head</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">Series</span><span class="p">(</span><span class="n">_query_compiler</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">n</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="Series.tail">
 <a class="viewcode-back" href="../../reference/api/Series.tail.html#opensearch_py_ml.Series.tail">[docs]</a>
-    <span class="k">def</span> <span class="nf">tail</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">tail</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">Series</span><span class="p">(</span><span class="n">_query_compiler</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">tail</span><span class="p">(</span><span class="n">n</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="Series.sample">
 <a class="viewcode-back" href="../../reference/api/Series.sample.html#opensearch_py_ml.Series.sample">[docs]</a>
-    <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sample</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">n</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">frac</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -370,7 +370,7 @@
 
 <div class="viewcode-block" id="Series.value_counts">
 <a class="viewcode-back" href="../../reference/api/Series.value_counts.html#opensearch_py_ml.Series.value_counts">[docs]</a>
-    <span class="k">def</span> <span class="nf">value_counts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">os_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">value_counts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">os_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the value counts for the specified field.</span>
 
@@ -401,12 +401,12 @@
 <span class="sd">        &gt;&gt;&gt; from tests import OPENSEARCH_TEST_CLIENT</span>
 
 <span class="sd">        &gt;&gt;&gt; df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;flights&#39;)</span>
-<span class="sd">        &gt;&gt;&gt; df[&#39;Carrier&#39;].value_counts()</span>
-<span class="sd">        Logstash Airways    3331</span>
-<span class="sd">        JetBeats            3274</span>
-<span class="sd">        Kibana Airlines     3234</span>
-<span class="sd">        ES-Air              3220</span>
-<span class="sd">        Name: Carrier, dtype: int64</span>
+<span class="sd">        &gt;&gt;&gt; for key, value in df[&#39;Carrier&#39;].value_counts().items():</span>
+<span class="sd">        ...     print(key, value)</span>
+<span class="sd">        Logstash Airways 3331</span>
+<span class="sd">        JetBeats 3274</span>
+<span class="sd">        Kibana Airlines 3234</span>
+<span class="sd">        ES-Air 3220</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">os_size</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;os_size must be a positive integer.&quot;</span><span class="p">)</span>
@@ -420,7 +420,7 @@
 
     <span class="c1"># ----------------------------------------------------------------------</span>
     <span class="c1"># Rendering Methods</span>
-    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return a string representation for a particular Series.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -452,7 +452,7 @@
 <div class="viewcode-block" id="Series.to_string">
 <a class="viewcode-back" href="../../reference/api/Series.to_string.html#opensearch_py_ml.Series.to_string">[docs]</a>
     <span class="nd">@docstring_parameter</span><span class="p">(</span><span class="n">DEFAULT_NUM_ROWS_DISPLAYED</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">to_string</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_string</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">buf</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">na_rep</span><span class="o">=</span><span class="s2">&quot;NaN&quot;</span><span class="p">,</span>
@@ -555,12 +555,12 @@
 
 <div class="viewcode-block" id="Series.to_pandas">
 <a class="viewcode-back" href="../../reference/api/Series.to_pandas.html#opensearch_py_ml.Series.to_pandas">[docs]</a>
-    <span class="k">def</span> <span class="nf">to_pandas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_pandas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">to_pandas</span><span class="p">(</span><span class="n">show_progress</span><span class="o">=</span><span class="n">show_progress</span><span class="p">)[</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">]</span></div>
 
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">dtype</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">dtype</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the dtype object of the underlying data.</span>
 
@@ -571,13 +571,13 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">dtypes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">os_dtype</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">os_dtype</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the OpenSearch type of the underlying data.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_compiler</span><span class="o">.</span><span class="n">os_dtypes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-    <span class="k">def</span> <span class="fm">__gt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;Series&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">BooleanFilter</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__gt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;Series&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">BooleanFilter</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">):</span>
             <span class="c1"># convert numpy datetime64 object it has no `strftime` method</span>
             <span class="n">other</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
@@ -591,7 +591,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">))</span>
 
-    <span class="k">def</span> <span class="fm">__lt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;Series&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">BooleanFilter</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__lt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;Series&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">BooleanFilter</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">):</span>
             <span class="n">other</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
 
@@ -604,7 +604,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">))</span>
 
-    <span class="k">def</span> <span class="fm">__ge__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;Series&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">BooleanFilter</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__ge__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;Series&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">BooleanFilter</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">):</span>
             <span class="n">other</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
 
@@ -617,7 +617,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">))</span>
 
-    <span class="k">def</span> <span class="fm">__le__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;Series&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">BooleanFilter</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__le__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="s2">&quot;Series&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">BooleanFilter</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">):</span>
             <span class="n">other</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
 
@@ -630,7 +630,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">))</span>
 
-    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;Series&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">BooleanFilter</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;Series&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">BooleanFilter</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">):</span>
             <span class="n">other</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
 
@@ -645,7 +645,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">))</span>
 
-    <span class="k">def</span> <span class="fm">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;Series&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">BooleanFilter</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;Series&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">BooleanFilter</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">datetime64</span><span class="p">):</span>
             <span class="n">other</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
 
@@ -662,7 +662,7 @@
 
 <div class="viewcode-block" id="Series.isin">
 <a class="viewcode-back" href="../../reference/api/Series.isin.html#opensearch_py_ml.Series.isin">[docs]</a>
-    <span class="k">def</span> <span class="nf">isin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Collection</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">BooleanFilter</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">isin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Collection</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">BooleanFilter</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="p">(</span><span class="n">Collection</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)):</span>
             <span class="k">return</span> <span class="n">IsIn</span><span class="p">(</span><span class="n">field</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">to_list</span><span class="p">(</span><span class="n">other</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
@@ -671,7 +671,7 @@
 
 <div class="viewcode-block" id="Series.isna">
 <a class="viewcode-back" href="../../reference/api/Series.isna.html#opensearch_py_ml.Series.isna">[docs]</a>
-    <span class="k">def</span> <span class="nf">isna</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BooleanFilter</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">isna</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BooleanFilter</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Detect missing values.</span>
 
@@ -691,7 +691,7 @@
 
 <div class="viewcode-block" id="Series.notna">
 <a class="viewcode-back" href="../../reference/api/Series.notna.html#opensearch_py_ml.Series.notna">[docs]</a>
-    <span class="k">def</span> <span class="nf">notna</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BooleanFilter</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">notna</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BooleanFilter</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Detect existing (non-missing) values.</span>
 
@@ -712,7 +712,7 @@
 
 <div class="viewcode-block" id="Series.quantile">
 <a class="viewcode-back" href="../../reference/api/Series.quantile.html#opensearch_py_ml.Series.quantile">[docs]</a>
-    <span class="k">def</span> <span class="nf">quantile</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">quantile</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="mf">0.5</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -755,7 +755,7 @@
 
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">ndim</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">ndim</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns 1 by definition of a Series</span>
 
@@ -772,7 +772,7 @@
 
 <div class="viewcode-block" id="Series.filter">
 <a class="viewcode-back" href="../../reference/api/Series.filter.html#opensearch_py_ml.Series.filter">[docs]</a>
-    <span class="k">def</span> <span class="nf">filter</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">filter</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">items</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">like</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -831,7 +831,7 @@
 
 <div class="viewcode-block" id="Series.mode">
 <a class="viewcode-back" href="../../reference/api/Series.mode.html#opensearch_py_ml.Series.mode">[docs]</a>
-    <span class="k">def</span> <span class="nf">mode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">os_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">os_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">            Calculate mode of a series</span>
 
@@ -878,7 +878,7 @@
 
 <div class="viewcode-block" id="Series.os_match">
 <a class="viewcode-back" href="../../reference/api/Series.os_match.html#opensearch_py_ml.Series.os_match">[docs]</a>
-    <span class="k">def</span> <span class="nf">os_match</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">os_match</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
@@ -951,7 +951,7 @@
 
 <div class="viewcode-block" id="Series.os_info">
 <a class="viewcode-back" href="../../reference/api/Series.os_info.html#opensearch_py_ml.Series.os_info">[docs]</a>
-    <span class="k">def</span> <span class="nf">os_info</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">os_info</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="n">buf</span> <span class="o">=</span> <span class="n">StringIO</span><span class="p">()</span>
 
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_os_info</span><span class="p">(</span><span class="n">buf</span><span class="p">)</span>
@@ -959,7 +959,7 @@
         <span class="k">return</span> <span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span></div>
 
 
-    <span class="k">def</span> <span class="fm">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">right</span><span class="p">:</span> <span class="s2">&quot;Series&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">right</span><span class="p">:</span> <span class="s2">&quot;Series&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return addition of series and right, element-wise (binary operator add).</span>
 
@@ -1021,7 +1021,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numeric_op</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">_get_method_name</span><span class="p">())</span>
 
-    <span class="k">def</span> <span class="fm">__truediv__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">right</span><span class="p">:</span> <span class="s2">&quot;Series&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__truediv__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">right</span><span class="p">:</span> <span class="s2">&quot;Series&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return floating division of series and right, element-wise (binary operator truediv).</span>
 
@@ -1062,7 +1062,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numeric_op</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">_get_method_name</span><span class="p">())</span>
 
-    <span class="k">def</span> <span class="fm">__floordiv__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">right</span><span class="p">:</span> <span class="s2">&quot;Series&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__floordiv__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">right</span><span class="p">:</span> <span class="s2">&quot;Series&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return integer division of series and right, element-wise (binary operator floordiv //).</span>
 
@@ -1103,7 +1103,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numeric_op</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">_get_method_name</span><span class="p">())</span>
 
-    <span class="k">def</span> <span class="fm">__mod__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">right</span><span class="p">:</span> <span class="s2">&quot;Series&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__mod__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">right</span><span class="p">:</span> <span class="s2">&quot;Series&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return modulo of series and right, element-wise (binary operator mod %).</span>
 
@@ -1144,7 +1144,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numeric_op</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">_get_method_name</span><span class="p">())</span>
 
-    <span class="k">def</span> <span class="fm">__mul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">right</span><span class="p">:</span> <span class="s2">&quot;Series&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__mul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">right</span><span class="p">:</span> <span class="s2">&quot;Series&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return multiplication of series and right, element-wise (binary operator mul).</span>
 
@@ -1185,7 +1185,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numeric_op</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">_get_method_name</span><span class="p">())</span>
 
-    <span class="k">def</span> <span class="fm">__sub__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">right</span><span class="p">:</span> <span class="s2">&quot;Series&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__sub__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">right</span><span class="p">:</span> <span class="s2">&quot;Series&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return subtraction of series and right, element-wise (binary operator sub).</span>
 
@@ -1226,7 +1226,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numeric_op</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">_get_method_name</span><span class="p">())</span>
 
-    <span class="k">def</span> <span class="fm">__pow__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">right</span><span class="p">:</span> <span class="s2">&quot;Series&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__pow__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">right</span><span class="p">:</span> <span class="s2">&quot;Series&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return exponential power of series and right, element-wise (binary operator pow).</span>
 
@@ -1267,7 +1267,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numeric_op</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">_get_method_name</span><span class="p">())</span>
 
-    <span class="k">def</span> <span class="fm">__radd__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">left</span><span class="p">:</span> <span class="s2">&quot;Series&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__radd__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">left</span><span class="p">:</span> <span class="s2">&quot;Series&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return addition of series and left, element-wise (binary operator add).</span>
 
@@ -1301,7 +1301,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numeric_op</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">_get_method_name</span><span class="p">())</span>
 
-    <span class="k">def</span> <span class="fm">__rtruediv__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">left</span><span class="p">:</span> <span class="s2">&quot;Series&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__rtruediv__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">left</span><span class="p">:</span> <span class="s2">&quot;Series&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return division of series and left, element-wise (binary operator div).</span>
 
@@ -1335,7 +1335,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numeric_op</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">_get_method_name</span><span class="p">())</span>
 
-    <span class="k">def</span> <span class="fm">__rfloordiv__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">left</span><span class="p">:</span> <span class="s2">&quot;Series&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__rfloordiv__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">left</span><span class="p">:</span> <span class="s2">&quot;Series&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return integer division of series and left, element-wise (binary operator floordiv //).</span>
 
@@ -1369,7 +1369,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numeric_op</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">_get_method_name</span><span class="p">())</span>
 
-    <span class="k">def</span> <span class="fm">__rmod__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">left</span><span class="p">:</span> <span class="s2">&quot;Series&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__rmod__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">left</span><span class="p">:</span> <span class="s2">&quot;Series&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return modulo of series and left, element-wise (binary operator mod %).</span>
 
@@ -1403,7 +1403,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numeric_op</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">_get_method_name</span><span class="p">())</span>
 
-    <span class="k">def</span> <span class="fm">__rmul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">left</span><span class="p">:</span> <span class="s2">&quot;Series&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__rmul__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">left</span><span class="p">:</span> <span class="s2">&quot;Series&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return multiplication of series and left, element-wise (binary operator mul).</span>
 
@@ -1437,7 +1437,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numeric_op</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">_get_method_name</span><span class="p">())</span>
 
-    <span class="k">def</span> <span class="fm">__rpow__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">left</span><span class="p">:</span> <span class="s2">&quot;Series&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__rpow__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">left</span><span class="p">:</span> <span class="s2">&quot;Series&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return exponential power of series and left, element-wise (binary operator pow).</span>
 
@@ -1471,7 +1471,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numeric_op</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">_get_method_name</span><span class="p">())</span>
 
-    <span class="k">def</span> <span class="fm">__rsub__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">left</span><span class="p">:</span> <span class="s2">&quot;Series&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__rsub__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">left</span><span class="p">:</span> <span class="s2">&quot;Series&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return subtraction of series and left, element-wise (binary operator sub).</span>
 
@@ -1534,7 +1534,7 @@
     <span class="n">__div__</span> <span class="o">=</span> <span class="fm">__truediv__</span>
     <span class="n">__rdiv__</span> <span class="o">=</span> <span class="fm">__rtruediv__</span>
 
-    <span class="k">def</span> <span class="nf">_numeric_op</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">right</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">method_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_numeric_op</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">right</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">method_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Series&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        return a op b</span>
 
@@ -1594,7 +1594,7 @@
 
 <div class="viewcode-block" id="Series.max">
 <a class="viewcode-back" href="../../reference/api/Series.max.html#opensearch_py_ml.Series.max">[docs]</a>
-    <span class="k">def</span> <span class="nf">max</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">max</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the maximum of the Series values</span>
 
@@ -1623,7 +1623,7 @@
 
 <div class="viewcode-block" id="Series.mean">
 <a class="viewcode-back" href="../../reference/api/Series.mean.html#opensearch_py_ml.Series.mean">[docs]</a>
-    <span class="k">def</span> <span class="nf">mean</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mean</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the mean of the Series values</span>
 
@@ -1652,7 +1652,7 @@
 
 <div class="viewcode-block" id="Series.median">
 <a class="viewcode-back" href="../../reference/api/Series.median.html#opensearch_py_ml.Series.median">[docs]</a>
-    <span class="k">def</span> <span class="nf">median</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">median</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the median of the Series values</span>
 
@@ -1681,7 +1681,7 @@
 
 <div class="viewcode-block" id="Series.min">
 <a class="viewcode-back" href="../../reference/api/Series.min.html#opensearch_py_ml.Series.min">[docs]</a>
-    <span class="k">def</span> <span class="nf">min</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">min</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the minimum of the Series values</span>
 
@@ -1710,7 +1710,7 @@
 
 <div class="viewcode-block" id="Series.sum">
 <a class="viewcode-back" href="../../reference/api/Series.sum.html#opensearch_py_ml.Series.sum">[docs]</a>
-    <span class="k">def</span> <span class="nf">sum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sum</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the sum of the Series values</span>
 
@@ -1739,7 +1739,7 @@
 
 <div class="viewcode-block" id="Series.nunique">
 <a class="viewcode-back" href="../../reference/api/Series.nunique.html#opensearch_py_ml.Series.nunique">[docs]</a>
-    <span class="k">def</span> <span class="nf">nunique</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">nunique</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the number of unique values in a Series</span>
 
@@ -1766,7 +1766,7 @@
 
 <div class="viewcode-block" id="Series.unique">
 <a class="viewcode-back" href="../../reference/api/Series.unique.html#opensearch_py_ml.Series.unique">[docs]</a>
-    <span class="k">def</span> <span class="nf">unique</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">unique</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns all unique values within a Series. Note that behavior is slightly different between pandas and</span>
 <span class="sd">        opensearch_py_ml: pandas will return values in the order they&#39;re first seen and opensearch-py-ml returns</span>
@@ -1787,7 +1787,7 @@
 
 <div class="viewcode-block" id="Series.var">
 <a class="viewcode-back" href="../../reference/api/Series.var.html#opensearch_py_ml.Series.var">[docs]</a>
-    <span class="k">def</span> <span class="nf">var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return variance for a Series</span>
 
@@ -1814,7 +1814,7 @@
 
 <div class="viewcode-block" id="Series.std">
 <a class="viewcode-back" href="../../reference/api/Series.std.html#opensearch_py_ml.Series.std">[docs]</a>
-    <span class="k">def</span> <span class="nf">std</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">std</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return standard deviation for a Series</span>
 
@@ -1841,7 +1841,7 @@
 
 <div class="viewcode-block" id="Series.mad">
 <a class="viewcode-back" href="../../reference/api/Series.mad.html#opensearch_py_ml.Series.mad">[docs]</a>
-    <span class="k">def</span> <span class="nf">mad</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mad</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">numeric_only</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return median absolute deviation for a Series</span>
 
@@ -1868,7 +1868,7 @@
 
 <div class="viewcode-block" id="Series.describe">
 <a class="viewcode-back" href="../../reference/api/Series.describe.html#opensearch_py_ml.Series.describe">[docs]</a>
-    <span class="k">def</span> <span class="nf">describe</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">describe</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Generate descriptive statistics that summarize the central tendency, dispersion and shape of a</span>
 <span class="sd">        dataset’s distribution, excluding NaN values.</span>
@@ -1910,7 +1910,7 @@
 
 <div class="viewcode-block" id="Series.to_numpy">
 <a class="viewcode-back" href="../../reference/api/Series.to_numpy.html#opensearch_py_ml.Series.to_numpy">[docs]</a>
-    <span class="k">def</span> <span class="nf">to_numpy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_numpy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Not implemented.</span>
 
@@ -1960,7 +1960,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2024, Opensearch.</p>
+    <p>&#169; Copyright 2025, Opensearch.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

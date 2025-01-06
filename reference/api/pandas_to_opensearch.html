@@ -7,7 +7,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>pandas_to_opensearch &mdash; Opensearch-py-ml 1.1.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
 
@@ -148,7 +148,7 @@ os_dest_index: str</p>
 </section>
 <section id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Link to this heading"></a></h2>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tests</span> <span class="kn">import</span> <span class="n">OPENSEARCH_TEST_CLIENT</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">tests</span><span class="w"> </span><span class="kn">import</span> <span class="n">OPENSEARCH_TEST_CLIENT</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">pd_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;A&#39;</span><span class="p">:</span> <span class="mf">3.141</span><span class="p">,</span>
 <span class="gp">... </span>                           <span class="s1">&#39;B&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
 <span class="gp">... </span>                           <span class="s1">&#39;C&#39;</span><span class="p">:</span> <span class="s1">&#39;foo&#39;</span><span class="p">,</span>
@@ -158,6 +158,7 @@ os_dest_index: str</p>
 <span class="gp">... </span>                           <span class="s1">&#39;G&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
 <span class="gp">... </span>                           <span class="s1">&#39;H&#39;</span><span class="p">:</span> <span class="s1">&#39;Long text - to be indexed as os type text&#39;</span><span class="p">},</span>
 <span class="gp">... </span>                     <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;0&#39;</span><span class="p">,</span> <span class="s1">&#39;1&#39;</span><span class="p">,</span> <span class="s1">&#39;2&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pd_df</span><span class="p">[</span><span class="s1">&#39;D&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd_df</span><span class="p">[</span><span class="s1">&#39;D&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;datetime64[ns]&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">type</span><span class="p">(</span><span class="n">pd_df</span><span class="p">)</span>
 <span class="go">&lt;class &#39;pandas.core.frame.DataFrame&#39;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">pd_df</span>
@@ -182,7 +183,7 @@ os_dest_index: str</p>
 <p>Convert <cite>pandas.DataFrame</cite> to <cite>opensearch_py_ml.DataFrame</cite> - this creates an OpenSearch index called
 <cite>pandas_to_opensearch</cite>. Overwrite existing OpenSearch index if it exists <cite>if_exists=”replace”</cite>, and sync index, so
 it is readable on return <cite>refresh=True</cite></p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">tests</span> <span class="kn">import</span> <span class="n">OPENSEARCH_TEST_CLIENT</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">tests</span><span class="w"> </span><span class="kn">import</span> <span class="n">OPENSEARCH_TEST_CLIENT</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">oml_df</span> <span class="o">=</span> <span class="n">oml</span><span class="o">.</span><span class="n">pandas_to_opensearch</span><span class="p">(</span><span class="n">pd_df</span><span class="p">,</span>
 <span class="gp">... </span>                           <span class="n">OPENSEARCH_TEST_CLIENT</span><span class="p">,</span>
 <span class="gp">... </span>                           <span class="s1">&#39;pandas_to_opensearch&#39;</span><span class="p">,</span>
@@ -230,7 +231,7 @@ it is readable on return <cite>refresh=True</cite></p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2024, Opensearch.</p>
+    <p>&#169; Copyright 2025, Opensearch.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

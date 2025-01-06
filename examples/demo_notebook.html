@@ -7,7 +7,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Demo Notebook for Dataframe &mdash; Opensearch-py-ml 1.1.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -116,7 +116,7 @@
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># import this to stop opensearch-py-ml from yelling every time a DataFrame connection made</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -126,14 +126,14 @@
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># imports to demonstrate DataFrame support</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">import</span> <span class="nn">opensearch_py_ml</span> <span class="k">as</span> <span class="nn">oml</span>
-<span class="kn">from</span> <span class="nn">opensearchpy</span> <span class="kn">import</span> <span class="n">OpenSearch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">opensearch_py_ml</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">oml</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">opensearchpy</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpenSearch</span>
 
 <span class="c1"># Import standard test settings for consistent results</span>
-<span class="kn">from</span> <span class="nn">opensearch_py_ml.conftest</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">opensearch_py_ml.conftest</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
 </pre></div>
 </div>
 </div>
@@ -146,7 +146,7 @@
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">CLUSTER_URL</span> <span class="o">=</span> <span class="s1">&#39;https://localhost:9200&#39;</span>
 
-<span class="k">def</span> <span class="nf">get_os_client</span><span class="p">(</span><span class="n">cluster_url</span> <span class="o">=</span> <span class="n">CLUSTER_URL</span><span class="p">,</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_os_client</span><span class="p">(</span><span class="n">cluster_url</span> <span class="o">=</span> <span class="n">CLUSTER_URL</span><span class="p">,</span>
                   <span class="n">username</span><span class="o">=</span><span class="s1">&#39;admin&#39;</span><span class="p">,</span>
                   <span class="n">password</span><span class="o">=</span><span class="s1">&#39;&lt; admin password &gt;&#39;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
@@ -3039,7 +3039,7 @@ Operations:
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2024, Opensearch.</p>
+    <p>&#169; Copyright 2025, Opensearch.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

@@ -7,7 +7,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Demo Notebook for Sentence Transformer Model Training, Saving and Uploading to OpenSearch &mdash; Opensearch-py-ml 1.1.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
       <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
@@ -126,7 +126,7 @@ state-of-the-art models. Note that resulting BERT model is a customized model si
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Download generate.py for Generate Synthetic Queries</span>
 
-<span class="kn">import</span> <span class="nn">urllib.request</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">urllib.request</span>
 <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlretrieve</span><span class="p">(</span><span class="s2">&quot;https://artifacts.opensearch.org/models/ml-models/amazon/gpt/GPT2_xl_sqg/1.0.0/generate.py&quot;</span><span class="p">,</span> <span class="s2">&quot;generate.py&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -152,18 +152,18 @@ state-of-the-art models. Note that resulting BERT model is a customized model si
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">warnings</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="ne">DeprecationWarning</span><span class="p">)</span>
 <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Unverified HTTPS request&quot;</span><span class="p">)</span>
-<span class="kn">import</span> <span class="nn">opensearch_py_ml</span> <span class="k">as</span> <span class="nn">oml</span>
-<span class="kn">from</span> <span class="nn">opensearchpy</span> <span class="kn">import</span> <span class="n">OpenSearch</span>
-<span class="kn">import</span> <span class="nn">generate</span>
-<span class="kn">from</span> <span class="nn">generate</span> <span class="kn">import</span> <span class="n">Synthetic_Query_Generation</span>
-<span class="kn">from</span> <span class="nn">opensearch_py_ml.ml_models</span> <span class="kn">import</span> <span class="n">SentenceTransformerModel</span>
-<span class="kn">import</span> <span class="nn">boto3</span><span class="o">,</span> <span class="nn">json</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span><span class="o">,</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">datasets</span> <span class="kn">import</span> <span class="n">load_dataset</span>
-<span class="kn">import</span> <span class="nn">gc</span><span class="o">,</span> <span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">opensearch_py_ml</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">oml</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">opensearchpy</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpenSearch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">generate</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">generate</span><span class="w"> </span><span class="kn">import</span> <span class="n">Synthetic_Query_Generation</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">opensearch_py_ml.ml_models</span><span class="w"> </span><span class="kn">import</span> <span class="n">SentenceTransformerModel</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">boto3</span><span class="o">,</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span><span class="o">,</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_dataset</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">gc</span><span class="o">,</span><span class="w"> </span><span class="nn">torch</span>
 <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
 <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">empty_cache</span><span class="p">()</span>
 </pre></div>
@@ -174,7 +174,7 @@ state-of-the-art models. Note that resulting BERT model is a customized model si
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># import mlcommon to later upload the model to OpenSearch Cluster</span>
-<span class="kn">from</span> <span class="nn">opensearch_py_ml.ml_commons</span> <span class="kn">import</span> <span class="n">MLCommonClient</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">opensearch_py_ml.ml_commons</span><span class="w"> </span><span class="kn">import</span> <span class="n">MLCommonClient</span>
 </pre></div>
 </div>
 </div>
@@ -190,7 +190,7 @@ state-of-the-art models. Note that resulting BERT model is a customized model si
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">get_os_client</span><span class="p">(</span><span class="n">cluster_url</span> <span class="o">=</span> <span class="n">CLUSTER_URL</span><span class="p">,</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">get_os_client</span><span class="p">(</span><span class="n">cluster_url</span> <span class="o">=</span> <span class="n">CLUSTER_URL</span><span class="p">,</span>
                   <span class="n">username</span><span class="o">=</span><span class="s1">&#39;admin&#39;</span><span class="p">,</span>
                   <span class="n">password</span><span class="o">=</span><span class="s1">&#39;&lt; admin password &gt;&#39;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
@@ -219,7 +219,7 @@ state-of-the-art models. Note that resulting BERT model is a customized model si
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">myselect</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">myselect</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
     <span class="k">if</span> <span class="nb">max</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s2">&quot;passages&quot;</span><span class="p">][</span><span class="s2">&quot;is_selected&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">x</span><span class="p">[</span><span class="s2">&quot;passages&quot;</span><span class="p">][</span><span class="s2">&quot;passage_text&quot;</span><span class="p">][</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s2">&quot;passages&quot;</span><span class="p">][</span><span class="s2">&quot;is_selected&quot;</span><span class="p">])]</span>
     <span class="k">return</span> <span class="s2">&quot;-1&quot;</span>
@@ -368,7 +368,7 @@ state-of-the-art models. Note that resulting BERT model is a customized model si
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># clean up cache before training to free up spaces</span>
-<span class="kn">import</span> <span class="nn">gc</span><span class="o">,</span> <span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">gc</span><span class="o">,</span><span class="w"> </span><span class="nn">torch</span>
 
 <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
 
@@ -420,8 +420,8 @@ for API Reference.</p>
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">#connect to ml_common client with OpenSearch client</span>
-<span class="kn">import</span> <span class="nn">opensearch_py_ml</span> <span class="k">as</span> <span class="nn">oml</span>
-<span class="kn">from</span> <span class="nn">opensearch_py_ml.ml_commons</span> <span class="kn">import</span> <span class="n">MLCommonClient</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">opensearch_py_ml</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">oml</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">opensearch_py_ml.ml_commons</span><span class="w"> </span><span class="kn">import</span> <span class="n">MLCommonClient</span>
 <span class="n">ml_client</span> <span class="o">=</span> <span class="n">MLCommonClient</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -493,7 +493,7 @@ Model uploaded successfully
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2024, Opensearch.</p>
+    <p>&#169; Copyright 2025, Opensearch.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
