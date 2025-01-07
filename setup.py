@@ -88,7 +88,6 @@ setup(
         "numpy>=1.24.0,<2",
         "deprecated>=1.2.14,<2",
         # Additional dependencies for the RAG pipeline
-
         "accelerate>=0.27",
         "sentence_transformers>=2.5.0,<2.6",
         "tqdm>=4.66.0,<5",

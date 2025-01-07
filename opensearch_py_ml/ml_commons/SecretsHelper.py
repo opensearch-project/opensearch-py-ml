@@ -2,8 +2,8 @@
 # The OpenSearch Contributors require contributions made to
 # this file be licensed under the Apache-2.0 license or a
 # compatible open source license.
-# Any modifications Copyright OpenSearch
-# Contributors. See GitHub history for details.
+# Any modifications Copyright OpenSearch Contributors. See
+# GitHub history for details.
 
 import json
 import logging
@@ -61,7 +61,9 @@ class SecretHelper:
         """
         try:
             # Describe the secret to get its ARN and metadata
-            describe_response = self.secretsmanager.describe_secret(SecretId=secret_name)
+            describe_response = self.secretsmanager.describe_secret(
+                SecretId=secret_name
+            )
 
             secret_details = {
                 "ARN": describe_response["ARN"],
@@ -70,7 +72,9 @@ class SecretHelper:
 
             # Fetch the secret value if requested
             if fetch_value:
-                value_response = self.secretsmanager.get_secret_value(SecretId=secret_name)
+                value_response = self.secretsmanager.get_secret_value(
+                    SecretId=secret_name
+                )
                 secret_details["SecretValue"] = value_response.get("SecretString")
 
             return secret_details
@@ -80,7 +84,9 @@ class SecretHelper:
             if error_code == "ResourceNotFoundException":
                 logger.warning(f"The requested secret '{secret_name}' was not found")
             else:
-                logger.error(f"An error occurred while fetching secret '{secret_name}': {e}")
+                logger.error(
+                    f"An error occurred while fetching secret '{secret_name}': {e}"
+                )
             # Return a dictionary with error details
             return {"error": str(e), "error_code": error_code}
 

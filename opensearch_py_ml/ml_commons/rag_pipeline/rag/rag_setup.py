@@ -15,10 +15,10 @@ import tty
 from urllib.parse import urlparse
 
 import boto3
+import requests
 from botocore.config import Config
 from colorama import Fore, Style, init
 from opensearchpy import OpenSearch, RequestsHttpConnection
-import requests
 
 from opensearch_py_ml.ml_commons.rag_pipeline.rag.model_register import ModelRegister
 from opensearch_py_ml.ml_commons.rag_pipeline.rag.opensearch_connector import (

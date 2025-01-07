@@ -2,8 +2,8 @@
 # The OpenSearch Contributors require contributions made to
 # this file be licensed under the Apache-2.0 license or a
 # compatible open source license.
-# Any modifications Copyright OpenSearch Contributors.
-# See GitHub history for details.
+# Any modifications Copyright OpenSearch Contributors. See
+# GitHub history for details.
 
 import json
 import logging
@@ -11,7 +11,6 @@ import uuid
 from datetime import datetime
 
 import boto3
-import requests
 from botocore.exceptions import ClientError
 
 
@@ -126,7 +125,7 @@ class IAMRoleHelper:
 
             # If policy_name is not provided, generate a unique one
             if not policy_name:
-                timestamp = datetime.utcnow().strftime('%Y%m%d%H%M%S')
+                timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
                 policy_name = f"InlinePolicy-{role_name}-{timestamp}"
 
             # Attach the inline policy to the role
