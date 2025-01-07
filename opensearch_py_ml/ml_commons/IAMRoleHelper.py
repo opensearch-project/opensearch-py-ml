@@ -2,10 +2,13 @@
 # The OpenSearch Contributors require contributions made to
 # this file be licensed under the Apache-2.0 license or a
 # compatible open source license.
-# Any modifications Copyright OpenSearch Contributors. See
-# GitHub history for details.
+# Any modifications Copyright OpenSearch Contributors.
+# See GitHub history for details.
 
 import json
+import logging
+import uuid
+from datetime import datetime
 
 import boto3
 import requests
@@ -23,9 +26,6 @@ class IAMRoleHelper:
         opensearch_domain_url=None,
         opensearch_domain_username=None,
         opensearch_domain_password=None,
-        aws_user_name=None,
-        aws_role_name=None,
-        opensearch_domain_arn=None,
     ):
         """
         Initialize the IAMRoleHelper with AWS and OpenSearch configurations.
@@ -34,17 +34,14 @@ class IAMRoleHelper:
         :param opensearch_domain_url: URL of the OpenSearch domain.
         :param opensearch_domain_username: Username for OpenSearch domain authentication.
         :param opensearch_domain_password: Password for OpenSearch domain authentication.
-        :param aws_user_name: AWS IAM user name.
-        :param aws_role_name: AWS IAM role name.
-        :param opensearch_domain_arn: ARN of the OpenSearch domain.
         """
         self.region = region
         self.opensearch_domain_url = opensearch_domain_url
         self.opensearch_domain_username = opensearch_domain_username
         self.opensearch_domain_password = opensearch_domain_password
-        self.aws_user_name = aws_user_name
-        self.aws_role_name = aws_role_name
-        self.opensearch_domain_arn = opensearch_domain_arn
+
+        self.iam_client = boto3.client("iam", region_name=self.region)
+        self.sts_client = boto3.client("sts", region_name=self.region)
 
     def role_exists(self, role_name):
         """
@@ -53,17 +50,15 @@ class IAMRoleHelper:
         :param role_name: Name of the IAM role.
         :return: True if the role exists, False otherwise.
         """
-        iam_client = boto3.client("iam")
-
         try:
-            iam_client.get_role(RoleName=role_name)
+            self.iam_client.get_role(RoleName=role_name)
             return True
         except ClientError as e:
             if e.response["Error"]["Code"] == "NoSuchEntity":
-                return False
+                print(f"The requested role '{role_name}' does not exist.")
             else:
                 print(f"An error occurred: {e}")
-                return False
+            return False
 
     def delete_role(self, role_name):
         """
@@ -71,53 +66,56 @@ class IAMRoleHelper:
 
         :param role_name: Name of the IAM role to delete.
         """
-        iam_client = boto3.client("iam")
-
         try:
-            # Detach managed policies from the role
-            policies = iam_client.list_attached_role_policies(RoleName=role_name)[
+            # Detach any managed policies from the role
+            policies = self.iam_client.list_attached_role_policies(RoleName=role_name)[
                 "AttachedPolicies"
             ]
             for policy in policies:
-                iam_client.detach_role_policy(
+                self.iam_client.detach_role_policy(
                     RoleName=role_name, PolicyArn=policy["PolicyArn"]
                 )
-            print(f"All managed policies detached from role {role_name}.")
+            print(f"All managed policies detached from role '{role_name}'.")
 
             # Delete inline policies associated with the role
-            inline_policies = iam_client.list_role_policies(RoleName=role_name)[
+            inline_policies = self.iam_client.list_role_policies(RoleName=role_name)[
                 "PolicyNames"
             ]
             for policy_name in inline_policies:
-                iam_client.delete_role_policy(
+                self.iam_client.delete_role_policy(
                     RoleName=role_name, PolicyName=policy_name
                 )
-            print(f"All inline policies deleted from role {role_name}.")
+            print(f"All inline policies deleted from role '{role_name}'.")
 
             # Finally, delete the IAM role
-            iam_client.delete_role(RoleName=role_name)
-            print(f"Role {role_name} deleted.")
+            self.iam_client.delete_role(RoleName=role_name)
+            print(f"Role '{role_name}' deleted.")
 
         except ClientError as e:
             if e.response["Error"]["Code"] == "NoSuchEntity":
-                print(f"Role {role_name} does not exist.")
+                print(f"Role '{role_name}' does not exist.")
             else:
                 print(f"An error occurred: {e}")
 
-    def create_iam_role(self, role_name, trust_policy_json, inline_policy_json):
+    def create_iam_role(
+        self,
+        role_name,
+        trust_policy_json,
+        inline_policy_json,
+        policy_name=None,
+    ):
         """
         Create a new IAM role with specified trust and inline policies.
 
         :param role_name: Name of the IAM role to create.
         :param trust_policy_json: Trust policy document in JSON format.
         :param inline_policy_json: Inline policy document in JSON format.
+        :param policy_name: Optional. If not provided, a unique one will be generated.
         :return: ARN of the created role or None if creation failed.
         """
-        iam_client = boto3.client("iam")
-
         try:
             # Create the role with the provided trust policy
-            create_role_response = iam_client.create_role(
+            create_role_response = self.iam_client.create_role(
                 RoleName=role_name,
                 AssumeRolePolicyDocument=json.dumps(trust_policy_json),
                 Description="Role with custom trust and inline policies",
@@ -126,84 +124,75 @@ class IAMRoleHelper:
             # Retrieve the ARN of the newly created role
             role_arn = create_role_response["Role"]["Arn"]
 
+            # If policy_name is not provided, generate a unique one
+            if not policy_name:
+                timestamp = datetime.utcnow().strftime('%Y%m%d%H%M%S')
+                policy_name = f"InlinePolicy-{role_name}-{timestamp}"
+
             # Attach the inline policy to the role
-            iam_client.put_role_policy(
+            self.iam_client.put_role_policy(
                 RoleName=role_name,
-                PolicyName="InlinePolicy",  # Replace with preferred policy name if needed
+                PolicyName=policy_name,
                 PolicyDocument=json.dumps(inline_policy_json),
             )
 
-            print(f"Created role: {role_name}")
+            print(f"Created role: {role_name} with inline policy: {policy_name}")
             return role_arn
 
         except ClientError as e:
             print(f"Error creating the role: {e}")
             return None
 
-    def get_role_arn(self, role_name):
+    def get_role_info(self, role_name, include_details=False):
         """
-        Retrieve the ARN of an IAM role.
+        Retrieve information about an IAM role.
 
         :param role_name: Name of the IAM role.
-        :return: ARN of the role or None if not found.
+        :param include_details: If False, returns only the role's ARN.
+                               If True, returns a dictionary with full role details.
+        :return: ARN or dict of role details. Returns None if not found.
         """
         if not role_name:
             return None
-        iam_client = boto3.client("iam")
-        try:
-            response = iam_client.get_role(RoleName=role_name)
-            return response["Role"]["Arn"]
-        except ClientError as e:
-            if e.response["Error"]["Code"] == "NoSuchEntity":
-                print(f"The requested role {role_name} does not exist")
-                return None
-            else:
-                print(f"An error occurred: {e}")
-                return None
-
-    def get_role_details(self, role_name):
-        """
-        Print detailed information about an IAM role.
-
-        :param role_name: Name of the IAM role.
-        """
-        iam = boto3.client("iam")
 
         try:
-            response = iam.get_role(RoleName=role_name)
+            response = self.iam_client.get_role(RoleName=role_name)
             role = response["Role"]
+            role_arn = role["Arn"]
 
-            print(f"Role Name: {role['RoleName']}")
-            print(f"Role ID: {role['RoleId']}")
-            print(f"ARN: {role['Arn']}")
-            print(f"Creation Date: {role['CreateDate']}")
-            print("Assume Role Policy Document:")
-            print(
-                json.dumps(role["AssumeRolePolicyDocument"], indent=4, sort_keys=True)
+            if not include_details:
+                return role_arn
+
+            # Build a detailed dictionary
+            role_details = {
+                "RoleName": role["RoleName"],
+                "RoleId": role["RoleId"],
+                "Arn": role_arn,
+                "CreationDate": role["CreateDate"],
+                "AssumeRolePolicyDocument": role["AssumeRolePolicyDocument"],
+                "InlinePolicies": {},
+            }
+
+            # List and retrieve any inline policies
+            list_role_policies_response = self.iam_client.list_role_policies(
+                RoleName=role_name
             )
-
-            # List and print all inline policies attached to the role
-            list_role_policies_response = iam.list_role_policies(RoleName=role_name)
-
             for policy_name in list_role_policies_response["PolicyNames"]:
-                get_role_policy_response = iam.get_role_policy(
+                get_role_policy_response = self.iam_client.get_role_policy(
                     RoleName=role_name, PolicyName=policy_name
                 )
-                print(f"Role Policy Name: {get_role_policy_response['PolicyName']}")
-                print("Role Policy Document:")
-                print(
-                    json.dumps(
-                        get_role_policy_response["PolicyDocument"],
-                        indent=4,
-                        sort_keys=True,
-                    )
-                )
+                role_details["InlinePolicies"][policy_name] = get_role_policy_response[
+                    "PolicyDocument"
+                ]
+
+            return role_details
 
         except ClientError as e:
             if e.response["Error"]["Code"] == "NoSuchEntity":
-                print(f"Role {role_name} does not exist.")
+                print(f"Role '{role_name}' does not exist.")
             else:
                 print(f"An error occurred: {e}")
+            return None
 
     def get_user_arn(self, username):
         """
@@ -214,29 +203,34 @@ class IAMRoleHelper:
         """
         if not username:
             return None
-        iam_client = boto3.client("iam")
-
         try:
-            response = iam_client.get_user(UserName=username)
-            user_arn = response["User"]["Arn"]
-            return user_arn
+            response = self.iam_client.get_user(UserName=username)
+            return response["User"]["Arn"]
         except ClientError as e:
             if e.response["Error"]["Code"] == "NoSuchEntity":
                 print(f"IAM user '{username}' not found.")
-                return None
             else:
                 print(f"An error occurred: {e}")
-                return None
+            return None
 
-    def assume_role(self, role_arn, role_session_name="your_session_name"):
+    def assume_role(self, role_arn, role_session_name=None, session=None):
         """
         Assume an IAM role and obtain temporary security credentials.
 
         :param role_arn: ARN of the IAM role to assume.
         :param role_session_name: Identifier for the assumed role session.
-        :return: Temporary security credentials or None if the operation fails.
+        :param session: Optional boto3 session object. Defaults to the class-level sts_client.
+        :return: Dictionary with temporary security credentials and metadata, or None on failure.
         """
-        sts_client = boto3.client("sts")
+        if not role_arn:
+            logging.error("Role ARN is required.")
+            return None
+
+        # Use the provided session's STS client or fall back to the class-level sts_client
+        sts_client = session.client("sts") if session else self.sts_client
+
+        # Generate a default session name if none is provided
+        role_session_name = role_session_name or f"session-{uuid.uuid4()}"
 
         try:
             assumed_role_object = sts_client.assume_role(
@@ -244,48 +238,27 @@ class IAMRoleHelper:
                 RoleSessionName=role_session_name,
             )
 
-            # Extract temporary credentials from the assumed role
             temp_credentials = assumed_role_object["Credentials"]
+            expiration = temp_credentials["Expiration"]
 
-            return temp_credentials
-        except ClientError as e:
-            print(f"Error assuming role: {e}")
-            return None
-
-    def map_iam_role_to_backend_role(self, iam_role_arn):
-        """
-        Map an IAM role to an OpenSearch backend role for access control.
-
-        :param iam_role_arn: ARN of the IAM role to map.
-        """
-        os_security_role = (
-            "ml_full_access"  # Defines the OpenSearch security role to map to
-        )
-        url = f"{self.opensearch_domain_url}/_plugins/_security/api/rolesmapping/{os_security_role}"
-
-        payload = {"backend_roles": [iam_role_arn]}
-        headers = {"Content-Type": "application/json"}
-
-        try:
-            response = requests.put(
-                url,
-                auth=(self.opensearch_domain_username, self.opensearch_domain_password),
-                json=payload,
-                headers=headers,
-                verify=True,
+            logging.info(
+                f"Assumed role: {role_arn}. Temporary credentials valid until: {expiration}"
             )
 
-            if response.status_code == 200:
-                print(
-                    f"Successfully mapped IAM role to OpenSearch role '{os_security_role}'."
-                )
-            else:
-                print(
-                    f"Failed to map IAM role to OpenSearch role '{os_security_role}'. Status code: {response.status_code}"
-                )
-                print(f"Response: {response.text}")
-        except requests.exceptions.RequestException as e:
-            print(f"HTTP request failed: {e}")
+            return {
+                "credentials": {
+                    "AccessKeyId": temp_credentials["AccessKeyId"],
+                    "SecretAccessKey": temp_credentials["SecretAccessKey"],
+                    "SessionToken": temp_credentials["SessionToken"],
+                },
+                "expiration": expiration,
+                "session_name": role_session_name,
+            }
+
+        except ClientError as e:
+            error_code = e.response["Error"]["Code"]
+            logging.error(f"Error assuming role {role_arn}: {error_code} - {e}")
+            return None
 
     def get_iam_user_name_from_arn(self, iam_principal_arn):
         """
@@ -297,5 +270,4 @@ class IAMRoleHelper:
         # IAM user ARN format: arn:aws:iam::123456789012:user/user-name
         if iam_principal_arn and ":user/" in iam_principal_arn:
             return iam_principal_arn.split(":user/")[-1]
-        else:
-            return None
+        return None

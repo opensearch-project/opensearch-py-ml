@@ -18,6 +18,7 @@ import boto3
 from botocore.config import Config
 from colorama import Fore, Style, init
 from opensearchpy import OpenSearch, RequestsHttpConnection
+import requests
 
 from opensearch_py_ml.ml_commons.rag_pipeline.rag.model_register import ModelRegister
 from opensearch_py_ml.ml_commons.rag_pipeline.rag.opensearch_connector import (
@@ -832,3 +833,37 @@ class Setup:
             print(
                 f"\n{Fore.RED}Failed to initialize OpenSearch client. Setup incomplete.{Style.RESET_ALL}\n"
             )
+
+    def map_iam_role_to_backend_role(self, iam_role_arn):
+        """
+        Map an IAM role to an OpenSearch backend role for access control.
+
+        :param iam_role_arn: ARN of the IAM role to map.
+        """
+        os_security_role = "ml_full_access"  # Example OpenSearch security role
+        url = f"{self.opensearch_domain_url}/_plugins/_security/api/rolesmapping/{os_security_role}"
+
+        payload = {"backend_roles": [iam_role_arn]}
+        headers = {"Content-Type": "application/json"}
+
+        try:
+            response = requests.put(
+                url,
+                auth=(self.opensearch_domain_username, self.opensearch_domain_password),
+                json=payload,
+                headers=headers,
+                verify=True,
+            )
+
+            if response.status_code == 200:
+                print(
+                    f"Successfully mapped IAM role to OpenSearch role '{os_security_role}'."
+                )
+            else:
+                print(
+                    f"Failed to map IAM role to OpenSearch role '{os_security_role}'. "
+                    f"Status code: {response.status_code}"
+                )
+                print(f"Response: {response.text}")
+        except requests.exceptions.RequestException as e:
+            print(f"HTTP request failed: {e}")
