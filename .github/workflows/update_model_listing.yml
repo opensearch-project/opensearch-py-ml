@@ -52,7 +52,7 @@ jobs:
         done
         echo $(ls config_folder)
     - name: Set Up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
         python-version: '3.x'
     - name: Update pretrained_models_all_versions.json
@@ -79,7 +79,7 @@ jobs:
         echo "EOF" >> $GITHUB_OUTPUT
         echo "${pr_body@E}"
     - name: Create a Branch & Raise a PR
-      uses: peter-evans/create-pull-request@v5
+      uses: peter-evans/create-pull-request@v7
       id: create_pr
       with:
         committer: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
