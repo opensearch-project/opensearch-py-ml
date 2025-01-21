@@ -261,7 +261,9 @@ class TestAIConnectorHelper(unittest.TestCase):
         # Instantiate helper
         with patch.object(AIConnectorHelper, "__init__", return_value=None):
             helper = AIConnectorHelper()
-            helper.opensearch_domain_url = f"https://{self.domain_endpoint}"
+            helper.opensearch_domain_url = (
+                "https://search-test-domain.us-east-1.es.amazonaws.com"
+            )
             helper.model_access_control = MagicMock()
             helper.model_access_control.get_model_group_id_by_name.return_value = (
                 "test-model-group-id"
@@ -276,7 +278,7 @@ class TestAIConnectorHelper(unittest.TestCase):
                 deploy=True,
             )
 
-            # Assert that the correct URL was used
+            # Assert correct URL
             expected_url = f"{helper.opensearch_domain_url}/_plugins/_ml/models/_register?deploy=true"
             mock_requests_post.assert_called_once_with(
                 expected_url,
@@ -291,9 +293,9 @@ class TestAIConnectorHelper(unittest.TestCase):
                 headers={"Content-Type": "application/json"},
             )
 
-            # Assert that get_task was called
+            # **Updated assertion** (include wait_until_task_done=True)
             mock_get_task.assert_called_once_with(
-                "test-task-id", "test-create-connector-role"
+                "test-task-id", "test-create-connector-role", wait_until_task_done=True
             )
 
             # Assert that model_id is returned

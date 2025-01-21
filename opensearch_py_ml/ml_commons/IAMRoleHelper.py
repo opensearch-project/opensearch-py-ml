@@ -39,7 +39,7 @@ class IAMRoleHelper:
         self.opensearch_domain_username = opensearch_domain_username
         self.opensearch_domain_password = opensearch_domain_password
 
-        self.iam_client = boto3.client("iam", region_name=self.region)
+        self.iam_client = boto3.client("iam")
         self.sts_client = boto3.client("sts", region_name=self.region)
 
     def role_exists(self, role_name):
@@ -225,10 +225,8 @@ class IAMRoleHelper:
             logging.error("Role ARN is required.")
             return None
 
-        # Use the provided session's STS client or fall back to the class-level sts_client
         sts_client = session.client("sts") if session else self.sts_client
 
-        # Generate a default session name if none is provided
         role_session_name = role_session_name or f"session-{uuid.uuid4()}"
 
         try:
@@ -263,10 +261,16 @@ class IAMRoleHelper:
         """
         Extract the IAM user name from an IAM principal ARN.
 
-        :param iam_principal_arn: ARN of the IAM principal.
-        :return: IAM user name or None if extraction fails.
+        :param iam_principal_arn: ARN of the IAM principal. Expected format: arn:aws:iam::<account-id>:user/<user-name>
+        :return: IAM user name if extraction is successful, None otherwise.
         """
-        # IAM user ARN format: arn:aws:iam::123456789012:user/user-name
-        if iam_principal_arn and ":user/" in iam_principal_arn:
-            return iam_principal_arn.split(":user/")[-1]
+        try:
+            if (
+                iam_principal_arn
+                and iam_principal_arn.startswith("arn:aws:iam::")
+                and ":user/" in iam_principal_arn
+            ):
+                return iam_principal_arn.split(":user/")[-1]
+        except Exception as e:
+            print(f"Error extracting IAM user name: {e}")
         return None

@@ -167,14 +167,17 @@ class AIConnectorHelper:
         connector_id = response.get("connector_id")
         return connector_id
 
-    def get_task(self, task_id, create_connector_role_name):
+    def get_task(self, task_id, create_connector_role_name, wait_until_task_done=False):
         """
         Retrieve the status of a specific task using its ID.
-        Reusing the get_task_info method from MLCommonClient.
+        Reusing the get_task_info method from MLCommonClient and allowing
+        optional wait until the task completes.
         """
         try:
-            # No need to authenticate here again, ml_commons_client uses self.opensearch_client
-            task_response = self.ml_commons_client.get_task_info(task_id)
+            # No need to re-authenticate here; ml_commons_client uses self.opensearch_client
+            task_response = self.ml_commons_client.get_task_info(
+                task_id, wait_until_task_done
+            )
             print("Get Task Response:", json.dumps(task_response))
             return task_response
         except Exception as e:
@@ -232,10 +235,11 @@ class AIConnectorHelper:
             if "model_id" in response_data:
                 return response_data["model_id"]
             elif "task_id" in response_data:
-                # Handle asynchronous task
-                time.sleep(2)  # Wait for task to complete
+                # Handle asynchronous task by leveraging wait_until_task_done
                 task_response = self.get_task(
-                    response_data["task_id"], create_connector_role_name
+                    response_data["task_id"],
+                    create_connector_role_name,
+                    wait_until_task_done=True,
                 )
                 print("Task Response:", json.dumps(task_response))
                 if "model_id" in task_response:
