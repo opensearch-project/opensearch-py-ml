@@ -125,9 +125,10 @@ jobs:
         - Workflow Name: ${{ github.workflow }}
         - Workflow Run ID: ${{ github.run_id }}
         - Workflow Initiator: @${{ github.actor }}
-        - Aloow Overwrite:  ${{ github.event.inputs.allow_overwrite }}
+        - Allow Overwrite:  ${{ github.event.inputs.allow_overwrite }}
           
         ========= Workflow Input Information =========
+        - Model Source: ${{ github.event.inputs.model_source }}
         - Model ID: ${{ github.event.inputs.model_id }}
         - Model Version: ${{ github.event.inputs.model_version }}
         - Model Type: ${{ github.event.inputs.model_type }}
@@ -135,6 +136,8 @@ jobs:
         - Embedding Dimension: ${embedding_dimension:-N/A}
         - Pooling Mode: ${pooling_mode:-N/A}
         - Model Description: ${model_description:-N/A}
+        - Model Folder: ${{ steps.init_folders.outputs.model_folder }}
+        - Model Prefix Folder: ${{ steps.init_folders.outputs.model_prefix_folder }}
         
         ======== Workflow Output Information =========
         - Embedding Verification: Passed"
