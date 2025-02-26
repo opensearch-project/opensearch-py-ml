@@ -52,7 +52,7 @@ def trace_sparse_encoding_model(
     model_version: str,
     model_format: str,
     model_description: Optional[str] = None,
-    sparse_prune_ratio: float = 0
+    sparse_prune_ratio: float = 0,
 ) -> Tuple[str, str]:
     """
     Trace the pretrained sparse encoding model, create a model config file,
@@ -80,7 +80,7 @@ def trace_sparse_encoding_model(
 
     # 1.) Initiate a sparse encoding model class object
     pre_trained_model = init_sparse_model(
-        SparseEncodingModel, model_id, model_format, folder_path
+        SparseEncodingModel, model_id, model_format, folder_path, sparse_prune_ratio
     )
 
     # 2.) Save the model in the specified format
@@ -368,13 +368,15 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    sparse_prune_ratio = float(args.sparse_prune_ratio) if args.sparse_prune_ratio is not None else 0
-    
+    sparse_prune_ratio = (
+        float(args.sparse_prune_ratio) if args.sparse_prune_ratio is not None else 0
+    )
+
     main(
         args.model_id,
         args.model_version,
         args.tracing_format,
         args.model_description,
         args.upload_prefix,
-        sparse_prune_ratio
+        sparse_prune_ratio,
     )

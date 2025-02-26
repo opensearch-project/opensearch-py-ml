@@ -45,7 +45,7 @@ class SparseEncodingModel(SparseModel):
         model_id: str = DEFAULT_MODEL_ID,
         folder_path: str = None,
         overwrite: bool = False,
-        sparse_prune_ratio: float = 0
+        sparse_prune_ratio: float = 0,
     ) -> None:
 
         super().__init__(model_id, folder_path, overwrite)
@@ -130,7 +130,9 @@ class SparseEncodingModel(SparseModel):
             zip_file_name = str(model_id.split("/")[-1] + ".zip")
         zip_file_path = os.path.join(model_output_path, zip_file_name)
 
-        model = NeuralSparseModel(self.backbone_model, self.tokenizer, self.sparse_prune_ratio)
+        model = NeuralSparseModel(
+            self.backbone_model, self.tokenizer, self.sparse_prune_ratio
+        )
 
         # save tokenizer.json in save_json_folder_name
         self.tokenizer.save_pretrained(save_json_folder_path)
@@ -238,7 +240,9 @@ class SparseEncodingModel(SparseModel):
             return AutoModelForMaskedLM.from_pretrained(self.model_id)
 
     def get_model(self):
-        return NeuralSparseModel(self.get_backbone_model(), self.get_tokenizer(), self.sparse_prune_ratio)
+        return NeuralSparseModel(
+            self.get_backbone_model(), self.get_tokenizer(), self.sparse_prune_ratio
+        )
 
     def save(self, path):
         backbone_model = self.get_backbone_model()
