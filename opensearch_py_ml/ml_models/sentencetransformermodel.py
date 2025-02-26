@@ -375,7 +375,20 @@ class SentenceTransformerModel(BaseUploadModel):
         return train_examples
 
     def _get_parent_and_attr(self, model, module_name):
-        """Retrieve the parent module and the attribute name for a given module."""
+        """
+        Retrieve the parent module and the attribute name for a given module.
+        For example, if module_name is "encoder.layer.0.attention", this function will return
+        the "encoder.layer.0" module and "attention" as the attribute name.
+
+        :param model:
+            required, the model instance to traverse
+        :type model: SentenceTransformer
+        :param module_name:
+            required, the dot-separated path to the module
+        :type module_name: string
+        :return: tuple containing parent module object and the name of the target attribute
+        :rtype: Tuple[object, string]
+        """
         parts = module_name.split(".")
         parent = model
         for part in parts[:-1]:  # Traverse until the second last part
@@ -383,15 +396,31 @@ class SentenceTransformerModel(BaseUploadModel):
         return parent, parts[-1]
 
     def patch_model_weights(self, model):
-        """Replace DistilBertSdpaAttention with MultiHeadSelfAttention in the given model."""
+        """
+        Replace DistilBertSdpaAttention with MultiHeadSelfAttention in the given model.
+        Needed for compatibility with newer PyTorch version (2.5.1) while preserving the model's learned weights.
+
+        This function performs the following steps:
+        1. Identifies all DistilBertSdpaAttention layers in the model
+        2. Creates new MultiHeadSelfAttention layers with identical weights and configuration
+        3. Replaces the old DistilBertSdpaAttention attention layers with the new MultiHeadSelfAttention attention layers
+        4. Ensures the forward method returns proper tuple format for compatibility
+
+        :param model:
+            required, the DistilBert model instance
+        :type model: SentenceTransformer
+        :return: the modified model with replaced attention layers
+        :rtype: SentenceTransformer
+        """
         # Collect the layers to replace in a separate list to avoid modifying dictionary while iterating
         modules_to_replace = []
 
         for name, module in model.named_modules():
+            # Identify modules that need to be replaced
             if isinstance(module, DistilBertSdpaAttention):
                 modules_to_replace.append((name, module))
 
-        # Now replace the modules
+        # Replace the identified modules
         for name, module in modules_to_replace:
             # Retrieve the original config
             config = getattr(module, "config", None)
@@ -415,7 +444,31 @@ class SentenceTransformerModel(BaseUploadModel):
             def new_forward(
                 self, query, key, value, mask, head_mask, output_attentions
             ):
-                """New forward function to fix tuple return issue"""
+                """
+                Replace forward method to ensure proper tuple return format.
+
+                :param query:
+                    required, tensor containing query vectors of shape [batch_size, seq_length, dim]
+                :type query: Tensor
+                :param key:
+                    required, tensor containing key vectors of shape [batch_size, seq_length, dim]
+                :type key: Tensor
+                :param value:
+                    required, tensor containing value vectors of shape [batch_size, seq_length, dim]
+                :type value: Tensor
+                :param mask:
+                    required, attention mask tensor of shape [batch_size, seq_length] or [batch_size, seq_length, seq_length]
+                :type mask: Tensor
+                :param head_mask:
+                    required, mask for attention heads
+                :type head_mask: Tensor
+                :param output_attentions:
+                    required, boolean flag indicating whether to output attention weights
+                :type output_attentions: bool
+                :return: A tuple of output and the attention weights if output_attentions is True,
+                        otherwise a tuple of output. Output shape: [batch_size, seq_length, dim]
+                :rtype: Tuple[Tensor, Tensor] or Tuple[Tensor]
+                """
                 batch_size, seq_length, _ = query.shape
                 dim_per_head = self.dim // self.n_heads
 
@@ -435,11 +488,12 @@ class SentenceTransformerModel(BaseUploadModel):
                         f"Mask shape {mask.shape} does not match sequence length {seq_length}"
                     )
 
-                # Apply mask expansion
+                # Apply mask expansion for all attention heads
                 mask = (mask == 0).expand(
                     batch_size, self.n_heads, seq_length, seq_length
                 )
 
+                # Transform query, key, and value for multi-head attention
                 q = (
                     self.q_lin(query)
                     .view(batch_size, seq_length, self.n_heads, dim_per_head)
@@ -475,7 +529,7 @@ class SentenceTransformerModel(BaseUploadModel):
                 )
                 output = self.out_lin(context)
 
-                # ✅ Ensure return is always a tuple, as expected by DistilBERT
+                # Ensure return is always a tuple, as expected by DistilBERT
                 return (output, weights) if output_attentions else (output,)
 
             # Replace forward method with the new function
