@@ -73,6 +73,7 @@ elif [[ "$TASK_TYPE" == "SentenceTransformerTrace" || "$TASK_TYPE" == "SparseTra
   echo -e "\033[34;1mINFO:\033[0m EMBEDDING_DIMENSION: ${EMBEDDING_DIMENSION:-N/A}\033[0m"
   echo -e "\033[34;1mINFO:\033[0m POOLING_MODE: ${POOLING_MODE:-N/A}\033[0m"
   echo -e "\033[34;1mINFO:\033[0m UPLOAD_PREFIX: ${UPLOAD_PREFIX:-N/A}\033[0m"
+  echo -e "\033[34;1mINFO:\033[0m SPARSE_PRUNE_RATIO: ${SPARSE_PRUNE_RATIO:-N/A}\033[0m"
   echo -e "\033[34;1mINFO:\033[0m MODEL_DESCRIPTION: ${MODEL_DESCRIPTION:-N/A}\033[0m"
 
   if [[ "$TASK_TYPE" == "SentenceTransformerTrace" ]]; then
@@ -80,7 +81,7 @@ elif [[ "$TASK_TYPE" == "SentenceTransformerTrace" || "$TASK_TYPE" == "SparseTra
       EXTRA_ARGS="-ed ${EMBEDDING_DIMENSION} -pm ${POOLING_MODE}"
   elif [[ "$TASK_TYPE" == "SparseTrace" ]]; then
       NOX_TRACE_TYPE="sparsetrace"
-      EXTRA_ARGS=""
+      EXTRA_ARGS="-spr ${SPARSE_PRUNE_RATIO}"
   else
       echo "Unknown TASK_TYPE: $TASK_TYPE"
       exit 1

@@ -45,6 +45,7 @@ class SparseEncodingModel(SparseModel):
         model_id: str = DEFAULT_MODEL_ID,
         folder_path: str = None,
         overwrite: bool = False,
+        sparse_prune_ratio: float = 0
     ) -> None:
 
         super().__init__(model_id, folder_path, overwrite)
@@ -69,6 +70,7 @@ class SparseEncodingModel(SparseModel):
         self.model_id = model_id
         self.torch_script_zip_file_path = None
         self.onnx_zip_file_path = None
+        self.sparse_prune_ratio = sparse_prune_ratio
 
     def save_as_pt(
         self,
@@ -110,7 +112,6 @@ class SparseEncodingModel(SparseModel):
         :param add_apache_license:
             Optional, whether to add Apache-2.0 license file to model zip file
         :type add_apache_license: string
-
         :return: model zip file path. The file path where the zip file is being saved
         :rtype: string
         """
@@ -129,7 +130,7 @@ class SparseEncodingModel(SparseModel):
             zip_file_name = str(model_id.split("/")[-1] + ".zip")
         zip_file_path = os.path.join(model_output_path, zip_file_name)
 
-        model = NeuralSparseModel(self.backbone_model, self.tokenizer)
+        model = NeuralSparseModel(self.backbone_model, self.tokenizer, self.sparse_prune_ratio)
 
         # save tokenizer.json in save_json_folder_name
         self.tokenizer.save_pretrained(save_json_folder_path)
@@ -237,7 +238,7 @@ class SparseEncodingModel(SparseModel):
             return AutoModelForMaskedLM.from_pretrained(self.model_id)
 
     def get_model(self):
-        return NeuralSparseModel(self.get_backbone_model(), self.get_tokenizer())
+        return NeuralSparseModel(self.get_backbone_model(), self.get_tokenizer(), self.sparse_prune_ratio)
 
     def save(self, path):
         backbone_model = self.get_backbone_model()
@@ -278,9 +279,10 @@ class NeuralSparseModel(torch.nn.Module):
     which are easier to handle in sparse data scenarios such as information retrieval.
     """
 
-    def __init__(self, backbone_model, tokenizer=None):
+    def __init__(self, backbone_model, tokenizer=None, sparse_prune_ratio=0):
         super().__init__()
         self.backbone_model = backbone_model
+        self.sparse_prune_ratio = sparse_prune_ratio
         if tokenizer is not None:
             self.tokenizer = tokenizer
             self.special_token_ids = [
@@ -298,6 +300,8 @@ class NeuralSparseModel(torch.nn.Module):
         values, _ = torch.max(result * input[ATTENTION_MASK_KEY].unsqueeze(-1), dim=1)
         values = torch.log(1 + torch.relu(values))
         values[:, self.special_token_ids] = 0
+        max_values = values.max(dim=-1)[0].unsqueeze(1) * self.sparse_prune_ratio
+        values = values * (values > max_values)
         return {OUTPUT_KEY: values}
 
     def get_sparse_vector(self, feature):

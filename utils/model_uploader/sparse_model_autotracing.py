@@ -52,6 +52,7 @@ def trace_sparse_encoding_model(
     model_version: str,
     model_format: str,
     model_description: Optional[str] = None,
+    sparse_prune_ratio: float = 0
 ) -> Tuple[str, str]:
     """
     Trace the pretrained sparse encoding model, create a model config file,
@@ -65,6 +66,8 @@ def trace_sparse_encoding_model(
     :type model_format: string
     :param model_description: Model description input
     :type model_description: string
+    :param sparse_prune_ratio: Model-side prune ratio for sparse_encoding
+    :type sparse_prune_ratio: float
     :return: Tuple of model_path (path to model zip file) and model_config_path (path to model config json file)
     :rtype: Tuple[str, str]
     """
@@ -187,6 +190,7 @@ def main(
     tracing_format: str,
     model_description: Optional[str] = None,
     upload_prefix: Optional[str] = None,
+    sparse_prune_ratio: float = 0,
 ) -> None:
     """
     Perform model auto-tracing and prepare files for uploading to OpenSearch model hub
@@ -199,6 +203,10 @@ def main(
     :type tracing_format: string
     :param model_description: Model description input
     :type model_description: string
+    :param upload_prefix: Model upload prefix input
+    :type upload_prefix: string
+    :param sparse_prune_ratio: Model-side prune ratio for sparse_encoding
+    :type sparse_prune_ratio: float
     :return: No return value expected
     :rtype: None
     """
@@ -210,6 +218,8 @@ def main(
     Model Version: {model_version}
     Tracing Format: {tracing_format}
     Model Description: {model_description if model_description is not None else 'N/A'}
+    Upload Prefix: {upload_prefix if upload_prefix is not None else 'N/A'}
+    Sparse Prune Ratio: {sparse_prune_ratio}
     ==========================================
     """
     )
@@ -347,12 +357,24 @@ if __name__ == "__main__":
         const=None,
         help="Model description if you want to overwrite the default description",
     )
+    parser.add_argument(
+        "-spr",
+        "--sparse_prune_ratio",
+        type=float,
+        nargs="?",
+        default=None,
+        const=None,
+        help="sparse encoding model model-side pruning ratio",
+    )
     args = parser.parse_args()
 
+    sparse_prune_ratio = float(args.sparse_prune_ratio) if args.sparse_prune_ratio is not None else 0
+    
     main(
         args.model_id,
         args.model_version,
         args.tracing_format,
         args.model_description,
         args.upload_prefix,
+        sparse_prune_ratio
     )
