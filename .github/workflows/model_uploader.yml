@@ -24,10 +24,6 @@ on:
         - "BOTH"
         - "TORCH_SCRIPT"
         - "ONNX"
-      upload_prefix:
-        description: "Specifies the model prefix for uploading. For example, transforming the default path from '.../sentence-transformers/msmarco-distilbert-base-tas-b' to '.../{prefix}/msmarco-distilbert-base-tas-b'."
-        required: false
-        type: string
       model_type:
         description: "Model type for auto-tracing (SentenceTransformer/Sparse)"
         required: true
@@ -61,6 +57,22 @@ on:
         options:
         - "NO"
         - "YES"
+      custom_params:
+        description: |
+          Optional custom parameters in JSON format. Supported fields:
+          {
+            "upload_prefix": (Optional) String. Specifies the model prefix for uploading. Example: transforms "sentence-transformers/model" to "{prefix}/model",
+            "sparse_prune_ratio": (Optional) Float. Specifies the model-side prune ratio based on max values. Sparse model only.
+          }
+          
+          Example:
+          {
+            "upload_prefix": "custom-prefix",
+            "sparse_prune_ratio": 0.1
+          }
+        required: false
+        type: string
+        default: "{}"
         
 
 jobs:
@@ -73,6 +85,18 @@ jobs:
       run: |
          echo "This workflow should only be triggered on 'main' branch"
          exit 1
+    - name: Parse custom params from json string
+      run: |
+        custom_params='${{ github.event.inputs.custom_params }}'
+        if [ "$custom_params" = "{}" ] || [ -z "$custom_params" ]; then
+          upload_prefix=""
+          sparse_prune_ratio=0
+        else
+          upload_prefix=$(echo $custom_params | jq -r '.upload_prefix')
+          sparse_prune_ratio=$(echo $custom_params | jq -r '.sparse_prune_ratio')
+        fi
+        echo "UPLOAD_PREFIX=$upload_prefix" >> $GITHUB_ENV
+        echo "SPARSE_PRUNE_RATIO=$sparse_prune_ratio" >> $GITHUB_ENV
     - name: Initiate folders
       # This scripts init the folders path variables.
       # 1. Retrieves the input model_id.
@@ -87,8 +111,8 @@ jobs:
       id: init_folders
       run: |
         model_id=${{ github.event.inputs.model_id }}
-        if [[ -n "${{ github.event.inputs.upload_prefix }}" ]]; then
-          model_prefix="ml-models/${{ github.event.inputs.model_source }}/${{ github.event.inputs.upload_prefix }}"
+        if [[ -n "${{ env.UPLOAD_PREFIX }}" ]]; then
+          model_prefix="ml-models/${{ github.event.inputs.model_source }}/${{ env.UPLOAD_PREFIX }}"
         else
           model_prefix="ml-models/${{ github.event.inputs.model_source }}/${model_id%%/*}"
         fi
@@ -106,9 +130,10 @@ jobs:
         - Workflow Name: ${{ github.workflow }}
         - Workflow Run ID: ${{ github.run_id }}
         - Workflow Initiator: @${{ github.actor }}
-        - Aloow Overwrite:  ${{ github.event.inputs.allow_overwrite }}
+        - Allow Overwrite:  ${{ github.event.inputs.allow_overwrite }}
           
         ========= Workflow Input Information =========
+        - Model Source: ${{ github.event.inputs.model_source }}
         - Model ID: ${{ github.event.inputs.model_id }}
         - Model Version: ${{ github.event.inputs.model_version }}
         - Model Type: ${{ github.event.inputs.model_type }}
@@ -116,6 +141,9 @@ jobs:
         - Embedding Dimension: ${embedding_dimension:-N/A}
         - Pooling Mode: ${pooling_mode:-N/A}
         - Model Description: ${model_description:-N/A}
+        - Model Folder: ${{ steps.init_folders.outputs.model_folder }}
+        - Model Prefix Folder: ${{ steps.init_folders.outputs.model_prefix_folder }}
+        - Sparse Prune Ratio: ${{ env.SPARSE_PRUNE_RATIO }}
         
         ======== Workflow Output Information =========
         - Embedding Verification: Passed"
@@ -207,7 +235,6 @@ jobs:
           echo "TRACING_FORMAT=${{ github.event.inputs.tracing_format }}" >> $GITHUB_ENV
           echo "EMBEDDING_DIMENSION=${{ github.event.inputs.embedding_dimension }}" >> $GITHUB_ENV
           echo "POOLING_MODE=${{ github.event.inputs.pooling_mode }}" >> $GITHUB_ENV    
-          echo "UPLOAD_PREFIX=${{ github.event.inputs.upload_prefix }}" >> $GITHUB_ENV    
           echo "MODEL_DESCRIPTION=${{ github.event.inputs.model_description }}" >> $GITHUB_ENV     
       - name: Autotracing ${{ matrix.cluster }} secured=${{ matrix.secured }} version=${{matrix.entry.opensearch_version}}
         run: "./.ci/run-tests ${{ matrix.cluster }} ${{ matrix.secured }} ${{ matrix.entry.opensearch_version }} ${{github.event.inputs.model_type}}Trace"

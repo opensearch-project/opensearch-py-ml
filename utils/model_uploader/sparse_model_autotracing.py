@@ -52,6 +52,7 @@ def trace_sparse_encoding_model(
     model_version: str,
     model_format: str,
     model_description: Optional[str] = None,
+    sparse_prune_ratio: float = 0,
 ) -> Tuple[str, str]:
     """
     Trace the pretrained sparse encoding model, create a model config file,
@@ -65,6 +66,8 @@ def trace_sparse_encoding_model(
     :type model_format: string
     :param model_description: Model description input
     :type model_description: string
+    :param sparse_prune_ratio: Model-side prune ratio for sparse_encoding
+    :type sparse_prune_ratio: float
     :return: Tuple of model_path (path to model zip file) and model_config_path (path to model config json file)
     :rtype: Tuple[str, str]
     """
@@ -77,7 +80,7 @@ def trace_sparse_encoding_model(
 
     # 1.) Initiate a sparse encoding model class object
     pre_trained_model = init_sparse_model(
-        SparseEncodingModel, model_id, model_format, folder_path
+        SparseEncodingModel, model_id, folder_path, sparse_prune_ratio
     )
 
     # 2.) Save the model in the specified format
@@ -187,6 +190,7 @@ def main(
     tracing_format: str,
     model_description: Optional[str] = None,
     upload_prefix: Optional[str] = None,
+    sparse_prune_ratio: float = 0,
 ) -> None:
     """
     Perform model auto-tracing and prepare files for uploading to OpenSearch model hub
@@ -199,6 +203,10 @@ def main(
     :type tracing_format: string
     :param model_description: Model description input
     :type model_description: string
+    :param upload_prefix: Model upload prefix input
+    :type upload_prefix: string
+    :param sparse_prune_ratio: Model-side prune ratio for sparse_encoding
+    :type sparse_prune_ratio: float
     :return: No return value expected
     :rtype: None
     """
@@ -210,6 +218,8 @@ def main(
     Model Version: {model_version}
     Tracing Format: {tracing_format}
     Model Description: {model_description if model_description is not None else 'N/A'}
+    Upload Prefix: {upload_prefix if upload_prefix is not None else 'N/A'}
+    Sparse Prune Ratio: {sparse_prune_ratio}
     ==========================================
     """
     )
@@ -220,7 +230,9 @@ def main(
     ), f"Now Only {TORCH_SCRIPT_FORMAT} is supported."
 
     ml_client = MLCommonClient(OPENSEARCH_TEST_CLIENT)
-    pre_trained_model = SparseEncodingModel(model_id)
+    pre_trained_model = init_sparse_model(
+        SparseEncodingModel, model_id, None, sparse_prune_ratio
+    )
     original_encoding_datas = pre_trained_model.process_sparse_encoding(TEST_SENTENCES)
     pre_trained_model.save(path=TEMP_MODEL_PATH)
     license_verified = verify_license_by_hfapi(model_id)
@@ -240,6 +252,7 @@ def main(
             model_version,
             TORCH_SCRIPT_FORMAT,
             model_description=model_description,
+            sparse_prune_ratio=sparse_prune_ratio,
         )
 
         torchscript_encoding_datas = register_and_deploy_sparse_encoding_model(
@@ -278,7 +291,11 @@ def main(
             onnx_model_path,
             onnx_model_config_path,
         ) = trace_sparse_encoding_model(
-            model_id, model_version, ONNX_FORMAT, model_description=model_description
+            model_id,
+            model_version,
+            ONNX_FORMAT,
+            model_description=model_description,
+            sparse_prune_ratio=sparse_prune_ratio,
         )
 
         onnx_embedding_datas = register_and_deploy_sparse_encoding_model(
@@ -347,7 +364,20 @@ if __name__ == "__main__":
         const=None,
         help="Model description if you want to overwrite the default description",
     )
+    parser.add_argument(
+        "-spr",
+        "--sparse_prune_ratio",
+        type=float,
+        nargs="?",
+        default=None,
+        const=None,
+        help="sparse encoding model model-side pruning ratio",
+    )
     args = parser.parse_args()
+
+    sparse_prune_ratio = (
+        float(args.sparse_prune_ratio) if args.sparse_prune_ratio is not None else 0
+    )
 
     main(
         args.model_id,
@@ -355,4 +385,5 @@ if __name__ == "__main__":
         args.tracing_format,
         args.model_description,
         args.upload_prefix,
+        sparse_prune_ratio,
     )
