@@ -12,7 +12,7 @@ This document contains a list of maintainers in this repo. See [opensearch-proje
 | Bhavana Goud Ramaram | [rbhavna](https://github.com/rbhavna)            | Amazon      |
 | Jing Zhang           | [jngz-es](https://github.com/jngz-es)            | Amazon      |
 | Sicheng Song         | [b4sjoo](https://github.com/b4sjoo)              | Amazon      |
-| Yerzhaisang Taskali  | [Yerzhaisang](https://github.com/Yerzhaisang)    |             |
+| Yerzhaisang Taskali  | [Yerzhaisang](https://github.com/Yerzhaisang)    | Independent |
 
 
 ## Emeritus
