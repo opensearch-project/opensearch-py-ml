@@ -80,7 +80,7 @@ def trace_sparse_encoding_model(
 
     # 1.) Initiate a sparse encoding model class object
     pre_trained_model = init_sparse_model(
-        SparseEncodingModel, model_id, model_format, folder_path, sparse_prune_ratio
+        SparseEncodingModel, model_id, folder_path, sparse_prune_ratio
     )
 
     # 2.) Save the model in the specified format
@@ -230,7 +230,9 @@ def main(
     ), f"Now Only {TORCH_SCRIPT_FORMAT} is supported."
 
     ml_client = MLCommonClient(OPENSEARCH_TEST_CLIENT)
-    pre_trained_model = SparseEncodingModel(model_id)
+    pre_trained_model = init_sparse_model(
+        SparseEncodingModel, model_id, None, sparse_prune_ratio
+    )
     original_encoding_datas = pre_trained_model.process_sparse_encoding(TEST_SENTENCES)
     pre_trained_model.save(path=TEMP_MODEL_PATH)
     license_verified = verify_license_by_hfapi(model_id)
@@ -250,6 +252,7 @@ def main(
             model_version,
             TORCH_SCRIPT_FORMAT,
             model_description=model_description,
+            sparse_prune_ratio=sparse_prune_ratio,
         )
 
         torchscript_encoding_datas = register_and_deploy_sparse_encoding_model(
@@ -288,7 +291,11 @@ def main(
             onnx_model_path,
             onnx_model_config_path,
         ) = trace_sparse_encoding_model(
-            model_id, model_version, ONNX_FORMAT, model_description=model_description
+            model_id,
+            model_version,
+            ONNX_FORMAT,
+            model_description=model_description,
+            sparse_prune_ratio=sparse_prune_ratio,
         )
 
         onnx_embedding_datas = register_and_deploy_sparse_encoding_model(
