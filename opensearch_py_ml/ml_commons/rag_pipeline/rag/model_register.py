@@ -12,12 +12,24 @@ import boto3
 from colorama import Fore, Style, init
 
 from opensearch_py_ml.ml_commons.IAMRoleHelper import IAMRoleHelper
-from opensearch_py_ml.ml_commons.rag_pipeline.rag.AIConnectorHelper import AIConnectorHelper
-from opensearch_py_ml.ml_commons.rag_pipeline.rag.ml_models.BedrockModel import BedrockModel
-from opensearch_py_ml.ml_commons.rag_pipeline.rag.ml_models.CohereModel import CohereModel
-from opensearch_py_ml.ml_commons.rag_pipeline.rag.ml_models.HuggingFaceModel import HuggingFaceModel
-from opensearch_py_ml.ml_commons.rag_pipeline.rag.ml_models.OpenAIModel import OpenAIModel
-from opensearch_py_ml.ml_commons.rag_pipeline.rag.ml_models.PyTorchModel import CustomPyTorchModel
+from opensearch_py_ml.ml_commons.rag_pipeline.rag.AIConnectorHelper import (
+    AIConnectorHelper,
+)
+from opensearch_py_ml.ml_commons.rag_pipeline.rag.ml_models.BedrockModel import (
+    BedrockModel,
+)
+from opensearch_py_ml.ml_commons.rag_pipeline.rag.ml_models.CohereModel import (
+    CohereModel,
+)
+from opensearch_py_ml.ml_commons.rag_pipeline.rag.ml_models.HuggingFaceModel import (
+    HuggingFaceModel,
+)
+from opensearch_py_ml.ml_commons.rag_pipeline.rag.ml_models.OpenAIModel import (
+    OpenAIModel,
+)
+from opensearch_py_ml.ml_commons.rag_pipeline.rag.ml_models.PyTorchModel import (
+    CustomPyTorchModel,
+)
 
 # Initialize colorama for colored terminal output
 init(autoreset=True)
@@ -66,7 +78,7 @@ class ModelRegister:
                 self.opensearch_password,
             )
 
-        # Initialize AWS clients if the service type is not open-source
+        # Initialize AWS clients if the service type is managed or serverless
         if self.service_type in ["managed", "serverless"]:
             self.initialize_clients()
 
@@ -164,39 +176,6 @@ class ModelRegister:
         """
         Interactive method to register a new embedding model during setup.
         """
-        # In this example, we assume the user wishes to register the Bedrock model.
-        # You could add logic here to prompt for other model providers.
-        print("Registering a new Bedrock embedding model...")
-        # Instantiate an AIConnectorHelper for model registration
-        connector_helper = AIConnectorHelper(
-            region=self.aws_region,
-            opensearch_domain_name=self.opensearch_domain_name,
-            opensearch_domain_username=self.opensearch_username,
-            opensearch_domain_password=self.opensearch_password,
-            aws_user_name=self.config.get("aws_user_name", ""),
-            aws_role_name=self.config.get("aws_role_name", ""),
-            opensearch_domain_url=self.opensearch_endpoint,
-        )
-        # Call the Bedrock model registration method
-        self.bedrock_model.register_bedrock_model(connector_helper, self.config, self.save_config)
-
-    def save_config(self, config):
-        """
-        Save the updated configuration to the config file.
-
-        :param config: Configuration dictionary to save.
-        """
-        import configparser
-
-        parser = configparser.ConfigParser()
-        parser["DEFAULT"] = config
-        with open("config.ini", "w") as f:
-            parser.write(f)
-
-    def register_model_interactive(self):
-        """
-        Interactive method to register a new embedding model during setup.
-        """
         # Initialize clients
         if not self.initialize_clients():
             print(
@@ -221,7 +200,6 @@ class ModelRegister:
             aws_user_name = input("Enter your AWS IAM user name: ")
 
         # Instantiate AIConnectorHelper
-
         helper = AIConnectorHelper(
             region=self.aws_region,
             opensearch_domain_name=self.opensearch_domain_name,
@@ -348,3 +326,16 @@ class ModelRegister:
                 f"{Fore.RED}Invalid choice. Exiting model registration.{Style.RESET_ALL}"
             )
             return
+
+    def save_config(self, config):
+        """
+        Save the updated configuration to the config file.
+
+        :param config: Configuration dictionary to save.
+        """
+        import configparser
+
+        parser = configparser.ConfigParser()
+        parser["DEFAULT"] = config
+        with open("config.ini", "w") as f:
+            parser.write(f)

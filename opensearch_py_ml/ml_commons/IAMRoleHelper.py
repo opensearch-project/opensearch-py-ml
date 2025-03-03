@@ -18,6 +18,7 @@ class IAMRoleHelper:
     """
     Helper class for managing IAM roles and their interactions with OpenSearch.
     """
+
     def __init__(
         self,
         region,
