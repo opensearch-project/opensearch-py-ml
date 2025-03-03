@@ -5,12 +5,12 @@ pandas>=1.5.2,<2.3,!=2.1.0
 matplotlib>=3.6.2,<4
 numpy>=1.24.0,<2
 opensearch-py>=2.2.0
-torch>=2.0.1,<2.1.0
+torch>=2.5.0,<2.6
 onnx>=1.15.0
 accelerate>=0.27
 sentence_transformers>=2.5.0,<2.6
 tqdm>4.66.0,<5
-transformers>=4.36.0,<5
+transformers>=4.47.0,<5
 deprecated>=1.2.14,<2
 mdutils>=1.6.0,<2
 pillow>10.0.0,<11
