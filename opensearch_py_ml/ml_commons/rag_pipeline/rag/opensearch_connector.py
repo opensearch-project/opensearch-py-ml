@@ -145,7 +145,7 @@ class OpenSearchConnector:
                 "index": {
                     "number_of_shards": number_of_shards,
                     "number_of_replicas": number_of_replicas,
-                    "knn.algo_param": {"ef_search": 512},
+                    "knn.algo_param": {"ef_search": ef_construction},
                     "knn": True,
                 }
             },

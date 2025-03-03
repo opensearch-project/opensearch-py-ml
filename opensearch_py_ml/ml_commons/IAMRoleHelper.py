@@ -18,13 +18,13 @@ class IAMRoleHelper:
     """
     Helper class for managing IAM roles and their interactions with OpenSearch.
     """
-
     def __init__(
         self,
         region,
         opensearch_domain_url=None,
         opensearch_domain_username=None,
         opensearch_domain_password=None,
+        iam_principal=None,
     ):
         """
         Initialize the IAMRoleHelper with AWS and OpenSearch configurations.
@@ -33,11 +33,13 @@ class IAMRoleHelper:
         :param opensearch_domain_url: URL of the OpenSearch domain.
         :param opensearch_domain_username: Username for OpenSearch domain authentication.
         :param opensearch_domain_password: Password for OpenSearch domain authentication.
+        :param iam_principal: (Optional) IAM principal ARN. Required for managed service setups.
         """
         self.region = region
         self.opensearch_domain_url = opensearch_domain_url
         self.opensearch_domain_username = opensearch_domain_username
         self.opensearch_domain_password = opensearch_domain_password
+        self.iam_principal = iam_principal
 
         self.iam_client = boto3.client("iam")
         self.sts_client = boto3.client("sts", region_name=self.region)

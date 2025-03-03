@@ -5,7 +5,6 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
-
 import sys
 import time
 
@@ -13,24 +12,12 @@ import boto3
 from colorama import Fore, Style, init
 
 from opensearch_py_ml.ml_commons.IAMRoleHelper import IAMRoleHelper
-from opensearch_py_ml.ml_commons.rag_pipeline.rag.AIConnectorHelper import (
-    AIConnectorHelper,
-)
-from opensearch_py_ml.ml_commons.rag_pipeline.rag.ml_models.BedrockModel import (
-    BedrockModel,
-)
-from opensearch_py_ml.ml_commons.rag_pipeline.rag.ml_models.CohereModel import (
-    CohereModel,
-)
-from opensearch_py_ml.ml_commons.rag_pipeline.rag.ml_models.HuggingFaceModel import (
-    HuggingFaceModel,
-)
-from opensearch_py_ml.ml_commons.rag_pipeline.rag.ml_models.OpenAIModel import (
-    OpenAIModel,
-)
-from opensearch_py_ml.ml_commons.rag_pipeline.rag.ml_models.PyTorchModel import (
-    CustomPyTorchModel,
-)
+from opensearch_py_ml.ml_commons.rag_pipeline.rag.AIConnectorHelper import AIConnectorHelper
+from opensearch_py_ml.ml_commons.rag_pipeline.rag.ml_models.BedrockModel import BedrockModel
+from opensearch_py_ml.ml_commons.rag_pipeline.rag.ml_models.CohereModel import CohereModel
+from opensearch_py_ml.ml_commons.rag_pipeline.rag.ml_models.HuggingFaceModel import HuggingFaceModel
+from opensearch_py_ml.ml_commons.rag_pipeline.rag.ml_models.OpenAIModel import OpenAIModel
+from opensearch_py_ml.ml_commons.rag_pipeline.rag.ml_models.PyTorchModel import CustomPyTorchModel
 
 # Initialize colorama for colored terminal output
 init(autoreset=True)
@@ -61,17 +48,26 @@ class ModelRegister:
         self.embedding_dimension = int(config.get("embedding_dimension", 768))
         self.service_type = config.get("service_type", "managed")
 
-        # Initialize IAMRoleHelper with necessary parameters
-        self.iam_role_helper = IAMRoleHelper(
-            self.aws_region,
-            self.opensearch_domain_name,
-            self.opensearch_username,
-            self.opensearch_password,
-            self.iam_principal,
-        )
+        # Initialize IAMRoleHelper conditionally:
+        # For managed services, pass the IAM principal; for open-source, omit it.
+        if self.service_type == "managed":
+            self.iam_role_helper = IAMRoleHelper(
+                self.aws_region,
+                self.opensearch_endpoint,
+                self.opensearch_username,
+                self.opensearch_password,
+                self.iam_principal,
+            )
+        else:
+            self.iam_role_helper = IAMRoleHelper(
+                self.aws_region,
+                self.opensearch_endpoint,
+                self.opensearch_username,
+                self.opensearch_password,
+            )
 
         # Initialize AWS clients if the service type is not open-source
-        if self.service_type != "open-source":
+        if self.service_type in ["managed", "serverless"]:
             self.initialize_clients()
 
         # Initialize instances of different model providers
@@ -123,7 +119,7 @@ class ModelRegister:
                 self.bedrock_client = boto3.client(
                     "bedrock-runtime", region_name=self.aws_region
                 )
-                # Add any other clients initialization if needed
+                # Additional clients can be initialized here if needed
                 time.sleep(7)  # Wait for client initialization
                 print("AWS clients initialized successfully.")
                 return True
@@ -131,7 +127,7 @@ class ModelRegister:
                 print(f"Failed to initialize AWS clients: {e}")
                 return False
         else:
-            # No AWS clients needed for open-source
+            # No AWS clients needed for open-source deployments
             return True
 
     def prompt_model_registration(self):
@@ -157,12 +153,32 @@ class ModelRegister:
                 print(
                     f"{Fore.RED}No model ID provided. Cannot proceed without an embedding model.{Style.RESET_ALL}"
                 )
-                sys.exit(1)  # Exit the setup as we cannot proceed without a model ID
+                sys.exit(1)
         else:
             print(
                 f"{Fore.RED}Invalid choice. Please run setup again and select a valid option.{Style.RESET_ALL}"
             )
-            sys.exit(1)  # Exit the setup as we cannot proceed without a valid choice
+            sys.exit(1)
+
+    def register_model_interactive(self):
+        """
+        Interactive method to register a new embedding model during setup.
+        """
+        # In this example, we assume the user wishes to register the Bedrock model.
+        # You could add logic here to prompt for other model providers.
+        print("Registering a new Bedrock embedding model...")
+        # Instantiate an AIConnectorHelper for model registration
+        connector_helper = AIConnectorHelper(
+            region=self.aws_region,
+            opensearch_domain_name=self.opensearch_domain_name,
+            opensearch_domain_username=self.opensearch_username,
+            opensearch_domain_password=self.opensearch_password,
+            aws_user_name=self.config.get("aws_user_name", ""),
+            aws_role_name=self.config.get("aws_role_name", ""),
+            opensearch_domain_url=self.opensearch_endpoint,
+        )
+        # Call the Bedrock model registration method
+        self.bedrock_model.register_bedrock_model(connector_helper, self.config, self.save_config)
 
     def save_config(self, config):
         """
