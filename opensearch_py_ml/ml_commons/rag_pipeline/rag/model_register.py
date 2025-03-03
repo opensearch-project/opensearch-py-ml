@@ -297,7 +297,7 @@ class ModelRegister:
             )
             return
 
-        # Prompt user to select a model
+        # Prompt user to select a model to register
         print("\nPlease select an embedding model to register:")
         print("1. OpenAI Embedding Model")
         print("2. Cohere Embedding Model")
