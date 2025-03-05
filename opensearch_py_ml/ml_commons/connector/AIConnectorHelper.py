@@ -29,6 +29,7 @@ class AIConnectorHelper:
 
     def __init__(
         self,
+        service_type,
         opensearch_domain_region,
         opensearch_domain_name,
         opensearch_domain_username,
@@ -40,6 +41,7 @@ class AIConnectorHelper:
         """
         Initialize the AIConnectorHelper with necessary AWS and OpenSearch configurations.
         """
+        self.service_type = service_type
         self.opensearch_domain_region = opensearch_domain_region
         self.opensearch_domain_name = opensearch_domain_name
         self.opensearch_domain_username = opensearch_domain_username
@@ -48,15 +50,14 @@ class AIConnectorHelper:
         self.aws_role_name = aws_role_name
         self.opensearch_domain_url = opensearch_domain_url
 
-        # Retrieve OpenSearch domain information
-        domain_endpoint, domain_arn = self.get_opensearch_domain_info(
-            self.opensearch_domain_region, self.opensearch_domain_name
-        )
-        if domain_arn:
-            self.opensearch_domain_arn = domain_arn
+        if self.service_type == "open-source":
+            self.domain_endpoint = self.opensearch_domain_url
+            domain_arn = None
         else:
-            print("Warning: Could not retrieve OpenSearch domain ARN.")
-            self.opensearch_domain_arn = None
+            domain_endpoint, domain_arn = self.get_opensearch_domain_info(
+                self.opensearch_domain_region, self.opensearch_domain_name
+            )
+        self.opensearch_domain_arn = domain_arn
 
         # Parse the OpenSearch domain URL to extract host and port
         parsed_url = urlparse(self.opensearch_domain_url)
@@ -79,17 +80,18 @@ class AIConnectorHelper:
         self.model_access_control = ModelAccessControl(self.opensearch_client)
 
         # Initialize helpers for IAM roles and secrets management
-        self.iam_helper = IAMRoleHelper(
-            opensearch_domain_region=self.opensearch_domain_region,
-            opensearch_domain_url=self.opensearch_domain_url,
-            opensearch_domain_username=self.opensearch_domain_username,
-            opensearch_domain_password=self.opensearch_domain_password,
-            aws_user_name=self.aws_user_name,
-            aws_role_name=self.aws_role_name,
-            opensearch_domain_arn=self.opensearch_domain_arn,
-        )
+        if self.service_type == "open-source":
+            self.iam_helper = None
+            self.secret_helper = None
+        else:
+            self.iam_helper = IAMRoleHelper(
+                opensearch_domain_region=self.opensearch_domain_region,
+                opensearch_domain_url=self.opensearch_domain_url,
+                opensearch_domain_username=self.opensearch_domain_username,
+                opensearch_domain_password=self.opensearch_domain_password,
+            )
 
-        self.secret_helper = SecretHelper(self.opensearch_domain_region)
+            self.secret_helper = SecretHelper(self.opensearch_domain_region)
 
         # Initialize MLCommonClient for reuse of get_task_info
         self.ml_commons_client = MLCommonClient(self.opensearch_client)
@@ -135,35 +137,49 @@ class AIConnectorHelper:
         Create a connector in OpenSearch using the specified role and payload.
         Reusing create_standalone_connector from Connector class.
         """
-        # Assume role and create a temporary authenticated OS client
-        create_connector_role_arn = self.iam_helper.get_role_arn(
-            create_connector_role_name
-        )
-        temp_credentials = self.iam_helper.assume_role(create_connector_role_arn)
-        temp_awsauth = AWS4Auth(
-            temp_credentials["AccessKeyId"],
-            temp_credentials["SecretAccessKey"],
-            self.opensearch_domain_region,
-            "es",
-            session_token=temp_credentials["SessionToken"],
-        )
+        if self.service_type == "managed":
+            # Assume role and create a temporary authenticated OS client
+            create_connector_role_arn = self.iam_helper.get_role_arn(
+                create_connector_role_name
+            )
+            temp_credentials = self.iam_helper.assume_role(create_connector_role_arn)
+            temp_awsauth = AWS4Auth(
+                temp_credentials["credentials"]["AccessKeyId"],
+                temp_credentials["credentials"]["SecretAccessKey"],
+                self.opensearch_domain_region,
+                "es",
+                session_token=temp_credentials["credentials"]["SessionToken"],
+            )
 
-        parsed_url = urlparse(self.opensearch_domain_url)
-        host = parsed_url.hostname
-        port = parsed_url.port or (443 if parsed_url.scheme == "https" else 9200)
+            parsed_url = urlparse(self.opensearch_domain_url)
+            host = parsed_url.hostname
+            port = parsed_url.port or (443 if parsed_url.scheme == "https" else 9200)
 
-        temp_os_client = OpenSearch(
-            hosts=[{"host": host, "port": port}],
-            http_auth=temp_awsauth,
-            use_ssl=(parsed_url.scheme == "https"),
-            verify_certs=True,
-            connection_class=RequestsHttpConnection,
-        )
+            temp_os_client = OpenSearch(
+                hosts=[{"host": host, "port": port}],
+                http_auth=temp_awsauth,
+                use_ssl=(parsed_url.scheme == "https"),
+                verify_certs=True,
+                connection_class=RequestsHttpConnection,
+            )
+        else:
+            parsed_url = urlparse(self.opensearch_domain_url)
+            host = parsed_url.hostname
+            port = parsed_url.port or (443 if parsed_url.scheme == "https" else 9200)
+
+            temp_os_client = OpenSearch(
+                hosts=[{"host": host, "port": port}],
+                http_auth=(
+                    self.opensearch_domain_username,
+                    self.opensearch_domain_password,
+                ),
+                use_ssl=(parsed_url.scheme == "https"),
+                verify_certs=True,
+                connection_class=RequestsHttpConnection,
+            )
 
         temp_connector = Connector(temp_os_client)
         response = temp_connector.create_standalone_connector(payload)
-
-        print(response)
         connector_id = response.get("connector_id")
         return connector_id
 
@@ -302,7 +318,7 @@ class AIConnectorHelper:
         Create a connector in OpenSearch using a secret for credentials.
         """
         # Step 1: Create Secret
-        print("Step1: Create Secret")
+        print("Step 1: Create Secret")
         if not self.secret_helper.secret_exists(secret_name):
             secret_arn = self.secret_helper.create_secret(secret_name, secret_value)
         else:
@@ -336,7 +352,7 @@ class AIConnectorHelper:
             ],
         }
 
-        print("Step2: Create IAM role configured in connector")
+        print("Step 2: Create IAM role configured in connector")
         if not self.iam_helper.role_exists(connector_role_name):
             connector_role_arn = self.iam_helper.create_iam_role(
                 connector_role_name, trust_policy, inline_policy
@@ -348,22 +364,20 @@ class AIConnectorHelper:
 
         # Step 3: Configure IAM role in OpenSearch
         # 3.1 Create IAM role for signing create connector request
-        user_arn = self.iam_helper.get_user_arn(self.aws_user_name)
-        role_arn = self.iam_helper.get_role_arn(self.aws_role_name)
         statements = []
-        if user_arn:
+        if self.aws_user_name:
             statements.append(
                 {
                     "Effect": "Allow",
-                    "Principal": {"AWS": user_arn},
+                    "Principal": {"AWS": self.aws_user_name},
                     "Action": "sts:AssumeRole",
                 }
             )
-        if role_arn:
+        if self.aws_role_name:
             statements.append(
                 {
                     "Effect": "Allow",
-                    "Principal": {"AWS": role_arn},
+                    "Principal": {"AWS": self.aws_role_name},
                     "Action": "sts:AssumeRole",
                 }
             )
@@ -437,7 +451,7 @@ class AIConnectorHelper:
             ],
         }
 
-        print("Step1: Create IAM role configured in connector")
+        print("Step 1: Create IAM role configured in connector")
         if not self.iam_helper.role_exists(connector_role_name):
             connector_role_arn = self.iam_helper.create_iam_role(
                 connector_role_name, trust_policy, connector_role_inline_policy
@@ -449,22 +463,20 @@ class AIConnectorHelper:
 
         # Step 2: Configure IAM role in OpenSearch
         # 2.1 Create IAM role for signing create connector request
-        user_arn = self.iam_helper.get_user_arn(self.aws_user_name)
-        role_arn = self.iam_helper.get_role_arn(self.aws_role_name)
         statements = []
-        if user_arn:
+        if self.aws_user_name:
             statements.append(
                 {
                     "Effect": "Allow",
-                    "Principal": {"AWS": user_arn},
+                    "Principal": {"AWS": self.aws_user_name},
                     "Action": "sts:AssumeRole",
                 }
             )
-        if role_arn:
+        if self.aws_role_name:
             statements.append(
                 {
                     "Effect": "Allow",
-                    "Principal": {"AWS": role_arn},
+                    "Principal": {"AWS": self.aws_role_name},
                     "Action": "sts:AssumeRole",
                 }
             )
@@ -510,6 +522,7 @@ class AIConnectorHelper:
         print("Step 3: Create connector in OpenSearch")
         time.sleep(sleep_time_in_seconds)
         payload = create_connector_input
+        print("Connector role arn: ", connector_role_arn)
         payload["credential"] = {"roleArn": connector_role_arn}
         connector_id = self.create_connector(create_connector_role_name, payload)
         print("----------")

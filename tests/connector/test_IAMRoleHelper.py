@@ -232,6 +232,35 @@ class TestIAMRoleHelper(unittest.TestCase):
         details = self.helper.get_role_info("", include_details=True)
         self.assertIsNone(details)
 
+    def test_get_role_arn_success(self):
+        """Test get_role_arn returns ARN if role is found."""
+        self.mock_iam_client.get_role.return_value = {
+            "Role": {
+                "Arn": "arn:aws:iam::123456789012:user/TestRole",
+                "RoleName": "TestRole",
+            }
+        }
+
+        arn = self.helper.get_role_arn("TestRole")
+        self.assertEqual(arn, "arn:aws:iam::123456789012:user/TestRole")
+
+    def test_get_role_arn_not_found(self):
+        """Test get_role_arn returns None if user does not exist."""
+        error_response = {
+            "Error": {"Code": "NoSuchEntity", "Message": "Role not found"}
+        }
+        self.mock_iam_client.get_role.side_effect = ClientError(
+            error_response, "GetRole"
+        )
+
+        arn = self.helper.get_role_arn("NonExistentUser")
+        self.assertIsNone(arn)
+
+    def test_get_role_arn_no_rolename(self):
+        """Test get_role_arn returns None if rolename not provided."""
+        arn = self.helper.get_role_arn("")
+        self.assertIsNone(arn)
+
     def test_get_user_arn_success(self):
         """Test get_user_arn returns ARN if user is found."""
         self.mock_iam_client.get_user.return_value = {

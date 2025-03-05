@@ -11,7 +11,9 @@ import uuid
 from datetime import datetime
 
 import boto3
+import requests
 from botocore.exceptions import ClientError
+from requests.auth import HTTPBasicAuth
 
 
 class IAMRoleHelper:
@@ -188,6 +190,25 @@ class IAMRoleHelper:
                 print(f"An error occurred: {e}")
             return None
 
+    def get_role_arn(self, role_name):
+        """
+        Retrieve the ARN of an IAM role.
+        :param username: Name of the IAM role.
+        :return: ARN of the role or None if not found.
+        """
+        if not role_name:
+            return None
+        try:
+            response = self.iam_client.get_role(RoleName=role_name)
+            # Return ARN of the role
+            return response["Role"]["Arn"]
+        except ClientError as e:
+            if e.response["Error"]["Code"] == "NoSuchEntity":
+                print(f"IAM role '{role_name}' not found.")
+            else:
+                print(f"An error occurred: {e}")
+            return None
+
     def get_user_arn(self, username):
         """
         Retrieve the ARN of an IAM user.
@@ -205,6 +226,53 @@ class IAMRoleHelper:
             else:
                 print(f"An error occurred: {e}")
             return None
+
+    def map_iam_role_to_backend_role(self, role_arn, os_security_role="ml_full_access"):
+        """
+        Maps an IAM role to an OpenSearch security backend role.
+        :param role_arn: ARN of the IAM role to be mapped.
+        :param: os_security_role: The OpenSearch security role name.
+        :return: None
+        """
+        url = f"{self.opensearch_domain_url}/_plugins/_security/api/rolesmapping/{os_security_role}"
+        r = requests.get(
+            url,
+            auth=HTTPBasicAuth(
+                self.opensearch_domain_username, self.opensearch_domain_password
+            ),
+        )
+        role_mapping = json.loads(r.text)
+        headers = {"Content-Type": "application/json"}
+        if "status" in role_mapping and role_mapping["status"] == "NOT_FOUND":
+            data = {"backend_roles": [role_arn]}
+            response = requests.put(
+                url,
+                headers=headers,
+                data=json.dumps(data),
+                auth=HTTPBasicAuth(
+                    self.opensearch_domain_username, self.opensearch_domain_password
+                ),
+            )
+            print(response.text)
+        else:
+            role_mapping = role_mapping[os_security_role]
+            role_mapping["backend_roles"].append(role_arn)
+            data = [
+                {
+                    "op": "replace",
+                    "path": "/backend_roles",
+                    "value": list(set(role_mapping["backend_roles"])),
+                }
+            ]
+            response = requests.patch(
+                url,
+                headers=headers,
+                data=json.dumps(data),
+                auth=HTTPBasicAuth(
+                    self.opensearch_domain_username, self.opensearch_domain_password
+                ),
+            )
+            print(response.text)
 
     def assume_role(self, role_arn, role_session_name=None, session=None):
         """

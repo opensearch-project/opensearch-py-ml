@@ -22,9 +22,6 @@ class TestSecretHelper(unittest.TestCase):
         # Suppress logging below ERROR level during tests
         logging.basicConfig(level=logging.ERROR)
 
-    # ------------------------------------------------------------------
-    # Test: create_secret
-    # ------------------------------------------------------------------
     @patch("opensearch_py_ml.ml_commons.SecretsHelper.boto3.client")
     def test_create_secret_error_logging(self, mock_boto_client):
         mock_secretsmanager = MagicMock()
@@ -68,9 +65,6 @@ class TestSecretHelper(unittest.TestCase):
             Name="new-secret", SecretString=json.dumps({"key": "value"})
         )
 
-    # ------------------------------------------------------------------
-    # Test: secret_exists
-    # ------------------------------------------------------------------
     @patch("opensearch_py_ml.ml_commons.SecretsHelper.boto3.client")
     def test_secret_exists_true(self, mock_boto_client):
         """Test that secret_exists returns True if secret is found."""
@@ -129,9 +123,47 @@ class TestSecretHelper(unittest.TestCase):
         exists = secret_helper.secret_exists("problem-secret")
         self.assertFalse(exists)
 
-    # ------------------------------------------------------------------
-    # Test: get_secret_details
-    # ------------------------------------------------------------------
+    @patch("opensearch_py_ml.ml_commons.SecretsHelper.boto3.client")
+    def test_get_secret_arn_success(self, mock_boto_client):
+        """Test successful retrieval of secret ARN."""
+        mock_secretsmanager = MagicMock()
+        mock_boto_client.return_value = mock_secretsmanager
+
+        mock_secretsmanager.describe_secret.return_value = {
+            "ARN": "arn:aws:secretsmanager:us-east-1:123456789012:secret:my-secret"
+        }
+
+        secret_helper = SecretHelper(region="us-east-1")
+        arn = secret_helper.get_secret_arn("my-secret")
+        self.assertEqual(
+            arn, "arn:aws:secretsmanager:us-east-1:123456789012:secret:my-secret"
+        )
+        mock_secretsmanager.describe_secret.assert_called_with(SecretId="my-secret")
+
+    @patch("opensearch_py_ml.ml_commons.SecretsHelper.boto3.client")
+    def test_get_secret_arn_not_found(self, mock_boto_client):
+        """Test get_secret_arn returns None when secret is not found."""
+        mock_secretsmanager = MagicMock()
+        mock_boto_client.return_value = mock_secretsmanager
+
+        mock_secretsmanager.exceptions.ResourceNotFoundException = ClientError
+        mock_secretsmanager.describe_secret.side_effect = ClientError(
+            {
+                "Error": {
+                    "Code": "ResourceNotFoundException",
+                    "Message": "Secret not found",
+                }
+            },
+            "DescribeSecret",
+        )
+
+        secret_helper = SecretHelper(region="us-east-1")
+        arn = secret_helper.get_secret_arn("non-existent-secret")
+        self.assertIsNone(arn)
+        mock_secretsmanager.describe_secret.assert_called_with(
+            SecretId="non-existent-secret"
+        )
+
     @patch("opensearch_py_ml.ml_commons.SecretsHelper.boto3.client")
     def test_get_secret_details_arn_only_success(self, mock_boto_client):
         """Test get_secret_details returns ARN if fetch_value=False."""
