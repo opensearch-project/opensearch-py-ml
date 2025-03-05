@@ -15,7 +15,6 @@ import sys
 from colorama import init
 from rich.console import Console
 
-from opensearch_py_ml.ml_commons.connector.connector_base import ConnectorBase
 from opensearch_py_ml.ml_commons.connector.connector_create import Create
 from opensearch_py_ml.ml_commons.connector.connector_setup import Setup
 
@@ -65,15 +64,13 @@ connector create
     if args.command == "setup":
         # Handle setup command
         setup = Setup()
-        console.print("[bold blue]Starting connector setup...[/bold blue]")
+        console.print("\n[bold blue]Starting connector setup...[/bold blue]")
         setup.setup_command()
-        ConnectorBase.save_config(setup.config)
     elif args.command == "create":
         # Handle create command
         create = Create()
-        console.print("[bold blue]Starting connector creation...[/bold blue]")
+        console.print("\n[bold blue]Starting connector creation...[/bold blue]")
         create.create_command()
-        ConnectorBase.save_config(create.config)
     else:
         # If an invalid command is provided, print help
         parser.print_help()

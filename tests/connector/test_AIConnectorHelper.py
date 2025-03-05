@@ -16,6 +16,7 @@ from opensearch_py_ml.ml_commons.connector.AIConnectorHelper import AIConnectorH
 
 class TestAIConnectorHelper(unittest.TestCase):
     def setUp(self):
+        self.service_type = "managed"
         self.opensearch_domain_region = "us-east-1"
         self.opensearch_domain_name = "test-domain"
         self.opensearch_domain_username = "admin"
@@ -47,6 +48,7 @@ class TestAIConnectorHelper(unittest.TestCase):
 
         # Instantiate AIConnectorHelper
         helper = AIConnectorHelper(
+            self.service_type,
             self.opensearch_domain_region,
             self.opensearch_domain_name,
             self.opensearch_domain_username,
@@ -78,9 +80,6 @@ class TestAIConnectorHelper(unittest.TestCase):
             opensearch_domain_url=expected_domain_url,
             opensearch_domain_username=self.opensearch_domain_username,
             opensearch_domain_password=self.opensearch_domain_password,
-            aws_user_name=self.aws_user_name,
-            aws_role_name=self.aws_role_name,
-            opensearch_domain_arn=self.domain_arn,
         )
         mock_secret_helper.assert_called_once_with(self.opensearch_domain_region)
 
@@ -189,9 +188,11 @@ class TestAIConnectorHelper(unittest.TestCase):
         )
         mock_iam_helper.get_role_arn.return_value = create_connector_role_arn
         temp_credentials = {
-            "AccessKeyId": "test-access-key",
-            "SecretAccessKey": "test-secret-key",
-            "SessionToken": "test-session-token",
+            "credentials": {
+                "AccessKeyId": "test-access-key",
+                "SecretAccessKey": "test-secret-key",
+                "SessionToken": "test-session-token",
+            }
         }
         mock_iam_helper.assume_role.return_value = temp_credentials
 
@@ -211,6 +212,7 @@ class TestAIConnectorHelper(unittest.TestCase):
         # Instantiate helper
         with patch.object(AIConnectorHelper, "__init__", return_value=None):
             helper = AIConnectorHelper()
+            helper.service_type = self.service_type
             helper.opensearch_domain_region = self.opensearch_domain_region
             helper.opensearch_domain_url = f"https://{self.domain_endpoint}"
             helper.iam_helper = mock_iam_helper

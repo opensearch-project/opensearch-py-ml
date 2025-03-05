@@ -31,26 +31,17 @@ class Setup(ConnectorBase):
         """
         Initialize the Setup class with default or existing configurations.
         """
-        # Load existing configuration
-        self.config = self.load_config()
-        self.service_type = self.config.get("service_type", "managed")
-        self.opensearch_domain_region = self.config.get(
-            "opensearch_domain_region", "us-west-2"
-        )
-        self.opensearch_domain_endpoint = self.config.get(
-            "opensearch_domain_endpoint", ""
-        )
-        self.opensearch_domain_username = self.config.get(
-            "opensearch_domain_username", ""
-        )
-        self.opensearch_domain_password = self.config.get(
-            "opensearch_domain_password", ""
-        )
-        self.aws_role_name = self.config.get("aws_role_name", "")
-        self.aws_user_name = self.config.get("aws_user_name", "")
+        super().__init__()
+        self.config = {}
+        self.service_type = ""
+        self.opensearch_domain_region = ""
+        self.opensearch_domain_endpoint = ""
+        self.opensearch_domain_username = ""
+        self.opensearch_domain_password = ""
+        self.aws_user_name = ""
+        self.aws_role_name = ""
         self.opensearch_client = None
         self.opensearch_domain_name = self.get_opensearch_domain_name()
-        self.connector_blueprint = self.config.get("connector_blueprint", "")
 
     def check_and_configure_aws(self):
         """
@@ -66,7 +57,7 @@ class Setup(ConnectorBase):
                 )
                 self.configure_aws()
             else:
-                print("AWS credentials are already configured.")
+                print("\nAWS credentials are already configured.")
                 reconfigure = input("Do you want to reconfigure? (yes/no): ").lower()
                 if reconfigure == "yes":
                     self.configure_aws()
@@ -162,7 +153,7 @@ class Setup(ConnectorBase):
                 while True:
                     ch = sys.stdin.read(1)
                     if ch in ("\r", "\n"):  # Enter key
-                        sys.stdout.write("\n")
+                        sys.stdout.write("\r\n")
                         return password
                     elif ch == "\x7f":  # Backspace key
                         if len(password) > 0:
@@ -180,8 +171,6 @@ class Setup(ConnectorBase):
         """
         Set up the configuration by prompting the user for various settings.
         """
-        self.load_config()
-
         # Prompt for service type
         print("\nChoose OpenSearch service type:")
         print("1. Managed")
@@ -242,13 +231,13 @@ class Setup(ConnectorBase):
                 or default_region
             )
             self.opensearch_domain_endpoint = input(
-                "\nEnter your AWS OpenSearch domain endpoint: "
+                "Enter your AWS OpenSearch domain endpoint: "
             ).strip()
             self.opensearch_domain_username = input(
-                "\nEnter your AWS OpenSearch username: "
+                "Enter your AWS OpenSearch username: "
             ).strip()
             self.opensearch_domain_password = self.get_password_with_asterisks(
-                "\nEnter your AWS OpenSearch password: "
+                "Enter your AWS OpenSearch password: "
             )
         elif self.service_type == "open-source":
             # For open-source, skip AWS configurations
@@ -303,11 +292,14 @@ class Setup(ConnectorBase):
                 else ""
             ),
             "aws_role_name": self.aws_role_name if self.aws_role_name else "",
-            "aws_user_name": self.iam_user_rn if self.aws_user_name else "",
-            # "connector_blueprint": (
-            #     self.connector_blueprint if self.connector_blueprint else ""
-            # ),
+            "aws_user_name": self.aws_user_name if self.aws_user_name else "",
+            "opensearch_domain_name": (
+                self.get_opensearch_domain_name()
+                if self.get_opensearch_domain_name()
+                else ""
+            ),
         }
+        self.save_config(self.config)
 
     def get_opensearch_domain_name(self) -> str:
         """
@@ -327,7 +319,6 @@ class Setup(ConnectorBase):
                     domain_part = domain_part[len("search-") :]
                 # Remove the unique ID suffix after the domain name
                 domain_name = domain_part.rsplit("-", 1)[0]
-                print(f"Extracted domain name: {domain_name}\n")
                 return domain_name
         return None
 
@@ -391,37 +382,60 @@ class Setup(ConnectorBase):
             )
             return False
 
+    def _update_from_config(self):
+        """
+        Update instance variables from loaded config dictionary
+        """
+        if not self.config:
+            return False
+
+        self.service_type = self.config.get("service_type", "")
+        self.opensearch_domain_region = self.config.get("opensearch_domain_region", "")
+        self.opensearch_domain_endpoint = self.config.get(
+            "opensearch_domain_endpoint", ""
+        )
+        self.opensearch_domain_username = self.config.get(
+            "opensearch_domain_username", ""
+        )
+        self.opensearch_domain_password = self.config.get(
+            "opensearch_domain_password", ""
+        )
+        self.aws_role_name = self.config.get("aws_role_name", "")
+        self.aws_user_name = self.config.get("aws_user_name", "")
+        self.opensearch_domain_name = self.get_opensearch_domain_name()
+        return True
+
     def setup_command(self):
         """
         Main setup command that orchestrates the entire setup process.
         """
         # Ask user if they already have a configuration file
         config_exist = (
-            input("Do you already have a configuration file? (yes/no): ")
+            input("\nDo you already have a configuration file? (yes/no): ")
             .strip()
             .lower()
         )
         if config_exist == "yes":
-            print("Great! Let's use your existing configuration.")
+            print("\nGreat! Let's use your existing configuration.")
             config_path = input(
                 "Enter the path to your existing configuration file (connector_config.yml): "
             ).strip()
-            try:
-                self.load_config(config_path)
-                print("Configuration loaded successfully!")
-            except FileNotFoundError:
-                print(f"Error: Configuration file not found at {config_path}")
-                print("Let's create a new configuration instead.")
-                self.setup_configuration()
-            except Exception as e:
-                print(f"Error loading configuration: {str(e)}")
-                print("Let's create a new configuration instead.")
-                self.setup_configuration()
+
+            if self.load_config(config_path):
+                if self._update_from_config():
+                    print(f"{Fore.GREEN}\nConfiguration file loaded successfully.")
+                    return True
+                else:
+                    print(f"{Fore.RED}Failed to update configuration.{Style.RESET_ALL}")
+            else:
+                print(
+                    f"{Fore.YELLOW}Could not load existing configuration. Creating new configuration...{Style.RESET_ALL}"
+                )
         else:
             print("Let's create a new configuration file.")
             self.setup_configuration()
 
-        if not self.opensearch_endpoint:
+        if not self.opensearch_domain_endpoint:
             print(
                 f"\n{Fore.RED}OpenSearch endpoint not set. Setup incomplete.{Style.RESET_ALL}\n"
             )

@@ -49,6 +49,22 @@ class SecretHelper:
                 logger.error(f"An error occurred: {e}")
                 return False
 
+    def get_secret_arn(self, secret_name: str) -> str:
+        """
+        Retrieve the ARN of a secret from AWS Secrets Manager.
+        : param secret_name: Name of the secret to retrieve the ARN for.
+        : return: ARN of the secret if found, None otherwise.
+        """
+        try:
+            response = self.secretsmanager.describe_secret(SecretId=secret_name)
+            return response["ARN"]
+        except self.secretsmanager.exceptions.ResourceNotFoundException:
+            print(f"The requested secret {secret_name} was not found")
+            return None
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            return None
+
     def get_secret_details(self, secret_name: str, fetch_value: bool = False) -> dict:
         """
         Retrieve details of a secret from AWS Secrets Manager.

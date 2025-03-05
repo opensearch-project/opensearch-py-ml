@@ -10,6 +10,16 @@ from rich.console import Console
 
 from opensearch_py_ml.ml_commons.connector.AIConnectorHelper import AIConnectorHelper
 from opensearch_py_ml.ml_commons.connector.connector_base import ConnectorBase
+from opensearch_py_ml.ml_commons.connector.ml_models.AlephAlphaModel import (
+    AlephAlphaModel,
+)
+from opensearch_py_ml.ml_commons.connector.ml_models.BedrockModel import BedrockModel
+from opensearch_py_ml.ml_commons.connector.ml_models.CohereModel import CohereModel
+from opensearch_py_ml.ml_commons.connector.ml_models.DeepSeekModel import DeepSeekModel
+from opensearch_py_ml.ml_commons.connector.ml_models.OpenAIModel import OpenAIModel
+from opensearch_py_ml.ml_commons.connector.ml_models.SageMakerModel import (
+    SageMakerModel,
+)
 
 # Initialize Rich console for enhanced CLI outputs
 console = Console()
@@ -24,6 +34,7 @@ class Create(ConnectorBase):
     """
 
     def __init__(self):
+        super().__init__()
         self.config = {}
 
     def create_command(self):
@@ -35,19 +46,33 @@ class Create(ConnectorBase):
             config = self.load_config()
             if not config:
                 print(
-                    f"{Fore.RED}OpenSearch username or password not set. Please run setup first.{Style.RESET_ALL}\n"
+                    f"{Fore.RED}No configuration found. Please run setup first.{Style.RESET_ALL}\n"
                 )
                 return False
 
-            # Initialize clients
-            if not self.initialize_opensearch_client():
-                print(
-                    f"{Fore.RED}Failed to initialize OpenSearch client.{Style.RESET_ALL}"
-                )
-                return False
+            service_type = config.get("service_type")
+            if service_type == "open-source":
+                # For open-source, check username and password
+                if not config.get("opensearch_domain_username") or not config.get(
+                    "opensearch_domain_password"
+                ):
+                    print(
+                        f"{Fore.RED}OpenSearch username or password not set. Please run setup first.{Style.RESET_ALL}\n"
+                    )
+                    return False
+            else:
+                # For managed service, check AWS-specific configurations
+                if not config.get("opensearch_domain_region") or not config.get(
+                    "opensearch_domain_name"
+                ):
+                    print(
+                        f"{Fore.RED}AWS region or domain name not set. Please run setup first.{Style.RESET_ALL}\n"
+                    )
+                    return False
 
             # Create AIConnectorHelper instance
             ai_helper = AIConnectorHelper(
+                service_type=config.get("service_type"),
                 opensearch_domain_region=config.get("opensearch_domain_region"),
                 opensearch_domain_name=config.get("opensearch_domain_name"),
                 opensearch_domain_username=config.get("opensearch_domain_username"),
@@ -57,47 +82,80 @@ class Create(ConnectorBase):
                 opensearch_domain_url=config.get("opensearch_domain_endpoint"),
             )
 
-            # Get connector blueprint from config
-            blueprint = config.get("connector_blueprint")
-            if not blueprint:
-                print(
-                    f"{Fore.RED}No connector blueprint found in configuration.{Style.RESET_ALL}"
-                )
-                return False
+            # TODO: Add more supported connectors for managed and open-source
+            if service_type == "managed":
+                # Prompt for supported connectors
+                print("\nPlease select a supported connector to create:")
+                print("1. Amazon Bedrock")
+                print("2. Amazon SageMaker")
+                print("3. Cohere")
+                print("4. OpenAI")
+                connector_choice = input("Enter your choice (1-4): ").strip()
 
-            # Create connector with role or secret based on blueprint
-            if self.service_type == "managed":
-                # Create connector with role
-                connector_id = ai_helper.create_connector_with_role(
-                    connector_role_inline_policy=blueprint[
-                        "connector_role_inline_policy"
-                    ],
-                    connector_role_name=blueprint["connector_role_name"],
-                    create_connector_role_name=blueprint["create_connector_role_name"],
-                    create_connector_input=blueprint["connector_config"],
-                )
+                if connector_choice == "1":
+                    self.bedrock_model = BedrockModel(
+                        opensearch_domain_region=config.get("opensearch_domain_region"),
+                    )
+                    result = self.bedrock_model.create_bedrock_connector(
+                        ai_helper, self.config, self.save_config
+                    )
+                elif connector_choice == "2":
+                    self.sagemaker_model = SageMakerModel(
+                        opensearch_domain_region=config.get("opensearch_domain_region"),
+                    )
+                    result = self.sagemaker_model.create_sagemaker_connector(
+                        ai_helper, self.config, self.save_config
+                    )
+                elif connector_choice == "3":
+                    self.cohere_model = CohereModel()
+                    result = self.cohere_model.create_cohere_connector(
+                        ai_helper, self.config, self.save_config
+                    )
+                elif connector_choice == "4":
+                    self.openai_model = OpenAIModel(
+                        service_type=config.get("service_type"),
+                    )
+                    result = self.openai_model.create_openai_connector(
+                        ai_helper, self.config, self.save_config
+                    )
+                else:
+                    print(
+                        f"\n{Fore.YELLOW}Invalid choice. Defaulting to 'Amazon Bedrock'.{Style.RESET_ALL}"
+                    )
             else:
-                # Create connector with secret
-                connector_id = ai_helper.create_connector_with_secret(
-                    secret_name=blueprint["secret_name"],
-                    secret_value=blueprint["secret_value"],
-                    connector_role_name=blueprint["connector_role_name"],
-                    create_connector_role_name=blueprint["create_connector_role_name"],
-                    create_connector_input=blueprint["connector_config"],
-                )
+                # Prompt for supported connectors
+                print("\nPlease select a supported connector to create:")
+                print("1. Aleph Alpha")
+                print("2. DeepSeek")
+                print("3. OpenAI")
+                connector_choice = input("Enter your choice (1-3): ").strip()
 
-            if connector_id:
-                print(
-                    f"{Fore.GREEN}Successfully created connector with ID: {connector_id}{Style.RESET_ALL}"
-                )
-                # Update config with connector ID if needed
-                config["connector_id"] = connector_id
-                self.save_config(config)
-                return True
-            else:
-                print(f"{Fore.RED}Failed to create connector.{Style.RESET_ALL}")
-                return False
-
+                if connector_choice == "1":
+                    self.aleph_alpha_model = AlephAlphaModel()
+                    result = self.aleph_alpha_model.create_aleph_alpha_connector(
+                        ai_helper, self.config, self.save_config
+                    )
+                elif connector_choice == "2":
+                    self.deepseek_model = DeepSeekModel()
+                    result = self.deepseek_model.create_deepseek_connector(
+                        ai_helper, self.config, self.save_config
+                    )
+                elif connector_choice == "3":
+                    self.openai_model = OpenAIModel(
+                        service_type=config.get("service_type"),
+                    )
+                    result = self.openai_model.create_openai_connector(
+                        ai_helper, self.config, self.save_config
+                    )
+                else:
+                    print(
+                        f"\n{Fore.YELLOW}Invalid choice. Defaulting to 'Aleph Alpha'.{Style.RESET_ALL}"
+                    )
+                    self.aleph_alpha_model = AlephAlphaModel()
+                    result = self.aleph_alpha_model.create_aleph_alpha_connector(
+                        ai_helper, self.config, self.save_config
+                    )
+            return result
         except Exception as e:
             print(f"{Fore.RED}Error creating connector: {str(e)}{Style.RESET_ALL}")
             return False

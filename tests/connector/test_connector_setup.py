@@ -35,11 +35,11 @@ class TestSetup(unittest.TestCase):
             self.setup_instance.configure_aws()
             self.assertEqual(mock_subprocess.call_count, 3)
 
-    @patch("boto3.client")
-    @patch("builtins.input")
-    def test_aws_credentials_exist_no_reconfigure(self, mock_input, mock_boto_client):
-        mock_boto_client.return_value.get_credentials.return_value = MagicMock()
-        mock_input.return_value = "no"
+    @patch("boto3.Session")
+    @patch("builtins.input", return_value="no")
+    def test_aws_credentials_exist_no_reconfigure(self, mock_input, mock_session):
+        mock_session_instance = mock_session.return_value
+        mock_session_instance.get_credentials.return_value = MagicMock()
         with patch.object(self.setup_instance, "configure_aws") as mock_configure:
             self.setup_instance.check_and_configure_aws()
             mock_configure.assert_not_called()
