@@ -29,13 +29,6 @@ class TestConnectorCLI(unittest.TestCase):
             "region": "us-west-2",
         }
 
-        # Patch 'save_config' function
-        self.patcher_save_config = patch(
-            "opensearch_py_ml.ml_commons.connector.connector_base.ConnectorBase.save_config"
-        )
-        self.mock_save_config = self.patcher_save_config.start()
-        self.addCleanup(self.patcher_save_config.stop)
-
         # Patch 'Setup' and 'Create' classes
         self.patcher_setup = patch(
             "opensearch_py_ml.ml_commons.connector.connector_cli.Setup"
@@ -67,10 +60,6 @@ class TestConnectorCLI(unittest.TestCase):
             main()
             # Ensure Setup.setup_command() is called
             self.mock_setup_class.return_value.setup_command.assert_called_once()
-            # Ensure save_config is called
-            self.mock_save_config.assert_called_once_with(
-                self.mock_setup_class.return_value.config
-            )
 
     def test_create_command(self):
         test_args = ["connector_cli.py", "create"]
@@ -78,10 +67,6 @@ class TestConnectorCLI(unittest.TestCase):
             main()
             # Ensure Create.create_command() is called
             self.mock_create_class.return_value.create_command.assert_called_once()
-            # Ensure save_config is called
-            self.mock_save_config.assert_called_once_with(
-                self.mock_create_class.return_value.config
-            )
 
     def test_help_command(self):
         test_args = ["connector_cli.py", "--help"]

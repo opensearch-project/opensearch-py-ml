@@ -5,10 +5,9 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
-import configparser
 import os
-import sys
 
+import yaml
 from colorama import Fore, Style
 from rich.console import Console
 
@@ -18,36 +17,44 @@ console = Console()
 
 class ConnectorBase:
 
-    CONFIG_FILE = "connector_config.yml"
+    CONFIG_FILE = os.path.join(os.getcwd(), "connector_config.yml")
 
-    def load_config(self) -> dict:
+    def __init__(self):
+        self.config = {}
+
+    def load_config(self, config_path=None) -> dict:
         """
         Load configuration from the config file.
         """
-        config = configparser.ConfigParser()
-        if os.path.exists(self.CONFIG_FILE):
-            config.read(self.CONFIG_FILE)
-            if "DEFAULT" not in config:
-                console.print(
-                    f"[{Fore.RED}ERROR{Style.RESET_ALL}] 'DEFAULT' section missing in {self.CONFIG_FILE}. Please run the setup command first."
+        try:
+            config_path = config_path or self.CONFIG_FILE
+
+            if not os.path.exists(config_path):
+                print(
+                    f"{Fore.YELLOW}Configuration file not found at {config_path}{Style.RESET_ALL}"
                 )
-                sys.exit(1)
-            return dict(config["DEFAULT"])
-        return {}
+                return {}
+
+            with open(config_path, "r") as file:
+                config = yaml.safe_load(file) or {}
+                self.config = config
+                return config
+
+        except Exception as e:
+            print(f"{Fore.RED}Error loading configuration: {str(e)}{Style.RESET_ALL}")
+            return {}
 
     def save_config(self, config: dict):
         """
         Save configuration to the config file.
         """
-        parser = configparser.ConfigParser()
-        parser["DEFAULT"] = config
         try:
-            with open(self.CONFIG_FILE, "w") as f:
-                parser.write(f)
-            console.print(
-                f"[{Fore.GREEN}SUCCESS{Style.RESET_ALL}] Configuration saved to {self.CONFIG_FILE}."
+            with open(self.CONFIG_FILE, "w") as file:
+                yaml.dump(config, file, default_flow_style=False, sort_keys=False)
+            print(
+                f"{Fore.GREEN}Configuration saved successfully to {self.CONFIG_FILE}.{Style.RESET_ALL}"
             )
+            return True
         except Exception as e:
-            console.print(
-                f"[{Fore.RED}ERROR{Style.RESET_ALL}] Failed to save configuration: {e}"
-            )
+            print(f"{Fore.RED}Error saving configuration: {str(e)}{Style.RESET_ALL}")
+            return False
