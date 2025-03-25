@@ -100,13 +100,13 @@ Examples:
     opensearch-ml model register
 
   Register a model with a model name, description, and the connector ID
-    opensearch-ml model register --id=connector123 --name 'Test model' --description 'This is a test model'
+    opensearch-ml model register --id 'connector123' --name 'Test model' --description 'This is a test model'
 
   Predict a model:
     opensearch-ml model predict
 
   Predict a model with a model ID and the request payload:
-    opensearch-ml model predict --id=model123 --payload '{"parameters": {"texts": ["hello world"]}}'
+    opensearch-ml model predict --id 'model123' --payload '{"parameters": {"texts": ["hello world"]}}'
 """,
     )
     # Create subparsers for different command groups
