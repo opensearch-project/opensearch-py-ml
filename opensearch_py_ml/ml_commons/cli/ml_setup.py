@@ -5,6 +5,9 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
+import configparser
+import logging
+import os
 import subprocess
 import sys
 import termios
@@ -12,10 +15,11 @@ import tty
 from urllib.parse import urlparse
 
 import boto3
+from botocore.exceptions import ClientError
 from colorama import Fore, Style, init
 from opensearchpy import OpenSearch, RequestsHttpConnection
 
-from opensearch_py_ml.ml_commons.connector.connector_base import ConnectorBase
+from opensearch_py_ml.ml_commons.cli.connector_base import ConnectorBase
 
 # Initialize colorama for colored terminal output
 init(autoreset=True)
@@ -24,7 +28,7 @@ init(autoreset=True)
 class Setup(ConnectorBase):
     """
     Handles the setup and configuration of the OpenSearch environment.
-    Manages AWS credentials (if managed) and OpenSearch client initialization.
+    Manages AWS credentials (if amazon-opensearch-service) and OpenSearch client initialization.
     """
 
     def __init__(self):
@@ -40,80 +44,103 @@ class Setup(ConnectorBase):
         self.opensearch_domain_password = ""
         self.aws_user_name = ""
         self.aws_role_name = ""
+        self.aws_access_key = ""
+        self.aws_secret_access_key = ""
+        self.aws_session_token = ""
         self.opensearch_client = None
-        self.opensearch_domain_name = self.get_opensearch_domain_name()
+        self.config = configparser.ConfigParser()
+        self.session = None
 
-    def check_and_configure_aws(self):
+    def check_credentials_validity(self, access_key, secret_key, session_token):
+        try:
+            self.session = boto3.Session(
+                aws_access_key_id=access_key,
+                aws_secret_access_key=secret_key,
+                aws_session_token=session_token,
+            )
+            sts_client = self.session.client("sts")
+            sts_client.get_caller_identity()
+            return True
+        except ClientError:
+            return False
+
+    def check_credentials_validity_from_config_file(self):
+        aws_credentials = self.config.get("aws_credentials", {})
+        try:
+            self.session = boto3.Session(
+                aws_access_key_id=aws_credentials.get("aws_access_key", ""),
+                aws_secret_access_key=aws_credentials.get("aws_secret_access_key", ""),
+                aws_session_token=aws_credentials.get("aws_session_token", ""),
+            )
+            sts_client = self.session.client("sts")
+            sts_client.get_caller_identity()
+            return True
+        except ClientError:
+            return False
+
+    def update_aws_credentials(self, access_key, secret_key, session_token):
+        try:
+            if "aws_credentials" not in self.config:
+                self.config["aws_credentials"] = {}
+
+            self.config["aws_credentials"]["aws_access_key"] = access_key
+            self.config["aws_credentials"]["aws_secret_access_key"] = secret_key
+            self.config["aws_credentials"]["aws_session_token"] = session_token
+        except Exception as e:
+            logging.error(f"Failed to update AWS credentials: {e}")
+            print(f"{Fore.RED}Failed to update AWS credentials: {e}{Style.RESET_ALL}")
+            raise
+
+    def check_and_configure_aws(self, config_path):
         """
         Check if AWS credentials are configured and offer to reconfigure if needed.
         """
-        try:
-            session = boto3.Session()
-            credentials = session.get_credentials()
-
-            if credentials is None:
-                print(
-                    f"{Fore.YELLOW}AWS credentials are not configured.{Style.RESET_ALL}"
-                )
-                self.configure_aws()
-            else:
-                print("\nAWS credentials are already configured.")
-                reconfigure = input("Do you want to reconfigure? (yes/no): ").lower()
-                if reconfigure == "yes":
-                    self.configure_aws()
-        except Exception as e:
+        if not self.check_credentials_validity_from_config_file():
             print(
-                f"{Fore.RED}An error occurred while checking AWS credentials: {e}{Style.RESET_ALL}"
+                f"{Fore.YELLOW}Your AWS credentials are invalid or have expired.{Style.RESET_ALL}"
             )
             self.configure_aws()
+            self.config["aws_credentials"]["aws_access_key"] = self.aws_access_key
+            self.config["aws_credentials"][
+                "aws_secret_access_key"
+            ] = self.aws_secret_access_key
+            self.config["aws_credentials"]["aws_session_token"] = self.aws_session_token
+            self.update_config(self.config, config_path)
+        else:
+            print(
+                f"{Fore.GREEN}AWS credentials are already configured.{Style.RESET_ALL}"
+            )
+            reconfigure = input("Do you want to reconfigure? (yes/no): ").lower()
+            if reconfigure == "yes":
+                self.configure_aws()
 
     def configure_aws(self):
-        """
-        Configure AWS credentials using user input.
-        """
         print("Let's configure your AWS credentials.")
-
-        aws_access_key = self.get_password_with_asterisks(
+        self.aws_access_key = self.get_password_with_asterisks(
             "Enter your AWS Access Key ID: "
         )
-        aws_secret_access_key = self.get_password_with_asterisks(
+        self.aws_secret_access_key = self.get_password_with_asterisks(
             "Enter your AWS Secret Access Key: "
         )
-        aws_session_token = self.get_password_with_asterisks(
+        self.aws_session_token = self.get_password_with_asterisks(
             "Enter your AWS Session Token: "
         )
 
-        try:
-            # Configure AWS credentials using subprocess to call AWS CLI
-            subprocess.run(
-                ["aws", "configure", "set", "aws_access_key", aws_access_key],
-                check=True,
-            )
-
-            subprocess.run(
-                [
-                    "aws",
-                    "configure",
-                    "set",
-                    "aws_secret_access_key",
-                    aws_secret_access_key,
-                ],
-                check=True,
-            )
-
-            subprocess.run(
-                ["aws", "configure", "set", "aws_session_token", aws_session_token],
-                check=True,
-            )
+        self.update_aws_credentials(
+            self.aws_access_key,
+            self.aws_secret_access_key,
+            self.aws_session_token,
+        )
+        if self.check_credentials_validity(
+            self.aws_access_key, self.aws_secret_access_key, self.aws_session_token
+        ):
             print(
-                f"{Fore.GREEN}AWS credentials have been successfully configured.{Style.RESET_ALL}"
+                f"{Fore.GREEN}New AWS credentials have been successfully configured and verified.{Style.RESET_ALL}"
             )
-        except subprocess.CalledProcessError as e:
+        else:
             print(
-                f"{Fore.RED}An error occurred while configuring AWS credentials: {e}{Style.RESET_ALL}"
+                f"{Fore.RED}The provided credentials are invalid or expired.{Style.RESET_ALL}"
             )
-        except Exception as e:
-            print(f"{Fore.RED}An unexpected error occurred: {e}{Style.RESET_ALL}")
 
     def get_password_with_asterisks(self, prompt="Enter password: ") -> str:
         """
@@ -173,24 +200,24 @@ class Setup(ConnectorBase):
         """
         # Prompt for service type
         print("\nChoose OpenSearch service type:")
-        print("1. Managed")
+        print("1. Amazon OpenSearch Service")
         print("2. Open-source")
         service_choice = input("Enter your choice (1-2): ").strip()
 
         if service_choice == "1":
-            self.service_type = "managed"
+            self.service_type = "amazon-opensearch-service"
         elif service_choice == "2":
             self.service_type = "open-source"
         else:
             print(
-                f"\n{Fore.YELLOW}Invalid choice. Defaulting to 'managed'.{Style.RESET_ALL}"
+                f"\n{Fore.YELLOW}Invalid choice. Defaulting to 'amazon-opensearch-service'.{Style.RESET_ALL}"
             )
-            self.service_type = "managed"
+            self.service_type = "amazon-opensearch-service"
 
         # Based on service type, prompt for different configurations
-        if self.service_type == "managed":
-            print("\n--- Managed OpenSearch Setup ---")
-            self.check_and_configure_aws()
+        if self.service_type == "amazon-opensearch-service":
+            print("\n--- Amazon OpenSearch Service Setup ---")
+            self.configure_aws()
 
             # Prompt for ARN type
             print("\nChoose ARN type:")
@@ -200,27 +227,18 @@ class Setup(ConnectorBase):
 
             if arn_type == "1":
                 self.aws_role_name = (
-                    input(
-                        f"Enter your AWS IAM Role ARN [{self.aws_role_name}]: "
-                    ).strip()
-                    or self.aws_role_name
+                    input("Enter your AWS IAM Role ARN: ").strip() or self.aws_role_name
                 )
             elif arn_type == "2":
                 self.aws_user_name = (
-                    input(
-                        f"Enter your AWS IAM User ARN [{self.aws_user_name}]: "
-                    ).strip()
-                    or self.aws_user_name
+                    input("Enter your AWS IAM User ARN: ").strip() or self.aws_user_name
                 )
             else:
                 print(
                     f"\n{Fore.YELLOW}Invalid choice. Defaulting to 'IAM Role ARN'.{Style.RESET_ALL}"
                 )
                 self.aws_role_name = (
-                    input(
-                        f"Enter your AWS IAM Role ARN [{self.aws_role_name}]: "
-                    ).strip()
-                    or self.aws_role_name
+                    input("Enter your AWS IAM Role ARN: ").strip() or self.aws_role_name
                 )
 
             default_region = "us-west-2"
@@ -275,52 +293,22 @@ class Setup(ConnectorBase):
         # Update configuration dictionary
         self.config = {
             "service_type": self.service_type,
-            "opensearch_domain_region": self.opensearch_domain_region,
-            "opensearch_domain_endpoint": (
-                self.opensearch_domain_endpoint
-                if self.opensearch_domain_endpoint
-                else ""
-            ),
-            "opensearch_domain_username": (
-                self.opensearch_domain_username
-                if self.opensearch_domain_username
-                else ""
-            ),
-            "opensearch_domain_password": (
-                self.opensearch_domain_password
-                if self.opensearch_domain_password
-                else ""
-            ),
-            "aws_role_name": self.aws_role_name if self.aws_role_name else "",
-            "aws_user_name": self.aws_user_name if self.aws_user_name else "",
-            "opensearch_domain_name": (
-                self.get_opensearch_domain_name()
-                if self.get_opensearch_domain_name()
-                else ""
-            ),
+            "opensearch_config": {
+                "opensearch_domain_region": self.opensearch_domain_region,
+                "opensearch_domain_endpoint": self.opensearch_domain_endpoint,
+                "opensearch_domain_username": self.opensearch_domain_username,
+                "opensearch_domain_password": self.opensearch_domain_password,
+            },
+            "aws_credentials": {
+                "aws_role_name": self.aws_role_name,
+                "aws_user_name": self.aws_user_name,
+                "aws_access_key": self.aws_access_key,
+                "aws_secret_access_key": self.aws_secret_access_key,
+                "aws_session_token": self.aws_session_token,
+            },
         }
-        self.save_config(self.config)
-
-    def get_opensearch_domain_name(self) -> str:
-        """
-        Extract the domain name from the OpenSearch endpoint URL.
-        """
-        if self.opensearch_domain_endpoint:
-            parsed_url = urlparse(self.opensearch_domain_endpoint)
-            hostname = (
-                parsed_url.hostname
-            )  # e.g., 'search-your-domain-name-uniqueid.region.es.amazonaws.com'
-            if hostname:
-                # Split the hostname into parts
-                parts = hostname.split(".")
-                domain_part = parts[0]  # e.g., 'search-your-domain-name-uniqueid'
-                # Remove the 'search-' prefix if present
-                if domain_part.startswith("search-"):
-                    domain_part = domain_part[len("search-") :]
-                # Remove the unique ID suffix after the domain name
-                domain_name = domain_part.rsplit("-", 1)[0]
-                return domain_name
-        return None
+        config_path = self.save_config(self.config)
+        return config_path
 
     def initialize_opensearch_client(self) -> bool:
         """
@@ -337,7 +325,7 @@ class Setup(ConnectorBase):
         port = parsed_url.port or (443 if parsed_url.scheme == "https" else 9200)
 
         # Determine auth based on service type
-        if self.service_type == "managed":
+        if self.service_type == "amazon-opensearch-service":
             if (
                 not self.opensearch_domain_username
                 or not self.opensearch_domain_password
@@ -390,26 +378,51 @@ class Setup(ConnectorBase):
             return False
 
         self.service_type = self.config.get("service_type", "")
-        self.opensearch_domain_region = self.config.get("opensearch_domain_region", "")
-        self.opensearch_domain_endpoint = self.config.get(
+        # OpenSearch config
+        opensearch_config = self.config.get("opensearch_config", {})
+        self.opensearch_domain_region = opensearch_config.get(
+            "opensearch_domain_region", ""
+        )
+        self.opensearch_domain_endpoint = opensearch_config.get(
             "opensearch_domain_endpoint", ""
         )
-        self.opensearch_domain_username = self.config.get(
+        self.opensearch_domain_username = opensearch_config.get(
             "opensearch_domain_username", ""
         )
-        self.opensearch_domain_password = self.config.get(
+        self.opensearch_domain_password = opensearch_config.get(
             "opensearch_domain_password", ""
         )
-        self.aws_role_name = self.config.get("aws_role_name", "")
-        self.aws_user_name = self.config.get("aws_user_name", "")
-        self.opensearch_domain_name = self.get_opensearch_domain_name()
+        # AWS credentials
+        aws_credentials = self.config.get("aws_credentials", {})
+        self.aws_role_name = aws_credentials.get("aws_role_name", "")
+        self.aws_user_name = aws_credentials.get("aws_user_name", "")
+        self.aws_access_key = aws_credentials.get("aws_access_key", "")
+        self.aws_secret_access_key = aws_credentials.get("aws_secret_access_key", "")
+        self.aws_session_token = aws_credentials.get("aws_session_token", "")
         return True
 
-    def setup_command(self):
+    def setup_command(self, config_path=None):
         """
         Main setup command that orchestrates the entire setup process.
         """
         # Ask user if they already have a configuration file
+        if config_path:
+            if self.load_config(config_path):
+                if self._update_from_config():
+                    if self.service_type == "amazon-opensearch-service":
+                        self.check_and_configure_aws(config_path)
+                    print(
+                        f"{Fore.GREEN}\nSetup complete. You are now ready to use the ML features.{Style.RESET_ALL}"
+                    )
+                    return config_path
+                else:
+                    print(f"{Fore.RED}Failed to update configuration.{Style.RESET_ALL}")
+            else:
+                print(
+                    f"{Fore.YELLOW}Could not load existing configuration. Creating new configuration...{Style.RESET_ALL}"
+                )
+                config_path = self.setup_configuration()
+        config_path = ""
         config_exist = (
             input("\nDo you already have a configuration file? (yes/no): ")
             .strip()
@@ -418,39 +431,35 @@ class Setup(ConnectorBase):
         if config_exist == "yes":
             print("\nGreat! Let's use your existing configuration.")
             config_path = input(
-                "Enter the path to your existing configuration file (connector_config.yml): "
+                "Enter the path to your existing configuration file: "
             ).strip()
 
             if self.load_config(config_path):
                 if self._update_from_config():
-                    print(f"{Fore.GREEN}\nConfiguration file loaded successfully.")
-                    return True
+                    if self.service_type == "amazon-opensearch-service":
+                        self.check_and_configure_aws(config_path)
+                    print(
+                        f"{Fore.GREEN}\nSetup complete. You are now ready to use the ML features.{Style.RESET_ALL}"
+                    )
+                    return config_path
                 else:
                     print(f"{Fore.RED}Failed to update configuration.{Style.RESET_ALL}")
             else:
                 print(
                     f"{Fore.YELLOW}Could not load existing configuration. Creating new configuration...{Style.RESET_ALL}"
                 )
+                config_path = self.setup_configuration()
         else:
             print("Let's create a new configuration file.")
-            self.setup_configuration()
-
-        if not self.opensearch_domain_endpoint:
-            print(
-                f"\n{Fore.RED}OpenSearch endpoint not set. Setup incomplete.{Style.RESET_ALL}\n"
-            )
-            return
-        else:
-            if self.service_type == "managed":
-                self.opensearch_domain_name = self.get_opensearch_domain_name()
-            else:
-                self.opensearch_domain_name = None
+            config_path = self.setup_configuration()
 
         # Initialize OpenSearch client
-        if self.initialize_opensearch_client():
-            print(
-                f"{Fore.GREEN}Setup complete. You are now ready to begin the connector creation process{Style.RESET_ALL}"
-            )
+        if config_path:
+            if self.initialize_opensearch_client():
+                print(
+                    f"{Fore.GREEN}Setup complete. You are now ready to use the ML features.{Style.RESET_ALL}"
+                )
+                return config_path
         else:
             # Handle failure to initialize OpenSearch client
             print(

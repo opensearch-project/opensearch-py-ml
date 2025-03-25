@@ -11,28 +11,31 @@ from unittest.mock import MagicMock, patch
 
 from requests.auth import HTTPBasicAuth
 
-from opensearch_py_ml.ml_commons.connector.AIConnectorHelper import AIConnectorHelper
+from opensearch_py_ml.ml_commons.cli.AIConnectorHelper import AIConnectorHelper
 
 
 class TestAIConnectorHelper(unittest.TestCase):
     def setUp(self):
-        self.service_type = "managed"
+        self.service_type = "amazon-opensearch-service"
         self.opensearch_domain_region = "us-east-1"
         self.opensearch_domain_name = "test-domain"
         self.opensearch_domain_username = "admin"
         self.opensearch_domain_password = "password"
+        self.opensearch_domain_url = "search-test-domain.us-east-1.es.amazonaws.com"
         self.aws_user_name = "test-user"
         self.aws_role_name = "test-role"
-
-        self.domain_endpoint = "search-test-domain.us-east-1.es.amazonaws.com"
+        self.aws_access_key = "test-access-key"
+        self.aws_secret_access_key = "test-secret-access-key"
+        self.aws_session_token = "test-session-token"
+        # self.domain_endpoint = "search-test-domain.us-east-1.es.amazonaws.com"
         self.domain_arn = "arn:aws:es:us-east-1:123456789012:domain/test-domain"
 
     @patch(
-        "opensearch_py_ml.ml_commons.connector.AIConnectorHelper.AIConnectorHelper.get_opensearch_domain_info"
+        "opensearch_py_ml.ml_commons.cli.AIConnectorHelper.AIConnectorHelper.get_opensearch_domain_info"
     )
-    @patch("opensearch_py_ml.ml_commons.connector.AIConnectorHelper.OpenSearch")
-    @patch("opensearch_py_ml.ml_commons.connector.AIConnectorHelper.SecretHelper")
-    @patch("opensearch_py_ml.ml_commons.connector.AIConnectorHelper.IAMRoleHelper")
+    @patch("opensearch_py_ml.ml_commons.cli.AIConnectorHelper.OpenSearch")
+    @patch("opensearch_py_ml.ml_commons.cli.AIConnectorHelper.SecretHelper")
+    @patch("opensearch_py_ml.ml_commons.cli.AIConnectorHelper.IAMRoleHelper")
     def test___init__(
         self,
         mock_iam_role_helper,
@@ -42,7 +45,7 @@ class TestAIConnectorHelper(unittest.TestCase):
     ):
         # Mock get_opensearch_domain_info
         mock_get_opensearch_domain_info.return_value = (
-            self.domain_endpoint,
+            self.opensearch_domain_url,
             self.domain_arn,
         )
 
@@ -53,18 +56,21 @@ class TestAIConnectorHelper(unittest.TestCase):
             self.opensearch_domain_name,
             self.opensearch_domain_username,
             self.opensearch_domain_password,
+            self.opensearch_domain_url,
             self.aws_user_name,
             self.aws_role_name,
-            f"https://{self.domain_endpoint}",  # Add this line
+            self.aws_access_key,
+            self.aws_secret_access_key,
+            self.aws_session_token,
         )
 
         # Assert domain URL
-        expected_domain_url = f"https://{self.domain_endpoint}"
+        expected_domain_url = self.opensearch_domain_url
         self.assertEqual(helper.opensearch_domain_url, expected_domain_url)
 
         # Assert opensearch_client is initialized
         mock_opensearch.assert_called_once_with(
-            hosts=[{"host": self.domain_endpoint, "port": 443}],
+            hosts=[{"host": self.opensearch_domain_url, "port": 443}],
             http_auth=(
                 self.opensearch_domain_username,
                 self.opensearch_domain_password,
@@ -177,8 +183,8 @@ class TestAIConnectorHelper(unittest.TestCase):
                 in str(context.exception)
             )
 
-    @patch("opensearch_py_ml.ml_commons.connector.AIConnectorHelper.OpenSearch")
-    @patch("opensearch_py_ml.ml_commons.connector.AIConnectorHelper.AWS4Auth")
+    @patch("opensearch_py_ml.ml_commons.cli.AIConnectorHelper.OpenSearch")
+    @patch("opensearch_py_ml.ml_commons.cli.AIConnectorHelper.AWS4Auth")
     @patch.object(AIConnectorHelper, "iam_helper", create=True)
     def test_create_connector(self, mock_iam_helper, mock_aws4auth, mock_opensearch):
         # Mock the IAM helper methods
@@ -223,7 +229,7 @@ class TestAIConnectorHelper(unittest.TestCase):
                 "connector_id": "test-connector-id"
             }
             with patch(
-                "opensearch_py_ml.ml_commons.connector.AIConnectorHelper.Connector",
+                "opensearch_py_ml.ml_commons.cli.AIConnectorHelper.Connector",
                 return_value=mock_connector,
             ):
                 # Call the method
@@ -404,7 +410,7 @@ class TestAIConnectorHelper(unittest.TestCase):
         # Instantiate helper
         with patch.object(AIConnectorHelper, "__init__", return_value=None):
             helper = AIConnectorHelper()
-            helper.opensearch_domain_url = f"https://{self.domain_endpoint}"
+            helper.opensearch_domain_url = self.opensearch_domain_url
             helper.opensearch_domain_username = self.opensearch_domain_username
             helper.opensearch_domain_password = self.opensearch_domain_password
 

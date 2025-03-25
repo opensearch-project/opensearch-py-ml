@@ -103,7 +103,7 @@ setup(
     # Entry points for console scripts
     entry_points={
         "console_scripts": [
-            "connector=opensearch_py_ml.ml_commons.connector.connector_cli:main",
+            "opensearch-ml=opensearch_py_ml.ml_commons.cli.ml_cli:main",
         ],
     },
 )
