@@ -96,7 +96,13 @@ setup(
         "rich>=13.5.2",
     ],
     python_requires=">=3.8",
-    package_data={"opensearch_py_ml": ["py.typed"]},
+    package_data={
+        "opensearch_py_ml": [
+            "py.typed",
+            "ml_commons/cli/ml_models/*.py",
+            "ml_commons/cli/ml_models/__init__.py",
+        ]
+    },
     include_package_data=True,
     zip_safe=False,
     extras_require=extras,
