@@ -118,9 +118,9 @@ class Predict(ConnectorBase):
                     lines.append(line)
 
                 json_input = "\n".join(lines)
-            else:
-                json_input = payload
                 payload = json.loads(json_input)
+            else:
+                payload = json.loads(payload)
 
             response, status = ai_helper.predict(model_id, payload)
             if status == 200:

@@ -255,8 +255,8 @@ Examples:
 
             predict = Predict()
             console.print("\n[bold blue]Starting model prediction...[/bold blue]")
-            model_id = args.modelId[0] if args.modelId else None
-            payload = args.payload[0] if args.payload else None
+            model_id = args.modelId if args.modelId else None
+            payload = args.payload if args.payload else None
             predict.predict_command(config_path, model_id=model_id, payload=payload)
 
 
