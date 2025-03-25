@@ -27,6 +27,9 @@ class IAMRoleHelper:
         opensearch_domain_url=None,
         opensearch_domain_username=None,
         opensearch_domain_password=None,
+        aws_access_key=None,
+        aws_secret_access_key=None,
+        aws_session_token=None,
     ):
         """
         Initialize the IAMRoleHelper with AWS and OpenSearch configurations.
@@ -39,9 +42,23 @@ class IAMRoleHelper:
         self.opensearch_domain_url = opensearch_domain_url
         self.opensearch_domain_username = opensearch_domain_username
         self.opensearch_domain_password = opensearch_domain_password
+        self.aws_access_key = aws_access_key
+        self.aws_secret_access_key = aws_secret_access_key
+        self.aws_session_token = aws_session_token
 
-        self.iam_client = boto3.client("iam")
-        self.sts_client = boto3.client("sts", region_name=self.opensearch_domain_region)
+        self.iam_client = boto3.client(
+            "iam",
+            aws_access_key_id=self.aws_access_key,
+            aws_secret_access_key=self.aws_secret_access_key,
+            aws_session_token=self.aws_session_token,
+        )
+        self.sts_client = boto3.client(
+            "sts",
+            region_name=self.opensearch_domain_region,
+            aws_access_key_id=self.aws_access_key,
+            aws_secret_access_key=self.aws_secret_access_key,
+            aws_session_token=self.aws_session_token,
+        )
 
     def role_exists(self, role_name):
         """

@@ -17,6 +17,12 @@ from opensearch_py_ml.ml_commons.SecretsHelper import SecretHelper
 
 
 class TestSecretHelper(unittest.TestCase):
+    def setUp(self):
+        self.region = "us-east-1"
+        self.aws_access_key = "test-access-key"
+        self.aws_secret_access_key = "test-secret-access-key"
+        self.aws_session_token = "test-session-token"
+
     @classmethod
     def setUpClass(cls):
         # Suppress logging below ERROR level during tests
@@ -37,7 +43,21 @@ class TestSecretHelper(unittest.TestCase):
             error_response, "CreateSecret"
         )
 
-        secret_helper = SecretHelper(region="us-east-1")
+        secret_helper = SecretHelper(
+            region=self.region,
+            aws_access_key=self.aws_access_key,
+            aws_secret_access_key=self.aws_secret_access_key,
+            aws_session_token=self.aws_session_token,
+        )
+
+        mock_boto_client.assert_called_once_with(
+            "secretsmanager",
+            region_name=self.region,
+            aws_access_key_id=self.aws_access_key,
+            aws_secret_access_key=self.aws_secret_access_key,
+            aws_session_token=self.aws_session_token,
+        )
+
         # Capture logs with a context manager
         with self.assertLogs(
             "opensearch_py_ml.ml_commons.SecretsHelper", level="ERROR"
@@ -56,7 +76,21 @@ class TestSecretHelper(unittest.TestCase):
             "ARN": "arn:aws:secretsmanager:us-east-1:123456789012:secret:new-secret"
         }
 
-        secret_helper = SecretHelper(region="us-east-1")
+        secret_helper = SecretHelper(
+            region=self.region,
+            aws_access_key=self.aws_access_key,
+            aws_secret_access_key=self.aws_secret_access_key,
+            aws_session_token=self.aws_session_token,
+        )
+
+        mock_boto_client.assert_called_once_with(
+            "secretsmanager",
+            region_name=self.region,
+            aws_access_key_id=self.aws_access_key,
+            aws_secret_access_key=self.aws_secret_access_key,
+            aws_session_token=self.aws_session_token,
+        )
+
         result = secret_helper.create_secret("new-secret", {"key": "value"})
         self.assertEqual(
             result, "arn:aws:secretsmanager:us-east-1:123456789012:secret:new-secret"
@@ -76,7 +110,21 @@ class TestSecretHelper(unittest.TestCase):
             "SecretString": "some-value"
         }
 
-        secret_helper = SecretHelper(region="us-east-1")
+        secret_helper = SecretHelper(
+            region=self.region,
+            aws_access_key=self.aws_access_key,
+            aws_secret_access_key=self.aws_secret_access_key,
+            aws_session_token=self.aws_session_token,
+        )
+
+        mock_boto_client.assert_called_once_with(
+            "secretsmanager",
+            region_name=self.region,
+            aws_access_key_id=self.aws_access_key,
+            aws_secret_access_key=self.aws_secret_access_key,
+            aws_session_token=self.aws_session_token,
+        )
+
         exists = secret_helper.secret_exists("my-existing-secret")
         self.assertTrue(exists)
         mock_secretsmanager.get_secret_value.assert_called_with(
@@ -99,7 +147,21 @@ class TestSecretHelper(unittest.TestCase):
             error_response, "GetSecretValue"
         )
 
-        secret_helper = SecretHelper(region="us-east-1")
+        secret_helper = SecretHelper(
+            region=self.region,
+            aws_access_key=self.aws_access_key,
+            aws_secret_access_key=self.aws_secret_access_key,
+            aws_session_token=self.aws_session_token,
+        )
+
+        mock_boto_client.assert_called_once_with(
+            "secretsmanager",
+            region_name=self.region,
+            aws_access_key_id=self.aws_access_key,
+            aws_secret_access_key=self.aws_secret_access_key,
+            aws_session_token=self.aws_session_token,
+        )
+
         exists = secret_helper.secret_exists("nonexistent-secret")
         self.assertFalse(exists)
 
@@ -119,7 +181,21 @@ class TestSecretHelper(unittest.TestCase):
             error_response, "GetSecretValue"
         )
 
-        secret_helper = SecretHelper(region="us-east-1")
+        secret_helper = SecretHelper(
+            region=self.region,
+            aws_access_key=self.aws_access_key,
+            aws_secret_access_key=self.aws_secret_access_key,
+            aws_session_token=self.aws_session_token,
+        )
+
+        mock_boto_client.assert_called_once_with(
+            "secretsmanager",
+            region_name=self.region,
+            aws_access_key_id=self.aws_access_key,
+            aws_secret_access_key=self.aws_secret_access_key,
+            aws_session_token=self.aws_session_token,
+        )
+
         exists = secret_helper.secret_exists("problem-secret")
         self.assertFalse(exists)
 
@@ -133,7 +209,21 @@ class TestSecretHelper(unittest.TestCase):
             "ARN": "arn:aws:secretsmanager:us-east-1:123456789012:secret:my-secret"
         }
 
-        secret_helper = SecretHelper(region="us-east-1")
+        secret_helper = SecretHelper(
+            region=self.region,
+            aws_access_key=self.aws_access_key,
+            aws_secret_access_key=self.aws_secret_access_key,
+            aws_session_token=self.aws_session_token,
+        )
+
+        mock_boto_client.assert_called_once_with(
+            "secretsmanager",
+            region_name=self.region,
+            aws_access_key_id=self.aws_access_key,
+            aws_secret_access_key=self.aws_secret_access_key,
+            aws_session_token=self.aws_session_token,
+        )
+
         arn = secret_helper.get_secret_arn("my-secret")
         self.assertEqual(
             arn, "arn:aws:secretsmanager:us-east-1:123456789012:secret:my-secret"
@@ -157,7 +247,21 @@ class TestSecretHelper(unittest.TestCase):
             "DescribeSecret",
         )
 
-        secret_helper = SecretHelper(region="us-east-1")
+        secret_helper = SecretHelper(
+            region=self.region,
+            aws_access_key=self.aws_access_key,
+            aws_secret_access_key=self.aws_secret_access_key,
+            aws_session_token=self.aws_session_token,
+        )
+
+        mock_boto_client.assert_called_once_with(
+            "secretsmanager",
+            region_name=self.region,
+            aws_access_key_id=self.aws_access_key,
+            aws_secret_access_key=self.aws_secret_access_key,
+            aws_session_token=self.aws_session_token,
+        )
+
         arn = secret_helper.get_secret_arn("non-existent-secret")
         self.assertIsNone(arn)
         mock_secretsmanager.describe_secret.assert_called_with(
@@ -174,7 +278,21 @@ class TestSecretHelper(unittest.TestCase):
             "ARN": "arn:aws:secretsmanager:us-east-1:123456789012:secret:my-secret"
         }
 
-        secret_helper = SecretHelper(region="us-east-1")
+        secret_helper = SecretHelper(
+            region=self.region,
+            aws_access_key=self.aws_access_key,
+            aws_secret_access_key=self.aws_secret_access_key,
+            aws_session_token=self.aws_session_token,
+        )
+
+        mock_boto_client.assert_called_once_with(
+            "secretsmanager",
+            region_name=self.region,
+            aws_access_key_id=self.aws_access_key,
+            aws_secret_access_key=self.aws_secret_access_key,
+            aws_session_token=self.aws_session_token,
+        )
+
         details = secret_helper.get_secret_details("my-secret", fetch_value=False)
         self.assertIn("ARN", details)
         self.assertEqual(
@@ -197,7 +315,21 @@ class TestSecretHelper(unittest.TestCase):
             "SecretString": "my-secret-value"
         }
 
-        secret_helper = SecretHelper(region="us-east-1")
+        secret_helper = SecretHelper(
+            region=self.region,
+            aws_access_key=self.aws_access_key,
+            aws_secret_access_key=self.aws_secret_access_key,
+            aws_session_token=self.aws_session_token,
+        )
+
+        mock_boto_client.assert_called_once_with(
+            "secretsmanager",
+            region_name=self.region,
+            aws_access_key_id=self.aws_access_key,
+            aws_secret_access_key=self.aws_secret_access_key,
+            aws_session_token=self.aws_session_token,
+        )
+
         details = secret_helper.get_secret_details("my-secret", fetch_value=True)
         self.assertIn("ARN", details)
         self.assertIn("SecretValue", details)
@@ -221,7 +353,21 @@ class TestSecretHelper(unittest.TestCase):
             error_response, "DescribeSecret"
         )
 
-        secret_helper = SecretHelper(region="us-east-1")
+        secret_helper = SecretHelper(
+            region=self.region,
+            aws_access_key=self.aws_access_key,
+            aws_secret_access_key=self.aws_secret_access_key,
+            aws_session_token=self.aws_session_token,
+        )
+
+        mock_boto_client.assert_called_once_with(
+            "secretsmanager",
+            region_name=self.region,
+            aws_access_key_id=self.aws_access_key,
+            aws_secret_access_key=self.aws_secret_access_key,
+            aws_session_token=self.aws_session_token,
+        )
+
         details = secret_helper.get_secret_details(
             "nonexistent-secret", fetch_value=True
         )

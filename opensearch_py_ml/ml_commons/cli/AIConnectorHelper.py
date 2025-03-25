@@ -11,6 +11,7 @@ from urllib.parse import urlparse
 
 import boto3
 import requests
+from colorama import Fore, Style
 from opensearchpy import OpenSearch, RequestsHttpConnection
 from requests.auth import HTTPBasicAuth
 from requests_aws4auth import AWS4Auth
@@ -34,9 +35,12 @@ class AIConnectorHelper:
         opensearch_domain_name,
         opensearch_domain_username,
         opensearch_domain_password,
+        opensearch_domain_url,
         aws_user_name,
         aws_role_name,
-        opensearch_domain_url,
+        aws_access_key,
+        aws_secret_access_key,
+        aws_session_token,
     ):
         """
         Initialize the AIConnectorHelper with necessary AWS and OpenSearch configurations.
@@ -46,16 +50,23 @@ class AIConnectorHelper:
         self.opensearch_domain_name = opensearch_domain_name
         self.opensearch_domain_username = opensearch_domain_username
         self.opensearch_domain_password = opensearch_domain_password
+        self.opensearch_domain_url = opensearch_domain_url
         self.aws_user_name = aws_user_name
         self.aws_role_name = aws_role_name
-        self.opensearch_domain_url = opensearch_domain_url
+        self.aws_access_key = aws_access_key
+        self.aws_secret_access_key = aws_secret_access_key
+        self.aws_session_token = aws_session_token
 
         if self.service_type == "open-source":
-            self.domain_endpoint = self.opensearch_domain_url
+            domain_endpoint = self.opensearch_domain_url
             domain_arn = None
         else:
             domain_endpoint, domain_arn = self.get_opensearch_domain_info(
-                self.opensearch_domain_region, self.opensearch_domain_name
+                self.opensearch_domain_region,
+                self.opensearch_domain_name,
+                self.aws_access_key,
+                self.aws_secret_access_key,
+                self.aws_session_token,
             )
         self.opensearch_domain_arn = domain_arn
 
@@ -89,20 +100,52 @@ class AIConnectorHelper:
                 opensearch_domain_url=self.opensearch_domain_url,
                 opensearch_domain_username=self.opensearch_domain_username,
                 opensearch_domain_password=self.opensearch_domain_password,
+                aws_access_key=self.aws_access_key,
+                aws_secret_access_key=self.aws_secret_access_key,
+                aws_session_token=self.aws_session_token,
             )
 
-            self.secret_helper = SecretHelper(self.opensearch_domain_region)
+            self.secret_helper = SecretHelper(
+                self.opensearch_domain_region,
+                self.aws_access_key,
+                self.aws_secret_access_key,
+                self.aws_session_token,
+            )
 
         # Initialize MLCommonClient for reuse of get_task_info
         self.ml_commons_client = MLCommonClient(self.opensearch_client)
 
     @staticmethod
-    def get_opensearch_domain_info(region, domain_name):
+    def get_opensearch_domain_info(
+        region, domain_name, aws_access_key, aws_secret_access_key, aws_session_token
+    ):
         """
         Retrieve the OpenSearch domain endpoint and ARN based on the domain name and region.
         """
         try:
-            opensearch_client = boto3.client("opensearch", region_name=region)
+            # Get current credentials
+            session = boto3.Session(
+                aws_access_key_id=aws_access_key,
+                aws_secret_access_key=aws_secret_access_key,
+                aws_session_token=aws_session_token,
+            )
+            credentials = session.get_credentials()
+            if not credentials:
+                print(f"{Fore.RED}No valid credentials found.{Style.RESET_ALL}")
+                return None, None
+
+            # Get frozen credentials (this converts to accessible format)
+            frozen_credentials = credentials.get_frozen_credentials()
+
+            # Create client with explicit credentials
+            opensearch_client = boto3.client(
+                "opensearch",
+                region_name=region,
+                aws_access_key_id=frozen_credentials.access_key,
+                aws_secret_access_key=frozen_credentials.secret_key,
+                aws_session_token=frozen_credentials.token,
+            )
+
             response = opensearch_client.describe_domain(DomainName=domain_name)
             domain_status = response["DomainStatus"]
             domain_endpoint = domain_status.get("Endpoint")
@@ -137,8 +180,7 @@ class AIConnectorHelper:
         Create a connector in OpenSearch using the specified role and payload.
         Reusing create_standalone_connector from Connector class.
         """
-        if self.service_type == "managed":
-            # Assume role and create a temporary authenticated OS client
+        if self.service_type == "amazon-opensearch-service":
             create_connector_role_arn = self.iam_helper.get_role_arn(
                 create_connector_role_name
             )
@@ -200,52 +242,35 @@ class AIConnectorHelper:
             print(f"Error in get_task: {e}")
             raise
 
-    def create_model(
+    def register_model(
         self,
         model_name,
         description,
         connector_id,
-        create_connector_role_name,
         deploy=True,
     ):
         """
-        Create a new model in OpenSearch and optionally deploy it.
+        Register a new model in OpenSearch and optionally deploy it.
         """
         try:
-            # Use ModelAccessControl methods directly without wrapping
-            model_group_id = self.model_access_control.get_model_group_id_by_name(
-                model_name
-            )
-            if not model_group_id:
-                self.model_access_control.register_model_group(
-                    name=model_name, description=description
-                )
-                model_group_id = self.model_access_control.get_model_group_id_by_name(
-                    model_name
-                )
-                if not model_group_id:
-                    raise Exception("Failed to create model group.")
-
             payload = {
                 "name": model_name,
                 "function_name": "remote",
                 "description": description,
-                "model_group_id": model_group_id,
                 "connector_id": connector_id,
             }
             headers = {"Content-Type": "application/json"}
             deploy_str = str(deploy).lower()
 
-            awsauth = self.get_ml_auth(create_connector_role_name)
-
             response = requests.post(
                 f"{self.opensearch_domain_url}/_plugins/_ml/models/_register?deploy={deploy_str}",
-                auth=awsauth,
+                auth=HTTPBasicAuth(
+                    self.opensearch_domain_username, self.opensearch_domain_password
+                ),
                 json=payload,
                 headers=headers,
             )
 
-            print("Create Model Response:", response.text)
             response_data = json.loads(response.text)
 
             if "model_id" in response_data:
@@ -271,7 +296,7 @@ class AIConnectorHelper:
                     f"The response does not contain 'model_id' or 'task_id'. Response content: {response_data}"
                 )
         except Exception as e:
-            print(f"Error in create_model: {e}")
+            print(f"{Fore.RED}Error registering model: {str(e)}{Style.RESET_ALL}")
             raise
 
     def deploy_model(self, model_id):
@@ -302,8 +327,28 @@ class AIConnectorHelper:
             json=payload,
             headers=headers,
         )
-        print("Predict Response:", response.text)
-        return response
+        response_json = response.json()
+        status = response_json.get("inference_results", [{}])[0].get("status_code")
+        print("Predict Response:", response.text[:200] + "..." + response.text[-21:])
+        return response.text, status
+
+    def get_connector(self, connector_id):
+        """
+        Get a connector information from the connector ID.
+        """
+        headers = {"Content-Type": "application/json"}
+        response = requests.get(
+            f"{self.opensearch_domain_url}/_plugins/_ml/connectors/{connector_id}",
+            auth=HTTPBasicAuth(
+                self.opensearch_domain_username, self.opensearch_domain_password
+            ),
+            headers=headers,
+        )
+        return response.text
+
+    def get_secret_arn(self, secret_name):
+        secret_arn = self.secret_helper.get_secret_arn(secret_name)
+        return secret_arn
 
     def create_connector_with_secret(
         self,
@@ -322,7 +367,7 @@ class AIConnectorHelper:
         if not self.secret_helper.secret_exists(secret_name):
             secret_arn = self.secret_helper.create_secret(secret_name, secret_value)
         else:
-            print("Secret exists, skipping creation.")
+            print(f"{secret_name} secret exists, skipping creation.")
             secret_arn = self.secret_helper.get_secret_arn(secret_name)
         print("----------")
 
@@ -358,7 +403,7 @@ class AIConnectorHelper:
                 connector_role_name, trust_policy, inline_policy
             )
         else:
-            print("Role exists, skipping creation.")
+            print(f"{connector_role_name} role exists, skipping creation.")
             connector_role_arn = self.iam_helper.get_role_arn(connector_role_name)
         print("----------")
 
@@ -406,7 +451,7 @@ class AIConnectorHelper:
                 create_connector_role_name, trust_policy, inline_policy
             )
         else:
-            print("Role exists, skipping creation.")
+            print(f"{create_connector_role_name} role exists, skipping creation.")
             create_connector_role_arn = self.iam_helper.get_role_arn(
                 create_connector_role_name
             )
@@ -421,12 +466,16 @@ class AIConnectorHelper:
 
         # Step 4: Create connector
         print("Step 4: Create connector in OpenSearch")
-        time.sleep(sleep_time_in_seconds)
+        print("Waiting for resources to be ready...")
+        for remaining in range(sleep_time_in_seconds, 0, -1):
+            print(f"\rTime remaining: {remaining} seconds...", end="", flush=True)
+            time.sleep(1)
+        print("\nWait completed, creating connector...")
         payload = create_connector_input
         payload["credential"] = {"secretArn": secret_arn, "roleArn": connector_role_arn}
         connector_id = self.create_connector(create_connector_role_name, payload)
         print("----------")
-        return connector_id
+        return connector_id, connector_role_arn
 
     def create_connector_with_role(
         self,
@@ -457,7 +506,7 @@ class AIConnectorHelper:
                 connector_role_name, trust_policy, connector_role_inline_policy
             )
         else:
-            print("Role exists, skipping creation.")
+            print(f"{connector_role_name} role exists, skipping creation.")
             connector_role_arn = self.iam_helper.get_role_arn(connector_role_name)
         print("----------")
 
@@ -505,7 +554,7 @@ class AIConnectorHelper:
                 create_connector_role_name, trust_policy, inline_policy
             )
         else:
-            print("Role exists, skipping creation.")
+            print(f"{create_connector_role_name} role exists, skipping creation.")
             create_connector_role_arn = self.iam_helper.get_role_arn(
                 create_connector_role_name
             )
@@ -520,10 +569,14 @@ class AIConnectorHelper:
 
         # Step 3: Create connector
         print("Step 3: Create connector in OpenSearch")
-        time.sleep(sleep_time_in_seconds)
+        print("Waiting for resources to be ready...")
+        for remaining in range(sleep_time_in_seconds, 0, -1):
+            print(f"\rTime remaining: {remaining} seconds...", end="", flush=True)
+            time.sleep(1)
+        print("\nWait completed, creating connector...")
         payload = create_connector_input
         print("Connector role arn: ", connector_role_arn)
         payload["credential"] = {"roleArn": connector_role_arn}
         connector_id = self.create_connector(create_connector_role_name, payload)
         print("----------")
-        return connector_id
+        return connector_id, connector_role_arn

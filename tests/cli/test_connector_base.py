@@ -11,7 +11,7 @@ from unittest.mock import patch
 
 import yaml
 
-from opensearch_py_ml.ml_commons.connector.connector_base import ConnectorBase
+from opensearch_py_ml.ml_commons.cli.connector_base import ConnectorBase
 
 
 class TestConnectorBase(unittest.TestCase):
@@ -24,13 +24,17 @@ class TestConnectorBase(unittest.TestCase):
         if os.path.exists(ConnectorBase.CONFIG_FILE):
             os.remove(ConnectorBase.CONFIG_FILE)
 
-    def test_load_config_no_file(self):
+    @patch("builtins.print")
+    def test_load_config_no_file(self, mock_print):
         config = self.setup_instance.load_config("nonexistent_config.yaml")
         self.assertEqual(config, {})
+        mock_print.assert_called_once()
+        self.assertIn("Configuration file not found", mock_print.call_args[0][0])
 
-    def test_load_config_valid_yaml(self):
+    @patch("builtins.print")
+    def test_load_config_valid_yaml(self, mock_print):
         test_config = {
-            "service_type": "managed",
+            "service_type": "amazon-opensearch-service",
             "opensearch_domain_region": "test-region",
         }
         with open(ConnectorBase.CONFIG_FILE, "w") as f:
@@ -38,22 +42,36 @@ class TestConnectorBase(unittest.TestCase):
         config = self.setup_instance.load_config(ConnectorBase.CONFIG_FILE)
         self.assertEqual(config, test_config)
         self.assertEqual(self.setup_instance.config, test_config)
+        mock_print.assert_called_once()
+        self.assertIn("Configuration loaded successfully", mock_print.call_args[0][0])
 
-    def test_load_config_invalid_yaml(self):
+    @patch("builtins.print")
+    def test_load_config_invalid_yaml(self, mock_print):
         with open(ConnectorBase.CONFIG_FILE, "w") as f:
             f.write("invalid: yaml: content:")
 
         config = self.setup_instance.load_config(ConnectorBase.CONFIG_FILE)
         self.assertEqual(config, {})
-
-    @patch("builtins.print")
-    def test_load_config_file_not_found_message(self, mock_print):
-        self.setup_instance.load_config("nonexistent_config.yaml")
         mock_print.assert_called_once()
-        self.assertIn("Configuration file not found", mock_print.call_args[0][0])
+        self.assertIn("Error parsing YAML configuration", mock_print.call_args[0][0])
 
     @patch("builtins.print")
-    def test_save_config(self, mock_print):
+    @patch("os.access", return_value=False)
+    def test_load_config_no_permission(self, mock_access, mock_print):
+        with open(ConnectorBase.CONFIG_FILE, "w") as f:
+            yaml.dump({"test": "data"}, f)
+
+        config = self.setup_instance.load_config(ConnectorBase.CONFIG_FILE)
+        self.assertEqual(config, {})
+        mock_print.assert_called_once()
+        self.assertIn(
+            "Error: No permission to read configuration file",
+            mock_print.call_args[0][0],
+        )
+
+    @patch("builtins.print")
+    @patch("builtins.input", return_value="")
+    def test_save_config(self, mock_input, mock_print):
         test_config = {"key": "value"}
         save_result = self.setup_instance.save_config(test_config)
         mock_print.assert_called_once()
@@ -62,7 +80,8 @@ class TestConnectorBase(unittest.TestCase):
         self.assertIn("Configuration saved successfully", mock_print.call_args[0][0])
 
     @patch("builtins.print")
-    def test_save_config_handles_error(self, mock_print):
+    @patch("builtins.input", return_value="")
+    def test_save_config_handles_error(self, mock_input, mock_print):
         with patch("builtins.open", side_effect=Exception("Test error")):
             config = {"key": "value"}
             self.setup_instance.save_config(config)

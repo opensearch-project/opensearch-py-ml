@@ -21,14 +21,30 @@ class SecretHelper:
     Provides methods to check existence, retrieve details, and create secrets.
     """
 
-    def __init__(self, region: str):
+    def __init__(
+        self,
+        region: str,
+        aws_access_key: str,
+        aws_secret_access_key: str,
+        aws_session_token: str,
+    ):
         """
         Initialize the SecretHelper with the specified AWS region.
         :param region: AWS region where the Secrets Manager is located.
         """
         self.region = region
+        self.aws_access_key = aws_access_key
+        self.aws_secret_access_key = aws_secret_access_key
+        self.aws_session_token = aws_session_token
+
         # Create the Secrets Manager client once at the class level
-        self.secretsmanager = boto3.client("secretsmanager", region_name=self.region)
+        self.secretsmanager = boto3.client(
+            "secretsmanager",
+            region_name=self.region,
+            aws_access_key_id=self.aws_access_key,
+            aws_secret_access_key=self.aws_secret_access_key,
+            aws_session_token=self.aws_session_token,
+        )
 
     def secret_exists(self, secret_name: str) -> bool:
         """

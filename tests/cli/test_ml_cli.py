@@ -5,15 +5,16 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
+import os
 import sys
 import unittest
 import warnings
 from io import StringIO
-from unittest.mock import patch
+from unittest.mock import mock_open, patch
 
 from urllib3.exceptions import InsecureRequestWarning
 
-from opensearch_py_ml.ml_commons.connector.connector_cli import main
+from opensearch_py_ml.ml_commons.cli.ml_cli import main
 
 # Suppress specific warnings
 warnings.filterwarnings("ignore", category=UserWarning)
@@ -21,24 +22,19 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 warnings.filterwarnings("ignore", category=InsecureRequestWarning)
 
 
-class TestConnectorCLI(unittest.TestCase):
+class TestMLCLI(unittest.TestCase):
     def setUp(self):
-        # Mock the config to avoid actual file operations
         self.mock_config = {
-            "service_type": "managed",
+            "service_type": "amazon-opensearch-service",
             "region": "us-west-2",
         }
 
         # Patch 'Setup' and 'Create' classes
-        self.patcher_setup = patch(
-            "opensearch_py_ml.ml_commons.connector.connector_cli.Setup"
-        )
+        self.patcher_setup = patch("opensearch_py_ml.ml_commons.cli.ml_cli.Setup")
         self.mock_setup_class = self.patcher_setup.start()
         self.addCleanup(self.patcher_setup.stop)
 
-        self.patcher_create = patch(
-            "opensearch_py_ml.ml_commons.connector.connector_cli.Create"
-        )
+        self.patcher_create = patch("opensearch_py_ml.ml_commons.cli.ml_cli.Create")
         self.mock_create_class = self.patcher_create.start()
         self.addCleanup(self.patcher_create.stop)
 
@@ -55,31 +51,43 @@ class TestConnectorCLI(unittest.TestCase):
         self.addCleanup(self.patcher_stderr.stop)
 
     def test_setup_command(self):
-        test_args = ["connector_cli.py", "setup"]
+        test_args = ["ml_cli.py", "setup"]
+        self.mock_setup_class.return_value.setup_command.return_value = (
+            "test_config.yml"
+        )
         with patch.object(sys, "argv", test_args):
-            main()
-            # Ensure Setup.setup_command() is called
-            self.mock_setup_class.return_value.setup_command.assert_called_once()
+            with patch("os.makedirs") as mock_makedirs, patch(
+                "builtins.open", mock_open()
+            ) as mock_file:
+                main()
+                self.mock_setup_class.return_value.setup_command.assert_called_once()
+                mock_makedirs.assert_called_once_with(
+                    os.path.expanduser("~/.opensearch-ml"), exist_ok=True
+                )
+                mock_file.assert_called_once_with(
+                    os.path.join(os.path.expanduser("~/.opensearch-ml"), "config_path"),
+                    "w",
+                )
+                mock_file().write.assert_called_once_with("test_config.yml")
 
     def test_create_command(self):
-        test_args = ["connector_cli.py", "create"]
+        test_args = ["ml_cli.py", "connector", "create"]
         with patch.object(sys, "argv", test_args):
             main()
-            # Ensure Create.create_command() is called
             self.mock_create_class.return_value.create_command.assert_called_once()
 
     def test_help_command(self):
-        test_args = ["connector_cli.py", "--help"]
+        test_args = ["ml_cli.py", "--help"]
         with patch.object(sys, "argv", test_args):
             with self.assertRaises(SystemExit) as cm:
                 main()
             self.assertEqual(cm.exception.code, 0)
             output = self.held_stdout.getvalue()
-            self.assertIn("Connector Creation CLI", output)
+            self.assertIn("OpenSearch ML CLI", output)
             self.assertIn("Available Commands", output)
 
     def test_no_command(self):
-        test_args = ["connector_cli.py"]
+        test_args = ["ml_cli.py"]
         with patch.object(sys, "argv", test_args):
             with self.assertRaises(SystemExit) as cm:
                 main()
@@ -87,16 +95,17 @@ class TestConnectorCLI(unittest.TestCase):
             stdout_output = self.held_stdout.getvalue()
             stderr_output = self.held_stderr.getvalue()
 
-            self.assertIn("Welcome to the Connector Creation", stdout_output)
-            self.assertIn("connector setup", stdout_output)
-            self.assertIn("connector create", stdout_output)
+            self.assertIn("OpenSearch ML CLI", stdout_output)
+            self.assertIn("opensearch-ml setup", stdout_output)
+            self.assertIn("opensearch-ml connector create", stdout_output)
+            print("STDERR:", stderr_output)
             self.assertTrue(
-                "usage: connector_cli.py" in stderr_output
-                or "usage: connector_cli.py" in stdout_output
+                "usage: opensearch-ml" in stderr_output
+                or "usage: opensearch-ml" in stdout_output
             )
 
     def test_invalid_command(self):
-        test_args = ["connector_cli.py", "invalid"]
+        test_args = ["ml_cli.py", "invalid"]
         with patch.object(sys, "argv", test_args):
             with self.assertRaises(SystemExit) as cm:
                 main()
@@ -111,7 +120,7 @@ class TestConnectorCLI(unittest.TestCase):
             )
 
     def test_multiple_commands(self):
-        test_args = ["connector_cli.py", "setup", "create"]
+        test_args = ["ml_cli.py", "setup", "create"]
         with patch.object(sys, "argv", test_args):
             with self.assertRaises(SystemExit):
                 main()

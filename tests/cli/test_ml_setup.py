@@ -8,12 +8,15 @@
 
 import os
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, call, patch
 
-from opensearch_py_ml.ml_commons.connector.connector_base import ConnectorBase
-from opensearch_py_ml.ml_commons.connector.connector_setup import Setup
+from colorama import Fore, Style
+
+from opensearch_py_ml.ml_commons.cli.connector_base import ConnectorBase
+from opensearch_py_ml.ml_commons.cli.ml_setup import Setup
 
 
+# TODO: add more tests for new functions
 class TestSetup(unittest.TestCase):
     def setUp(self):
         if os.path.exists(ConnectorBase.CONFIG_FILE):
@@ -25,15 +28,34 @@ class TestSetup(unittest.TestCase):
             os.remove(ConnectorBase.CONFIG_FILE)
 
     @patch("builtins.input", return_value="fake_input")
-    @patch("subprocess.run")
-    def test_configure_aws(self, mock_subprocess, mock_input):
-        with patch.object(
+    @patch("builtins.print")
+    def test_configure_aws(self, mock_print, mock_input):
+        mock_get_password = MagicMock(
+            side_effect=["fake_access_key", "fake_secret_key", "fake_session_token"]
+        )
+
+        with patch.multiple(
             self.setup_instance,
-            "get_password_with_asterisks",
-            return_value="fake_secret",
+            get_password_with_asterisks=mock_get_password,
+            update_aws_credentials=MagicMock(),
+            check_credentials_validity=MagicMock(return_value=True),
         ):
             self.setup_instance.configure_aws()
-            self.assertEqual(mock_subprocess.call_count, 3)
+            self.assertEqual(mock_get_password.call_count, 3)
+            mock_get_password.assert_has_calls(
+                [
+                    call("Enter your AWS Access Key ID: "),
+                    call("Enter your AWS Secret Access Key: "),
+                    call("Enter your AWS Session Token: "),
+                ]
+            )
+            self.setup_instance.update_aws_credentials.assert_called_once_with(
+                "fake_access_key", "fake_secret_key", "fake_session_token"
+            )
+            self.setup_instance.check_credentials_validity.assert_called_once()
+            mock_print.assert_any_call(
+                f"{Fore.GREEN}New AWS credentials have been successfully configured and verified.{Style.RESET_ALL}"
+            )
 
     @patch("boto3.Session")
     @patch("builtins.input", return_value="no")
@@ -52,27 +74,28 @@ class TestSetup(unittest.TestCase):
         self.setup_instance.setup_configuration()
         config = self.setup_instance.config
         self.assertEqual(config["service_type"], "open-source")
-        self.assertEqual(config["opensearch_domain_username"], "admin")
-        self.assertEqual(config["opensearch_domain_password"], "pass")
+        self.assertEqual(
+            config["opensearch_config"]["opensearch_domain_username"], "admin"
+        )
+        self.assertEqual(
+            config["opensearch_config"]["opensearch_domain_password"], "pass"
+        )
 
     @patch("builtins.input", side_effect=["2", "", "no", "2", ""])
     def test_setup_configuration_open_source_no_auth(self, mock_input):
         self.setup_instance.setup_configuration()
         config = self.setup_instance.config
         self.assertEqual(config["service_type"], "open-source")
-        self.assertEqual(config["opensearch_domain_username"], "")
-        self.assertEqual(config["opensearch_domain_password"], "")
-
-    def test_get_opensearch_domain_name(self):
-        self.setup_instance.opensearch_domain_endpoint = (
-            "https://search-my-domain-name-abc123.us-west-2.es.amazonaws.com"
+        self.assertEqual(
+            config["opensearch_config"]["opensearch_domain_username"], None
         )
-        domain_name = self.setup_instance.get_opensearch_domain_name()
-        self.assertEqual(domain_name, "my-domain-name")
+        self.assertEqual(
+            config["opensearch_config"]["opensearch_domain_password"], None
+        )
 
-    @patch("opensearch_py_ml.ml_commons.connector.connector_setup.OpenSearch")
+    @patch("opensearch_py_ml.ml_commons.cli.ml_setup.OpenSearch")
     def test_initialize_opensearch_client_managed(self, mock_opensearch):
-        self.setup_instance.service_type = "managed"
+        self.setup_instance.service_type = "amazon-opensearch-service"
         self.setup_instance.opensearch_domain_endpoint = "https://test-domain:443"
         self.setup_instance.opensearch_domain_username = "admin"
         self.setup_instance.opensearch_domain_password = "pass"
@@ -80,7 +103,7 @@ class TestSetup(unittest.TestCase):
         self.assertTrue(result)
         mock_opensearch.assert_called_once()
 
-    @patch("opensearch_py_ml.ml_commons.connector.connector_setup.OpenSearch")
+    @patch("opensearch_py_ml.ml_commons.cli.ml_setup.OpenSearch")
     def test_initialize_opensearch_client_open_source_no_auth(self, mock_opensearch):
         self.setup_instance.service_type = "open-source"
         self.setup_instance.opensearch_domain_endpoint = "http://localhost:9200"
@@ -90,7 +113,7 @@ class TestSetup(unittest.TestCase):
         self.assertTrue(result)
         mock_opensearch.assert_called_once()
 
-    @patch("opensearch_py_ml.ml_commons.connector.connector_setup.OpenSearch")
+    @patch("opensearch_py_ml.ml_commons.cli.ml_setup.OpenSearch")
     def test_initialize_opensearch_client_open_source_with_auth(self, mock_opensearch):
         self.setup_instance.service_type = "open-source"
         self.setup_instance.opensearch_domain_endpoint = "http://localhost:9200"
