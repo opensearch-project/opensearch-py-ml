@@ -28,6 +28,10 @@ class TestDeepSeekModel(unittest.TestCase):
         """Test creating a DeepSeek connector with Chat model."""
         # Mock UUID to return a consistent value
         mock_uuid.uuid1.return_value = Mock(__str__=lambda _: "12345678" * 4)
+        self.mock_helper.create_connector_with_secret.return_value = (
+            "test_connector_id",
+            "test_role_arn",
+        )
 
         result = self.deepseek_model.create_deepseek_connector(
             helper=self.mock_helper,
@@ -87,6 +91,10 @@ class TestDeepSeekModel(unittest.TestCase):
     def test_create_deepseek_connector_custom_model(self, mock_uuid):
         """Test creating a DeepSeek connector with Custom model."""
         mock_uuid.uuid1.return_value = Mock(__str__=lambda _: "12345678" * 4)
+        self.mock_helper.create_connector_with_secret.return_value = (
+            "test_connector_id",
+            "test_role_arn",
+        )
 
         # Create a sample custom connector payload
         custom_payload = {
@@ -133,7 +141,7 @@ class TestDeepSeekModel(unittest.TestCase):
     def test_create_deepseek_connector_failure(self, mock_uuid):
         """Test connector creation failure."""
         mock_uuid.uuid1.return_value = Mock(__str__=lambda _: "12345678" * 4)
-        self.mock_helper.create_connector_with_secret.return_value = None
+        self.mock_helper.create_connector_with_secret.return_value = None, None
 
         result = self.deepseek_model.create_deepseek_connector(
             helper=self.mock_helper,

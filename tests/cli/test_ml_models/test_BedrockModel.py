@@ -20,9 +20,15 @@ class TestBedrockModel(unittest.TestCase):
         self.bedrock_model = BedrockModel(opensearch_domain_region=self.region)
         self.connector_role_prefix = "test_role"
 
-    @patch("uuid.uuid1")
+    @patch("opensearch_py_ml.ml_commons.cli.ml_models.BedrockModel.uuid")
     def test_create_bedrock_connector_cohere(self, mock_uuid):
         """Test creating a Bedrock connector with Cohere embedding model."""
+        mock_uuid.uuid1.return_value = Mock(__str__=lambda _: "12345678" * 4)
+        self.mock_helper.create_connector_with_role.return_value = (
+            "test_connector_id",
+            "test_role_arn",
+        )
+
         result = self.bedrock_model.create_bedrock_connector(
             helper=self.mock_helper,
             save_config_method=self.mock_save_config,
@@ -39,8 +45,13 @@ class TestBedrockModel(unittest.TestCase):
         call_args = self.mock_helper.create_connector_with_role.call_args[0]
 
         # Verify role names
-        # self.assertEqual(call_args[1], f"{self.connector_role_prefix}_bedrock_connector_12345678")
-        # self.assertEqual(call_args[2], f"{self.connector_role_prefix}_bedrock_connector_create_12345678")
+        self.assertEqual(
+            call_args[1], f"{self.connector_role_prefix}_bedrock_connector_12345678"
+        )
+        self.assertEqual(
+            call_args[2],
+            f"{self.connector_role_prefix}_bedrock_connector_create_12345678",
+        )
 
         # Verify connector payload
         connector_payload = call_args[3]
@@ -52,10 +63,14 @@ class TestBedrockModel(unittest.TestCase):
 
         self.assertTrue(result)
 
-    @patch("uuid.uuid1")
+    @patch("opensearch_py_ml.ml_commons.cli.ml_models.BedrockModel.uuid")
     def test_create_bedrock_connector_titan(self, mock_uuid):
         """Test creating a Bedrock connector with Titan embedding model."""
-        # mock_uuid.retu rn_value = Mock(hex='12345678')
+        mock_uuid.uuid1.return_value = Mock(__str__=lambda _: "12345678" * 4)
+        self.mock_helper.create_connector_with_role.return_value = (
+            "test_connector_id",
+            "test_role_arn",
+        )
 
         result = self.bedrock_model.create_bedrock_connector(
             helper=self.mock_helper,
@@ -70,11 +85,26 @@ class TestBedrockModel(unittest.TestCase):
         self.assertEqual(
             connector_payload["name"], "Amazon Bedrock Connector: titan embedding v1"
         )
+
+        # Verify role names
+        self.assertEqual(
+            call_args[1], f"{self.connector_role_prefix}_bedrock_connector_12345678"
+        )
+        self.assertEqual(
+            call_args[2],
+            f"{self.connector_role_prefix}_bedrock_connector_create_12345678",
+        )
         self.assertTrue(result)
 
-    @patch("uuid.uuid1")
+    @patch("opensearch_py_ml.ml_commons.cli.ml_models.BedrockModel.uuid")
     def test_create_bedrock_connector_custom(self, mock_uuid):
         """Test creating a Bedrock connector with custom model."""
+        mock_uuid.uuid1.return_value = Mock(__str__=lambda _: "12345678" * 4)
+        self.mock_helper.create_connector_with_role.return_value = (
+            "test_connector_id",
+            "test_role_arn",
+        )
+
         custom_arn = "arn:aws:bedrock:region:account:model/custom-model"
         connector_payload = {
             "name": "Custom Bedrock Connector",
@@ -103,16 +133,24 @@ class TestBedrockModel(unittest.TestCase):
             model_arn=custom_arn,
             connector_payload=connector_payload,
         )
-
         call_args = self.mock_helper.create_connector_with_role.call_args[0]
         inline_policy = call_args[0]
         self.assertEqual(inline_policy["Statement"][0]["Resource"], custom_arn)
+
+        # Verify role names
+        self.assertEqual(
+            call_args[1], f"{self.connector_role_prefix}_bedrock_connector_12345678"
+        )
+        self.assertEqual(
+            call_args[2],
+            f"{self.connector_role_prefix}_bedrock_connector_create_12345678",
+        )
         self.assertTrue(result)
 
     def test_create_bedrock_connector_failure(self):
         """Test connector creation failure scenarios."""
         # Test when create_connector_with_role fails
-        self.mock_helper.create_connector_with_role.return_value = None
+        self.mock_helper.create_connector_with_role.return_value = None, None
 
         result = self.bedrock_model.create_bedrock_connector(
             helper=self.mock_helper,

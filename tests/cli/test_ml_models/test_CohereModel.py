@@ -26,6 +26,10 @@ class TestCohereModel(unittest.TestCase):
         """Test creating a Cohere connector with Embedding model."""
         # Mock UUID to return a consistent value
         mock_uuid.uuid1.return_value = Mock(__str__=lambda _: "12345678" * 4)
+        self.mock_helper.create_connector_with_secret.return_value = (
+            "test_connector_id",
+            "test_role_arn",
+        )
 
         result = self.cohere_model.create_cohere_connector(
             helper=self.mock_helper,
@@ -55,7 +59,7 @@ class TestCohereModel(unittest.TestCase):
 
         # Verify secret name and value
         expected_secret_name = f"{self.secret_name}_12345678"
-        expected_secret_value = {"api_key": self.api_key}
+        expected_secret_value = {"cohere_api_key": self.api_key}
         self.assertEqual(call_args[0], expected_secret_name)
         self.assertEqual(call_args[1], expected_secret_value)
 
@@ -83,6 +87,10 @@ class TestCohereModel(unittest.TestCase):
     def test_create_cohere_connector_custom(self, mock_uuid):
         """Test creating a Cohere connector with Custom model."""
         mock_uuid.uuid1.return_value = Mock(__str__=lambda _: "12345678" * 4)
+        self.mock_helper.create_connector_with_secret.return_value = (
+            "test_connector_id",
+            "test_role_arn",
+        )
 
         # Create a sample custom connector payload
         custom_payload = {
@@ -128,7 +136,7 @@ class TestCohereModel(unittest.TestCase):
     def test_create_cohere_connector_failure(self, mock_uuid):
         """Test connector creation failure."""
         mock_uuid.uuid1.return_value = Mock(__str__=lambda _: "12345678" * 4)
-        self.mock_helper.create_connector_with_secret.return_value = None
+        self.mock_helper.create_connector_with_secret.return_value = None, None
 
         result = self.cohere_model.create_cohere_connector(
             helper=self.mock_helper,

@@ -102,38 +102,6 @@ class SageMakerModel(ModelBase):
                 )
 
             connector_payload = {
-                "name": "SageMaker Embedding Model Connector",
-                "description": "Connector for SageMaker embedding model",
-                "version": "1.0",
-                "protocol": "aws_sigv4",
-                "parameters": {"region": region, "service_name": "sagemaker"},
-                "actions": [
-                    {
-                        "action_type": "predict",
-                        "method": "POST",
-                        "headers": {"Content-Type": "application/json"},
-                        "url": endpoint_url,
-                        "request_body": "${parameters.input}",
-                        "pre_process_function": "connector.pre_process.default.embedding",
-                        "post_process_function": "connector.post_process.default.embedding",
-                    }
-                ],
-            }
-        elif model_type == "2":
-            if not endpoint_url:
-                endpoint_url = input(
-                    "Enter your SageMaker inference endpoint URL: "
-                ).strip()
-
-            if not region:
-                region = (
-                    input(
-                        f"Enter your SageMaker region [{self.opensearch_domain_region}]: "
-                    ).strip()
-                    or self.opensearch_domain_region
-                )
-
-            connector_payload = {
                 "name": "DeepSeek R1 model connector",
                 "description": "Connector for my Sagemaker DeepSeek model",
                 "version": "1.0",
@@ -154,6 +122,38 @@ class SageMakerModel(ModelBase):
                         "headers": {"content-type": "application/json"},
                         "request_body": '{ "inputs": "${parameters.inputs}", "parameters": {"do_sample": ${parameters.do_sample}, "top_p": ${parameters.top_p}, "temperature": ${parameters.temperature}, "max_new_tokens": ${parameters.max_new_tokens}} }',
                         "post_process_function": "\n      if (params.result == null || params.result.length == 0) {\n        throw new Exception('No response available');\n      }\n      \n      def completion = params.result[0].generated_text;\n      return '{' +\n               '\"name\": \"response\",'+\n               '\"dataAsMap\": {' +\n                  '\"completion\":\"' + escape(completion) + '\"}' +\n             '}';\n    ",
+                    }
+                ],
+            }
+        elif model_type == "2":
+            if not endpoint_url:
+                endpoint_url = input(
+                    "Enter your SageMaker inference endpoint URL: "
+                ).strip()
+
+            if not region:
+                region = (
+                    input(
+                        f"Enter your SageMaker region [{self.opensearch_domain_region}]: "
+                    ).strip()
+                    or self.opensearch_domain_region
+                )
+
+            connector_payload = {
+                "name": "SageMaker Embedding Model Connector",
+                "description": "Connector for SageMaker embedding model",
+                "version": "1.0",
+                "protocol": "aws_sigv4",
+                "parameters": {"region": region, "service_name": "sagemaker"},
+                "actions": [
+                    {
+                        "action_type": "predict",
+                        "method": "POST",
+                        "headers": {"Content-Type": "application/json"},
+                        "url": endpoint_url,
+                        "request_body": "${parameters.input}",
+                        "pre_process_function": "connector.pre_process.default.embedding",
+                        "post_process_function": "connector.post_process.default.embedding",
                     }
                 ],
             }
