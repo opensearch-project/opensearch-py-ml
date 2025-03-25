@@ -56,6 +56,7 @@ class OpenAIModel(ModelBase):
             openai_api_key = api_key
 
         connector_role_name = ""
+        connector_role_arn = ""
         if self.service_type == "amazon-opensearch-service":
             # Prompt for necessary inputs
             if model_name == "Embedding model":

@@ -5,13 +5,10 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
-import json
 import unittest
-from io import StringIO
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 from colorama import Fore, Style
-from rich.console import Console
 
 from opensearch_py_ml.ml_commons.cli.ml_models.model_base import ModelBase
 
