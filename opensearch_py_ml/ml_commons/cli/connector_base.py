@@ -218,13 +218,11 @@ class ConnectorBase:
     ):
         connector_data = json.loads(output_config)
         connector_name = connector_data.get("name")
-        connector_model = connector_data.get("parameters", {}).get("model")
         # Update the connector_create section
         self.output_config["connector_create"].update(
             {
                 "connector_id": output_id,
                 "connector_name": connector_name,
-                "connector_model_name": connector_model or "",
                 "connector_role_arn": role_arn or "",
                 "connector_role_name": role_name or "",
                 "connector_secret_name": secret_name or "",
