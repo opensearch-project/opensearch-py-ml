@@ -185,6 +185,7 @@ Examples:
     args, unknown = parser.parse_known_args()
 
     config_path = None
+    setup_config_path = None
 
     if not args.command:
         parser.print_help()
@@ -211,7 +212,16 @@ Examples:
             create = Create()
             console.print("\n[bold blue]Starting connector creation...[/bold blue]")
             connector_config_path = args.path[0] if args.path else None
-            create.create_command(connector_config_path=connector_config_path)
+            _, setup_config_path = create.create_command(
+                connector_config_path=connector_config_path
+            )
+
+            # Save the setup config path after creation
+            if setup_config_path:
+                config_dir = os.path.expanduser("~/.opensearch-ml")
+                os.makedirs(config_dir, exist_ok=True)
+                with open(os.path.join(config_dir, "config_path"), "w") as f:
+                    f.write(setup_config_path)
 
     if args.command == "model":
         if not args.subcommand:
@@ -219,7 +229,7 @@ Examples:
             sys.exit(1)
 
         if args.subcommand == "register":
-            # Read the saved config path
+            # Read the saved setup config path
             try:
                 config_dir = os.path.expanduser("~/.opensearch-ml")
                 with open(os.path.join(config_dir, "config_path"), "r") as f:

@@ -113,7 +113,7 @@ class ConnectorBase:
             return {}
         except PermissionError:
             print(
-                f"{Fore.RED}Permission denied: Unable to read {config_path}{Style.RESET_ALL}"
+                f"{Fore.RED}Permission denied: Unable to read {connector_config_path}{Style.RESET_ALL}"
             )
             return {}
         except Exception as e:

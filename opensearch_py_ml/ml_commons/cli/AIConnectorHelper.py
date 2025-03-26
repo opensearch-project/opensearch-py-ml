@@ -225,7 +225,7 @@ class AIConnectorHelper:
         connector_id = response.get("connector_id")
         return connector_id
 
-    def get_task(self, task_id, create_connector_role_name, wait_until_task_done=False):
+    def get_task(self, task_id, wait_until_task_done=False):
         """
         Retrieve the status of a specific task using its ID.
         Reusing the get_task_info method from MLCommonClient and allowing
@@ -279,7 +279,6 @@ class AIConnectorHelper:
                 # Handle asynchronous task by leveraging wait_until_task_done
                 task_response = self.get_task(
                     response_data["task_id"],
-                    create_connector_role_name,
                     wait_until_task_done=True,
                 )
                 print("Task Response:", json.dumps(task_response))

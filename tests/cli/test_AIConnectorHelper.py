@@ -8,7 +8,9 @@
 import json
 import unittest
 from unittest.mock import MagicMock, patch
+from urllib.parse import urlparse
 
+from opensearchpy import RequestsHttpConnection
 from requests.auth import HTTPBasicAuth
 
 from opensearch_py_ml.ml_commons.cli.AIConnectorHelper import AIConnectorHelper
@@ -49,6 +51,14 @@ class TestAIConnectorHelper(unittest.TestCase):
             self.domain_arn,
         )
 
+        # Parse the URL
+        parsed_url = urlparse(self.opensearch_domain_url)
+        expected_host = parsed_url.hostname
+        expected_port = parsed_url.port or (
+            443 if parsed_url.scheme == "https" else 9200
+        )
+        expected_use_ssl = parsed_url.scheme == "https"
+
         # Instantiate AIConnectorHelper
         helper = AIConnectorHelper(
             self.service_type,
@@ -64,30 +74,46 @@ class TestAIConnectorHelper(unittest.TestCase):
             self.aws_session_token,
         )
 
-        # Assert domain URL
-        expected_domain_url = self.opensearch_domain_url
-        self.assertEqual(helper.opensearch_domain_url, expected_domain_url)
+        # Assert basic attributes
+        self.assertEqual(helper.service_type, self.service_type)
+        self.assertEqual(helper.opensearch_domain_url, self.opensearch_domain_url)
+        self.assertEqual(helper.opensearch_domain_arn, self.domain_arn)
 
-        # Assert opensearch_client is initialized
+        # Assert OpenSearch client initialization
         mock_opensearch.assert_called_once_with(
-            hosts=[{"host": self.opensearch_domain_url, "port": 443}],
+            hosts=[{"host": expected_host, "port": expected_port}],
             http_auth=(
                 self.opensearch_domain_username,
                 self.opensearch_domain_password,
             ),
-            use_ssl=True,
+            use_ssl=expected_use_ssl,
             verify_certs=True,
-            connection_class=unittest.mock.ANY,
+            connection_class=RequestsHttpConnection,
         )
 
-        # Assert IAMRoleHelper and SecretHelper are initialized
-        mock_iam_role_helper.assert_called_once_with(
-            opensearch_domain_region=self.opensearch_domain_region,
-            opensearch_domain_url=expected_domain_url,
-            opensearch_domain_username=self.opensearch_domain_username,
-            opensearch_domain_password=self.opensearch_domain_password,
-        )
-        mock_secret_helper.assert_called_once_with(self.opensearch_domain_region)
+        # Assert helper initializations based on service_type
+        if self.service_type == "open-source":
+            self.assertIsNone(helper.iam_helper)
+            self.assertIsNone(helper.secret_helper)
+        else:
+            # Assert IAMRoleHelper initialization
+            mock_iam_role_helper.assert_called_once_with(
+                opensearch_domain_region=self.opensearch_domain_region,
+                opensearch_domain_url=self.opensearch_domain_url,
+                opensearch_domain_username=self.opensearch_domain_username,
+                opensearch_domain_password=self.opensearch_domain_password,
+                aws_access_key=self.aws_access_key,
+                aws_secret_access_key=self.aws_secret_access_key,
+                aws_session_token=self.aws_session_token,
+            )
+
+            # Assert SecretHelper initialization
+            mock_secret_helper.assert_called_once_with(
+                self.opensearch_domain_region,
+                self.aws_access_key,
+                self.aws_secret_access_key,
+                self.aws_session_token,
+            )
 
     @patch("boto3.client")
     def test_get_opensearch_domain_info_success(self, mock_boto3_client):
@@ -97,16 +123,23 @@ class TestAIConnectorHelper(unittest.TestCase):
 
         # Mock the describe_domain response
         mock_client_instance.describe_domain.return_value = {
-            "DomainStatus": {"Endpoint": self.domain_endpoint, "ARN": self.domain_arn}
+            "DomainStatus": {
+                "Endpoint": self.opensearch_domain_url,
+                "ARN": self.domain_arn,
+            }
         }
 
         # Call the method
         endpoint, arn = AIConnectorHelper.get_opensearch_domain_info(
-            self.opensearch_domain_region, self.opensearch_domain_name
+            self.opensearch_domain_region,
+            self.opensearch_domain_name,
+            self.aws_access_key,
+            self.aws_secret_access_key,
+            self.aws_session_token,
         )
 
         # Assert the results
-        self.assertEqual(endpoint, self.domain_endpoint)
+        self.assertEqual(endpoint, self.opensearch_domain_url)
         self.assertEqual(arn, self.domain_arn)
         mock_client_instance.describe_domain.assert_called_once_with(
             DomainName=self.opensearch_domain_name
@@ -121,7 +154,11 @@ class TestAIConnectorHelper(unittest.TestCase):
 
         # Call the method
         endpoint, arn = AIConnectorHelper.get_opensearch_domain_info(
-            self.opensearch_domain_region, self.opensearch_domain_name
+            self.opensearch_domain_region,
+            self.opensearch_domain_name,
+            self.aws_access_key,
+            self.aws_secret_access_key,
+            self.aws_session_token,
         )
 
         # Assert the results are None
@@ -150,7 +187,7 @@ class TestAIConnectorHelper(unittest.TestCase):
             helper = AIConnectorHelper()
             helper.opensearch_domain_region = self.opensearch_domain_region
             helper.iam_helper = mock_iam_helper
-            helper.opensearch_domain_url = f"https://{self.domain_endpoint}"
+            helper.opensearch_domain_url = self.opensearch_domain_url
             helper.opensearch_domain_arn = self.domain_arn
 
             # Call the method
@@ -220,7 +257,7 @@ class TestAIConnectorHelper(unittest.TestCase):
             helper = AIConnectorHelper()
             helper.service_type = self.service_type
             helper.opensearch_domain_region = self.opensearch_domain_region
-            helper.opensearch_domain_url = f"https://{self.domain_endpoint}"
+            helper.opensearch_domain_url = self.opensearch_domain_url
             helper.iam_helper = mock_iam_helper
 
             # Mock the Connector class
@@ -247,7 +284,7 @@ class TestAIConnectorHelper(unittest.TestCase):
     @patch("requests.post")
     @patch.object(AIConnectorHelper, "get_ml_auth")
     @patch.object(AIConnectorHelper, "get_task")
-    def test_create_model(self, mock_get_task, mock_get_ml_auth, mock_requests_post):
+    def test_register_model(self, mock_get_task, mock_get_ml_auth, mock_requests_post):
         # Mock get_ml_auth
         mock_awsauth = MagicMock()
         mock_get_ml_auth.return_value = mock_awsauth
@@ -266,17 +303,15 @@ class TestAIConnectorHelper(unittest.TestCase):
             helper.opensearch_domain_url = (
                 "https://search-test-domain.us-east-1.es.amazonaws.com"
             )
+            helper.opensearch_domain_username = "admin"
+            helper.opensearch_domain_password = "password"
             helper.model_access_control = MagicMock()
-            helper.model_access_control.get_model_group_id_by_name.return_value = (
-                "test-model-group-id"
-            )
 
             # Call the method
-            model_id = helper.create_model(
+            model_id = helper.register_model(
                 "test-model",
                 "test description",
                 "test-connector-id",
-                "test-create-connector-role",
                 deploy=True,
             )
 
@@ -284,12 +319,13 @@ class TestAIConnectorHelper(unittest.TestCase):
             expected_url = f"{helper.opensearch_domain_url}/_plugins/_ml/models/_register?deploy=true"
             mock_requests_post.assert_called_once_with(
                 expected_url,
-                auth=mock_awsauth,
+                auth=HTTPBasicAuth(
+                    helper.opensearch_domain_username, helper.opensearch_domain_password
+                ),
                 json={
                     "name": "test-model",
                     "function_name": "remote",
                     "description": "test description",
-                    "model_group_id": "test-model-group-id",
                     "connector_id": "test-connector-id",
                 },
                 headers={"Content-Type": "application/json"},
@@ -297,7 +333,7 @@ class TestAIConnectorHelper(unittest.TestCase):
 
             # **Updated assertion** (include wait_until_task_done=True)
             mock_get_task.assert_called_once_with(
-                "test-task-id", "test-create-connector-role", wait_until_task_done=True
+                "test-task-id", wait_until_task_done=True
             )
 
             # Assert that model_id is returned
@@ -372,7 +408,7 @@ class TestAIConnectorHelper(unittest.TestCase):
         # Instantiate helper
         with patch.object(AIConnectorHelper, "__init__", return_value=None):
             helper = AIConnectorHelper()
-            helper.opensearch_domain_url = f"https://{self.domain_endpoint}"
+            helper.opensearch_domain_url = self.opensearch_domain_url
             helper.opensearch_domain_username = self.opensearch_domain_username
             helper.opensearch_domain_password = self.opensearch_domain_password
 
@@ -407,6 +443,14 @@ class TestAIConnectorHelper(unittest.TestCase):
         response.text = "Predict response"
         mock_requests_post.return_value = response
 
+        # Mock the json method to return a dictionary with inference_results
+        mock_json = {
+            "inference_results": [
+                {"status_code": 200}  # or whatever status code you expect
+            ]
+        }
+        response.json.return_value = mock_json
+
         # Instantiate helper
         with patch.object(AIConnectorHelper, "__init__", return_value=None):
             helper = AIConnectorHelper()
@@ -440,7 +484,9 @@ class TestAIConnectorHelper(unittest.TestCase):
             self.assertEqual(kwargs["auth"].password, self.opensearch_domain_password)
 
             # Assert that the response is returned
-            self.assertEqual(result, response)
+            expected_status = mock_json["inference_results"][0]["status_code"]
+            expected_result = (response.text, expected_status)
+            self.assertEqual(result, expected_result)
 
 
 if __name__ == "__main__":
