@@ -8,9 +8,7 @@
 import unittest
 from unittest.mock import Mock, patch
 
-from opensearch_py_ml.ml_commons.cli.ml_models.SageMakerModel import (
-    SageMakerModel,
-)
+from opensearch_py_ml.ml_commons.cli.ml_models.SageMakerModel import SageMakerModel
 
 
 class TestSageMakerModel(unittest.TestCase):

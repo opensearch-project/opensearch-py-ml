@@ -10,16 +10,12 @@ from rich.console import Console
 
 from opensearch_py_ml.ml_commons.cli.AIConnectorHelper import AIConnectorHelper
 from opensearch_py_ml.ml_commons.cli.connector_base import ConnectorBase
-from opensearch_py_ml.ml_commons.cli.ml_models.AlephAlphaModel import (
-    AlephAlphaModel,
-)
+from opensearch_py_ml.ml_commons.cli.ml_models.AlephAlphaModel import AlephAlphaModel
 from opensearch_py_ml.ml_commons.cli.ml_models.BedrockModel import BedrockModel
 from opensearch_py_ml.ml_commons.cli.ml_models.CohereModel import CohereModel
 from opensearch_py_ml.ml_commons.cli.ml_models.DeepSeekModel import DeepSeekModel
 from opensearch_py_ml.ml_commons.cli.ml_models.OpenAIModel import OpenAIModel
-from opensearch_py_ml.ml_commons.cli.ml_models.SageMakerModel import (
-    SageMakerModel,
-)
+from opensearch_py_ml.ml_commons.cli.ml_models.SageMakerModel import SageMakerModel
 
 # Initialize Rich console for enhanced CLI outputs
 console = Console()
@@ -130,7 +126,6 @@ class Create(ConnectorBase):
             result = False
 
             if connector_config_path:
-                setup_config_path = connector_config.get("setup_config_path")
                 connector_name = connector_config.get("connector_name")
                 model_name = connector_config.get("model_name")
                 connector_role_prefix = connector_config.get("connector_role_prefix")
@@ -255,7 +250,7 @@ class Create(ConnectorBase):
                         print(
                             f"{Fore.RED}Invalid connector. Please make sure you provide the correct connector name.{Style.RESET_ALL}"
                         )
-                return result
+                return result, setup_config_path
 
             # TODO: Add more supported connectors for amazon-opensearch-service and open-source
             if service_type == "amazon-opensearch-service":
@@ -356,7 +351,7 @@ class Create(ConnectorBase):
                         api_key=api_key,
                         connector_payload=connector_payload,
                     )
-            return result
+            return result, setup_config_path
         except Exception as e:
             print(f"{Fore.RED}Error creating connector: {str(e)}{Style.RESET_ALL}")
             return False

@@ -8,9 +8,7 @@
 import unittest
 from unittest.mock import Mock, patch
 
-from opensearch_py_ml.ml_commons.cli.ml_models.AlephAlphaModel import (
-    AlephAlphaModel,
-)
+from opensearch_py_ml.ml_commons.cli.ml_models.AlephAlphaModel import AlephAlphaModel
 
 
 class TestAlephAlphaModel(unittest.TestCase):

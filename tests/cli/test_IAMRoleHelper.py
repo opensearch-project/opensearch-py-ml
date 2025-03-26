@@ -7,7 +7,7 @@
 
 import unittest
 from datetime import datetime, timedelta
-from unittest.mock import MagicMock, patch
+from unittest.mock import Mock, patch
 
 from botocore.exceptions import ClientError
 
@@ -21,28 +21,44 @@ class TestIAMRoleHelper(unittest.TestCase):
         Patching boto3 clients so that no real AWS calls are made.
         """
         self.opensearch_domain_region = "us-east-1"
+        self.opensearch_domain_url = "https://search-domain.region.es.amazonaws.com"
+        self.opensearch_domain_username = "test-user"
+        self.opensearch_domain_password = "test-password"
+        self.aws_access_key = "test-access-key"
+        self.aws_secret_access_key = "test-secret-key"
+        self.aws_session_token = "test-session-token"
 
         # Patches for the boto3 clients
-        self.patcher_iam = patch("boto3.client")
-        self.mock_boto_client = self.patcher_iam.start()
+        self.patcher_boto3 = patch("boto3.client")
+        self.mock_boto_client = self.patcher_boto3.start()
 
         # Mock the IAM client and STS client
-        self.mock_iam_client = MagicMock()
-        self.mock_sts_client = MagicMock()
+        self.mock_iam_client = Mock()
+        self.mock_sts_client = Mock()
 
         # Configure the mock_boto_client to return the respective mocks
-        self.mock_boto_client.side_effect = lambda service_name, region_name=None: {
-            "iam": self.mock_iam_client,
-            "sts": self.mock_sts_client,
-        }[service_name]
+        def mock_client(service_name, **kwargs):
+            if service_name == "iam":
+                return self.mock_iam_client
+            elif service_name == "sts":
+                return self.mock_sts_client
+            raise ValueError(f"Unexpected service: {service_name}")
+
+        self.mock_boto_client.side_effect = mock_client
 
         # Instantiate our class under test
         self.helper = IAMRoleHelper(
-            opensearch_domain_region=self.opensearch_domain_region
+            opensearch_domain_region=self.opensearch_domain_region,
+            opensearch_domain_url=self.opensearch_domain_url,
+            opensearch_domain_username=self.opensearch_domain_username,
+            opensearch_domain_password=self.opensearch_domain_password,
+            aws_access_key=self.aws_access_key,
+            aws_secret_access_key=self.aws_secret_access_key,
+            aws_session_token=self.aws_session_token,
         )
 
     def tearDown(self):
-        self.patcher_iam.stop()
+        self.patcher_boto3.stop()
 
     def test_role_exists_found(self):
         """Test role_exists returns True when role is found."""
@@ -289,6 +305,8 @@ class TestIAMRoleHelper(unittest.TestCase):
         """Test get_user_arn returns None if username not provided."""
         arn = self.helper.get_user_arn("")
         self.assertIsNone(arn)
+
+    # def test_map_iam_role_to_backend_role(self):
 
     def test_assume_role_happy_path(self):
         """Test assume_role returns credentials on success."""

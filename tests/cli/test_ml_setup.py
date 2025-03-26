@@ -16,7 +16,6 @@ from opensearch_py_ml.ml_commons.cli.connector_base import ConnectorBase
 from opensearch_py_ml.ml_commons.cli.ml_setup import Setup
 
 
-# TODO: add more tests for new functions
 class TestSetup(unittest.TestCase):
     def setUp(self):
         if os.path.exists(ConnectorBase.CONFIG_FILE):
@@ -58,13 +57,65 @@ class TestSetup(unittest.TestCase):
             )
 
     @patch("boto3.Session")
+    @patch("builtins.input", return_value="yes")
+    def test_check_and_configure_aws_yes_reconfigure(self, mock_input, mock_session):
+        config_path = "test_config.yml"
+
+        # Setup the instance config
+        self.setup_instance.config = {
+            "aws_credentials": {
+                "aws_access_key": "test-key",
+                "aws_secret_access_key": "test-secret",
+                "aws_session_token": "test-token",
+            }
+        }
+
+        # Mock check_credentials_validity_from_config_file to return True
+        with patch.object(
+            self.setup_instance,
+            "check_credentials_validity_from_config_file",
+            return_value=True,
+        ), patch.object(self.setup_instance, "configure_aws") as mock_configure:
+
+            # Execute
+            self.setup_instance.check_and_configure_aws(config_path)
+
+            # Assert
+            mock_configure.assert_called_once()  # configure_aws should be called
+            mock_input.assert_called_once_with("Do you want to reconfigure? (yes/no): ")
+
+    @patch("boto3.Session")
     @patch("builtins.input", return_value="no")
-    def test_aws_credentials_exist_no_reconfigure(self, mock_input, mock_session):
-        mock_session_instance = mock_session.return_value
-        mock_session_instance.get_credentials.return_value = MagicMock()
-        with patch.object(self.setup_instance, "configure_aws") as mock_configure:
-            self.setup_instance.check_and_configure_aws()
-            mock_configure.assert_not_called()
+    def test_check_and_configure_aws_no_reconfigure(self, mock_input, mock_session):
+        config_path = "test_config.yml"
+
+        # Setup the instance config
+        self.setup_instance.config = {
+            "aws_credentials": {
+                "aws_access_key": "test-key",
+                "aws_secret_access_key": "test-secret",
+                "aws_session_token": "test-token",
+            }
+        }
+
+        # Mock check_credentials_validity_from_config_file to return True
+        with patch.object(
+            self.setup_instance,
+            "check_credentials_validity_from_config_file",
+            return_value=True,
+        ), patch.object(
+            self.setup_instance, "configure_aws"
+        ) as mock_configure, patch.object(
+            self.setup_instance, "update_config"
+        ) as mock_update_config:
+
+            # Execute
+            self.setup_instance.check_and_configure_aws(config_path)
+
+            # Assert
+            mock_configure.assert_not_called()  # configure_aws should not be called
+            mock_update_config.assert_not_called()  # update_config should not be called
+            mock_input.assert_called_once_with("Do you want to reconfigure? (yes/no): ")
 
     @patch("builtins.input", side_effect=["2", "", "yes", "admin"])
     @patch.object(Setup, "get_password_with_asterisks", return_value="pass")

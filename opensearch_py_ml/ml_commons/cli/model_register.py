@@ -38,9 +38,6 @@ class Register(ConnectorBase):
             # Load configuration
             config = self.load_config(config_path)
             if not config:
-                print(
-                    f"{Fore.RED}No configuration found. Please run setup first.{Style.RESET_ALL}\n"
-                )
                 return False
 
             opensearch_config = self.config.get("opensearch_config", {})
