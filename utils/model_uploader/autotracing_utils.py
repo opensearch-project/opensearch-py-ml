@@ -217,15 +217,18 @@ class ModelTraceError(Exception):
 T = TypeVar("T")
 
 
-def init_sparse_model(model_class: Type[T], model_id, model_format, folder_path) -> T:
+def init_sparse_model(
+    model_class: Type[T], model_id, folder_path, sparse_prune_ratio=0
+) -> T:
     try:
         pre_trained_model = model_class(
-            model_id=model_id, folder_path=folder_path, overwrite=True
+            model_id=model_id,
+            folder_path=folder_path,
+            overwrite=True,
+            sparse_prune_ratio=sparse_prune_ratio,
         )
     except Exception as e:
-        raise ModelTraceError(
-            "initiating a sparse encoding model class object", model_format, e
-        )
+        raise ModelTraceError("initiating a sparse encoding model class object", e)
     return pre_trained_model
 
 
