@@ -148,7 +148,9 @@ class AIConnectorHelper:
 
             response = opensearch_client.describe_domain(DomainName=domain_name)
             domain_status = response["DomainStatus"]
-            domain_endpoint = domain_status.get("Endpoint")
+            domain_endpoint = (
+                domain_status.get("Endpoint") or domain_status["Endpoints"]["vpc"]
+            )
             domain_arn = domain_status["ARN"]
             return domain_endpoint, domain_arn
         except Exception as e:
@@ -344,10 +346,6 @@ class AIConnectorHelper:
             headers=headers,
         )
         return response.text
-
-    def get_secret_arn(self, secret_name):
-        secret_arn = self.secret_helper.get_secret_arn(secret_name)
-        return secret_arn
 
     def create_connector_with_secret(
         self,

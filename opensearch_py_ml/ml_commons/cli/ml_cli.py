@@ -30,6 +30,10 @@ console = Console()
 
 class AllowDashActionConnector(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
+        """
+        Enable argparse to correctly handle connector IDs that begin with a dash ('-')
+        instead of treating them as argument separators.
+        """
         if values is None:
             args = sys.argv
             try:
@@ -49,6 +53,10 @@ class AllowDashActionConnector(argparse.Action):
 
 class AllowDashActionModel(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
+        """
+        Enable argparse to correctly handle model IDs that begin with a dash ('-')
+        instead of treating them as argument separators.
+        """
         if values is None:
             args = sys.argv
             try:
@@ -181,9 +189,7 @@ Examples:
         "--payload", help="Payload of the predict request", metavar="PREDICT_PAYLOAD"
     )
 
-    # args = parser.parse_args()
     args, unknown = parser.parse_known_args()
-
     config_path = None
     setup_config_path = None
 
@@ -236,7 +242,7 @@ Examples:
                     config_path = f.read().strip()
             except FileNotFoundError:
                 print(
-                    f"{Fore.RED}No configuration found. Please run setup first.{Style.RESET_ALL}"
+                    f"{Fore.RED}No setup configuration found. Please run setup first.{Style.RESET_ALL}"
                 )
                 sys.exit(1)
 
@@ -252,14 +258,14 @@ Examples:
                 model_description=model_description,
             )
         elif args.subcommand == "predict":
-            # Read the saved config path
+            # Read the saved setup config path
             try:
                 config_dir = os.path.expanduser("~/.opensearch-ml")
                 with open(os.path.join(config_dir, "config_path"), "r") as f:
                     config_path = f.read().strip()
             except FileNotFoundError:
                 print(
-                    f"{Fore.RED}No configuration found. Please run setup first.{Style.RESET_ALL}"
+                    f"{Fore.RED}No setup configuration found. Please run setup first.{Style.RESET_ALL}"
                 )
                 sys.exit(1)
 

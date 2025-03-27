@@ -26,6 +26,9 @@ class Predict(ConnectorBase):
     """
 
     def __init__(self):
+        """
+        Initialize the Predict class.
+        """
         super().__init__()
         self.config = {}
         self.opensearch_domain_name = ""
@@ -39,7 +42,7 @@ class Predict(ConnectorBase):
             config = self.load_config(config_path)
             if not config:
                 print(
-                    f"{Fore.RED}No configuration found. Please run setup first.{Style.RESET_ALL}\n"
+                    f"{Fore.RED}No setup configuration found. Please run setup first.{Style.RESET_ALL}\n"
                 )
                 return False
 
@@ -103,6 +106,7 @@ class Predict(ConnectorBase):
                 aws_session_token=aws_credentials.get("aws_session_token"),
             )
 
+            # Prompt for model id and predict request payload if not provided
             if not model_id:
                 model_id = input("\nEnter the model ID: ").strip()
             if not payload:

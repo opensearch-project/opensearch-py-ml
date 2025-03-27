@@ -6,7 +6,6 @@
 # GitHub history for details.
 
 import configparser
-import logging
 import sys
 import termios
 import tty
@@ -50,6 +49,9 @@ class Setup(ConnectorBase):
         self.session = None
 
     def check_credentials_validity(self, access_key, secret_key, session_token):
+        """
+        Check if the provided AWS credentials are valid.
+        """
         try:
             self.session = boto3.Session(
                 aws_access_key_id=access_key,
@@ -63,6 +65,9 @@ class Setup(ConnectorBase):
             return False
 
     def check_credentials_validity_from_config_file(self):
+        """
+        Check if the provided AWS credentials in the config file are valid.
+        """
         aws_credentials = self.config.get("aws_credentials", {})
         try:
             self.session = boto3.Session(
@@ -77,6 +82,9 @@ class Setup(ConnectorBase):
             return False
 
     def update_aws_credentials(self, access_key, secret_key, session_token):
+        """
+        Update AWS credentials in the config file.
+        """
         try:
             if "aws_credentials" not in self.config:
                 self.config["aws_credentials"] = {}
@@ -85,7 +93,6 @@ class Setup(ConnectorBase):
             self.config["aws_credentials"]["aws_secret_access_key"] = secret_key
             self.config["aws_credentials"]["aws_session_token"] = session_token
         except Exception as e:
-            logging.error(f"Failed to update AWS credentials: {e}")
             print(f"{Fore.RED}Failed to update AWS credentials: {e}{Style.RESET_ALL}")
             raise
 
@@ -113,6 +120,9 @@ class Setup(ConnectorBase):
                 self.configure_aws()
 
     def configure_aws(self):
+        """
+        Configure AWS credentials by prompting the user for input.
+        """
         print("Let's configure your AWS credentials.")
         self.aws_access_key = self.get_password_with_asterisks(
             "Enter your AWS Access Key ID: "
@@ -239,6 +249,7 @@ class Setup(ConnectorBase):
                     input("Enter your AWS IAM Role ARN: ").strip() or self.aws_role_name
                 )
 
+            # Prompt for domain information
             default_region = "us-west-2"
             self.opensearch_domain_region = (
                 input(
@@ -403,7 +414,7 @@ class Setup(ConnectorBase):
         """
         Main setup command that orchestrates the entire setup process.
         """
-        # Ask user if they already have a configuration file
+        # Check if setup config file path is given in the command
         if config_path:
             if self.load_config(config_path):
                 if self._update_from_config():

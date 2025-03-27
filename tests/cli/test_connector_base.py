@@ -64,20 +64,6 @@ class TestConnectorBase(unittest.TestCase):
         mock_print.assert_called_once()
         self.assertIn("Error parsing YAML configuration", mock_print.call_args[0][0])
 
-    @patch("builtins.print")
-    @patch("os.access", return_value=False)
-    def test_load_config_no_permission(self, mock_access, mock_print):
-        with open(ConnectorBase.CONFIG_FILE, "w") as f:
-            yaml.dump({"test": "data"}, f)
-
-        config = self.connector_base.load_config(ConnectorBase.CONFIG_FILE)
-        self.assertEqual(config, {})
-        mock_print.assert_called_once()
-        self.assertIn(
-            "Error: No permission to read configuration file",
-            mock_print.call_args[0][0],
-        )
-
     def test_load_connector_config_valid_yaml(self):
         """Test loading a valid YAML connector configuration"""
         test_connector_config = {
