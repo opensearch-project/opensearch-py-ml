@@ -19,10 +19,14 @@ console = Console()
 
 class ConnectorBase:
 
+    # Default setup configuration and output file name
     CONFIG_FILE = os.path.join(os.getcwd(), "setup_config.yml")
     OUTPUT_FILE = os.path.join(os.getcwd(), "output.yml")
 
     def __init__(self):
+        """
+        Initialize the ConnectorBase class.
+        """
         self.config = {}
         self.output_config = {
             "connector_create": {},
@@ -32,7 +36,7 @@ class ConnectorBase:
 
     def load_config(self, config_path=None) -> dict:
         """
-        Load configuration from the config file path.
+        Load configuration from the configuration file path.
         """
         try:
             config_path = config_path or self.CONFIG_FILE
@@ -40,16 +44,10 @@ class ConnectorBase:
             # Normalize the path
             config_path = os.path.abspath(os.path.expanduser(config_path))
 
+            # Check if file exists
             if not os.path.exists(config_path):
                 print(
                     f"{Fore.YELLOW}Configuration file not found at {config_path}{Style.RESET_ALL}"
-                )
-                return {}
-
-            # Check if file is readable
-            if not os.access(config_path, os.R_OK):
-                print(
-                    f"{Fore.RED}Error: No permission to read configuration file at {config_path}{Style.RESET_ALL}"
                 )
                 return {}
 
@@ -320,17 +318,23 @@ class ConnectorBase:
         """
         if opensearch_domain_endpoint:
             parsed_url = urlparse(opensearch_domain_endpoint)
-            hostname = (
-                parsed_url.hostname
-            )  # e.g., 'search-your-domain-name-uniqueid.region.es.amazonaws.com'
+            hostname = parsed_url.hostname
             if hostname:
                 # Split the hostname into parts
                 parts = hostname.split(".")
-                domain_part = parts[0]  # e.g., 'search-your-domain-name-uniqueid'
-                # Remove the 'search-' prefix if present
+                domain_part = parts[
+                    0
+                ]  # e.g., 'search-your-domain-name-uniqueid' or 'vpc-your-domain-name-uniqueid'
+                # Handle both search- and vpc- prefixes
                 if domain_part.startswith("search-"):
                     domain_part = domain_part[len("search-") :]
+                elif domain_part.startswith("vpc-"):
+                    domain_part = domain_part[len("vpc-") :]
                 # Remove the unique ID suffix after the domain name
-                domain_name = domain_part.rsplit("-", 1)[0]
-                return domain_name
+                if "-" in domain_part:
+                    # Split by all dashes and reconstruct the domain name without the last part
+                    parts = domain_part.split("-")
+                    domain_name = "-".join(parts[:-1])
+                    return domain_name
+                return domain_part
         return None

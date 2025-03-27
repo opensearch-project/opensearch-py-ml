@@ -24,6 +24,9 @@ class Register(ConnectorBase):
     """
 
     def __init__(self):
+        """
+        Initialize the Register class.
+        """
         super().__init__()
         self.config = {}
         self.opensearch_domain_name = ""
@@ -99,6 +102,8 @@ class Register(ConnectorBase):
                 aws_secret_access_key=aws_credentials.get("aws_secret_access_key"),
                 aws_session_token=aws_credentials.get("aws_session_token"),
             )
+
+            # Prompt for model name, description, and connector ID if not provided
             if not model_name:
                 model_name = input("\nEnter the model name: ").strip()
             if not model_description:
@@ -114,7 +119,6 @@ class Register(ConnectorBase):
                 print(
                     f"{Fore.GREEN}\nSuccessfully registered a model with ID: {model_id}{Style.RESET_ALL}"
                 )
-
                 self.register_model_output(model_id, model_name)
                 return True
             else:

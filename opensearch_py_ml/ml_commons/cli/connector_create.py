@@ -30,6 +30,9 @@ class Create(ConnectorBase):
     """
 
     def __init__(self):
+        """
+        Initialize the Create class.
+        """
         super().__init__()
         self.config = {}
         self.opensearch_domain_name = ""
@@ -39,6 +42,7 @@ class Create(ConnectorBase):
         Main create command that orchestrates the entire connector creation process.
         """
         try:
+            # Check if connector config file path is given in the command
             if connector_config_path:
                 connector_config = self.load_connector_config(connector_config_path)
                 if not connector_config:
@@ -123,8 +127,11 @@ class Create(ConnectorBase):
                 aws_secret_access_key=aws_credentials.get("aws_secret_access_key"),
                 aws_session_token=aws_credentials.get("aws_session_token"),
             )
+
+            # Set the initial value of the connector creation result to False
             result = False
 
+            # Retrieve the connector information if the connector config path is given in the command
             if connector_config_path:
                 connector_name = connector_config.get("connector_name")
                 model_name = connector_config.get("model_name")

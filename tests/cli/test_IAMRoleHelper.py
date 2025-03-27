@@ -5,8 +5,11 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
+import json
+import sys
 import unittest
 from datetime import datetime, timedelta
+from io import StringIO
 from unittest.mock import Mock, patch
 
 from botocore.exceptions import ClientError
@@ -193,6 +196,34 @@ class TestIAMRoleHelper(unittest.TestCase):
         self.assertIsNone(role_arn)
         self.mock_iam_client.put_role_policy.assert_not_called()
 
+    def test_create_iam_role_no_policy_name(self):
+        """Test create_iam_role if no policy name provided."""
+        # Mock create_role response
+        self.mock_iam_client.create_role.return_value = {
+            "Role": {
+                "Arn": "arn:aws:iam::123456789012:role/my-test-role",
+                "RoleName": "my-test-role",
+            }
+        }
+        role_name = "my-test-role"
+        trust_policy = {"Version": "2012-10-17", "Statement": []}
+        inline_policy = {"Version": "2012-10-17", "Statement": []}
+
+        role_arn = self.helper.create_iam_role(
+            role_name="my-test-role",
+            trust_policy_json=trust_policy,
+            inline_policy_json=inline_policy,
+        )
+        self.mock_iam_client.put_role_policy.assert_called_once()
+
+        actual_args = self.mock_iam_client.put_role_policy.call_args[1]
+        self.assertEqual(actual_args["RoleName"], role_name)
+        self.assertTrue(
+            actual_args["PolicyName"].startswith(f"InlinePolicy-{role_name}-")
+        )
+        self.assertEqual(actual_args["PolicyDocument"], json.dumps(inline_policy))
+        self.assertEqual(role_arn, "arn:aws:iam::123456789012:role/my-test-role")
+
     def test_get_role_info_arn_only(self):
         """Test get_role_info returns role ARN only when include_details=False."""
         self.mock_iam_client.get_role.return_value = {
@@ -248,6 +279,27 @@ class TestIAMRoleHelper(unittest.TestCase):
         details = self.helper.get_role_info("", include_details=True)
         self.assertIsNone(details)
 
+    def test_get_role_info_client_error(self):
+        """Test get_role_info when a ClientError occurs."""
+        error_response = {
+            "Error": {"Code": "SomeError", "Message": "Something went wrong"}
+        }
+        self.mock_iam_client.get_role.side_effect = ClientError(
+            error_response, "GetRole"
+        )
+
+        # Capture stdout to verify print output
+        captured_output = StringIO()
+        sys.stdout = captured_output
+        try:
+            result = self.helper.get_role_info("test-role")
+            self.assertIsNone(result)
+            expected_error = "An error occurred: An error occurred (SomeError) when calling the GetRole operation: Something went wrong"
+            self.assertIn(expected_error, captured_output.getvalue().strip())
+        finally:
+            # Restore stdout
+            sys.stdout = sys.__stdout__
+
     def test_get_role_arn_success(self):
         """Test get_role_arn returns ARN if role is found."""
         self.mock_iam_client.get_role.return_value = {
@@ -277,6 +329,27 @@ class TestIAMRoleHelper(unittest.TestCase):
         arn = self.helper.get_role_arn("")
         self.assertIsNone(arn)
 
+    def test_get_role_arn_client_error(self):
+        """Test get_role_arn when a ClientError occurs."""
+        error_response = {
+            "Error": {"Code": "SomeError", "Message": "Something went wrong"}
+        }
+        self.mock_iam_client.get_role.side_effect = ClientError(
+            error_response, "GetRole"
+        )
+
+        # Capture stdout to verify print output
+        captured_output = StringIO()
+        sys.stdout = captured_output
+        try:
+            result = self.helper.get_role_arn("test-role")
+            self.assertIsNone(result)
+            expected_error = "An error occurred: An error occurred (SomeError) when calling the GetRole operation: Something went wrong"
+            self.assertIn(expected_error, captured_output.getvalue().strip())
+        finally:
+            # Restore stdout
+            sys.stdout = sys.__stdout__
+
     def test_get_user_arn_success(self):
         """Test get_user_arn returns ARN if user is found."""
         self.mock_iam_client.get_user.return_value = {
@@ -305,6 +378,27 @@ class TestIAMRoleHelper(unittest.TestCase):
         """Test get_user_arn returns None if username not provided."""
         arn = self.helper.get_user_arn("")
         self.assertIsNone(arn)
+
+    def test_get_user_arn_client_error(self):
+        """Test get_user_arn when a ClientError occurs."""
+        error_response = {
+            "Error": {"Code": "SomeError", "Message": "Something went wrong"}
+        }
+        self.mock_iam_client.get_user.side_effect = ClientError(
+            error_response, "GetUser"
+        )
+
+        # Capture stdout to verify print output
+        captured_output = StringIO()
+        sys.stdout = captured_output
+        try:
+            result = self.helper.get_user_arn("test-user")
+            self.assertIsNone(result)
+            expected_error = "An error occurred: An error occurred (SomeError) when calling the GetUser operation: Something went wrong"
+            self.assertIn(expected_error, captured_output.getvalue().strip())
+        finally:
+            # Restore stdout
+            sys.stdout = sys.__stdout__
 
     # def test_map_iam_role_to_backend_role(self):
 
@@ -365,6 +459,18 @@ class TestIAMRoleHelper(unittest.TestCase):
         """Test get_iam_user_name_from_arn returns None if input is None."""
         username = self.helper.get_iam_user_name_from_arn(None)
         self.assertIsNone(username)
+
+    # @patch('sys.stdout')
+    # def test_get_iam_user_name_from_arn_exception(self, mock_stdout):
+    #     """Test get_iam_user_name_from_arn for exception handling and print output"""
+    #     result = self.helper.get_iam_user_name_from_arn(None)
+
+    #     self.assertIsNone(result)
+    #     expected_error = "Error extracting IAM user name: 'NoneType' object has no attribute 'startswith'"
+    #     mock_stdout.write.assert_called_with(expected_error + '\n')
+    # @patch('builtins.print')
+    # def test_get_iam_user_name_from_arn_exception(self, mock_print):
+    #     """Test get_iam_user_name_from_arn for exception handling and print output"""
 
 
 if __name__ == "__main__":
