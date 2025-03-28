@@ -53,6 +53,7 @@ def trace_sparse_encoding_model(
     model_format: str,
     model_description: Optional[str] = None,
     sparse_prune_ratio: float = 0,
+    activation: str = None,
 ) -> Tuple[str, str]:
     """
     Trace the pretrained sparse encoding model, create a model config file,
@@ -68,6 +69,8 @@ def trace_sparse_encoding_model(
     :type model_description: string
     :param sparse_prune_ratio: Model-side prune ratio for sparse_encoding
     :type sparse_prune_ratio: float
+    :param activation: Sparse model activation type. The default None means log(1+relu(x)).
+    :type activation: str
     :return: Tuple of model_path (path to model zip file) and model_config_path (path to model config json file)
     :rtype: Tuple[str, str]
     """
@@ -80,7 +83,7 @@ def trace_sparse_encoding_model(
 
     # 1.) Initiate a sparse encoding model class object
     pre_trained_model = init_sparse_model(
-        SparseEncodingModel, model_id, folder_path, sparse_prune_ratio
+        SparseEncodingModel, model_id, folder_path, sparse_prune_ratio, activation
     )
 
     # 2.) Save the model in the specified format
@@ -191,6 +194,7 @@ def main(
     model_description: Optional[str] = None,
     upload_prefix: Optional[str] = None,
     sparse_prune_ratio: float = 0,
+    activation: str = None,
 ) -> None:
     """
     Perform model auto-tracing and prepare files for uploading to OpenSearch model hub
@@ -207,6 +211,8 @@ def main(
     :type upload_prefix: string
     :param sparse_prune_ratio: Model-side prune ratio for sparse_encoding
     :type sparse_prune_ratio: float
+    :param activation: Sparse model activation type. The default None means log(1+relu(x)).
+    :type activation: str
     :return: No return value expected
     :rtype: None
     """
@@ -220,6 +226,7 @@ def main(
     Model Description: {model_description if model_description is not None else 'N/A'}
     Upload Prefix: {upload_prefix if upload_prefix is not None else 'N/A'}
     Sparse Prune Ratio: {sparse_prune_ratio}
+    Activation: {activation if activation is not None else 'N/A'}
     ==========================================
     """
     )
@@ -231,7 +238,7 @@ def main(
 
     ml_client = MLCommonClient(OPENSEARCH_TEST_CLIENT)
     pre_trained_model = init_sparse_model(
-        SparseEncodingModel, model_id, None, sparse_prune_ratio
+        SparseEncodingModel, model_id, None, sparse_prune_ratio, activation
     )
     original_encoding_datas = pre_trained_model.process_sparse_encoding(TEST_SENTENCES)
     pre_trained_model.save(path=TEMP_MODEL_PATH)
@@ -253,6 +260,7 @@ def main(
             TORCH_SCRIPT_FORMAT,
             model_description=model_description,
             sparse_prune_ratio=sparse_prune_ratio,
+            activation=activation,
         )
 
         torchscript_encoding_datas = register_and_deploy_sparse_encoding_model(
@@ -296,6 +304,7 @@ def main(
             ONNX_FORMAT,
             model_description=model_description,
             sparse_prune_ratio=sparse_prune_ratio,
+            activation=activation,
         )
 
         onnx_embedding_datas = register_and_deploy_sparse_encoding_model(
@@ -373,6 +382,15 @@ if __name__ == "__main__":
         const=None,
         help="sparse encoding model model-side pruning ratio",
     )
+    parser.add_argument(
+        "-act",
+        "--activation",
+        type=str,
+        nargs="?",
+        default=None,
+        const=None,
+        help="sparse encoding model activation",
+    )
     args = parser.parse_args()
 
     sparse_prune_ratio = (
@@ -386,4 +404,5 @@ if __name__ == "__main__":
         args.model_description,
         args.upload_prefix,
         sparse_prune_ratio,
+        args.activation,
     )

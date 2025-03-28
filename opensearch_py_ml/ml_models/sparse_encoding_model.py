@@ -46,6 +46,7 @@ class SparseEncodingModel(SparseModel):
         folder_path: str = None,
         overwrite: bool = False,
         sparse_prune_ratio: float = 0,
+        activation: str = None,
     ) -> None:
 
         super().__init__(model_id, folder_path, overwrite)
@@ -71,6 +72,7 @@ class SparseEncodingModel(SparseModel):
         self.torch_script_zip_file_path = None
         self.onnx_zip_file_path = None
         self.sparse_prune_ratio = sparse_prune_ratio
+        self.activation = activation
 
     def save_as_pt(
         self,
@@ -131,7 +133,10 @@ class SparseEncodingModel(SparseModel):
         zip_file_path = os.path.join(model_output_path, zip_file_name)
 
         model = NeuralSparseModel(
-            self.backbone_model, self.tokenizer, self.sparse_prune_ratio
+            self.backbone_model,
+            self.tokenizer,
+            self.sparse_prune_ratio,
+            self.activation,
         )
 
         # save tokenizer.json in save_json_folder_name
@@ -241,7 +246,10 @@ class SparseEncodingModel(SparseModel):
 
     def get_model(self):
         return NeuralSparseModel(
-            self.get_backbone_model(), self.get_tokenizer(), self.sparse_prune_ratio
+            self.get_backbone_model(),
+            self.get_tokenizer(),
+            self.sparse_prune_ratio,
+            self.activation,
         )
 
     def save(self, path):
@@ -283,7 +291,9 @@ class NeuralSparseModel(torch.nn.Module):
     which are easier to handle in sparse data scenarios such as information retrieval.
     """
 
-    def __init__(self, backbone_model, tokenizer=None, sparse_prune_ratio=0):
+    def __init__(
+        self, backbone_model, tokenizer=None, sparse_prune_ratio=0, activation=None
+    ):
         super().__init__()
         self.backbone_model = backbone_model
         self.sparse_prune_ratio = sparse_prune_ratio
@@ -296,13 +306,21 @@ class NeuralSparseModel(torch.nn.Module):
             self.id_to_token = ["" for _ in range(len(tokenizer.vocab))]
             for token, idx in tokenizer.vocab.items():
                 self.id_to_token[idx] = token
+        if activation is None:
+            self.activation = lambda values: torch.log(1 + torch.relu(values))
+        elif activation == "l0":
+            self.activation = lambda values: torch.log(
+                1 + torch.log(1 + torch.relu(values))
+            )
+        else:
+            raise NotImplementedError("Not supported activation function.")
 
     def forward(self, input: dict[str, torch.Tensor]) -> dict[str, torch.Tensor]:
         result = self.backbone_model(
             input_ids=input[INPUT_ID_KEY], attention_mask=input[ATTENTION_MASK_KEY]
         )[0]
         values, _ = torch.max(result * input[ATTENTION_MASK_KEY].unsqueeze(-1), dim=1)
-        values = torch.log(1 + torch.relu(values))
+        values = self.activation(values)
         values[:, self.special_token_ids] = 0
         max_values = values.max(dim=-1)[0].unsqueeze(1) * self.sparse_prune_ratio
         values = values * (values > max_values)
