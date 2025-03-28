@@ -63,6 +63,7 @@ on:
           {
             "upload_prefix": (Optional) String. Specifies the model prefix for uploading. Example: transforms "sentence-transformers/model" to "{prefix}/model",
             "sparse_prune_ratio": (Optional) Float. Specifies the model-side prune ratio based on max values. Sparse model only.
+            "activation": (Optional) String. Specifies the activation function for the sparse model. Sparse model only.
           }
           
           Example:
@@ -91,12 +92,15 @@ jobs:
         if [ "$custom_params" = "{}" ] || [ -z "$custom_params" ]; then
           upload_prefix=""
           sparse_prune_ratio=0
+          activation=""
         else
           upload_prefix=$(echo $custom_params | jq -r '.upload_prefix')
           sparse_prune_ratio=$(echo $custom_params | jq -r '.sparse_prune_ratio')
+          activation=$(echo $custom_params | jq -r '.activation')
         fi
         echo "UPLOAD_PREFIX=$upload_prefix" >> $GITHUB_ENV
         echo "SPARSE_PRUNE_RATIO=$sparse_prune_ratio" >> $GITHUB_ENV
+        echo "ACTIVATION=$activation" >> $GITHUB_ENV
     - name: Initiate folders
       # This scripts init the folders path variables.
       # 1. Retrieves the input model_id.
@@ -144,6 +148,7 @@ jobs:
         - Model Folder: ${{ steps.init_folders.outputs.model_folder }}
         - Model Prefix Folder: ${{ steps.init_folders.outputs.model_prefix_folder }}
         - Sparse Prune Ratio: ${{ env.SPARSE_PRUNE_RATIO }}
+        - Activation: ${{ env.ACTIVATION }}
         
         ======== Workflow Output Information =========
         - Embedding Verification: Passed"
