@@ -10,8 +10,9 @@
 # model hub before continuing the workflow.
 
 import argparse
-import re
 import json
+import re
+from pathlib import Path
 
 VERSION_PATTERN = r"^([1-9]\d*|0)(\.(([1-9]\d*)|0)){0,3}$"
 UPLOAD_PREFIX_KEY = "upload_prefix"
@@ -36,7 +37,11 @@ def verify_inputs(model_id: str, model_version: str) -> None:
 
 
 def get_model_file_path(
-    model_folder: str, model_id: str, model_version: str, model_format: str, custom_params: dict = {}
+    model_folder: str,
+    model_id: str,
+    model_version: str,
+    model_format: str,
+    custom_params: dict = {},
 ) -> str:
     """
     Construct the expected model file path on model hub
@@ -60,9 +65,11 @@ def get_model_file_path(
     if MODEL_NAME_KEY in custom_params:
         model_name = custom_params[MODEL_NAME_KEY]
     model_format = model_format.lower()
-    model_dirname = f"{model_folder}{model_name}/{model_version}/{model_format}"
     model_filename = f"{model_type}_{model_name}-{model_version}-{model_format}.zip"
-    model_file_path = model_dirname + "/" + model_filename
+    # robust to inputs, no matter a component endswith "/" or not
+    model_file_path = str(
+        Path(model_folder) / model_name / model_version / model_format / model_filename
+    )
     return model_file_path
 
 
@@ -93,7 +100,11 @@ if __name__ == "__main__":
     args = parser.parse_args()
     verify_inputs(args.model_id, args.model_version)
     model_file_path = get_model_file_path(
-        args.model_folder, args.model_id, args.model_version, args.model_format, json.loads(args.custom_params)
+        args.model_folder,
+        args.model_id,
+        args.model_version,
+        args.model_format,
+        json.loads(args.custom_params),
     )
 
     # Print the model file path so that the workflow can store it in the variable (See model_uploader.yml)

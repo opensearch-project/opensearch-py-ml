@@ -214,7 +214,7 @@ jobs:
         run: |
           TORCH_FILE_PATH=$(python utils/model_uploader/save_model_file_path_to_env.py \
               ${{ needs.init-workflow-var.outputs.model_prefix_folder }} ${{ github.event.inputs.model_id }} \
-              ${{ github.event.inputs.model_version }} TORCH_SCRIPT ${{ github.event.inputs.custom_params }})
+              ${{ github.event.inputs.model_version }} TORCH_SCRIPT '${{ github.event.inputs.custom_params }}')
           aws s3api head-object --bucket ${{ secrets.MODEL_BUCKET }} --key $TORCH_FILE_PATH > /dev/null 2>&1 || TORCH_MODEL_NOT_EXIST=true
           if [[ -z $TORCH_MODEL_NOT_EXIST ]]
           then
@@ -226,7 +226,7 @@ jobs:
         run: |
           ONNX_FILE_PATH=$(python utils/model_uploader/save_model_file_path_to_env.py \
             ${{ needs.init-workflow-var.outputs.model_prefix_folder }} ${{ github.event.inputs.model_id }} \
-            ${{ github.event.inputs.model_version }} ONNX ${{ github.event.inputs.custom_params }})
+            ${{ github.event.inputs.model_version }} ONNX '${{ github.event.inputs.custom_params }}')
           aws s3api head-object --bucket ${{ secrets.MODEL_BUCKET }} --key $ONNX_FILE_PATH > /dev/null 2>&1 || ONNX_MODEL_NOT_EXIST=true
           if [[ -z $ONNX_MODEL_NOT_EXIST ]]
           then
