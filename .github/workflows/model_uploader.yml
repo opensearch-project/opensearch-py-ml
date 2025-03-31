@@ -60,7 +60,7 @@ on:
         - "YES"
       custom_params:
         description: |
-          Optional custom parameters in JSON format. Supported fields:
+          (Optional) custom parameters in JSON format. Supported fields:
           {
             "upload_prefix": (Optional) String. Specifies the model prefix for uploading. Example: transforms "sentence-transformers/model" to "{prefix}/model",
             "sparse_prune_ratio": (Optional) Float. Specifies the model-side prune ratio based on max values. Sparse model only.
@@ -149,7 +149,7 @@ jobs:
         - Model Folder: ${{ steps.init_folders.outputs.model_folder }}
         - Model Prefix Folder: ${{ steps.init_folders.outputs.model_prefix_folder }}
         - Sparse Prune Ratio: ${{ env.SPARSE_PRUNE_RATIO }}
-        - Activation: ${{ env.ACTIVATION }}
+        - Activation: ${{ env.ACTIVATION || 'N/A' }}
         
         ======== Workflow Output Information =========
         - Embedding Verification: Passed"
