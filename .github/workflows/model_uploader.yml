@@ -65,6 +65,7 @@ on:
             "upload_prefix": (Optional) String. Specifies the model prefix for uploading. Example: transforms "sentence-transformers/model" to "{prefix}/model",
             "sparse_prune_ratio": (Optional) Float. Specifies the model-side prune ratio based on max values. Sparse model only.
             "activation": (Optional) String. Specifies the activation function for the sparse model. Sparse model only.
+            "model_name": (Optional) String. Specifies the model name for uploading. Example: transforms "sentence-transformers/model" to "sentence-transformers/{model_name}",
           }
           
           Example:
@@ -88,20 +89,34 @@ jobs:
          echo "This workflow should only be triggered on 'main' branch"
          exit 1
     - name: Parse custom params from json string
+      # Handles dynamic parameter configuration with three-level fallback:
+      # 1. Default values initialized at script start
+      # 2. Automatic model_name derivation from model_id (when not explicitly provided)
+      # 3. Custom parameter override system with null safety checks
       run: |
         custom_params='${{ github.event.inputs.custom_params }}'
-        if [ "$custom_params" = "{}" ] || [ -z "$custom_params" ]; then
-          upload_prefix=""
-          sparse_prune_ratio=0
-          activation=""
-        else
-          upload_prefix=$(echo $custom_params | jq -r '.upload_prefix')
-          sparse_prune_ratio=$(echo $custom_params | jq -r '.sparse_prune_ratio')
-          activation=$(echo $custom_params | jq -r '.activation')
+        model_id='${{ github.event.inputs.model_id }}'
+        upload_prefix=""
+        sparse_prune_ratio=0
+        activation=""
+        model_name='${model_id##*/}'
+
+        if [ "$custom_params" != "{}" ] && [ -n "$custom_params" ]; then
+          tmp_up=$(echo "$custom_params" | jq -r '.upload_prefix | select(.!=null)')
+          tmp_spr=$(echo "$custom_params" | jq -r '.sparse_prune_ratio | select(.!=null)')
+          tmp_act=$(echo "$custom_params" | jq -r '.activation | select(.!=null)')
+          tmp_mn=$(echo "$custom_params" | jq -r '.model_name | select(.!=null)')
+
+          [ -n "$tmp_up" ] && upload_prefix="$tmp_up"
+          [ -n "$tmp_spr" ] && sparse_prune_ratio="$tmp_spr"
+          [ -n "$tmp_act" ] && activation="$tmp_act"
+          [ -n "$tmp_mn" ] && model_name="$tmp_mn"
         fi
+
         echo "UPLOAD_PREFIX=$upload_prefix" >> $GITHUB_ENV
         echo "SPARSE_PRUNE_RATIO=$sparse_prune_ratio" >> $GITHUB_ENV
         echo "ACTIVATION=$activation" >> $GITHUB_ENV
+        echo "MODEL_NAME=$model_name" >> $GITHUB_ENV
     - name: Initiate folders
       # This scripts init the folders path variables.
       # 1. Retrieves the input model_id.
@@ -112,7 +127,7 @@ jobs:
       #    Example:
       #    - Given model_id: "opensearch-project/opensearch-neural-sparse-encoding-v1"
       #    - model_prefix: "ml-models/{model_source}/opensearch-project"
-      # 4. Constructs model_folder and model_prefix_folder.
+      # 4. Constructs model_folder and model_prefix_folder
       id: init_folders
       run: |
         model_id=${{ github.event.inputs.model_id }}
@@ -121,8 +136,9 @@ jobs:
         else
           model_prefix="ml-models/${{ github.event.inputs.model_source }}/${model_id%%/*}"
         fi
-        echo "model_folder=$model_prefix/${model_id##*/}" >> $GITHUB_OUTPUT
+        echo "model_folder=$model_prefix/${{ env.MODEL_NAME }}" >> $GITHUB_OUTPUT
         echo "model_prefix_folder=$model_prefix" >> $GITHUB_OUTPUT
+        echo "model_name=${{ env.MODEL_NAME }}" >> $GITHUB_OUTPUT
     - name: Initiate workflow_info
       id: init_workflow_info
       run: |
@@ -148,6 +164,7 @@ jobs:
         - Model Description: ${model_description:-N/A}
         - Model Folder: ${{ steps.init_folders.outputs.model_folder }}
         - Model Prefix Folder: ${{ steps.init_folders.outputs.model_prefix_folder }}
+        - Model Name: ${{ steps.init_folders.outputs.model_name }}
         - Sparse Prune Ratio: ${{ env.SPARSE_PRUNE_RATIO }}
         - Activation: ${{ env.ACTIVATION || 'N/A' }}
         
@@ -166,6 +183,7 @@ jobs:
     outputs:
       model_folder: ${{ steps.init_folders.outputs.model_folder }}
       model_prefix_folder: ${{ steps.init_folders.outputs.model_prefix_folder }}
+      model_name: ${{ steps.init_folders.outputs.model_name }}
       workflow_info: ${{ steps.init_workflow_info.outputs.workflow_info }}
       verified_license_line: ${{ steps.init_license_line.outputs.verified }}
       unverified_license_line: ${{ steps.init_license_line.outputs.unverified }}
@@ -196,7 +214,7 @@ jobs:
         run: |
           TORCH_FILE_PATH=$(python utils/model_uploader/save_model_file_path_to_env.py \
               ${{ needs.init-workflow-var.outputs.model_prefix_folder }} ${{ github.event.inputs.model_id }} \
-              ${{ github.event.inputs.model_version }} TORCH_SCRIPT)
+              ${{ github.event.inputs.model_version }} TORCH_SCRIPT ${{ github.event.inputs.custom_params }})
           aws s3api head-object --bucket ${{ secrets.MODEL_BUCKET }} --key $TORCH_FILE_PATH > /dev/null 2>&1 || TORCH_MODEL_NOT_EXIST=true
           if [[ -z $TORCH_MODEL_NOT_EXIST ]]
           then
@@ -208,7 +226,7 @@ jobs:
         run: |
           ONNX_FILE_PATH=$(python utils/model_uploader/save_model_file_path_to_env.py \
             ${{ needs.init-workflow-var.outputs.model_prefix_folder }} ${{ github.event.inputs.model_id }} \
-            ${{ github.event.inputs.model_version }} ONNX)
+            ${{ github.event.inputs.model_version }} ONNX ${{ github.event.inputs.custom_params }})
           aws s3api head-object --bucket ${{ secrets.MODEL_BUCKET }} --key $ONNX_FILE_PATH > /dev/null 2>&1 || ONNX_MODEL_NOT_EXIST=true
           if [[ -z $ONNX_MODEL_NOT_EXIST ]]
           then
