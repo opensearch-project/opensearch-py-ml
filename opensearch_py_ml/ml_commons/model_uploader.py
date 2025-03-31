@@ -182,8 +182,8 @@ class ModelUploader:
                 raise ValueError(f"{TOTAL_CHUNKS_FIELD} can not be empty")
             if not model_meta.get(MODEL_CONFIG_FIELD):
                 if (
-                    model_meta.get(MODEL_FUNCTION_NAME) != "SPARSE_ENCODING"
-                    and model_meta.get(MODEL_TASK_TYPE) != "SPARSE_ENCODING"
+                    model_meta.get(MODEL_FUNCTION_NAME) not in ["SPARSE_ENCODING", "SPARSE_TOKENIZE"]
+                    and model_meta.get(MODEL_TASK_TYPE) not in ["SPARSE_ENCODING", "SPARSE_TOKENIZE"]
                 ):
                     raise ValueError(f"{MODEL_CONFIG_FIELD} can not be empty")
             else:
