@@ -235,7 +235,7 @@ class SparseTokenizeModel(SparseModel):
             all_sparse_dicts.append(sparse_dict)
 
         return all_sparse_dicts
-    
+
     def save(self, path):
         self.tokenizer.save_pretrained(path)
         idf_file_path = os.path.join(path, "idf.json")

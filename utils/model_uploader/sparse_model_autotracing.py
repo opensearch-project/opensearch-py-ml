@@ -136,7 +136,12 @@ def register_and_deploy_sparse_encoding_model(
     model_id = register_and_deploy_model(
         ml_client, model_format, model_path, model_config_path
     )
-    check_model_status(ml_client, model_id, model_format, SPARSE_TOKENIZER_ALGORITHM if is_tokenizer else SPARSE_ALGORITHM)
+    check_model_status(
+        ml_client,
+        model_id,
+        model_format,
+        SPARSE_TOKENIZER_ALGORITHM if is_tokenizer else SPARSE_ALGORITHM,
+    )
     try:
         encoding_input = {"text_docs": texts}
         encoding_output = ml_client.generate_model_inference(model_id, encoding_input)
@@ -281,7 +286,7 @@ def main(
             torchscript_model_config_path,
             TORCH_SCRIPT_FORMAT,
             TEST_SENTENCES,
-            is_tokenizer
+            is_tokenizer,
         )
 
         pass_test = verify_embedding_data_vectors(
@@ -327,7 +332,7 @@ def main(
             onnx_model_config_path,
             ONNX_FORMAT,
             TEST_SENTENCES,
-            is_tokenizer
+            is_tokenizer,
         )
 
         pass_test = verify_embedding_data_vectors(
