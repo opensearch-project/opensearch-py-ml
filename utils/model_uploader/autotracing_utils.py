@@ -97,7 +97,9 @@ def check_model_status(
         assert False, f"Raised Exception in getting {model_format} model info: {e}"
 
 
-def undeploy_model(ml_client: "MLCommonClient", model_id: str, model_format: str):
+def undeploy_model(
+    ml_client: "MLCommonClient", model_id: str, model_format: str, throw_exception=True
+):
     """
     Undeploy the model from OpenSearch cluster.
 
@@ -114,10 +116,17 @@ def undeploy_model(ml_client: "MLCommonClient", model_id: str, model_format: str
         ml_model_status = ml_client.get_model_info(model_id)
         assert ml_model_status.get("model_state") == "UNDEPLOYED"
     except Exception as e:
-        assert False, f"Raised Exception in {model_format} model undeployment: {e}"
+        if throw_exception:
+            assert False, f"Raised Exception in {model_format} model undeployment: {e}"
+        else:
+            print(
+                f"Failed to undeploy model. model status: {ml_model_status.get('model_state')}"
+            )
 
 
-def delete_model(ml_client: "MLCommonClient", model_id: str, model_format: str):
+def delete_model(
+    ml_client: "MLCommonClient", model_id: str, model_format: str, throw_exception=True
+):
     """
     Delete the model from OpenSearch cluster.
 
@@ -133,7 +142,12 @@ def delete_model(ml_client: "MLCommonClient", model_id: str, model_format: str):
         delete_model_obj = ml_client.delete_model(model_id)
         assert delete_model_obj.get("result") == "deleted"
     except Exception as e:
-        assert False, f"Raised Exception in deleting {model_format} model: {e}"
+        if throw_exception:
+            assert False, f"Raised Exception in deleting {model_format} model: {e}"
+        else:
+            print(
+                f"Failed to delete model. model status: {delete_model_obj.get('result')}"
+            )
 
 
 def autotracing_warning_filters():

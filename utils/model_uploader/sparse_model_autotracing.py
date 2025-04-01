@@ -155,8 +155,8 @@ def register_and_deploy_sparse_encoding_model(
         assert (
             False
         ), f"Raised Exception in generating sparse encoding with {model_format} model: {e}"
-    undeploy_model(ml_client, model_id, model_format)
-    delete_model(ml_client, model_id, model_format)
+    undeploy_model(ml_client, model_id, model_format, False)
+    delete_model(ml_client, model_id, model_format, False)
     return encoding_datas
 
 
