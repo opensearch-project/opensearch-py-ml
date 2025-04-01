@@ -93,6 +93,7 @@ jobs:
       # 1. Default values initialized at script start
       # 2. Automatic model_name derivation from model_id (when not explicitly provided)
       # 3. Custom parameter override system with null safety checks
+      id: parse_custom_params
       run: |
         custom_params='${{ github.event.inputs.custom_params }}'
         model_id='${{ github.event.inputs.model_id }}'
@@ -113,10 +114,10 @@ jobs:
           [ -n "$tmp_mn" ] && model_name="$tmp_mn"
         fi
 
-        echo "UPLOAD_PREFIX=$upload_prefix" >> $GITHUB_ENV
-        echo "SPARSE_PRUNE_RATIO=$sparse_prune_ratio" >> $GITHUB_ENV
-        echo "ACTIVATION=$activation" >> $GITHUB_ENV
-        echo "MODEL_NAME=$model_name" >> $GITHUB_ENV
+        echo "upload_prefix=$upload_prefix" >> $$GITHUB_OUTPUT
+        echo "sparse_prune_ratio=$sparse_prune_ratio" >> $GITHUB_OUTPUT
+        echo "activation=$activation" >> $GITHUB_OUTPUT
+        echo "model_name=$model_name" >> $GITHUB_OUTPUT
     - name: Initiate folders
       # This scripts init the folders path variables.
       # 1. Retrieves the input model_id.
@@ -187,6 +188,10 @@ jobs:
       workflow_info: ${{ steps.init_workflow_info.outputs.workflow_info }}
       verified_license_line: ${{ steps.init_license_line.outputs.verified }}
       unverified_license_line: ${{ steps.init_license_line.outputs.unverified }}
+      upload_prefix: ${{ steps.parse_custom_params.outputs.upload_prefix }}
+      sparse_prune_ratio: ${{ steps.parse_custom_params.outputs.sparse_prune_ratio }}
+      activation: ${{ steps.parse_custom_params.outputs.activation }}
+      model_name: ${{ steps.parse_custom_params.outputs.model_name }}
 
   # Step 3: Check if the model already exists in the model hub
   checking-out-model-hub:
@@ -259,7 +264,11 @@ jobs:
           echo "TRACING_FORMAT=${{ github.event.inputs.tracing_format }}" >> $GITHUB_ENV
           echo "EMBEDDING_DIMENSION=${{ github.event.inputs.embedding_dimension }}" >> $GITHUB_ENV
           echo "POOLING_MODE=${{ github.event.inputs.pooling_mode }}" >> $GITHUB_ENV    
-          echo "MODEL_DESCRIPTION=${{ github.event.inputs.model_description }}" >> $GITHUB_ENV     
+          echo "MODEL_DESCRIPTION=${{ github.event.inputs.model_description }}" >> $GITHUB_ENV
+          echo "UPLOAD_PREFIX=${{ needs.init-workflow-var.outputs.upload_prefix }}" >> $GITHUB_ENV
+          echo "MODEL_NAME=${{ needs.init-workflow-var.outputs.model_name }}" >> $GITHUB_ENV
+          echo "SPARSE_PRUNE_RATIO=${{ needs.init-workflow-var.outputs.sparse_prune_ratio }}" >> $GITHUB_ENV
+          echo "ACTIVATION=${{ needs.init-workflow-var.outputs.activation }}" >> $GITHUB_ENV
       - name: Autotracing ${{ matrix.cluster }} secured=${{ matrix.secured }} version=${{matrix.entry.opensearch_version}}
         run: "./.ci/run-tests ${{ matrix.cluster }} ${{ matrix.secured }} ${{ matrix.entry.opensearch_version }} ${{github.event.inputs.model_type}}Trace"
       - name: Limit Model Size to 2GB

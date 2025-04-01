@@ -204,6 +204,7 @@ def main(
     tracing_format: str,
     model_description: Optional[str] = None,
     upload_prefix: Optional[str] = None,
+    model_name: Optional[str] = None,
     sparse_prune_ratio: float = 0,
     activation: str = None,
     is_tokenizer: bool = False,
@@ -221,6 +222,8 @@ def main(
     :type model_description: string
     :param upload_prefix: Model upload prefix input
     :type upload_prefix: string
+    :param model_name: Model customize name for upload
+    :type model_name: string
     :param sparse_prune_ratio: Model-side prune ratio for sparse_encoding
     :type sparse_prune_ratio: float
     :param activation: Sparse model activation type. The default None means log(1+relu(x)).
@@ -238,6 +241,7 @@ def main(
     Model Version: {model_version}
     Tracing Format: {tracing_format}
     Model Description: {model_description if model_description is not None else 'N/A'}
+    Model Name: {model_name if model_name is not None else 'N/A'}
     Upload Prefix: {upload_prefix if upload_prefix is not None else 'N/A'}
     Sparse Prune Ratio: {sparse_prune_ratio}
     Activation: {activation if activation is not None else 'N/A'}
@@ -306,6 +310,7 @@ def main(
             torchscript_model_path,
             torchscript_model_config_path,
             upload_prefix,
+            model_name,
         )
 
         config_path_for_checking_description = torchscript_dst_model_config_path
@@ -348,6 +353,8 @@ def main(
             ONNX_FORMAT,
             onnx_model_path,
             onnx_model_config_path,
+            upload_prefix,
+            model_name,
         )
 
         config_path_for_checking_description = onnx_dst_model_config_path
@@ -383,6 +390,14 @@ if __name__ == "__main__":
         nargs="?",
         default=None,
         help="Model customize path prefix for upload",
+    )
+    parser.add_argument(
+        "-mn",
+        "--model_name",
+        type=str,
+        nargs="?",
+        default=None,
+        help="Model customize name for upload",
     )
     parser.add_argument(
         "-md",
@@ -429,6 +444,7 @@ if __name__ == "__main__":
         args.tracing_format,
         args.model_description,
         args.upload_prefix,
+        args.model_name,
         sparse_prune_ratio,
         args.activation,
         args.is_tokenizer,

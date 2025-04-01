@@ -282,6 +282,7 @@ def main(
     pooling_mode: Optional[str] = None,
     model_description: Optional[str] = None,
     upload_prefix: Optional[str] = None,
+    model_name: Optional[str] = None,
 ) -> None:
     """
     Perform model auto-tracing and prepare files for uploading to OpenSearch model hub
@@ -298,6 +299,10 @@ def main(
     :type pooling_mode: string
     :param model_description: Model description input
     :type model_description: string
+    :param upload_prefix: Model customize path prefix for upload
+    :type upload_prefix: string
+    :param model_name: Model customize name for upload
+    :type model_name: string
     :return: No return value expected
     :rtype: None
     """
@@ -310,6 +315,8 @@ def main(
     Embedding Dimension: {embedding_dimension if embedding_dimension is not None else 'N/A'}
     Pooling Mode: {pooling_mode if pooling_mode is not None else 'N/A'}
     Model Description: {model_description if model_description is not None else 'N/A'}
+    Upload Prefix: {upload_prefix if upload_prefix is not None else 'N/A'}
+    Model Name: {model_name if model_name is not None else 'N/A'}
     ==========================================
     """
     )
@@ -365,6 +372,7 @@ def main(
             torchscript_model_path,
             torchscript_model_config_path,
             upload_prefix,
+            model_name,
         )
 
         config_path_for_checking_description = torchscript_dst_model_config_path
@@ -399,6 +407,8 @@ def main(
             ONNX_FORMAT,
             onnx_model_path,
             onnx_model_config_path,
+            upload_prefix,
+            model_name,
         )
 
         config_path_for_checking_description = onnx_dst_model_config_path
@@ -434,6 +444,14 @@ if __name__ == "__main__":
         nargs="?",
         default=None,
         help="Model customize path prefix for upload",
+    )
+    parser.add_argument(
+        "-mn",
+        "--model_name",
+        type=str,
+        nargs="?",
+        default=None,
+        help="Model customize name for upload",
     )
     parser.add_argument(
         "-ed",
@@ -473,4 +491,5 @@ if __name__ == "__main__":
         args.pooling_mode,
         args.model_description,
         args.upload_prefix,
+        args.model_name,
     )

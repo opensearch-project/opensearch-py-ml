@@ -76,6 +76,7 @@ elif [[ "$TASK_TYPE" == "SentenceTransformerTrace" || "$TASK_TYPE" == "SparseTra
   echo -e "\033[34;1mINFO:\033[0m SPARSE_PRUNE_RATIO: ${SPARSE_PRUNE_RATIO:-N/A}\033[0m"
   echo -e "\033[34;1mINFO:\033[0m ACTIVATION: ${ACTIVATION:-N/A}\033[0m"
   echo -e "\033[34;1mINFO:\033[0m MODEL_DESCRIPTION: ${MODEL_DESCRIPTION:-N/A}\033[0m"
+  echo -e "\033[34;1mINFO:\033[0m MODEL_NAME: ${MODEL_NAME:-N/A}\033[0m"
 
   if [[ "$TASK_TYPE" == "SentenceTransformerTrace" ]]; then
       NOX_TRACE_TYPE="trace"
@@ -91,6 +92,20 @@ elif [[ "$TASK_TYPE" == "SentenceTransformerTrace" || "$TASK_TYPE" == "SparseTra
       exit 1
   fi
 
+  nox_command=(
+    "${NOX_TRACE_TYPE}-${PYTHON_VERSION}"
+    --
+    "${MODEL_ID}"
+    "${MODEL_VERSION}"
+    "${TRACING_FORMAT}"
+    -up "${UPLOAD_PREFIX}"
+    -mn "${MODEL_NAME}"
+    -md "${MODEL_DESCRIPTION:+"$MODEL_DESCRIPTION"}"
+    ${EXTRA_ARGS}
+  )
+
+  echo "nox -s ${nox_command[@]}"
+
   docker run \
   --network=${network_name} \
   --env "STACK_VERSION=${STACK_VERSION}" \
@@ -101,7 +116,7 @@ elif [[ "$TASK_TYPE" == "SentenceTransformerTrace" || "$TASK_TYPE" == "SparseTra
   --env "TEST_TYPE=server" \
   --name opensearch-py-ml-trace-runner \
   opensearch-project/opensearch-py-ml \
-  nox -s "${NOX_TRACE_TYPE}-${PYTHON_VERSION}" -- ${MODEL_ID} ${MODEL_VERSION} ${TRACING_FORMAT} ${EXTRA_ARGS} -up ${UPLOAD_PREFIX} -md ${MODEL_DESCRIPTION:+"$MODEL_DESCRIPTION"}
+  nox -s "${nox_command[@]}"
 
   # To upload a model, we need the model artifact, description, license files into local path
   # trace_output should include description and license file.

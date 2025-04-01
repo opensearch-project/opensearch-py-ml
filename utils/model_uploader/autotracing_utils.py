@@ -241,6 +241,7 @@ def prepare_files_for_uploading(
     src_model_path: str,
     src_model_config_path: str,
     upload_prefix: str = None,
+    model_name: str = None,
 ) -> tuple[str, str]:
     """
     Prepare files for uploading by storing them in UPLOAD_FOLDER_PATH
@@ -255,15 +256,20 @@ def prepare_files_for_uploading(
     :type src_model_path: string
     :param src_model_config_path: Path to model config files for uploading
     :type src_model_config_path: string
+    :param upload_prefix: Model customize path prefix for upload
+    :type upload_prefix: string
+    :param model_name: Model customize name for upload
+    :type model_name: string
     :return: Tuple of dst_model_path (path to model zip file) and dst_model_config_path
     (path to model config json file) in the UPLOAD_FOLDER_PATH
     :rtype: Tuple[str, str]
     """
-    model_type, model_name = (
-        model_id.split("/")
-        if upload_prefix is None
-        else (upload_prefix, model_id.split("/")[-1])
-    )
+    if upload_prefix is not None:
+        model_type = upload_prefix
+    else:
+        model_type = model_id.split("/")[0]
+    if model_name is None:
+        model_name = model_id.split("/")[-1]
     model_format = model_format.lower()
     folder_to_delete = (
         TORCHSCRIPT_FOLDER_PATH if model_format == "torch_script" else ONNX_FOLDER_PATH
