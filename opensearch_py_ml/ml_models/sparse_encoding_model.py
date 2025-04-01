@@ -29,7 +29,7 @@ def _generate_default_model_description() -> str:
         "Using default description (You can overwrite this by specifying description parameter in "
         "make_model_config_json function"
     )
-    description = "This is a neural sparse model: It maps sentences & paragraphs to sparse vector space."
+    description = "This is a neural sparse encoding model: It transfers text into sparse vector, and then extract nonzero index and value to entry and weights. It serves only in ingestion and customer should use tokenizer model in query."
     return description
 
 
@@ -224,8 +224,10 @@ class SparseEncodingModel(SparseModel):
                 model_config_content["model_content_hash_value"] = (
                     _generate_model_content_hash_value(model_zip_file_path)
                 )
-        if description is not None:
+        if description is not None and description.strip() != "":
             model_config_content["description"] = description
+        else:
+            model_config_content["description"] = _generate_default_model_description()
 
         model_config_file_path = os.path.join(
             folder_path, "ml-commons_model_config.json"

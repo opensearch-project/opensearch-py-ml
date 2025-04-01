@@ -206,8 +206,10 @@ class SparseTokenizeModel(SparseModel):
                 model_config_content["model_content_hash_value"] = (
                     _generate_model_content_hash_value(model_zip_file_path)
                 )
-        if description is not None:
+        if description is not None and description.strip() != "":
             model_config_content["description"] = description
+        else:
+            model_config_content["description"] = _generate_default_model_description()
 
         model_config_file_path = os.path.join(
             folder_path, "ml-commons_model_config.json"
