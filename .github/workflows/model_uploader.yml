@@ -100,7 +100,7 @@ jobs:
         upload_prefix=""
         sparse_prune_ratio=0
         activation=""
-        model_name='${model_id##*/}'
+        model_name="${model_id##*/}"
 
         if [ "$custom_params" != "{}" ] && [ -n "$custom_params" ]; then
           tmp_up=$(echo "$custom_params" | jq -r '.upload_prefix | select(.!=null)')
@@ -114,7 +114,7 @@ jobs:
           [ -n "$tmp_mn" ] && model_name="$tmp_mn"
         fi
 
-        echo "upload_prefix=$upload_prefix" >> $$GITHUB_OUTPUT
+        echo "upload_prefix=$upload_prefix" >> $GITHUB_OUTPUT
         echo "sparse_prune_ratio=$sparse_prune_ratio" >> $GITHUB_OUTPUT
         echo "activation=$activation" >> $GITHUB_OUTPUT
         echo "model_name=$model_name" >> $GITHUB_OUTPUT
@@ -132,12 +132,12 @@ jobs:
       id: init_folders
       run: |
         model_id=${{ github.event.inputs.model_id }}
-        if [[ -n "${{ env.UPLOAD_PREFIX }}" ]]; then
-          model_prefix="ml-models/${{ github.event.inputs.model_source }}/${{ env.UPLOAD_PREFIX }}"
+        if [[ -n "${{ steps.parse_custom_params.outputs.upload_prefix }}" ]]; then
+          model_prefix="ml-models/${{ github.event.inputs.model_source }}/${{ steps.parse_custom_params.outputs.upload_prefix }}"
         else
           model_prefix="ml-models/${{ github.event.inputs.model_source }}/${model_id%%/*}"
         fi
-        echo "model_folder=$model_prefix/${{ env.MODEL_NAME }}" >> $GITHUB_OUTPUT
+        echo "model_folder=$model_prefix/${{ steps.parse_custom_params.outputs.model_name }}" >> $GITHUB_OUTPUT
         echo "model_prefix_folder=$model_prefix" >> $GITHUB_OUTPUT
     - name: Initiate workflow_info
       id: init_workflow_info
@@ -164,8 +164,8 @@ jobs:
         - Model Description: ${model_description:-N/A}
         - Model Folder: ${{ steps.init_folders.outputs.model_folder }}
         - Model Prefix Folder: ${{ steps.init_folders.outputs.model_prefix_folder }}
-        - Sparse Prune Ratio: ${{ env.SPARSE_PRUNE_RATIO }}
-        - Activation: ${{ env.ACTIVATION || 'N/A' }}
+        - Sparse Prune Ratio: ${{ steps.parse_custom_params.outputs.sparse_prune_ratio || 'N/A' }}
+        - Activation: ${{ steps.parse_custom_params.outputs.activation || 'N/A' }}
         
         ======== Workflow Output Information =========
         - Embedding Verification: Passed"
