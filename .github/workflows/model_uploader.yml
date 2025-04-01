@@ -139,7 +139,6 @@ jobs:
         fi
         echo "model_folder=$model_prefix/${{ env.MODEL_NAME }}" >> $GITHUB_OUTPUT
         echo "model_prefix_folder=$model_prefix" >> $GITHUB_OUTPUT
-        echo "model_name=${{ env.MODEL_NAME }}" >> $GITHUB_OUTPUT
     - name: Initiate workflow_info
       id: init_workflow_info
       run: |
@@ -165,7 +164,6 @@ jobs:
         - Model Description: ${model_description:-N/A}
         - Model Folder: ${{ steps.init_folders.outputs.model_folder }}
         - Model Prefix Folder: ${{ steps.init_folders.outputs.model_prefix_folder }}
-        - Model Name: ${{ steps.init_folders.outputs.model_name }}
         - Sparse Prune Ratio: ${{ env.SPARSE_PRUNE_RATIO }}
         - Activation: ${{ env.ACTIVATION || 'N/A' }}
         
@@ -184,7 +182,6 @@ jobs:
     outputs:
       model_folder: ${{ steps.init_folders.outputs.model_folder }}
       model_prefix_folder: ${{ steps.init_folders.outputs.model_prefix_folder }}
-      model_name: ${{ steps.init_folders.outputs.model_name }}
       workflow_info: ${{ steps.init_workflow_info.outputs.workflow_info }}
       verified_license_line: ${{ steps.init_license_line.outputs.verified }}
       unverified_license_line: ${{ steps.init_license_line.outputs.unverified }}
