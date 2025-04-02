@@ -433,6 +433,10 @@ if __name__ == "__main__":
         help="Whether to trace a sparse encoding model or just tokenizer",
     )
     args = parser.parse_args()
+    for arg in vars(args):
+        value = getattr(args, arg)
+        if isinstance(value, str) and value.strip() == "":
+            setattr(args, arg, None)
 
     sparse_prune_ratio = (
         float(args.sparse_prune_ratio) if args.sparse_prune_ratio is not None else 0

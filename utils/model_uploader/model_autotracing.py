@@ -482,6 +482,10 @@ if __name__ == "__main__":
         help="Model description if you want to overwrite the default description",
     )
     args = parser.parse_args()
+    for arg in vars(args):
+        value = getattr(args, arg)
+        if isinstance(value, str) and value.strip() == "":
+            setattr(args, arg, None)
 
     main(
         args.model_id,
