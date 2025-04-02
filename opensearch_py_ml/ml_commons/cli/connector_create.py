@@ -64,7 +64,7 @@ class Create(ConnectorBase):
             config = self.load_config(setup_config_path)
             if not config:
                 print(
-                    f"{Fore.RED}No configuration found. Please run setup first.{Style.RESET_ALL}\n"
+                    f"{Fore.RED}No setup configuration found. Please run setup first.{Style.RESET_ALL}\n"
                 )
                 return False
 

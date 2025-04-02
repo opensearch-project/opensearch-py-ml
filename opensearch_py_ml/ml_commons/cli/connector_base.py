@@ -89,13 +89,6 @@ class ConnectorBase:
                     f"{Fore.YELLOW}Configuration file not found at {connector_config_path}{Style.RESET_ALL}"
                 )
                 return {}
-            # Check if file is readable
-            if not os.access(connector_config_path, os.R_OK):
-                print(
-                    f"{Fore.RED}Error: No permission to read configuration file at {connector_config_path}{Style.RESET_ALL}"
-                )
-                return {}
-
             with open(connector_config_path, "r") as file:
                 config = yaml.safe_load(file) or {}
 
@@ -172,7 +165,6 @@ class ConnectorBase:
                 yaml.dump(config, file, default_flow_style=False, sort_keys=False)
 
             # Update the config_file path
-            # self.config_file = path
             self.CONFIG_FILE = path
 
             print(

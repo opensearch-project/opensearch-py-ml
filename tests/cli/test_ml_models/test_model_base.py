@@ -49,7 +49,7 @@ class TestModelBase(unittest.TestCase):
     def test_input_custom_model_details_valid_json(
         self, mock_console_print, mock_print, mock_input
     ):
-        """Test with valid JSON input."""
+        """Test with valid JSON input"""
         json_lines = [
             line.strip() for line in self.valid_json.strip().split("\n") if line.strip()
         ]
@@ -73,7 +73,7 @@ class TestModelBase(unittest.TestCase):
     def test_input_custom_model_details_invalid_json(
         self, mock_console_print, mock_print, mock_input
     ):
-        """Test with invalid JSON input."""
+        """Test with invalid JSON input"""
         json_lines = [
             line.strip()
             for line in self.invalid_json.strip().split("\n")
@@ -103,7 +103,7 @@ class TestModelBase(unittest.TestCase):
     def test_input_custom_model_details_external_true(
         self, mock_console_print, mock_print, mock_input
     ):
-        """Test with external=True parameter."""
+        """Test with external=True parameter"""
         json_lines = [
             line.strip() for line in self.valid_json.strip().split("\n") if line.strip()
         ]

@@ -80,9 +80,9 @@ class DeepSeekModel(ModelBase):
 
             # add unique random id to avoid permission error
             id = str(uuid.uuid1())[:8]
-            connector_role_name = f"{connector_role_prefix}_deepseek_chat_model_{id}"
+            connector_role_name = f"{connector_role_prefix}_deepseek_connector_{id}"
             create_connector_role_name = (
-                f"{connector_role_prefix}_deepseek_chat_model_create_{id}"
+                f"{connector_role_prefix}_deepseek_connector_create_{id}"
             )
 
             if not secret_name:

@@ -13,6 +13,7 @@ from io import StringIO
 from unittest.mock import Mock, patch
 
 from botocore.exceptions import ClientError
+from requests.auth import HTTPBasicAuth
 
 from opensearch_py_ml.ml_commons.IAMRoleHelper import IAMRoleHelper
 
@@ -400,7 +401,91 @@ class TestIAMRoleHelper(unittest.TestCase):
             # Restore stdout
             sys.stdout = sys.__stdout__
 
-    # def test_map_iam_role_to_backend_role(self):
+    @patch("requests.get")
+    @patch("requests.put")
+    def test_map_iam_role_to_backend_role_not_found(self, mock_put, mock_get):
+        """Test map_iam_role_to_backend_role when role doesn't exist (NOT_FOUND case)."""
+        # Setup
+        role_arn = "arn:aws:iam::123456789012:role/test-role"
+        os_security_role = "ml_full_access"
+
+        # Mock GET response for non-existent role
+        mock_get_response = Mock()
+        mock_get_response.text = json.dumps({"status": "not_found"})
+        mock_get.return_value = mock_get_response
+
+        # Mock PUT response
+        mock_put_response = Mock()
+        mock_put_response.text = "Role mapped successfully"
+        mock_put.return_value = mock_put_response
+
+        # Execute
+        self.helper.map_iam_role_to_backend_role(role_arn, os_security_role)
+
+        # Verify GET request
+        expected_url = f"{self.helper.opensearch_domain_url}/_plugins/_security/api/rolesmapping/{os_security_role}"
+        mock_get.assert_called_once_with(
+            expected_url,
+            auth=HTTPBasicAuth(
+                self.helper.opensearch_domain_username,
+                self.helper.opensearch_domain_password,
+            ),
+        )
+
+        # Verify PUT request
+        expected_data = {"backend_roles": [role_arn]}
+        mock_put.assert_called_once_with(
+            expected_url,
+            headers={"Content-Type": "application/json"},
+            data=json.dumps(expected_data),
+            auth=HTTPBasicAuth(
+                self.helper.opensearch_domain_username,
+                self.helper.opensearch_domain_password,
+            ),
+        )
+
+    @patch("requests.get")
+    @patch("requests.patch")
+    def test_map_iam_role_to_backend_role_exists(self, mock_patch, mock_get):
+        """Test map_iam_role_to_backend_role when role already exists."""
+        # Setup
+        role_arn = "arn:aws:iam::123456789012:role/test-role"
+        existing_role_arn = "arn:aws:iam::123456789012:role/existing-role"
+        os_security_role = "ml_full_access"
+
+        # Mock GET response for existing role
+        mock_get_response = Mock()
+        mock_get_response.text = json.dumps(
+            {"ml_full_access": {"backend_roles": [existing_role_arn]}}
+        )
+        mock_get.return_value = mock_get_response
+
+        # Mock PATCH response
+        mock_patch_response = Mock()
+        mock_patch_response.text = "Role updated successfully"
+        mock_patch.return_value = mock_patch_response
+
+        # Execute
+        self.helper.map_iam_role_to_backend_role(role_arn, os_security_role)
+
+        # Verify PATCH request
+        expected_url = f"{self.helper.opensearch_domain_url}/_plugins/_security/api/rolesmapping/{os_security_role}"
+        expected_data = [
+            {
+                "op": "replace",
+                "path": "/backend_roles",
+                "value": list(set([existing_role_arn, role_arn])),
+            }
+        ]
+        mock_patch.assert_called_once_with(
+            expected_url,
+            headers={"Content-Type": "application/json"},
+            data=json.dumps(expected_data),
+            auth=HTTPBasicAuth(
+                self.helper.opensearch_domain_username,
+                self.helper.opensearch_domain_password,
+            ),
+        )
 
     def test_assume_role_happy_path(self):
         """Test assume_role returns credentials on success."""
@@ -460,17 +545,16 @@ class TestIAMRoleHelper(unittest.TestCase):
         username = self.helper.get_iam_user_name_from_arn(None)
         self.assertIsNone(username)
 
-    # @patch('sys.stdout')
-    # def test_get_iam_user_name_from_arn_exception(self, mock_stdout):
-    #     """Test get_iam_user_name_from_arn for exception handling and print output"""
-    #     result = self.helper.get_iam_user_name_from_arn(None)
+    @patch("builtins.print")
+    def test_get_iam_user_name_from_arn_exception(self, mock_print):
+        """Test get_iam_user_name_from_arn for exception handling and print output."""
+        result = self.helper.get_iam_user_name_from_arn(123)
 
-    #     self.assertIsNone(result)
-    #     expected_error = "Error extracting IAM user name: 'NoneType' object has no attribute 'startswith'"
-    #     mock_stdout.write.assert_called_with(expected_error + '\n')
-    # @patch('builtins.print')
-    # def test_get_iam_user_name_from_arn_exception(self, mock_print):
-    #     """Test get_iam_user_name_from_arn for exception handling and print output"""
+        self.assertIsNone(result)
+        expected_error = (
+            "Error extracting IAM user name: 'int' object has no attribute 'startswith'"
+        )
+        mock_print.assert_called_once_with(expected_error)
 
 
 if __name__ == "__main__":

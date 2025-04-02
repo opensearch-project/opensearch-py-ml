@@ -8,7 +8,9 @@
 
 import json
 import logging
+import sys
 import unittest
+from io import StringIO
 from unittest.mock import MagicMock, patch
 
 from botocore.exceptions import ClientError
@@ -30,6 +32,7 @@ class TestSecretHelper(unittest.TestCase):
 
     @patch("opensearch_py_ml.ml_commons.SecretsHelper.boto3.client")
     def test_create_secret_error_logging(self, mock_boto_client):
+        """Test create_secret error loggig"""
         mock_secretsmanager = MagicMock()
         mock_boto_client.return_value = mock_secretsmanager
 
@@ -69,6 +72,7 @@ class TestSecretHelper(unittest.TestCase):
 
     @patch("opensearch_py_ml.ml_commons.SecretsHelper.boto3.client")
     def test_create_secret_success(self, mock_boto_client):
+        """Test create_secret successful"""
         mock_secretsmanager = MagicMock()
         mock_boto_client.return_value = mock_secretsmanager
 
@@ -269,6 +273,41 @@ class TestSecretHelper(unittest.TestCase):
         )
 
     @patch("opensearch_py_ml.ml_commons.SecretsHelper.boto3.client")
+    def test_get_secret_arn_exception(self, mock_boto_client):
+        """Test get_secret_arn for exception handling and print output."""
+        mock_secretsmanager = MagicMock()
+        mock_boto_client.return_value = mock_secretsmanager
+
+        mock_secretsmanager.exceptions.ResourceNotFoundException = type(
+            "ResourceNotFoundException", (ClientError,), {}
+        )
+
+        # Set up the side effect to raise Exception
+        mock_secretsmanager.describe_secret.side_effect = Exception("Test error")
+        secret_helper = SecretHelper(
+            region=self.region,
+            aws_access_key=self.aws_access_key,
+            aws_secret_access_key=self.aws_secret_access_key,
+            aws_session_token=self.aws_session_token,
+        )
+
+        captured_output = StringIO()
+        sys.stdout = captured_output
+
+        try:
+            # Execute
+            arn = secret_helper.get_secret_arn(None)
+
+            # Assert
+            self.assertIsNone(arn)
+            self.assertEqual(
+                "An error occurred: Test error", captured_output.getvalue().strip()
+            )
+        finally:
+            # Restore stdout
+            sys.stdout = sys.__stdout__
+
+    @patch("opensearch_py_ml.ml_commons.SecretsHelper.boto3.client")
     def test_get_secret_details_arn_only_success(self, mock_boto_client):
         """Test get_secret_details returns ARN if fetch_value=False."""
         mock_secretsmanager = MagicMock()
@@ -375,6 +414,40 @@ class TestSecretHelper(unittest.TestCase):
         self.assertEqual(details["error_code"], "ResourceNotFoundException")
         mock_secretsmanager.describe_secret.assert_called_with(
             SecretId="nonexistent-secret"
+        )
+
+    @patch("opensearch_py_ml.ml_commons.SecretsHelper.boto3.client")
+    @patch("opensearch_py_ml.ml_commons.SecretsHelper.logger")
+    def test_get_secret_details_client_error(self, mock_logger, mock_boto_client):
+        """Test get_secret_details when ClientError occurs."""
+        mock_secrets_client = MagicMock()
+        mock_boto_client.return_value = mock_secrets_client
+
+        error_response = {
+            "Error": {"Code": "InvalidRequestException", "Message": "Invalid request"}
+        }
+        mock_secrets_client.describe_secret.side_effect = ClientError(
+            error_response, "DescribeSecret"
+        )
+
+        secret_helper = SecretHelper(
+            region=self.region,
+            aws_access_key=self.aws_access_key,
+            aws_secret_access_key=self.aws_secret_access_key,
+            aws_session_token=self.aws_session_token,
+        )
+        secret_name = "test-secret"
+        result = secret_helper.get_secret_details(secret_name)
+
+        self.assertEqual(
+            result,
+            {
+                "error": "An error occurred (InvalidRequestException) when calling the DescribeSecret operation: Invalid request",
+                "error_code": "InvalidRequestException",
+            },
+        )
+        mock_logger.error.assert_called_once_with(
+            f"An error occurred while fetching secret '{secret_name}': An error occurred (InvalidRequestException) when calling the DescribeSecret operation: Invalid request"
         )
 
 
