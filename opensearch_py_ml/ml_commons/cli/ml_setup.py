@@ -33,7 +33,6 @@ class Setup(ConnectorBase):
         Initialize the Setup class with default or existing configurations.
         """
         super().__init__()
-        self.config = {}
         self.service_type = ""
         self.opensearch_domain_region = ""
         self.opensearch_domain_endpoint = ""
@@ -469,8 +468,8 @@ class Setup(ConnectorBase):
                     f"{Fore.GREEN}Setup complete. You are now ready to use the ML features.{Style.RESET_ALL}"
                 )
                 return config_path
-        else:
-            # Handle failure to initialize OpenSearch client
-            print(
-                f"\n{Fore.RED}Failed to initialize OpenSearch client. Setup incomplete.{Style.RESET_ALL}\n"
-            )
+            else:
+                # Handle failure to initialize OpenSearch client
+                print(
+                    f"\n{Fore.RED}Failed to initialize OpenSearch client. Setup incomplete.{Style.RESET_ALL}\n"
+                )

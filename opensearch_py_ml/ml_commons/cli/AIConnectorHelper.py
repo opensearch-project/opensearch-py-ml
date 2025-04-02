@@ -291,7 +291,7 @@ class AIConnectorHelper:
                         f"'model_id' not found in task response: {task_response}"
                     )
             elif "error" in response_data:
-                raise Exception(f"Error creating model: {response_data['error']}")
+                raise Exception(f"Error registering model: {response_data['error']}")
             else:
                 raise KeyError(
                     f"The response does not contain 'model_id' or 'task_id'. Response content: {response_data}"

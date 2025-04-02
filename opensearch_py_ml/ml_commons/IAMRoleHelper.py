@@ -21,6 +21,9 @@ class IAMRoleHelper:
     Helper class for managing IAM roles and their interactions with OpenSearch.
     """
 
+    NO_SUCH_ENTITY = "nosuchentity"
+    NOT_FOUND = "not_found"
+
     def __init__(
         self,
         opensearch_domain_region,
@@ -70,7 +73,7 @@ class IAMRoleHelper:
             self.iam_client.get_role(RoleName=role_name)
             return True
         except ClientError as e:
-            if e.response["Error"]["Code"] == "NoSuchEntity":
+            if e.response["Error"]["Code"].lower() == self.NO_SUCH_ENTITY:
                 print(f"The requested role '{role_name}' does not exist.")
             else:
                 print(f"An error occurred: {e}")
@@ -107,7 +110,7 @@ class IAMRoleHelper:
             print(f"Role '{role_name}' deleted.")
 
         except ClientError as e:
-            if e.response["Error"]["Code"] == "NoSuchEntity":
+            if e.response["Error"]["Code"].lower() == self.NO_SUCH_ENTITY:
                 print(f"Role '{role_name}' does not exist.")
             else:
                 print(f"An error occurred: {e}")
@@ -201,7 +204,7 @@ class IAMRoleHelper:
             return role_details
 
         except ClientError as e:
-            if e.response["Error"]["Code"] == "NoSuchEntity":
+            if e.response["Error"]["Code"].lower() == self.NO_SUCH_ENTITY:
                 print(f"Role '{role_name}' does not exist.")
             else:
                 print(f"An error occurred: {e}")
@@ -220,7 +223,7 @@ class IAMRoleHelper:
             # Return ARN of the role
             return response["Role"]["Arn"]
         except ClientError as e:
-            if e.response["Error"]["Code"] == "NoSuchEntity":
+            if e.response["Error"]["Code"].lower() == self.NO_SUCH_ENTITY:
                 print(f"IAM role '{role_name}' not found.")
             else:
                 print(f"An error occurred: {e}")
@@ -238,7 +241,7 @@ class IAMRoleHelper:
             response = self.iam_client.get_user(UserName=username)
             return response["User"]["Arn"]
         except ClientError as e:
-            if e.response["Error"]["Code"] == "NoSuchEntity":
+            if e.response["Error"]["Code"].lower() == self.NO_SUCH_ENTITY:
                 print(f"IAM user '{username}' not found.")
             else:
                 print(f"An error occurred: {e}")
@@ -260,7 +263,10 @@ class IAMRoleHelper:
         )
         role_mapping = json.loads(r.text)
         headers = {"Content-Type": "application/json"}
-        if "status" in role_mapping and role_mapping["status"] == "NOT_FOUND":
+        if (
+            "status" in role_mapping
+            and role_mapping["status"].lower() == self.NOT_FOUND
+        ):
             data = {"backend_roles": [role_arn]}
             response = requests.put(
                 url,

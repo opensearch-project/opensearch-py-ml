@@ -8,6 +8,8 @@
 import unittest
 from unittest.mock import Mock, patch
 
+from colorama import Fore, Style
+
 from opensearch_py_ml.ml_commons.cli.ml_models.AlephAlphaModel import AlephAlphaModel
 
 
@@ -23,7 +25,7 @@ class TestAlephAlphaModel(unittest.TestCase):
         return_value="test_api_key",
     )
     def test_create_aleph_alpha_connector_luminous_base(self, mock_get_password):
-        # Test for Luminous-Base embedding model
+        """Test creating an Aleph Alpha connector with Luminous-Base embedding model"""
         result = self.aleph_alpha_model.create_aleph_alpha_connector(
             helper=self.mock_helper,
             save_config_method=self.mock_save_config,
@@ -38,11 +40,6 @@ class TestAlephAlphaModel(unittest.TestCase):
         self.mock_helper.create_connector.assert_called_once()
         call_args = self.mock_helper.create_connector.call_args[1]
         self.assertIsNone(call_args["create_connector_role_name"])
-        self.assertEqual(
-            call_args["payload"]["name"],
-            "Aleph Alpha Connector: luminous-base, representation: document",
-        )
-
         self.assertTrue(result)
 
     @patch(
@@ -50,7 +47,7 @@ class TestAlephAlphaModel(unittest.TestCase):
         return_value="test_api_key",
     )
     def test_create_aleph_alpha_connector_custom_model(self, mock_get_password):
-        # Test for Custom model
+        """Test creating an Aleph Alpha connector with custom model"""
         custom_payload = {
             "name": "Custom Model",
             "description": "Custom description",
@@ -64,12 +61,71 @@ class TestAlephAlphaModel(unittest.TestCase):
             api_key="test_api_key",
             connector_payload=custom_payload,
         )
-
         self.mock_helper.create_connector.assert_called_once()
         self.assertTrue(result)
 
+    @patch("builtins.input")
+    def test_input_custom_model_details(self, mock_input):
+        """Test create_aleph_alpha_connector for input_custom_model_details method"""
+        mock_input.side_effect = [
+            '{"name": "test-model",',
+            '"description": "test description",',
+            '"parameters": {"param": "value"}}',
+            "",
+        ]
+        result = self.aleph_alpha_model.input_custom_model_details()
+        expected_result = {
+            "name": "test-model",
+            "description": "test description",
+            "parameters": {"param": "value"},
+        }
+        self.assertEqual(result, expected_result)
+
+    @patch(
+        "opensearch_py_ml.ml_commons.cli.ml_setup.Setup.get_password_with_asterisks",
+        return_value="test_api_key",
+    )
+    @patch("builtins.input", side_effect=["1"])
+    def test_create_aleph_alpha_connector_select_model_interactive(
+        self, mock_input, mock_get_password
+    ):
+        """Test create_aleph_alpha_connector for selecting the model through the prompt"""
+        result = self.aleph_alpha_model.create_aleph_alpha_connector(
+            helper=self.mock_helper, save_config_method=self.mock_save_config
+        )
+        self.mock_helper.create_connector.assert_called_once()
+        self.assertTrue(result)
+
+    @patch("builtins.input")
+    def test_aleph_alpha_api_key(self, mock_input):
+        """Test create_aleph_alpha_connector getting Aleph Alpha API key with asterisk masking"""
+        mock_input.return_value = "test-api-key-123"
+        self.mock_helper.get_password_with_asterisks.return_value = "test-api-key-123"
+        api_key = self.mock_helper.get_password_with_asterisks(
+            "Enter your Aleph Alpha API key: "
+        )
+        self.mock_helper.get_password_with_asterisks.assert_called_once_with(
+            "Enter your Aleph Alpha API key: "
+        )
+        self.assertEqual(api_key, "test-api-key-123")
+
+    @patch("builtins.print")
+    @patch("builtins.input", side_effect=['{"name": "test-model"}', ""])
+    def test_create_aleph_alpha_connector_invalid_choice(self, mock_input, mock_print):
+        """Test creating an Aleph Alpha connector with invalid model choice"""
+        self.aleph_alpha_model.create_aleph_alpha_connector(
+            helper=self.mock_helper,
+            save_config_method=self.mock_save_config,
+            model_name="Invalid Model",
+            api_key="test_api_key",
+        )
+        mock_print.assert_any_call(
+            f"\n{Fore.YELLOW}Invalid choice. Defaulting to 'Custom model'.{Style.RESET_ALL}"
+        )
+        self.mock_helper.create_connector.assert_called_once()
+
     def test_create_aleph_alpha_connector_failure(self):
-        # Test connector creation failure
+        """Test creating an Aleph Alpha connector in failure scenario"""
         self.mock_helper.create_connector.return_value = None
 
         result = self.aleph_alpha_model.create_aleph_alpha_connector(

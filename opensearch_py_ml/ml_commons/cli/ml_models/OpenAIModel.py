@@ -77,9 +77,9 @@ class OpenAIModel(ModelBase):
                     raise ValueError("Connector role prefix cannot be empty.")
 
             id = str(uuid.uuid1())[:8]
-            connector_role_name = f"{connector_role_prefix}_openai_embedding_model_{id}"
+            connector_role_name = f"{connector_role_prefix}_openai_connector_{id}"
             create_connector_role_name = (
-                f"{connector_role_prefix}_openai_embedding_model_create_{id}"
+                f"{connector_role_prefix}_openai_connector_create_{id}"
             )
 
             if not secret_name:
