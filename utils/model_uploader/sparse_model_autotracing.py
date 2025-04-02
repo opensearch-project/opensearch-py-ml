@@ -18,7 +18,7 @@ ROOT_DIR = os.path.join(THIS_DIR, "../..")
 sys.path.append(ROOT_DIR)
 
 from opensearch_py_ml.ml_commons import MLCommonClient
-from opensearch_py_ml.ml_models import SparseEncodingModel
+from opensearch_py_ml.ml_models import SparseEncodingModel, SparseTokenizeModel
 from tests import OPENSEARCH_TEST_CLIENT
 from utils.model_uploader.autotracing_utils import (
     ATOL_TEST,
@@ -27,6 +27,7 @@ from utils.model_uploader.autotracing_utils import (
     ONNX_FORMAT,
     RTOL_TEST,
     SPARSE_ALGORITHM,
+    SPARSE_TOKENIZER_ALGORITHM,
     TEMP_MODEL_PATH,
     TORCH_SCRIPT_FORMAT,
     TORCHSCRIPT_FOLDER_PATH,
@@ -52,6 +53,9 @@ def trace_sparse_encoding_model(
     model_version: str,
     model_format: str,
     model_description: Optional[str] = None,
+    sparse_prune_ratio: float = 0,
+    activation: str = None,
+    is_tokenizer: bool = False,
 ) -> Tuple[str, str]:
     """
     Trace the pretrained sparse encoding model, create a model config file,
@@ -65,6 +69,12 @@ def trace_sparse_encoding_model(
     :type model_format: string
     :param model_description: Model description input
     :type model_description: string
+    :param sparse_prune_ratio: Model-side prune ratio for sparse_encoding
+    :type sparse_prune_ratio: float
+    :param activation: Sparse model activation type. The default None means log(1+relu(x))
+    :type activation: str
+    :param is_tokenizer: Whether to trace a sparse encoding model or just tokenizer
+    :type is_tokenizer: bool
     :return: Tuple of model_path (path to model zip file) and model_config_path (path to model config json file)
     :rtype: Tuple[str, str]
     """
@@ -76,8 +86,9 @@ def trace_sparse_encoding_model(
     )
 
     # 1.) Initiate a sparse encoding model class object
+    model_cls = SparseTokenizeModel if is_tokenizer else SparseEncodingModel
     pre_trained_model = init_sparse_model(
-        SparseEncodingModel, model_id, model_format, folder_path
+        model_cls, model_id, folder_path, sparse_prune_ratio, activation
     )
 
     # 2.) Save the model in the specified format
@@ -119,12 +130,18 @@ def register_and_deploy_sparse_encoding_model(
     model_config_path: str,
     model_format: str,
     texts: list[str],
+    is_tokenizer: bool = False,
 ) -> list:
     encoding_datas = None
     model_id = register_and_deploy_model(
         ml_client, model_format, model_path, model_config_path
     )
-    check_model_status(ml_client, model_id, model_format, SPARSE_ALGORITHM)
+    check_model_status(
+        ml_client,
+        model_id,
+        model_format,
+        SPARSE_TOKENIZER_ALGORITHM if is_tokenizer else SPARSE_ALGORITHM,
+    )
     try:
         encoding_input = {"text_docs": texts}
         encoding_output = ml_client.generate_model_inference(model_id, encoding_input)
@@ -138,8 +155,8 @@ def register_and_deploy_sparse_encoding_model(
         assert (
             False
         ), f"Raised Exception in generating sparse encoding with {model_format} model: {e}"
-    undeploy_model(ml_client, model_id, model_format)
-    delete_model(ml_client, model_id, model_format)
+    undeploy_model(ml_client, model_id, model_format, False)
+    delete_model(ml_client, model_id, model_format, False)
     return encoding_datas
 
 
@@ -187,6 +204,10 @@ def main(
     tracing_format: str,
     model_description: Optional[str] = None,
     upload_prefix: Optional[str] = None,
+    model_name: Optional[str] = None,
+    sparse_prune_ratio: float = 0,
+    activation: str = None,
+    is_tokenizer: bool = False,
 ) -> None:
     """
     Perform model auto-tracing and prepare files for uploading to OpenSearch model hub
@@ -199,6 +220,16 @@ def main(
     :type tracing_format: string
     :param model_description: Model description input
     :type model_description: string
+    :param upload_prefix: Model upload prefix input
+    :type upload_prefix: string
+    :param model_name: Model customize name for upload
+    :type model_name: string
+    :param sparse_prune_ratio: Model-side prune ratio for sparse_encoding
+    :type sparse_prune_ratio: float
+    :param activation: Sparse model activation type. The default None means log(1+relu(x)).
+    :type activation: str
+    :param is_tokenizer: Whether to trace a sparse encoding model or just tokenizer
+    :type is_tokenizer: bool
     :return: No return value expected
     :rtype: None
     """
@@ -210,6 +241,11 @@ def main(
     Model Version: {model_version}
     Tracing Format: {tracing_format}
     Model Description: {model_description if model_description is not None else 'N/A'}
+    Model Name: {model_name if model_name is not None else 'N/A'}
+    Upload Prefix: {upload_prefix if upload_prefix is not None else 'N/A'}
+    Sparse Prune Ratio: {sparse_prune_ratio}
+    Activation: {activation if activation is not None else 'N/A'}
+    Is Tokenizer: {is_tokenizer}
     ==========================================
     """
     )
@@ -220,7 +256,10 @@ def main(
     ), f"Now Only {TORCH_SCRIPT_FORMAT} is supported."
 
     ml_client = MLCommonClient(OPENSEARCH_TEST_CLIENT)
-    pre_trained_model = SparseEncodingModel(model_id)
+    model_cls = SparseTokenizeModel if is_tokenizer else SparseEncodingModel
+    pre_trained_model = init_sparse_model(
+        model_cls, model_id, None, sparse_prune_ratio, activation
+    )
     original_encoding_datas = pre_trained_model.process_sparse_encoding(TEST_SENTENCES)
     pre_trained_model.save(path=TEMP_MODEL_PATH)
     license_verified = verify_license_by_hfapi(model_id)
@@ -240,6 +279,9 @@ def main(
             model_version,
             TORCH_SCRIPT_FORMAT,
             model_description=model_description,
+            sparse_prune_ratio=sparse_prune_ratio,
+            activation=activation,
+            is_tokenizer=is_tokenizer,
         )
 
         torchscript_encoding_datas = register_and_deploy_sparse_encoding_model(
@@ -248,6 +290,7 @@ def main(
             torchscript_model_config_path,
             TORCH_SCRIPT_FORMAT,
             TEST_SENTENCES,
+            is_tokenizer,
         )
 
         pass_test = verify_embedding_data_vectors(
@@ -267,6 +310,7 @@ def main(
             torchscript_model_path,
             torchscript_model_config_path,
             upload_prefix,
+            model_name,
         )
 
         config_path_for_checking_description = torchscript_dst_model_config_path
@@ -278,7 +322,13 @@ def main(
             onnx_model_path,
             onnx_model_config_path,
         ) = trace_sparse_encoding_model(
-            model_id, model_version, ONNX_FORMAT, model_description=model_description
+            model_id,
+            model_version,
+            ONNX_FORMAT,
+            model_description=model_description,
+            sparse_prune_ratio=sparse_prune_ratio,
+            activation=activation,
+            is_tokenizer=is_tokenizer,
         )
 
         onnx_embedding_datas = register_and_deploy_sparse_encoding_model(
@@ -287,6 +337,7 @@ def main(
             onnx_model_config_path,
             ONNX_FORMAT,
             TEST_SENTENCES,
+            is_tokenizer,
         )
 
         pass_test = verify_embedding_data_vectors(
@@ -302,6 +353,8 @@ def main(
             ONNX_FORMAT,
             onnx_model_path,
             onnx_model_config_path,
+            upload_prefix,
+            model_name,
         )
 
         config_path_for_checking_description = onnx_dst_model_config_path
@@ -339,6 +392,14 @@ if __name__ == "__main__":
         help="Model customize path prefix for upload",
     )
     parser.add_argument(
+        "-mn",
+        "--model_name",
+        type=str,
+        nargs="?",
+        default=None,
+        help="Model customize name for upload",
+    )
+    parser.add_argument(
         "-md",
         "--model_description",
         type=str,
@@ -347,7 +408,39 @@ if __name__ == "__main__":
         const=None,
         help="Model description if you want to overwrite the default description",
     )
+    parser.add_argument(
+        "-spr",
+        "--sparse_prune_ratio",
+        type=float,
+        nargs="?",
+        default=None,
+        const=None,
+        help="sparse encoding model model-side pruning ratio",
+    )
+    parser.add_argument(
+        "-act",
+        "--activation",
+        type=str,
+        nargs="?",
+        default=None,
+        const=None,
+        help="sparse encoding model activation",
+    )
+    parser.add_argument(
+        "-t",
+        "--is_tokenizer",
+        action="store_true",
+        help="Whether to trace a sparse encoding model or just tokenizer",
+    )
     args = parser.parse_args()
+    for arg in vars(args):
+        value = getattr(args, arg)
+        if isinstance(value, str) and value.strip() == "":
+            setattr(args, arg, None)
+
+    sparse_prune_ratio = (
+        float(args.sparse_prune_ratio) if args.sparse_prune_ratio is not None else 0
+    )
 
     main(
         args.model_id,
@@ -355,4 +448,8 @@ if __name__ == "__main__":
         args.tracing_format,
         args.model_description,
         args.upload_prefix,
+        args.model_name,
+        sparse_prune_ratio,
+        args.activation,
+        args.is_tokenizer,
     )

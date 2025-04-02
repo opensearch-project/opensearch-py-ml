@@ -8,5 +8,11 @@
 from .metrics_correlation.mcorr import MCorr
 from .sentencetransformermodel import SentenceTransformerModel
 from .sparse_encoding_model import SparseEncodingModel
+from .sparse_tokenize_model import SparseTokenizeModel
 
-__all__ = ["SentenceTransformerModel", "MCorr", "SparseEncodingModel"]
+__all__ = [
+    "SentenceTransformerModel",
+    "MCorr",
+    "SparseEncodingModel",
+    "SparseTokenizeModel",
+]

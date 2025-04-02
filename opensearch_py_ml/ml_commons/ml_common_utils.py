@@ -30,6 +30,7 @@ MODEL_TASK_TYPE = "model_task_type"
 LICENSE_URL = "https://github.com/opensearch-project/opensearch-py-ml/raw/main/LICENSE"
 # Name of the function used for sparse encoding
 SPARSE_ENCODING_FUNCTION_NAME = "SPARSE_ENCODING"
+SPARSE_TOKENIZE_FUNCTION_NAME = "SPARSE_TOKENIZE"
 
 
 def _generate_model_content_hash_value(model_file_path: str) -> str:
