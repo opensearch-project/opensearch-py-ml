@@ -13,28 +13,28 @@ from unittest.mock import Mock, mock_open, patch
 import yaml
 from colorama import Fore, Style
 
-from opensearch_py_ml.ml_commons.cli.connector_base import ConnectorBase
+from opensearch_py_ml.ml_commons.cli.cli_base import CLIBase
 
 
-class TestConnectorBase(unittest.TestCase):
+class TestCLIBase(unittest.TestCase):
     def setUp(self):
-        if os.path.exists(ConnectorBase.CONFIG_FILE):
-            os.remove(ConnectorBase.CONFIG_FILE)
-        self.connector_base = ConnectorBase()
-        self.connector_base.OUTPUT_FILE = "/default/path/output.yml"
+        if os.path.exists(CLIBase.CONFIG_FILE):
+            os.remove(CLIBase.CONFIG_FILE)
+        self.cli_base = CLIBase()
+        self.cli_base.OUTPUT_FILE = "/default/path/output.yml"
         self.test_config = {
             "section1": {"key1": "value1"},
             "section2": {"key2": "value2"},
         }
 
     def tearDown(self):
-        if os.path.exists(ConnectorBase.CONFIG_FILE):
-            os.remove(ConnectorBase.CONFIG_FILE)
+        if os.path.exists(CLIBase.CONFIG_FILE):
+            os.remove(CLIBase.CONFIG_FILE)
 
     @patch("builtins.print")
     def test_load_config_no_file(self, mock_print):
         """Test load_config with a non-existent file"""
-        config = self.connector_base.load_config("nonexistent_config.yaml")
+        config = self.cli_base.load_config("nonexistent_config.yaml")
         self.assertEqual(config, {})
         mock_print.assert_called_once()
         self.assertIn("Configuration file not found", mock_print.call_args[0][0])
@@ -46,11 +46,11 @@ class TestConnectorBase(unittest.TestCase):
             "service_type": "amazon-opensearch-service",
             "opensearch_domain_region": "test-region",
         }
-        with open(ConnectorBase.CONFIG_FILE, "w") as f:
+        with open(CLIBase.CONFIG_FILE, "w") as f:
             yaml.dump(test_config, f)
-        config = self.connector_base.load_config(ConnectorBase.CONFIG_FILE)
+        config = self.cli_base.load_config(CLIBase.CONFIG_FILE)
         self.assertEqual(config, test_config)
-        self.assertEqual(self.connector_base.config, test_config)
+        self.assertEqual(self.cli_base.config, test_config)
         mock_print.assert_called_once()
         self.assertIn(
             "Setup configuration loaded successfully", mock_print.call_args[0][0]
@@ -59,10 +59,10 @@ class TestConnectorBase(unittest.TestCase):
     @patch("builtins.print")
     def test_load_config_invalid_yaml(self, mock_print):
         """Test load_config with an invalid YAML file"""
-        with open(ConnectorBase.CONFIG_FILE, "w") as f:
+        with open(CLIBase.CONFIG_FILE, "w") as f:
             f.write("invalid: yaml: content:")
 
-        config = self.connector_base.load_config(ConnectorBase.CONFIG_FILE)
+        config = self.cli_base.load_config(CLIBase.CONFIG_FILE)
         self.assertEqual(config, {})
         mock_print.assert_called_once()
         self.assertIn("Error parsing YAML configuration", mock_print.call_args[0][0])
@@ -73,13 +73,13 @@ class TestConnectorBase(unittest.TestCase):
         """Test load_config with permission error"""
         mock_exists.return_value = True
         with patch("builtins.open", side_effect=PermissionError):
-            config = self.connector_base.load_config(ConnectorBase.CONFIG_FILE)
+            config = self.cli_base.load_config(CLIBase.CONFIG_FILE)
 
             # Verify empty dict is returned
             self.assertEqual(config, {})
 
             # Verify exact error message
-            expected_message = f"{Fore.RED}Permission denied: Unable to read {ConnectorBase.CONFIG_FILE}{Style.RESET_ALL}"
+            expected_message = f"{Fore.RED}Permission denied: Unable to read {CLIBase.CONFIG_FILE}{Style.RESET_ALL}"
             mock_print.assert_called_once_with(expected_message)
 
     @patch("builtins.print")
@@ -88,7 +88,7 @@ class TestConnectorBase(unittest.TestCase):
         """Test load_config with general exception"""
         mock_exists.return_value = True
         with patch("builtins.open", side_effect=Exception("Test error")):
-            config = self.connector_base.load_config(ConnectorBase.CONFIG_FILE)
+            config = self.cli_base.load_config(CLIBase.CONFIG_FILE)
             mock_print.assert_called_once()
             self.assertEqual(config, {})
             self.assertIn(
@@ -109,7 +109,7 @@ class TestConnectorBase(unittest.TestCase):
             "os.access", return_value=True
         ):
 
-            result = self.connector_base.load_connector_config("test_config.yml")
+            result = self.cli_base.load_connector_config("test_config.yml")
 
             mock_file.assert_called_once_with("test_config.yml", "r")
             self.assertEqual(result, test_connector_config)
@@ -117,10 +117,10 @@ class TestConnectorBase(unittest.TestCase):
     @patch("builtins.print")
     def test_load_connector_config_invalid_yaml(self, mock_print):
         """Test load_connector_config with an invalid YAML file"""
-        with open(ConnectorBase.CONFIG_FILE, "w") as f:
+        with open(CLIBase.CONFIG_FILE, "w") as f:
             f.write("invalid: yaml: content:")
 
-        config = self.connector_base.load_connector_config(ConnectorBase.CONFIG_FILE)
+        config = self.cli_base.load_connector_config(CLIBase.CONFIG_FILE)
         self.assertEqual(config, {})
         mock_print.assert_called_once()
         self.assertIn("Error parsing YAML configuration", mock_print.call_args[0][0])
@@ -129,7 +129,7 @@ class TestConnectorBase(unittest.TestCase):
         """Test load_connector_config with a non-existent file"""
         with patch("builtins.open", mock_open()) as mock_file:
             mock_file.side_effect = FileNotFoundError()
-            result = self.connector_base.load_connector_config("nonexistent.yml")
+            result = self.cli_base.load_connector_config("nonexistent.yml")
             self.assertEqual(result, {})
 
     @patch("builtins.print")
@@ -138,15 +138,13 @@ class TestConnectorBase(unittest.TestCase):
         """Test load_connector_config with permission error"""
         mock_exists.return_value = True
         with patch("builtins.open", side_effect=PermissionError):
-            config = self.connector_base.load_connector_config(
-                ConnectorBase.CONFIG_FILE
-            )
+            config = self.cli_base.load_connector_config(CLIBase.CONFIG_FILE)
 
             # Verify empty dict is returned
             self.assertEqual(config, {})
 
             # Verify exact error message
-            expected_message = f"{Fore.RED}Permission denied: Unable to read {ConnectorBase.CONFIG_FILE}{Style.RESET_ALL}"
+            expected_message = f"{Fore.RED}Permission denied: Unable to read {CLIBase.CONFIG_FILE}{Style.RESET_ALL}"
             mock_print.assert_called_once_with(expected_message)
 
     @patch("builtins.print")
@@ -155,9 +153,7 @@ class TestConnectorBase(unittest.TestCase):
         """Test load_connector_config with general exception"""
         mock_exists.return_value = True
         with patch("builtins.open", side_effect=Exception("Test error")):
-            config = self.connector_base.load_connector_config(
-                ConnectorBase.CONFIG_FILE
-            )
+            config = self.cli_base.load_connector_config(CLIBase.CONFIG_FILE)
             mock_print.assert_called_once()
             self.assertEqual(config, {})
             self.assertIn(
@@ -169,10 +165,10 @@ class TestConnectorBase(unittest.TestCase):
     def test_save_config(self, mock_input, mock_print):
         """Test save_config successful"""
         test_config = {"key": "value"}
-        save_result = self.connector_base.save_config(test_config)
+        save_result = self.cli_base.save_config(test_config)
         mock_print.assert_called_once()
         self.assertTrue(save_result)
-        self.assertTrue(os.path.exists(ConnectorBase.CONFIG_FILE))
+        self.assertTrue(os.path.exists(CLIBase.CONFIG_FILE))
         self.assertIn("Configuration saved successfully", mock_print.call_args[0][0])
 
     @patch("builtins.input")
@@ -190,11 +186,11 @@ class TestConnectorBase(unittest.TestCase):
 
         with patch("builtins.open", mock_open()), patch("yaml.dump") as mock_dump:
 
-            result = self.connector_base.save_config(config)
+            result = self.cli_base.save_config(config)
 
             # Verify the overwrite confirmation was asked
             mock_input.assert_any_call(
-                f"{Fore.YELLOW}File already exists at {self.connector_base.CONFIG_FILE}. "
+                f"{Fore.YELLOW}File already exists at {self.cli_base.CONFIG_FILE}. "
                 f"Do you want to overwrite it? (yes/no): {Style.RESET_ALL}"
             )
 
@@ -216,11 +212,11 @@ class TestConnectorBase(unittest.TestCase):
         mock_input.side_effect = ["", "no"]
 
         with patch("builtins.open", mock_open()):
-            result = self.connector_base.save_config(config)
+            result = self.cli_base.save_config(config)
 
             # Verify the overwrite confirmation was asked
             mock_input.assert_any_call(
-                f"{Fore.YELLOW}File already exists at {self.connector_base.CONFIG_FILE}. "
+                f"{Fore.YELLOW}File already exists at {self.cli_base.CONFIG_FILE}. "
                 f"Do you want to overwrite it? (yes/no): {Style.RESET_ALL}"
             )
 
@@ -240,7 +236,7 @@ class TestConnectorBase(unittest.TestCase):
         mock_input.side_effect = ["", "invalid"]
 
         with patch("builtins.open", mock_open()):
-            self.connector_base.save_config(config)
+            self.cli_base.save_config(config)
             expected_message = (
                 f"{Fore.YELLOW}Please enter 'yes or 'no'.{Style.RESET_ALL}"
             )
@@ -264,7 +260,7 @@ class TestConnectorBase(unittest.TestCase):
         ]  # First for file check, second for directory check
 
         with patch("builtins.open", mock_open()), patch("yaml.dump"):
-            self.connector_base.save_config(config)
+            self.cli_base.save_config(config)
 
             # Verify makedirs was called with the correct directory
             expected_directory = "/test/path"
@@ -276,10 +272,10 @@ class TestConnectorBase(unittest.TestCase):
         """Test save_config with permission error"""
         with patch("builtins.open", side_effect=PermissionError("Permission denied")):
             config = {"key": "value"}
-            result = self.connector_base.save_config(config)
+            result = self.cli_base.save_config(config)
             mock_print.assert_called_once()
             self.assertIsNone(result)
-            self.assertFalse(os.path.exists(ConnectorBase.CONFIG_FILE))
+            self.assertFalse(os.path.exists(CLIBase.CONFIG_FILE))
             self.assertIn("Permission denied", mock_print.call_args[0][0])
 
     @patch("builtins.input")
@@ -288,7 +284,7 @@ class TestConnectorBase(unittest.TestCase):
         """Test save_config keyboard interrupt handling"""
         config = {"test": "data"}
         mock_input.side_effect = KeyboardInterrupt()
-        result = self.connector_base.save_config(config)
+        result = self.cli_base.save_config(config)
         self.assertIsNone(result)
         expected_message = (
             f"\n{Fore.YELLOW}Operation cancelled by user.{Style.RESET_ALL}"
@@ -301,9 +297,9 @@ class TestConnectorBase(unittest.TestCase):
         """Test save_config with exception"""
         with patch("builtins.open", side_effect=Exception("Test error")):
             config = {"key": "value"}
-            self.connector_base.save_config(config)
+            self.cli_base.save_config(config)
             mock_print.assert_called_once()
-            self.assertFalse(os.path.exists(ConnectorBase.CONFIG_FILE))
+            self.assertFalse(os.path.exists(CLIBase.CONFIG_FILE))
             self.assertIn("Error saving configuration", mock_print.call_args[0][0])
 
     def test_update_config(self):
@@ -318,7 +314,7 @@ class TestConnectorBase(unittest.TestCase):
             "yaml.dump"
         ) as mock_yaml_dump, patch("builtins.print") as mock_print:
 
-            result = self.connector_base.update_config(test_config, test_path)
+            result = self.cli_base.update_config(test_config, test_path)
 
             # Verify the result
             self.assertTrue(result)
@@ -349,7 +345,7 @@ class TestConnectorBase(unittest.TestCase):
             # Simulate permission error
             mock_file.side_effect = PermissionError("Permission denied")
 
-            result = self.connector_base.update_config(test_config, test_path)
+            result = self.cli_base.update_config(test_config, test_path)
 
             # Verify the result
             self.assertFalse(result)
@@ -371,7 +367,7 @@ class TestConnectorBase(unittest.TestCase):
             # Simulate YAML error
             mock_yaml_dump.side_effect = yaml.YAMLError("Invalid YAML")
 
-            result = self.connector_base.update_config(test_config, test_path)
+            result = self.cli_base.update_config(test_config, test_path)
 
             # Verify the result
             self.assertFalse(result)
@@ -393,7 +389,7 @@ class TestConnectorBase(unittest.TestCase):
             # Simulate FileNotFoundError
             mock_file.side_effect = FileNotFoundError("No such file or directory")
 
-            result = self.connector_base.update_config(test_config, test_path)
+            result = self.cli_base.update_config(test_config, test_path)
 
             # Verify the result
             self.assertFalse(result)
@@ -412,7 +408,7 @@ class TestConnectorBase(unittest.TestCase):
             "yaml.dump"
         ) as mock_yaml_dump, patch("builtins.print"):
 
-            result = self.connector_base.update_config(test_config, test_path)
+            result = self.cli_base.update_config(test_config, test_path)
 
             # Verify the result
             self.assertTrue(result)
@@ -422,7 +418,7 @@ class TestConnectorBase(unittest.TestCase):
                 {}, mock_file(), default_flow_style=False, sort_keys=False
             )
 
-    @patch.object(ConnectorBase, "save_output", Mock())
+    @patch.object(CLIBase, "save_output", Mock())
     def test_connector_output(self):
         """Test connector_output with all parameters provided"""
         output_id = "test-id"
@@ -431,7 +427,7 @@ class TestConnectorBase(unittest.TestCase):
         secret_name = "test-secret"
         role_arn = "test-arn"
 
-        self.connector_base.connector_output(
+        self.cli_base.connector_output(
             output_id=output_id,
             output_config=output_config,
             role_name=role_name,
@@ -449,67 +445,55 @@ class TestConnectorBase(unittest.TestCase):
 
         # Verify the output_config was updated correctly
         self.assertEqual(
-            self.connector_base.output_config["connector_create"], expected_update
+            self.cli_base.output_config["connector_create"], expected_update
         )
 
         # Verify save_output was called with the updated config
-        self.connector_base.save_output.assert_called_once_with(
-            self.connector_base.output_config
-        )
+        self.cli_base.save_output.assert_called_once_with(self.cli_base.output_config)
 
-    @patch.object(ConnectorBase, "save_output", Mock())
+    @patch.object(CLIBase, "save_output", Mock())
     def test_connector_output_invalid_json(self):
         """Test connector_output with invalid JSON"""
         output_id = "test-id"
         output_config = "invalid json"
 
         with self.assertRaises(json.JSONDecodeError):
-            self.connector_base.connector_output(
+            self.cli_base.connector_output(
                 output_id=output_id, output_config=output_config
             )
 
         # Verify save_output was not called
-        self.connector_base.save_output.assert_not_called()
+        self.cli_base.save_output.assert_not_called()
 
-    @patch.object(ConnectorBase, "save_output", Mock())
+    @patch.object(CLIBase, "save_output", Mock())
     def test_register_model_output(self):
         """Test register_model_output with all parameters provided"""
         model_id = "test-id"
         model_name = "test-model"
 
-        self.connector_base.register_model_output(
-            model_id=model_id, model_name=model_name
-        )
+        self.cli_base.register_model_output(model_id=model_id, model_name=model_name)
 
         expected_update = {"model_id": "test-id", "model_name": "test-model"}
 
         # Verify the output_config was updated correctly
-        self.assertEqual(
-            self.connector_base.output_config["register_model"], expected_update
-        )
+        self.assertEqual(self.cli_base.output_config["register_model"], expected_update)
 
         # Verify save_output was called with the updated config
-        self.connector_base.save_output.assert_called_once_with(
-            self.connector_base.output_config
-        )
+        self.cli_base.save_output.assert_called_once_with(self.cli_base.output_config)
 
-    @patch.object(ConnectorBase, "save_output", Mock())
+    @patch.object(CLIBase, "save_output", Mock())
     def test_predict_model_output(self):
         """Test predict_model_output with all parameters provided"""
         response = "test-response"
-        self.connector_base.predict_model_output(response=response)
+        self.cli_base.predict_model_output(response=response)
 
         expected_update = {"response": "test-response"}
 
         # Verify the output_config was updated correctly
-        self.assertEqual(
-            self.connector_base.output_config["predict_model"], expected_update
-        )
+        self.assertEqual(self.cli_base.output_config["predict_model"], expected_update)
 
         # Verify save_output was called with the updated config
-        self.connector_base.save_output.assert_called_once_with(
-            self.connector_base.output_config
-        )
+        self.cli_base.save_output.assert_called_once_with(self.cli_base.output_config)
 
     @patch("builtins.input", return_value="")
     @patch("os.path.exists", return_value=False)
@@ -520,7 +504,7 @@ class TestConnectorBase(unittest.TestCase):
         self, mock_file, mock_makedirs, mock_abspath, mock_exists, mock_input
     ):
         """Test save_output with default path"""
-        result = self.connector_base.save_output(self.test_config)
+        result = self.cli_base.save_output(self.test_config)
 
         # Verify the result
         self.assertEqual(result, "/default/path/output.yml")
@@ -530,7 +514,7 @@ class TestConnectorBase(unittest.TestCase):
         mock_file().write.assert_called()
 
         # Verify the OUTPUT_FILE was updated
-        self.assertEqual(self.connector_base.OUTPUT_FILE, "/default/path/output.yml")
+        self.assertEqual(self.cli_base.OUTPUT_FILE, "/default/path/output.yml")
 
     @patch("builtins.input", return_value="/custom/path/config")
     @patch("os.path.exists", return_value=False)
@@ -541,7 +525,7 @@ class TestConnectorBase(unittest.TestCase):
         self, mock_file, mock_makedirs, mock_abspath, mock_exists, mock_input
     ):
         """Test save_output with custom path"""
-        result = self.connector_base.save_output(self.test_config)
+        result = self.cli_base.save_output(self.test_config)
 
         self.assertEqual(result, "/custom/path/config.yaml")
         mock_file.assert_called_with("/custom/path/config.yaml", "w")
@@ -568,7 +552,7 @@ class TestConnectorBase(unittest.TestCase):
             mock_exists.return_value = False
             mock_abspath.side_effect = lambda x: x
             mock_dirname.return_value = "/test/path"
-            result = self.connector_base.save_output(config)
+            result = self.cli_base.save_output(config)
             self.assertEqual(result, expected_path)
 
     @patch("builtins.input", return_value="")
@@ -593,7 +577,7 @@ class TestConnectorBase(unittest.TestCase):
         }
         mock_yaml_load.return_value = existing_config
         with patch("yaml.dump") as mock_yaml_dump:
-            result = self.connector_base.save_output(self.test_config)
+            result = self.cli_base.save_output(self.test_config)
             self.assertEqual(result, "/default/path/output.yml")
             mock_yaml_dump.assert_called_once()
             actual_config = mock_yaml_dump.call_args[0][0]
@@ -612,14 +596,14 @@ class TestConnectorBase(unittest.TestCase):
     @patch("os.path.abspath", return_value="/default/path/output.yml")
     def test_save_output_permission_error(self, mock_abspath, mock_exists, mock_input):
         """Test save_output with permission error"""
-        result = self.connector_base.save_output(self.test_config)
+        result = self.cli_base.save_output(self.test_config)
 
         self.assertIsNone(result)
 
     @patch("builtins.input", side_effect=KeyboardInterrupt)
     def test_save_output_keyboard_interrupt(self, mock_input):
         """Test save_output with keyboard interrupt"""
-        result = self.connector_base.save_output(self.test_config)
+        result = self.cli_base.save_output(self.test_config)
 
         self.assertIsNone(result)
 
@@ -631,7 +615,7 @@ class TestConnectorBase(unittest.TestCase):
         self, mock_makedirs, mock_abspath, mock_exists, mock_input
     ):
         """Test save_output with general error"""
-        result = self.connector_base.save_output(self.test_config)
+        result = self.cli_base.save_output(self.test_config)
 
         self.assertIsNone(result)
 
@@ -649,7 +633,7 @@ class TestConnectorBase(unittest.TestCase):
         self, mock_file, mock_abspath, mock_exists, mock_input
     ):
         """Test save_output with invalid existing YAML"""
-        result = self.connector_base.save_output(self.test_config)
+        result = self.cli_base.save_output(self.test_config)
 
         self.assertIsNone(result)
 
@@ -687,7 +671,7 @@ class TestConnectorBase(unittest.TestCase):
         ]
         for input_url, expected_output in test_cases:
             with self.subTest(input_url=input_url):
-                result = self.connector_base.get_opensearch_domain_name(input_url)
+                result = self.cli_base.get_opensearch_domain_name(input_url)
                 self.assertEqual(
                     result,
                     expected_output,

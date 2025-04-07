@@ -16,13 +16,17 @@ from botocore.exceptions import ClientError
 from colorama import Fore, Style, init
 from opensearchpy import OpenSearch, RequestsHttpConnection
 
-from opensearch_py_ml.ml_commons.cli.connector_base import ConnectorBase
+from opensearch_py_ml.ml_commons.cli.aws_config import AWSConfig
+from opensearch_py_ml.ml_commons.cli.cli_base import CLIBase
+from opensearch_py_ml.ml_commons.cli.opensearch_domain_config import (
+    OpenSearchDomainConfig,
+)
 
 # Initialize colorama for colored terminal output
 init(autoreset=True)
 
 
-class Setup(ConnectorBase):
+class Setup(CLIBase):
     """
     Handles the setup and configuration of the OpenSearch environment.
     Manages AWS credentials (if amazon-opensearch-service) and OpenSearch client initialization.
@@ -33,19 +37,24 @@ class Setup(ConnectorBase):
         Initialize the Setup class with default or existing configurations.
         """
         super().__init__()
-        self.service_type = ""
-        self.opensearch_domain_region = ""
-        self.opensearch_domain_endpoint = ""
-        self.opensearch_domain_username = ""
-        self.opensearch_domain_password = ""
-        self.aws_user_name = ""
-        self.aws_role_name = ""
-        self.aws_access_key = ""
-        self.aws_secret_access_key = ""
-        self.aws_session_token = ""
-        self.opensearch_client = None
         self.config = configparser.ConfigParser()
+        self.service_type = ""
+        self.opensearch_client = None
         self.session = None
+        self.opensearch_config = OpenSearchDomainConfig(
+            opensearch_domain_region="",
+            opensearch_domain_name="",
+            opensearch_domain_username="",
+            opensearch_domain_password="",
+            opensearch_domain_endpoint="",
+        )
+        self.aws_config = AWSConfig(
+            aws_user_name="",
+            aws_role_name="",
+            aws_access_key="",
+            aws_secret_access_key="",
+            aws_session_token="",
+        )
 
     def check_credentials_validity(self, access_key, secret_key, session_token):
         """
@@ -104,11 +113,15 @@ class Setup(ConnectorBase):
                 f"{Fore.YELLOW}Your AWS credentials are invalid or have expired.{Style.RESET_ALL}"
             )
             self.configure_aws()
-            self.config["aws_credentials"]["aws_access_key"] = self.aws_access_key
+            self.config["aws_credentials"][
+                "aws_access_key"
+            ] = self.aws_config.aws_access_key
             self.config["aws_credentials"][
                 "aws_secret_access_key"
-            ] = self.aws_secret_access_key
-            self.config["aws_credentials"]["aws_session_token"] = self.aws_session_token
+            ] = self.aws_config.aws_secret_access_key
+            self.config["aws_credentials"][
+                "aws_session_token"
+            ] = self.aws_config.aws_session_token
             self.update_config(self.config, config_path)
         else:
             print(
@@ -123,23 +136,25 @@ class Setup(ConnectorBase):
         Configure AWS credentials by prompting the user for input.
         """
         print("Let's configure your AWS credentials.")
-        self.aws_access_key = self.get_password_with_asterisks(
+        self.aws_config.aws_access_key = self.get_password_with_asterisks(
             "Enter your AWS Access Key ID: "
         )
-        self.aws_secret_access_key = self.get_password_with_asterisks(
+        self.aws_config.aws_secret_access_key = self.get_password_with_asterisks(
             "Enter your AWS Secret Access Key: "
         )
-        self.aws_session_token = self.get_password_with_asterisks(
+        self.aws_config.aws_session_token = self.get_password_with_asterisks(
             "Enter your AWS Session Token: "
         )
 
         self.update_aws_credentials(
-            self.aws_access_key,
-            self.aws_secret_access_key,
-            self.aws_session_token,
+            self.aws_config.aws_access_key,
+            self.aws_config.aws_secret_access_key,
+            self.aws_config.aws_session_token,
         )
         if self.check_credentials_validity(
-            self.aws_access_key, self.aws_secret_access_key, self.aws_session_token
+            self.aws_config.aws_access_key,
+            self.aws_config.aws_secret_access_key,
+            self.aws_config.aws_session_token,
         ):
             print(
                 f"{Fore.GREEN}New AWS credentials have been successfully configured and verified.{Style.RESET_ALL}"
@@ -233,43 +248,46 @@ class Setup(ConnectorBase):
             arn_type = input("Enter your choice (1-2): ").strip()
 
             if arn_type == "1":
-                self.aws_role_name = (
-                    input("Enter your AWS IAM Role ARN: ").strip() or self.aws_role_name
+                self.aws_config.aws_role_name = (
+                    input("Enter your AWS IAM Role ARN: ").strip()
+                    or self.aws_config.aws_role_name
                 )
             elif arn_type == "2":
-                self.aws_user_name = (
-                    input("Enter your AWS IAM User ARN: ").strip() or self.aws_user_name
+                self.aws_config.aws_user_name = (
+                    input("Enter your AWS IAM User ARN: ").strip()
+                    or self.aws_config.aws_user_name
                 )
             else:
                 print(
                     f"\n{Fore.YELLOW}Invalid choice. Defaulting to 'IAM Role ARN'.{Style.RESET_ALL}"
                 )
-                self.aws_role_name = (
-                    input("Enter your AWS IAM Role ARN: ").strip() or self.aws_role_name
+                self.aws_config.aws_role_name = (
+                    input("Enter your AWS IAM Role ARN: ").strip()
+                    or self.aws_config.aws_role_name
                 )
 
             # Prompt for domain information
             default_region = "us-west-2"
-            self.opensearch_domain_region = (
+            self.opensearch_config.opensearch_domain_region = (
                 input(
                     f"\nEnter your AWS OpenSearch region, or press Enter for default [{default_region}]: "
                 ).strip()
                 or default_region
             )
-            self.opensearch_domain_endpoint = input(
+            self.opensearch_config.opensearch_domain_endpoint = input(
                 "Enter your AWS OpenSearch domain endpoint: "
             ).strip()
-            self.opensearch_domain_username = input(
+            self.opensearch_config.opensearch_domain_username = input(
                 "Enter your AWS OpenSearch username: "
             ).strip()
-            self.opensearch_domain_password = self.get_password_with_asterisks(
-                "Enter your AWS OpenSearch password: "
+            self.opensearch_config.opensearch_domain_password = (
+                self.get_password_with_asterisks("Enter your AWS OpenSearch password: ")
             )
         elif self.service_type == "open-source":
             # For open-source, skip AWS configurations
             print("\n--- Open-source OpenSearch Setup ---")
             default_endpoint = "https://localhost:9200"
-            self.opensearch_domain_endpoint = (
+            self.opensearch_config.opensearch_domain_endpoint = (
                 input(
                     f"\nEnter your custom endpoint, or press Enter for default [{default_endpoint}]: "
                 ).strip()
@@ -283,36 +301,36 @@ class Setup(ConnectorBase):
                 .lower()
             )
             if auth_required == "yes":
-                self.opensearch_domain_username = input(
+                self.opensearch_config.opensearch_domain_username = input(
                     "Enter your OpenSearch username: "
                 ).strip()
-                self.opensearch_domain_password = self.get_password_with_asterisks(
-                    "Enter your OpenSearch password: "
+                self.opensearch_config.opensearch_domain_password = (
+                    self.get_password_with_asterisks("Enter your OpenSearch password: ")
                 )
             else:
-                self.opensearch_domain_username = None
-                self.opensearch_domain_password = None
+                self.opensearch_config.opensearch_domain_username = None
+                self.opensearch_config.opensearch_domain_password = None
 
             # AWS OpenSearch region and IAM principal not needed
-            self.opensearch_domain_region = ""
-            self.aws_role_name = ""
-            self.aws_user_name = ""
+            self.opensearch_config.opensearch_domain_region = ""
+            self.aws_config.aws_role_name = ""
+            self.aws_config.aws_user_name = ""
 
         # Update configuration dictionary
         self.config = {
             "service_type": self.service_type,
             "opensearch_config": {
-                "opensearch_domain_region": self.opensearch_domain_region,
-                "opensearch_domain_endpoint": self.opensearch_domain_endpoint,
-                "opensearch_domain_username": self.opensearch_domain_username,
-                "opensearch_domain_password": self.opensearch_domain_password,
+                "opensearch_domain_region": self.opensearch_config.opensearch_domain_region,
+                "opensearch_domain_endpoint": self.opensearch_config.opensearch_domain_endpoint,
+                "opensearch_domain_username": self.opensearch_config.opensearch_domain_username,
+                "opensearch_domain_password": self.opensearch_config.opensearch_domain_password,
             },
             "aws_credentials": {
-                "aws_role_name": self.aws_role_name,
-                "aws_user_name": self.aws_user_name,
-                "aws_access_key": self.aws_access_key,
-                "aws_secret_access_key": self.aws_secret_access_key,
-                "aws_session_token": self.aws_session_token,
+                "aws_role_name": self.aws_config.aws_role_name,
+                "aws_user_name": self.aws_config.aws_user_name,
+                "aws_access_key": self.aws_config.aws_access_key,
+                "aws_secret_access_key": self.aws_config.aws_secret_access_key,
+                "aws_session_token": self.aws_config.aws_session_token,
             },
         }
         config_path = self.save_config(self.config)
@@ -322,32 +340,38 @@ class Setup(ConnectorBase):
         """
         Initialize the OpenSearch client based on the service type and configuration.
         """
-        if not self.opensearch_domain_endpoint:
+        if not self.opensearch_config.opensearch_domain_endpoint:
             print(
                 f"{Fore.RED}OpenSearch endpoint not set. Please run setup first.{Style.RESET_ALL}\n"
             )
             return False
 
-        parsed_url = urlparse(self.opensearch_domain_endpoint)
+        parsed_url = urlparse(self.opensearch_config.opensearch_domain_endpoint)
         host = parsed_url.hostname
         port = parsed_url.port or (443 if parsed_url.scheme == "https" else 9200)
 
         # Determine auth based on service type
         if self.service_type == "amazon-opensearch-service":
             if (
-                not self.opensearch_domain_username
-                or not self.opensearch_domain_password
+                not self.opensearch_config.opensearch_domain_username
+                or not self.opensearch_config.opensearch_domain_password
             ):
                 print(
                     f"{Fore.RED}OpenSearch username or password not set. Please run setup first.{Style.RESET_ALL}\n"
                 )
                 return False
-            auth = (self.opensearch_domain_username, self.opensearch_domain_password)
+            auth = (
+                self.opensearch_config.opensearch_domain_username,
+                self.opensearch_config.opensearch_domain_password,
+            )
         elif self.service_type == "open-source":
-            if self.opensearch_domain_username and self.opensearch_domain_password:
+            if (
+                self.opensearch_config.opensearch_domain_username
+                and self.opensearch_config.opensearch_domain_password
+            ):
                 auth = (
-                    self.opensearch_domain_username,
-                    self.opensearch_domain_password,
+                    self.opensearch_config.opensearch_domain_username,
+                    self.opensearch_config.opensearch_domain_password,
                 )
             else:
                 auth = None
@@ -388,25 +412,27 @@ class Setup(ConnectorBase):
         self.service_type = self.config.get("service_type", "")
         # OpenSearch config
         opensearch_config = self.config.get("opensearch_config", {})
-        self.opensearch_domain_region = opensearch_config.get(
+        self.opensearch_config.opensearch_domain_region = opensearch_config.get(
             "opensearch_domain_region", ""
         )
-        self.opensearch_domain_endpoint = opensearch_config.get(
+        self.opensearch_config.opensearch_domain_endpoint = opensearch_config.get(
             "opensearch_domain_endpoint", ""
         )
-        self.opensearch_domain_username = opensearch_config.get(
+        self.opensearch_config.opensearch_domain_username = opensearch_config.get(
             "opensearch_domain_username", ""
         )
-        self.opensearch_domain_password = opensearch_config.get(
+        self.opensearch_config.opensearch_domain_password = opensearch_config.get(
             "opensearch_domain_password", ""
         )
         # AWS credentials
         aws_credentials = self.config.get("aws_credentials", {})
-        self.aws_role_name = aws_credentials.get("aws_role_name", "")
-        self.aws_user_name = aws_credentials.get("aws_user_name", "")
-        self.aws_access_key = aws_credentials.get("aws_access_key", "")
-        self.aws_secret_access_key = aws_credentials.get("aws_secret_access_key", "")
-        self.aws_session_token = aws_credentials.get("aws_session_token", "")
+        self.aws_config.aws_role_name = aws_credentials.get("aws_role_name", "")
+        self.aws_config.aws_user_name = aws_credentials.get("aws_user_name", "")
+        self.aws_config.aws_access_key = aws_credentials.get("aws_access_key", "")
+        self.aws_config.aws_secret_access_key = aws_credentials.get(
+            "aws_secret_access_key", ""
+        )
+        self.aws_config.aws_session_token = aws_credentials.get("aws_session_token", "")
         return True
 
     def setup_command(self, config_path=None):

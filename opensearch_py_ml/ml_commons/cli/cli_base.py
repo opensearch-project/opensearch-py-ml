@@ -13,11 +13,17 @@ import yaml
 from colorama import Fore, Style
 from rich.console import Console
 
+from opensearch_py_ml.ml_commons.cli.AIConnectorHelper import AIConnectorHelper
+from opensearch_py_ml.ml_commons.cli.aws_config import AWSConfig
+from opensearch_py_ml.ml_commons.cli.opensearch_domain_config import (
+    OpenSearchDomainConfig,
+)
+
 # Initialize Rich console for enhanced CLI outputs
 console = Console()
 
 
-class ConnectorBase:
+class CLIBase:
 
     # Default setup configuration and output file name
     CONFIG_FILE = os.path.join(os.getcwd(), "setup_config.yml")
@@ -25,7 +31,7 @@ class ConnectorBase:
 
     def __init__(self):
         """
-        Initialize the ConnectorBase class.
+        Initialize the CLIBase class.
         """
         self.config = {}
         self.output_config = {
@@ -36,7 +42,7 @@ class ConnectorBase:
 
     def load_config(self, config_path=None) -> dict:
         """
-        Load configuration from the configuration file path.
+        Load setup configuration from the configuration file path.
         """
         try:
             config_path = config_path or self.CONFIG_FILE
@@ -81,7 +87,7 @@ class ConnectorBase:
 
     def load_connector_config(self, connector_config_path=None) -> dict:
         """
-        Load configuration from the config file path.
+        Load connector configuration from the config file path.
         """
         try:
             if not os.path.exists(connector_config_path):
@@ -206,6 +212,9 @@ class ConnectorBase:
         secret_name=None,
         role_arn=None,
     ):
+        """
+        Save connector output to a YAML file.
+        """
         connector_data = json.loads(output_config)
         connector_name = connector_data.get("name")
         # Update the connector_create section
@@ -221,6 +230,9 @@ class ConnectorBase:
         self.save_output(self.output_config)
 
     def register_model_output(self, model_id, model_name):
+        """
+        Save register model output to a YAML file.
+        """
         # Update the register_model section
         self.output_config["register_model"].update(
             {
@@ -231,6 +243,9 @@ class ConnectorBase:
         self.save_output(self.output_config)
 
     def predict_model_output(self, response):
+        """
+        Save predict model output to a YAML file.
+        """
         self.output_config["predict_model"].update(
             {
                 "response": response,
@@ -330,3 +345,72 @@ class ConnectorBase:
                     return domain_name
                 return domain_part
         return None
+
+    def check_config(self, config, service_type, opensearch_config):
+        """
+        Check if the configuration is valid for the given service type and OpenSearch configuration.
+        """
+        aws_credentials = self.config.get("aws_credentials", {})
+        opensearch_domain_endpoint = opensearch_config.get("opensearch_domain_endpoint")
+        if not opensearch_domain_endpoint:
+            print(
+                f"\n{Fore.RED}OpenSearch endpoint not set. Please run setup first.{Style.RESET_ALL}\n"
+            )
+            return False
+
+        if service_type == "open-source":
+            # For open-source, check username and password
+            if not opensearch_config.get(
+                "opensearch_domain_username"
+            ) or not opensearch_config.get("opensearch_domain_password"):
+                print(
+                    f"{Fore.RED}OpenSearch username or password not set. Please run setup first.{Style.RESET_ALL}\n"
+                )
+                return False
+            else:
+                self.opensearch_domain_name = None
+        else:
+            # For managed service, check AWS-specific configurations
+            self.opensearch_domain_name = self.get_opensearch_domain_name(
+                opensearch_domain_endpoint
+            )
+            if (
+                not opensearch_config.get("opensearch_domain_region")
+                or not self.opensearch_domain_name
+            ):
+                print(
+                    f"{Fore.RED}AWS region or domain name not set. Please run setup first.{Style.RESET_ALL}\n"
+                )
+                return False
+
+        # Create OpenSearch config
+        opensearch_config = OpenSearchDomainConfig(
+            opensearch_domain_region=opensearch_config.get("opensearch_domain_region"),
+            opensearch_domain_name=self.opensearch_domain_name,
+            opensearch_domain_username=opensearch_config.get(
+                "opensearch_domain_username"
+            ),
+            opensearch_domain_password=opensearch_config.get(
+                "opensearch_domain_password"
+            ),
+            opensearch_domain_endpoint=opensearch_config.get(
+                "opensearch_domain_endpoint"
+            ),
+        )
+
+        # Create AWS config
+        aws_config = AWSConfig(
+            aws_user_name=aws_credentials.get("aws_user_name"),
+            aws_role_name=aws_credentials.get("aws_role_name"),
+            aws_access_key=aws_credentials.get("aws_access_key"),
+            aws_secret_access_key=aws_credentials.get("aws_secret_access_key"),
+            aws_session_token=aws_credentials.get("aws_session_token"),
+        )
+
+        # Create AIConnectorHelper
+        ai_helper = AIConnectorHelper(
+            service_type=config.get("service_type"),
+            opensearch_config=opensearch_config,
+            aws_config=aws_config,
+        )
+        return ai_helper

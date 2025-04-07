@@ -8,56 +8,38 @@
 from colorama import Fore, Style
 
 from opensearch_py_ml.ml_commons.cli.ml_models.model_base import ModelBase
-from opensearch_py_ml.ml_commons.cli.ml_setup import Setup
 
 
 class AlephAlphaModel(ModelBase):
-    def create_aleph_alpha_connector(
+    def create_connector(
         self,
         helper,
         save_config_method,
         model_name=None,
         api_key=None,
-        connector_payload=None,
+        connector_body=None,
     ):
         """
         Create Aleph Alpha connector.
         """
         # Set trusted connector endpoints for Aleph Alpha
-        settings_body = {
-            "persistent": {
-                "plugins.ml_commons.trusted_connector_endpoints_regex": [
-                    "^https://api\\.aleph-alpha\\.com/.*$"
-                ]
-            }
-        }
-        helper.opensearch_client.cluster.put_settings(body=settings_body)
+        trusted_endpoint = "^https://api\\.aleph-alpha\\.com/.*$"
+        self.set_trusted_endpoint(helper, trusted_endpoint)
 
-        # Prompt for necessary input
-        if model_name == "Luminous-Base embedding model":
-            model_type = "1"
-        elif model_name == "Custom model":
-            model_type = "2"
-        else:
-            print("\nPlease select a model for the connector creation: ")
-            print("1. Luminous-Base embedding model")
-            print("2. Custom model")
-            model_type = input("Enter your choice (1-2): ").strip()
+        # Prompt to choose model
+        model_type = self.get_model_details("Aleph Alpha", "open-source", model_name)
 
-        setup = Setup()
-        if not api_key:
-            api_key = setup.get_password_with_asterisks(
-                "Enter your Aleph Alpha API key: "
-            )
+        # Prompt for API key
+        aleph_alpha_api_key = self.set_api_key(api_key, "Aleph Alpha")
 
         if model_type == "1":
-            connector_payload = {
+            connector_body = {
                 "name": "Aleph Alpha Connector: luminous-base, representation: document",
                 "description": "The connector to the Aleph Alpha luminous-base embedding model with representation: document",
                 "version": "1",
                 "protocol": "http",
                 "parameters": {"representation": "document"},
-                "credential": {"AlephAlpha_API_Token": api_key},
+                "credential": {"AlephAlpha_API_Token": aleph_alpha_api_key},
                 "actions": [
                     {
                         "action_type": "predict",
@@ -66,7 +48,7 @@ class AlephAlphaModel(ModelBase):
                         "headers": {
                             "Content-Type": "application/json",
                             "Accept": "application/json",
-                            "Authorization": f"Bearer {api_key}",
+                            "Authorization": f"Bearer {aleph_alpha_api_key}",
                         },
                         "request_body": '{ "model": "luminous-base", "prompt": "${parameters.input}", "representation": "${parameters.representation}", "normalize": ${parameters.normalize}}',
                         "pre_process_function": '\n    StringBuilder builder = new StringBuilder();\n    builder.append("\\"");\n    String first = params.text_docs[0];\n    builder.append(first);\n    builder.append("\\"");\n    def parameters = "{" +"\\"input\\":" + builder + "}";\n    return  "{" +"\\"parameters\\":" + parameters + "}";',
@@ -75,20 +57,20 @@ class AlephAlphaModel(ModelBase):
                 ],
             }
         elif model_type == "2":
-            if not connector_payload:
-                connector_payload = self.input_custom_model_details()
+            if not connector_body:
+                connector_body = self.input_custom_model_details()
         else:
             print(
                 f"\n{Fore.YELLOW}Invalid choice. Defaulting to 'Custom model'.{Style.RESET_ALL}"
             )
-            if not connector_payload:
-                connector_payload = self.input_custom_model_details()
+            if not connector_body:
+                connector_body = self.input_custom_model_details()
 
         # Create connector
         print("Creating Aleph Alpha connector...")
         connector_id = helper.create_connector(
             create_connector_role_name=None,
-            payload=connector_payload,
+            payload=connector_body,
         )
 
         if connector_id:

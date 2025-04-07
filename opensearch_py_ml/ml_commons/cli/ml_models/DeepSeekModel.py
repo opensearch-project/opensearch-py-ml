@@ -6,12 +6,10 @@
 # GitHub history for details.
 
 import json
-import uuid
 
 from colorama import Fore, Style
 
 from opensearch_py_ml.ml_commons.cli.ml_models.model_base import ModelBase
-from opensearch_py_ml.ml_commons.cli.ml_setup import Setup
 
 
 class DeepSeekModel(ModelBase):
@@ -25,77 +23,42 @@ class DeepSeekModel(ModelBase):
         """
         self.service_type = service_type
 
-    def create_deepseek_connector(
+    def create_connector(
         self,
         helper,
         save_config_method,
         connector_role_prefix=None,
         model_name=None,
         api_key=None,
-        connector_payload=None,
+        connector_body=None,
         secret_name=None,
     ):
         """
         Create DeepSeek connector.
         """
         # Set trusted connector endpoints for DeepSeek
-        settings_body = {
-            "persistent": {
-                "plugins.ml_commons.trusted_connector_endpoints_regex": [
-                    "^https://api\\.deepseek\\.com/.*$"
-                ]
-            }
-        }
-        helper.opensearch_client.cluster.put_settings(body=settings_body)
+        trusted_endpoint = "^https://api\\.deepseek\\.com/.*$"
+        self.set_trusted_endpoint(helper, trusted_endpoint)
 
-        if model_name == "DeepSeek Chat model":
-            model_type = "1"
-        elif model_name == "Custom model":
-            model_type = "2"
-        else:
-            print("\nPlease select a model for the connector creation: ")
-            print("1. DeepSeek Chat model")
-            print("2. Custom model")
-            model_type = input("Enter your choice (1-2): ").strip()
+        # Prompt to choose model
+        model_type = self.get_model_details("DeepSeek", self.service_type, model_name)
 
-        # Prompt for necessary input
-        setup = Setup()
-        if not api_key:
-            deepseek_api_key = setup.get_password_with_asterisks(
-                "Enter your DeepSeek API key: "
-            )
-        else:
-            deepseek_api_key = api_key
+        # Prompt for API key
+        deepseek_api_key = self.set_api_key(api_key, "DeepSeek")
 
-        connector_role_name = ""
         connector_role_arn = ""
+        connector_role_name = ""
         if self.service_type == "amazon-opensearch-service":
-            # Prompt for necessary inputs
-            if not connector_role_prefix:
-                connector_role_prefix = (
-                    input("Enter your connector role prefix: ") or None
-                )
-                if not connector_role_prefix:
-                    raise ValueError("Connector role prefix cannot be empty.")
-
-            # add unique random id to avoid permission error
-            id = str(uuid.uuid1())[:8]
-            connector_role_name = f"{connector_role_prefix}_deepseek_connector_{id}"
-            create_connector_role_name = (
-                f"{connector_role_prefix}_deepseek_connector_create_{id}"
+            # Create connector role and secret name
+            connector_role_name, create_connector_role_name = (
+                self.create_connector_role(connector_role_prefix, "deepseek")
             )
-
-            if not secret_name:
-                secret_name = input(
-                    "Enter a name for the AWS Secrets Manager secret: "
-                ).strip()
-
-            secret_name = f"{secret_name}_{id}"
-            secret_key = "deepseek_api_key"
-            secret_value = {secret_key: deepseek_api_key}
+            secret_name, secret_value = self.create_secret_name(
+                secret_name, "deepseek", deepseek_api_key
+            )
 
             if model_type == "1":
-                connector_payload = {
+                connector_body = {
                     "name": "DeepSeek Chat",
                     "description": "Test connector for DeepSeek Chat",
                     "version": "1",
@@ -115,18 +78,18 @@ class DeepSeekModel(ModelBase):
                     ],
                 }
             elif model_type == "2":
-                if not connector_payload:
-                    connector_payload = self.input_custom_model_details(external=True)
+                if not connector_body:
+                    connector_body = self.input_custom_model_details(external=True)
             else:
                 print(
                     f"\n{Fore.YELLOW}Invalid choice. Defaulting to 'Custom model'.{Style.RESET_ALL}"
                 )
-                if not connector_payload:
-                    connector_payload = self.input_custom_model_details(external=True)
+                if not connector_body:
+                    connector_body = self.input_custom_model_details(external=True)
 
             auth_value = f"Bearer {deepseek_api_key}"
-            connector_payload = json.loads(
-                json.dumps(connector_payload).replace("${auth}", auth_value)
+            connector_body = json.loads(
+                json.dumps(connector_body).replace("${auth}", auth_value)
             )
 
             # Create connector
@@ -136,18 +99,18 @@ class DeepSeekModel(ModelBase):
                 secret_value,
                 connector_role_name,
                 create_connector_role_name,
-                connector_payload,
+                connector_body,
                 sleep_time_in_seconds=10,
             )
         else:
             if model_type == "1":
-                connector_payload = {
+                connector_body = {
                     "name": "DeepSeek Chat",
                     "description": "Test connector for DeepSeek Chat",
                     "version": "1",
                     "protocol": "http",
                     "parameters": {"model": "deepseek-chat"},
-                    "credential": {"deepSeek_key": "${credentials}"},
+                    "credential": {"deepSeek_key": "${credential}"},
                     "actions": [
                         {
                             "action_type": "predict",
@@ -162,29 +125,29 @@ class DeepSeekModel(ModelBase):
                     ],
                 }
             elif model_type == "2":
-                if not connector_payload:
-                    connector_payload = self.input_custom_model_details(external=True)
+                if not connector_body:
+                    connector_body = self.input_custom_model_details(external=True)
             else:
                 print(
                     f"\n{Fore.YELLOW}Invalid choice. Defaulting to 'Custom model'.{Style.RESET_ALL}"
                 )
-                if not connector_payload:
-                    connector_payload = self.input_custom_model_details(external=True)
+                if not connector_body:
+                    connector_body = self.input_custom_model_details(external=True)
 
             auth_value = f"Bearer {deepseek_api_key}"
-            connector_payload = json.loads(
-                json.dumps(connector_payload).replace("${auth}", auth_value)
+            connector_body = json.loads(
+                json.dumps(connector_body).replace("${auth}", auth_value)
             )
             credential_value = deepseek_api_key
-            connector_payload = json.loads(
-                json.dumps(connector_payload).replace("${credential}", credential_value)
+            connector_body = json.loads(
+                json.dumps(connector_body).replace("${credential}", credential_value)
             )
 
             # Create connector
             print("\nCreating DeepSeek connector...")
             connector_id = helper.create_connector(
                 create_connector_role_name=None,
-                payload=connector_payload,
+                payload=connector_body,
             )
 
         if connector_id:

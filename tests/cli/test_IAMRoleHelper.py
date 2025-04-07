@@ -15,6 +15,10 @@ from unittest.mock import Mock, patch
 from botocore.exceptions import ClientError
 from requests.auth import HTTPBasicAuth
 
+from opensearch_py_ml.ml_commons.cli.aws_config import AWSConfig
+from opensearch_py_ml.ml_commons.cli.opensearch_domain_config import (
+    OpenSearchDomainConfig,
+)
 from opensearch_py_ml.ml_commons.IAMRoleHelper import IAMRoleHelper
 
 
@@ -24,13 +28,22 @@ class TestIAMRoleHelper(unittest.TestCase):
         Create an IAMRoleHelper instance with mock configurations.
         Patching boto3 clients so that no real AWS calls are made.
         """
-        self.opensearch_domain_region = "us-east-1"
-        self.opensearch_domain_url = "https://search-domain.region.es.amazonaws.com"
-        self.opensearch_domain_username = "test-user"
-        self.opensearch_domain_password = "test-password"
-        self.aws_access_key = "test-access-key"
-        self.aws_secret_access_key = "test-secret-key"
-        self.aws_session_token = "test-session-token"
+        # Create OpenSearchDomainConfig
+        self.opensearch_config = OpenSearchDomainConfig(
+            opensearch_domain_region="us-east-1",
+            opensearch_domain_name="test-domain",
+            opensearch_domain_username="admin",
+            opensearch_domain_password="password",
+            opensearch_domain_endpoint="test-domain-url",
+        )
+        # Create AWSConfig
+        self.aws_config = AWSConfig(
+            aws_user_name="",
+            aws_role_name="",
+            aws_access_key="test-access-key",
+            aws_secret_access_key="test-secret-access-key",
+            aws_session_token="test-session-token",
+        )
 
         # Patches for the boto3 clients
         self.patcher_boto3 = patch("boto3.client")
@@ -52,13 +65,7 @@ class TestIAMRoleHelper(unittest.TestCase):
 
         # Instantiate our class under test
         self.helper = IAMRoleHelper(
-            opensearch_domain_region=self.opensearch_domain_region,
-            opensearch_domain_url=self.opensearch_domain_url,
-            opensearch_domain_username=self.opensearch_domain_username,
-            opensearch_domain_password=self.opensearch_domain_password,
-            aws_access_key=self.aws_access_key,
-            aws_secret_access_key=self.aws_secret_access_key,
-            aws_session_token=self.aws_session_token,
+            opensearch_config=self.opensearch_config, aws_config=self.aws_config
         )
 
     def tearDown(self):
@@ -423,12 +430,12 @@ class TestIAMRoleHelper(unittest.TestCase):
         self.helper.map_iam_role_to_backend_role(role_arn, os_security_role)
 
         # Verify GET request
-        expected_url = f"{self.helper.opensearch_domain_url}/_plugins/_security/api/rolesmapping/{os_security_role}"
+        expected_url = f"{self.helper.opensearch_config.opensearch_domain_endpoint}/_plugins/_security/api/rolesmapping/{os_security_role}"
         mock_get.assert_called_once_with(
             expected_url,
             auth=HTTPBasicAuth(
-                self.helper.opensearch_domain_username,
-                self.helper.opensearch_domain_password,
+                self.helper.opensearch_config.opensearch_domain_username,
+                self.helper.opensearch_config.opensearch_domain_password,
             ),
         )
 
@@ -439,8 +446,8 @@ class TestIAMRoleHelper(unittest.TestCase):
             headers={"Content-Type": "application/json"},
             data=json.dumps(expected_data),
             auth=HTTPBasicAuth(
-                self.helper.opensearch_domain_username,
-                self.helper.opensearch_domain_password,
+                self.helper.opensearch_config.opensearch_domain_username,
+                self.helper.opensearch_config.opensearch_domain_password,
             ),
         )
 
@@ -469,7 +476,7 @@ class TestIAMRoleHelper(unittest.TestCase):
         self.helper.map_iam_role_to_backend_role(role_arn, os_security_role)
 
         # Verify PATCH request
-        expected_url = f"{self.helper.opensearch_domain_url}/_plugins/_security/api/rolesmapping/{os_security_role}"
+        expected_url = f"{self.helper.opensearch_config.opensearch_domain_endpoint}/_plugins/_security/api/rolesmapping/{os_security_role}"
         expected_data = [
             {
                 "op": "replace",
@@ -482,8 +489,8 @@ class TestIAMRoleHelper(unittest.TestCase):
             headers={"Content-Type": "application/json"},
             data=json.dumps(expected_data),
             auth=HTTPBasicAuth(
-                self.helper.opensearch_domain_username,
-                self.helper.opensearch_domain_password,
+                self.helper.opensearch_config.opensearch_domain_username,
+                self.helper.opensearch_config.opensearch_domain_password,
             ),
         )
 

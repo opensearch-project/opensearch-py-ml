@@ -6,80 +6,49 @@
 # GitHub history for details.
 
 import json
-import uuid
 
 from colorama import Fore, Style
 
 from opensearch_py_ml.ml_commons.cli.ml_models.model_base import ModelBase
-from opensearch_py_ml.ml_commons.cli.ml_setup import Setup
 
 
 class CohereModel(ModelBase):
 
-    def create_cohere_connector(
+    def create_connector(
         self,
         helper,
         save_config_method,
         connector_role_prefix=None,
         model_name=None,
         api_key=None,
-        connector_payload=None,
+        connector_body=None,
         secret_name=None,
     ):
         """
         Create Cohere connector.
         """
         # Set trusted connector endpoints for Cohere
-        settings_body = {
-            "persistent": {
-                "plugins.ml_commons.trusted_connector_endpoints_regex": [
-                    "^https://api\\.cohere\\.ai/.*$"
-                ]
-            }
-        }
-        helper.opensearch_client.cluster.put_settings(body=settings_body)
+        trusted_endpoint = "^https://api\\.cohere\\.ai/.*$"
+        self.set_trusted_endpoint(helper, trusted_endpoint)
 
-        # Prompt for necessary inputs
-        if model_name == "Embedding model":
-            model_type = "1"
-        elif model_name == "Custom model":
-            model_type = "2"
-        else:
-            print("\nPlease select a model for the connector creation: ")
-            print("1. Embedding model")
-            print("2. Custom model")
-            model_type = input("Enter your choice (1-2): ").strip()
+        # Prompt to choose model
+        model_type = self.get_model_details(
+            "Cohere", "amazon-opensearch-service", model_name
+        )
 
-        setup = Setup()
-        if not api_key:
-            cohere_api_key = setup.get_password_with_asterisks(
-                "Enter your Cohere API key: "
-            )
-        else:
-            cohere_api_key = api_key
+        # Prompt for API key
+        cohere_api_key = self.set_api_key(api_key, "Cohere")
 
-        if not connector_role_prefix:
-            connector_role_prefix = input("Enter your connector role prefix: ") or None
-            if not connector_role_prefix:
-                raise ValueError("Connector role prefix cannot be empty.")
-
-        if not secret_name:
-            secret_name = input(
-                "Enter a name for the AWS Secrets Manager secret: "
-            ).strip()
-
-        id = str(uuid.uuid1())[:8]
-        secret_name = f"{secret_name}_{id}"
-        secret_key = "cohere_api_key"
-        secret_value = {secret_key: cohere_api_key}
-
-        connector_role_name = f"{connector_role_prefix}_cohere_connector_{id}"
-        create_connector_role_name = (
-            f"{connector_role_prefix}_cohere_connector_create_{id}"
+        # Create connector role and secret name
+        connector_role_name, create_connector_role_name = self.create_connector_role(
+            connector_role_prefix, "cohere"
+        )
+        secret_name, secret_value = self.create_secret_name(
+            secret_name, "cohere", cohere_api_key
         )
 
         if model_type == "1":
-            connector_payload = {
+            connector_body = {
                 "name": "Cohere Embedding Model Connector",
                 "description": "Connector for Cohere embedding model",
                 "version": "1",
@@ -105,18 +74,18 @@ class CohereModel(ModelBase):
                 ],
             }
         elif model_type == "2":
-            if not connector_payload:
-                connector_payload = self.input_custom_model_details(external=True)
+            if not connector_body:
+                connector_body = self.input_custom_model_details(external=True)
         else:
             print(
                 f"\n{Fore.YELLOW}Invalid choice. Defaulting to 'Custom model'.{Style.RESET_ALL}"
             )
-            if not connector_payload:
-                connector_payload = self.input_custom_model_details(external=True)
+            if not connector_body:
+                connector_body = self.input_custom_model_details(external=True)
 
         auth_value = f"Bearer {cohere_api_key}"
-        connector_payload = json.loads(
-            json.dumps(connector_payload).replace("${auth}", auth_value)
+        connector_body = json.loads(
+            json.dumps(connector_body).replace("${auth}", auth_value)
         )
 
         # Create connector
@@ -126,7 +95,7 @@ class CohereModel(ModelBase):
             secret_value,
             connector_role_name,
             create_connector_role_name,
-            connector_payload,
+            connector_body,
             sleep_time_in_seconds=10,
         )
 

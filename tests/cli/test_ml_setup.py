@@ -13,19 +13,19 @@ from unittest.mock import MagicMock, call, patch
 from botocore.exceptions import ClientError
 from colorama import Fore, Style
 
-from opensearch_py_ml.ml_commons.cli.connector_base import ConnectorBase
+from opensearch_py_ml.ml_commons.cli.cli_base import CLIBase
 from opensearch_py_ml.ml_commons.cli.ml_setup import Setup
 
 
 class TestSetup(unittest.TestCase):
     def setUp(self):
-        if os.path.exists(ConnectorBase.CONFIG_FILE):
-            os.remove(ConnectorBase.CONFIG_FILE)
+        if os.path.exists(CLIBase.CONFIG_FILE):
+            os.remove(CLIBase.CONFIG_FILE)
         self.setup_instance = Setup()
 
     def tearDown(self):
-        if os.path.exists(ConnectorBase.CONFIG_FILE):
-            os.remove(ConnectorBase.CONFIG_FILE)
+        if os.path.exists(CLIBase.CONFIG_FILE):
+            os.remove(CLIBase.CONFIG_FILE)
 
     @patch("boto3.Session")
     def test_check_credentials_validity(self, mock_session):
@@ -463,9 +463,11 @@ class TestSetup(unittest.TestCase):
     def test_initialize_opensearch_client_managed(self, mock_opensearch):
         """Test initialize_opensearch_client in managed service"""
         self.setup_instance.service_type = "amazon-opensearch-service"
-        self.setup_instance.opensearch_domain_endpoint = "https://test-domain:443"
-        self.setup_instance.opensearch_domain_username = "admin"
-        self.setup_instance.opensearch_domain_password = "pass"
+        self.setup_instance.opensearch_config.opensearch_domain_endpoint = (
+            "https://test-domain:443"
+        )
+        self.setup_instance.opensearch_config.opensearch_domain_username = "admin"
+        self.setup_instance.opensearch_config.opensearch_domain_password = "pass"
         result = self.setup_instance.initialize_opensearch_client()
         self.assertTrue(result)
         mock_opensearch.assert_called_once()
@@ -474,9 +476,11 @@ class TestSetup(unittest.TestCase):
     def test_initialize_opensearch_client_open_source_no_auth(self, mock_opensearch):
         """Test initialize_opensearch_client in open-source service without authorization"""
         self.setup_instance.service_type = "open-source"
-        self.setup_instance.opensearch_domain_endpoint = "http://localhost:9200"
-        self.setup_instance.opensearch_domain_username = ""
-        self.setup_instance.opensearch_domain_password = ""
+        self.setup_instance.opensearch_config.opensearch_domain_endpoint = (
+            "http://localhost:9200"
+        )
+        self.setup_instance.opensearch_config.opensearch_domain_username = ""
+        self.setup_instance.opensearch_config.opensearch_domain_password = ""
         result = self.setup_instance.initialize_opensearch_client()
         self.assertTrue(result)
         mock_opensearch.assert_called_once()
@@ -485,9 +489,11 @@ class TestSetup(unittest.TestCase):
     def test_initialize_opensearch_client_open_source_with_auth(self, mock_opensearch):
         """Test initialize_opensearch_client in open-source service with authorization"""
         self.setup_instance.service_type = "open-source"
-        self.setup_instance.opensearch_domain_endpoint = "http://localhost:9200"
-        self.setup_instance.opensearch_domain_username = "admin"
-        self.setup_instance.opensearch_domain_password = "pass"
+        self.setup_instance.opensearch_config.opensearch_domain_endpoint = (
+            "http://localhost:9200"
+        )
+        self.setup_instance.opensearch_config.opensearch_domain_username = "admin"
+        self.setup_instance.opensearch_config.opensearch_domain_password = "pass"
         result = self.setup_instance.initialize_opensearch_client()
         self.assertTrue(result)
         mock_opensearch.assert_called_once()
@@ -508,7 +514,9 @@ class TestSetup(unittest.TestCase):
     def test_initialize_opensearch_client_no_username_password(self, mock_print):
         """Test initialize_opensearch_client without domain username and password"""
         self.setup_instance.service_type = "amazon-opensearch-service"
-        self.setup_instance.opensearch_domain_endpoint = "https://test-domain:443"
+        self.setup_instance.opensearch_config.opensearch_domain_endpoint = (
+            "https://test-domain:443"
+        )
         result = self.setup_instance.initialize_opensearch_client()
         self.assertFalse(result)
         mock_print.assert_called_once_with(
@@ -519,7 +527,9 @@ class TestSetup(unittest.TestCase):
     def test_initialize_opensearch_client_invalid_service_type(self, mock_print):
         """Test initialize_opensearch_client with invalid service type"""
         self.setup_instance.service_type = "invalid-service"
-        self.setup_instance.opensearch_domain_endpoint = "http://localhost:9200"
+        self.setup_instance.opensearch_config.opensearch_domain_endpoint = (
+            "http://localhost:9200"
+        )
         result = self.setup_instance.initialize_opensearch_client()
         self.assertFalse(result)
         mock_print.assert_called_once_with(
@@ -531,7 +541,9 @@ class TestSetup(unittest.TestCase):
     def test_initialize_opensearch_client_exception(self, mock_opensearch, mock_print):
         """Test initialize_opensearch_client exception handling"""
         self.setup_instance.service_type = "open-source"
-        self.setup_instance.opensearch_domain_endpoint = "http://localhost:9200"
+        self.setup_instance.opensearch_config.opensearch_domain_endpoint = (
+            "http://localhost:9200"
+        )
         mock_opensearch.side_effect = Exception("Connection failed")
         result = self.setup_instance.initialize_opensearch_client()
         self.assertFalse(result)
@@ -566,19 +578,32 @@ class TestSetup(unittest.TestCase):
         self.assertEqual(self.setup_instance.service_type, "amazon-opensearch-service")
 
         # Verify OpenSearch config
-        self.assertEqual(self.setup_instance.opensearch_domain_region, "us-west-2")
         self.assertEqual(
-            self.setup_instance.opensearch_domain_endpoint, "https://test-endpoint"
+            self.setup_instance.opensearch_config.opensearch_domain_region, "us-west-2"
         )
-        self.assertEqual(self.setup_instance.opensearch_domain_username, "admin")
-        self.assertEqual(self.setup_instance.opensearch_domain_password, "password")
+        self.assertEqual(
+            self.setup_instance.opensearch_config.opensearch_domain_endpoint,
+            "https://test-endpoint",
+        )
+        self.assertEqual(
+            self.setup_instance.opensearch_config.opensearch_domain_username, "admin"
+        )
+        self.assertEqual(
+            self.setup_instance.opensearch_config.opensearch_domain_password, "password"
+        )
 
         # Verify AWS credentials
-        self.assertEqual(self.setup_instance.aws_role_name, "test-role")
-        self.assertEqual(self.setup_instance.aws_user_name, "test-user")
-        self.assertEqual(self.setup_instance.aws_access_key, "test-access-key")
-        self.assertEqual(self.setup_instance.aws_secret_access_key, "test-secret-key")
-        self.assertEqual(self.setup_instance.aws_session_token, "test-session-token")
+        self.assertEqual(self.setup_instance.aws_config.aws_role_name, "test-role")
+        self.assertEqual(self.setup_instance.aws_config.aws_user_name, "test-user")
+        self.assertEqual(
+            self.setup_instance.aws_config.aws_access_key, "test-access-key"
+        )
+        self.assertEqual(
+            self.setup_instance.aws_config.aws_secret_access_key, "test-secret-key"
+        )
+        self.assertEqual(
+            self.setup_instance.aws_config.aws_session_token, "test-session-token"
+        )
 
     def test_update_from_config_empty_config(self):
         """Test _update_from_config with empty config"""

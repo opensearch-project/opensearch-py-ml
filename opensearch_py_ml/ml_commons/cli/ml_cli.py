@@ -16,10 +16,9 @@ import sys
 from colorama import Fore, Style, init
 from rich.console import Console
 
-from opensearch_py_ml.ml_commons.cli.connector_create import Create
+from opensearch_py_ml.ml_commons.cli.connector_manager import ConnectorManager
 from opensearch_py_ml.ml_commons.cli.ml_setup import Setup
-from opensearch_py_ml.ml_commons.cli.model_predict import Predict
-from opensearch_py_ml.ml_commons.cli.model_register import Register
+from opensearch_py_ml.ml_commons.cli.model_manager import ModelManager
 
 # Initialize colorama for colored terminal output
 init(autoreset=True)
@@ -114,7 +113,7 @@ Examples:
     opensearch-ml model predict
 
   Predict a model with a model ID and the request payload:
-    opensearch-ml model predict --modelId 'model123' --payload '{"parameters": {"texts": ["hello world"]}}'
+    opensearch-ml model predict --modelId 'model123' --body '{"parameters": {"texts": ["hello world"]}}'
 """,
     )
     # Create subparsers for different command groups
@@ -186,12 +185,14 @@ Examples:
         nargs="?",
     )
     model_predict.add_argument(
-        "--payload", help="Payload of the predict request", metavar="PREDICT_PAYLOAD"
+        "--body", help="Payload of the predict request", metavar="PREDICT_BODY"
     )
 
     args, unknown = parser.parse_known_args()
     config_path = None
     setup_config_path = None
+    connector_manager = ConnectorManager()
+    model_manager = ModelManager()
 
     if not args.command:
         parser.print_help()
@@ -215,13 +216,13 @@ Examples:
             sys.exit(1)
 
         if args.subcommand == "create":
-            create = Create()
             console.print("\n[bold blue]Starting connector creation...[/bold blue]")
             connector_config_path = args.path[0] if args.path else None
-            _, setup_config_path = create.create_command(
+            create_connector_result = connector_manager.initialize_create_connector(
                 connector_config_path=connector_config_path
             )
-
+            if create_connector_result:
+                _, setup_config_path = create_connector_result
             # Save the setup config path after creation
             if setup_config_path:
                 config_dir = os.path.expanduser("~/.opensearch-ml")
@@ -246,12 +247,11 @@ Examples:
                 )
                 sys.exit(1)
 
-            register = Register()
             console.print("\n[bold blue]Starting model registration...[/bold blue]")
             connector_id = getattr(args, "connectorId", None)
             model_name = args.name if args.name else None
             model_description = args.description if args.description else None
-            register.register_command(
+            model_manager.initialize_register_model(
                 config_path,
                 connector_id=connector_id,
                 model_name=model_name,
@@ -268,12 +268,12 @@ Examples:
                     f"{Fore.RED}No setup configuration found. Please run setup first.{Style.RESET_ALL}"
                 )
                 sys.exit(1)
-
-            predict = Predict()
             console.print("\n[bold blue]Starting model prediction...[/bold blue]")
             model_id = args.modelId if args.modelId else None
-            payload = args.payload if args.payload else None
-            predict.predict_command(config_path, model_id=model_id, payload=payload)
+            body = args.body if args.body else None
+            model_manager.initialize_predict_model(
+                config_path, model_id=model_id, body=body
+            )
 
 
 if __name__ == "__main__":
