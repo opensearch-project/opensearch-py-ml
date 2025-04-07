@@ -5,8 +5,6 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
-import uuid
-
 from colorama import Fore, Style
 
 from opensearch_py_ml.ml_commons.cli.ml_models.model_base import ModelBase
@@ -22,7 +20,7 @@ class SageMakerModel(ModelBase):
         """
         self.opensearch_domain_region = opensearch_domain_region
 
-    def create_sagemaker_connector(
+    def create_connector(
         self,
         helper,
         save_config_method,
@@ -31,49 +29,30 @@ class SageMakerModel(ModelBase):
         model_name=None,
         endpoint_arn=None,
         endpoint_url=None,
-        connector_payload=None,
+        connector_body=None,
     ):
         """
         Create SageMaker connector.
         """
-        # Set trusted connector endpoints for Bedrock
-        settings_body = {
-            "persistent": {
-                "plugins.ml_commons.trusted_connector_endpoints_regex": [
-                    "^https://runtime\\.sagemaker\\..*[a-z0-9-]\\.amazonaws\\.com/.*$"
-                ]
-            }
-        }
-        helper.opensearch_client.cluster.put_settings(body=settings_body)
+        # Set trusted connector endpoints for SageMaker
+        trusted_endpoint = (
+            "^https://runtime\\.sagemaker\\..*[a-z0-9-]\\.amazonaws\\.com/.*$"
+        )
+        self.set_trusted_endpoint(helper, trusted_endpoint)
 
-        # Prompt for necessary inputs
-        if model_name == "DeepSeek R1 model":
-            model_type = "1"
-        elif model_name == "Embedding model":
-            model_type = "2"
-        elif model_name == "Custom model":
-            model_type = "3"
-        else:
-            print("\nPlease select a model for the connector creation: ")
-            print("1. DeepSeek R1 model")
-            print("2. Embedding model")
-            print("3. Custom model")
-            model_type = input("Enter your choice (1-3): ").strip()
-
-        if not connector_role_prefix:
-            connector_role_prefix = input("Enter your connector role prefix: ") or None
-            if not connector_role_prefix:
-                raise ValueError("Connector role prefix cannot be empty.")
+        # Prompt to choose model
+        model_type = self.get_model_details(
+            "Amazon SageMaker", "amazon-opensearch-service", model_name
+        )
 
         if not endpoint_arn:
             endpoint_arn = input(
                 "Enter your SageMaker inference endpoint ARN: "
             ).strip()
 
-        id = str(uuid.uuid1())[:8]
-        connector_role_name = f"{connector_role_prefix}_sagemaker_connector_{id}"
-        create_connector_role_name = (
-            f"{connector_role_prefix}_sagemaker_connector_create_{id}"
+        # Create connector role
+        connector_role_name, create_connector_role_name = self.create_connector_role(
+            connector_role_prefix, "sagemaker"
         )
 
         connector_role_inline_policy = {
@@ -101,7 +80,7 @@ class SageMakerModel(ModelBase):
                     or self.opensearch_domain_region
                 )
 
-            connector_payload = {
+            connector_body = {
                 "name": "DeepSeek R1 model connector",
                 "description": "Connector for my Sagemaker DeepSeek model",
                 "version": "1.0",
@@ -139,7 +118,7 @@ class SageMakerModel(ModelBase):
                     or self.opensearch_domain_region
                 )
 
-            connector_payload = {
+            connector_body = {
                 "name": "SageMaker Embedding Model Connector",
                 "description": "Connector for SageMaker embedding model",
                 "version": "1.0",
@@ -158,14 +137,14 @@ class SageMakerModel(ModelBase):
                 ],
             }
         elif model_type == "3":
-            if not connector_payload:
-                connector_payload = self.input_custom_model_details()
+            if not connector_body:
+                connector_body = self.input_custom_model_details()
         else:
             print(
                 f"\n{Fore.YELLOW}Invalid choice. Defaulting to 'Custom model'.{Style.RESET_ALL}"
             )
-            if not connector_payload:
-                connector_payload = self.input_custom_model_details()
+            if not connector_body:
+                connector_body = self.input_custom_model_details()
 
         # Create connector
         print("\nCreating SageMaker connector...")
@@ -173,7 +152,7 @@ class SageMakerModel(ModelBase):
             connector_role_inline_policy,
             connector_role_name,
             create_connector_role_name,
-            connector_payload,
+            connector_body,
             sleep_time_in_seconds=10,
         )
 

@@ -15,6 +15,11 @@ import requests
 from botocore.exceptions import ClientError
 from requests.auth import HTTPBasicAuth
 
+from opensearch_py_ml.ml_commons.cli.aws_config import AWSConfig
+from opensearch_py_ml.ml_commons.cli.opensearch_domain_config import (
+    OpenSearchDomainConfig,
+)
+
 
 class IAMRoleHelper:
     """
@@ -26,41 +31,27 @@ class IAMRoleHelper:
 
     def __init__(
         self,
-        opensearch_domain_region,
-        opensearch_domain_url=None,
-        opensearch_domain_username=None,
-        opensearch_domain_password=None,
-        aws_access_key=None,
-        aws_secret_access_key=None,
-        aws_session_token=None,
+        opensearch_config: OpenSearchDomainConfig,
+        aws_config: AWSConfig,
     ):
         """
         Initialize the IAMRoleHelper with AWS and OpenSearch configurations.
-        :param opensearch_domain_region: Region for OpenSearch domain.
-        :param opensearch_domain_url: URL of the OpenSearch domain.
-        :param opensearch_domain_username: Username for OpenSearch domain authentication.
-        :param opensearch_domain_password: Password for OpenSearch domain authentication.
         """
-        self.opensearch_domain_region = opensearch_domain_region
-        self.opensearch_domain_url = opensearch_domain_url
-        self.opensearch_domain_username = opensearch_domain_username
-        self.opensearch_domain_password = opensearch_domain_password
-        self.aws_access_key = aws_access_key
-        self.aws_secret_access_key = aws_secret_access_key
-        self.aws_session_token = aws_session_token
+        self.opensearch_config = opensearch_config
+        self.aws_config = aws_config
 
         self.iam_client = boto3.client(
             "iam",
-            aws_access_key_id=self.aws_access_key,
-            aws_secret_access_key=self.aws_secret_access_key,
-            aws_session_token=self.aws_session_token,
+            aws_access_key_id=self.aws_config.aws_access_key,
+            aws_secret_access_key=self.aws_config.aws_secret_access_key,
+            aws_session_token=self.aws_config.aws_session_token,
         )
         self.sts_client = boto3.client(
             "sts",
-            region_name=self.opensearch_domain_region,
-            aws_access_key_id=self.aws_access_key,
-            aws_secret_access_key=self.aws_secret_access_key,
-            aws_session_token=self.aws_session_token,
+            region_name=self.opensearch_config.opensearch_domain_region,
+            aws_access_key_id=self.aws_config.aws_access_key,
+            aws_secret_access_key=self.aws_config.aws_secret_access_key,
+            aws_session_token=self.aws_config.aws_session_token,
         )
 
     def role_exists(self, role_name):
@@ -254,11 +245,12 @@ class IAMRoleHelper:
         :param: os_security_role: The OpenSearch security role name.
         :return: None
         """
-        url = f"{self.opensearch_domain_url}/_plugins/_security/api/rolesmapping/{os_security_role}"
+        url = f"{self.opensearch_config.opensearch_domain_endpoint}/_plugins/_security/api/rolesmapping/{os_security_role}"
         r = requests.get(
             url,
             auth=HTTPBasicAuth(
-                self.opensearch_domain_username, self.opensearch_domain_password
+                self.opensearch_config.opensearch_domain_username,
+                self.opensearch_config.opensearch_domain_password,
             ),
         )
         role_mapping = json.loads(r.text)
@@ -273,7 +265,8 @@ class IAMRoleHelper:
                 headers=headers,
                 data=json.dumps(data),
                 auth=HTTPBasicAuth(
-                    self.opensearch_domain_username, self.opensearch_domain_password
+                    self.opensearch_config.opensearch_domain_username,
+                    self.opensearch_config.opensearch_domain_password,
                 ),
             )
             print(response.text)
@@ -292,7 +285,8 @@ class IAMRoleHelper:
                 headers=headers,
                 data=json.dumps(data),
                 auth=HTTPBasicAuth(
-                    self.opensearch_domain_username, self.opensearch_domain_password
+                    self.opensearch_config.opensearch_domain_username,
+                    self.opensearch_config.opensearch_domain_password,
                 ),
             )
             print(response.text)

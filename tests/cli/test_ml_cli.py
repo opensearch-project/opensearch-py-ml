@@ -30,22 +30,22 @@ class TestMLCLI(unittest.TestCase):
             "region": "us-west-2",
         }
 
-        # Patch 'Setup', 'Create', 'Register', 'Predict' classes
+        # Patch 'Setup', 'ConnectorManager', 'ModelManager' classes
         self.patcher_setup = patch("opensearch_py_ml.ml_commons.cli.ml_cli.Setup")
         self.mock_setup_class = self.patcher_setup.start()
         self.addCleanup(self.patcher_setup.stop)
 
-        self.patcher_create = patch("opensearch_py_ml.ml_commons.cli.ml_cli.Create")
-        self.mock_create_class = self.patcher_create.start()
-        self.addCleanup(self.patcher_create.stop)
+        self.patcher_connector = patch(
+            "opensearch_py_ml.ml_commons.cli.ml_cli.ConnectorManager"
+        )
+        self.mock_connector_class = self.patcher_connector.start()
+        self.addCleanup(self.patcher_connector.stop)
 
-        self.patcher_register = patch("opensearch_py_ml.ml_commons.cli.ml_cli.Register")
-        self.mock_register_class = self.patcher_register.start()
-        self.addCleanup(self.patcher_register.stop)
-
-        self.patcher_predict = patch("opensearch_py_ml.ml_commons.cli.ml_cli.Predict")
-        self.mock_predict_class = self.patcher_predict.start()
-        self.addCleanup(self.patcher_predict.stop)
+        self.patcher_model = patch(
+            "opensearch_py_ml.ml_commons.cli.ml_cli.ModelManager"
+        )
+        self.mock_model_class = self.patcher_model.start()
+        self.addCleanup(self.patcher_model.stop)
 
         # Capture stdout
         self.held_stdout = StringIO()
@@ -89,27 +89,27 @@ class TestMLCLI(unittest.TestCase):
                 config_path="test_path"
             )
 
-    def test_connector_create_command(self):
+    def test_connector_initialize_create_connector(self):
         """Test connector_create command"""
         test_args = ["ml_cli.py", "connector", "create"]
-        self.mock_create_class.return_value.create_command.return_value = (
+        self.mock_connector_class.return_value.initialize_create_connector.return_value = (
             None,
             "test_config.yml",
         )
         with patch.object(sys, "argv", test_args):
             main()
-            self.mock_create_class.return_value.create_command.assert_called_once()
+            self.mock_connector_class.return_value.initialize_create_connector.assert_called_once()
 
-    def test_connector_create_command_with_path(self):
+    def test_connector_initialize_create_connector_with_path(self):
         """Test connector_create command with path"""
         test_args = ["ml_cli.py", "connector", "create", "--path", "test_path"]
-        self.mock_create_class.return_value.create_command.return_value = (
+        self.mock_connector_class.return_value.initialize_create_connector.return_value = (
             None,
             "test_config.yml",
         )
         with patch.object(sys, "argv", test_args), patch("builtins.open", mock_open()):
             main()
-            self.mock_create_class.return_value.create_command.assert_called_once_with(
+            self.mock_connector_class.return_value.initialize_create_connector.assert_called_once_with(
                 connector_config_path="test_path"
             )
 
@@ -123,14 +123,14 @@ class TestMLCLI(unittest.TestCase):
             mock_print_help.assert_called_once()
             mock_exit.assert_any_call(1)
 
-    def test_model_register_command(self):
+    def test_model_initialize_register_model(self):
         """Test model_register command"""
         test_args = ["ml_cli.py", "model", "register"]
         with patch.object(sys, "argv", test_args):
             main()
-            self.mock_register_class.return_value.register_command.assert_called_once()
+            self.mock_model_class.return_value.initialize_register_model.assert_called_once()
 
-    def test_model_register_command_with_arguments(self):
+    def test_model_initialize_register_model_with_arguments(self):
         """Test model_register command with connector ID, model name, and model description"""
         test_args = [
             "ml_cli.py",
@@ -145,7 +145,7 @@ class TestMLCLI(unittest.TestCase):
         ]
         with patch.object(sys, "argv", test_args):
             main()
-            self.mock_register_class.return_value.register_command.assert_called_once_with(
+            self.mock_model_class.return_value.initialize_register_model.assert_called_once_with(
                 "test_config.yml",
                 connector_id="connector123",
                 model_name="test model",
@@ -154,7 +154,9 @@ class TestMLCLI(unittest.TestCase):
 
     @patch("builtins.print")
     @patch("sys.exit")
-    def test_model_register_command_file_not_found(self, mock_exit, mock_print):
+    def test_model_initialize_register_model_file_not_found(
+        self, mock_exit, mock_print
+    ):
         """Test model_register command file not found handling"""
         test_args = ["ml_cli.py", "model", "register"]
         with patch.object(sys, "argv", test_args), patch(
@@ -167,14 +169,14 @@ class TestMLCLI(unittest.TestCase):
             )
             mock_exit.assert_called_once_with(1)
 
-    def test_model_predict_command(self):
+    def test_model_initialize_predict_model(self):
         """Test model_predict command"""
         test_args = ["ml_cli.py", "model", "predict"]
         with patch.object(sys, "argv", test_args):
             main()
-            self.mock_predict_class.return_value.predict_command.assert_called_once()
+            self.mock_model_class.return_value.initialize_predict_model.assert_called_once()
 
-    def test_model_predict_command_with_arguments(self):
+    def test_model_initialize_predict_model_with_arguments(self):
         """Test model_predict command with model ID and predict payload"""
         test_args = [
             "ml_cli.py",
@@ -182,20 +184,20 @@ class TestMLCLI(unittest.TestCase):
             "predict",
             "--modelId",
             "model123",
-            "--payload",
+            "--body",
             '{"parameters": {}}',
         ]
         with patch.object(sys, "argv", test_args):
             main()
-            self.mock_predict_class.return_value.predict_command.assert_called_once_with(
+            self.mock_model_class.return_value.initialize_predict_model.assert_called_once_with(
                 "test_config.yml",
                 model_id="model123",
-                payload='{"parameters": {}}',
+                body='{"parameters": {}}',
             )
 
     @patch("builtins.print")
     @patch("sys.exit")
-    def test_model_predict_command_file_not_found(self, mock_exit, mock_print):
+    def test_model_initialize_predict_model_file_not_found(self, mock_exit, mock_print):
         """Test model_predict command file not found handling"""
         test_args = ["ml_cli.py", "model", "predict"]
         with patch.object(sys, "argv", test_args), patch(
@@ -279,7 +281,7 @@ class TestMLCLI(unittest.TestCase):
         ]
         with patch.object(sys, "argv", test_args):
             main()
-            self.mock_register_class.return_value.register_command.assert_called_once_with(
+            self.mock_model_class.return_value.initialize_register_model.assert_called_once_with(
                 "test_config.yml",
                 connector_id="-connector123",
                 model_name="test model",
@@ -294,15 +296,15 @@ class TestMLCLI(unittest.TestCase):
             "predict",
             "--modelId",
             "-model123",
-            "--payload",
+            "--body",
             '{"parameters": {}}',
         ]
         with patch.object(sys, "argv", test_args):
             main()
-            self.mock_predict_class.return_value.predict_command.assert_called_once_with(
+            self.mock_model_class.return_value.initialize_predict_model.assert_called_once_with(
                 "test_config.yml",
                 model_id="-model123",
-                payload='{"parameters": {}}',
+                body='{"parameters": {}}',
             )
 
 

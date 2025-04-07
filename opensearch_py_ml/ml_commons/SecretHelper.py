@@ -11,6 +11,11 @@ import logging
 import boto3
 from botocore.exceptions import ClientError
 
+from opensearch_py_ml.ml_commons.cli.aws_config import AWSConfig
+from opensearch_py_ml.ml_commons.cli.opensearch_domain_config import (
+    OpenSearchDomainConfig,
+)
+
 # Configure the logger for this module
 logger = logging.getLogger(__name__)
 
@@ -22,28 +27,22 @@ class SecretHelper:
     """
 
     def __init__(
-        self,
-        region: str,
-        aws_access_key: str,
-        aws_secret_access_key: str,
-        aws_session_token: str,
+        self, opensearch_config: OpenSearchDomainConfig, aws_config: AWSConfig
     ):
         """
         Initialize the SecretHelper with the specified AWS region.
         :param region: AWS region where the Secrets Manager is located.
         """
-        self.region = region
-        self.aws_access_key = aws_access_key
-        self.aws_secret_access_key = aws_secret_access_key
-        self.aws_session_token = aws_session_token
+        self.opensearch_config = opensearch_config
+        self.aws_config = aws_config
 
         # Create the Secrets Manager client once at the class level
         self.secretsmanager = boto3.client(
             "secretsmanager",
-            region_name=self.region,
-            aws_access_key_id=self.aws_access_key,
-            aws_secret_access_key=self.aws_secret_access_key,
-            aws_session_token=self.aws_session_token,
+            region_name=self.opensearch_config.opensearch_domain_region,
+            aws_access_key_id=self.aws_config.aws_access_key,
+            aws_secret_access_key=self.aws_config.aws_secret_access_key,
+            aws_session_token=self.aws_config.aws_session_token,
         )
 
     def secret_exists(self, secret_name: str) -> bool:

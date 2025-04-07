@@ -6,8 +6,6 @@
 # GitHub history for details.
 
 
-import uuid
-
 from colorama import Fore, Style
 
 from opensearch_py_ml.ml_commons.cli.ml_models.model_base import ModelBase
@@ -20,7 +18,7 @@ class BedrockModel(ModelBase):
         """
         self.opensearch_domain_region = opensearch_domain_region
 
-    def create_bedrock_connector(
+    def create_connector(
         self,
         helper,
         save_config_method,
@@ -28,44 +26,25 @@ class BedrockModel(ModelBase):
         region=None,
         model_name=None,
         model_arn=None,
-        connector_payload=None,
+        connector_body=None,
     ):
         """
         Create Bedrock connector.
         """
         # Set trusted connector endpoints for Bedrock
-        settings_body = {
-            "persistent": {
-                "plugins.ml_commons.trusted_connector_endpoints_regex": [
-                    "^https://bedrock-runtime\\..*[a-z0-9-]\\.amazonaws\\.com/.*$"
-                ]
-            }
-        }
-        helper.opensearch_client.cluster.put_settings(body=settings_body)
+        trusted_endpoint = (
+            "^https://bedrock-runtime\\..*[a-z0-9-]\\.amazonaws\\.com/.*$"
+        )
+        self.set_trusted_endpoint(helper, trusted_endpoint)
 
-        # Prompt for necessary inputs
-        if model_name == "Cohere embedding model":
-            model_type = "1"
-        elif model_name == "Titan embedding model":
-            model_type = "2"
-        elif model_name == "Custom model":
-            model_type = "3"
-        else:
-            print("\nPlease select a model for the connector creation: ")
-            print("1. Cohere embedding model")
-            print("2. Titan embedding model")
-            print("3. Custom model")
-            model_type = input("Enter your choice (1-3): ").strip()
+        # Prompt to choose model
+        model_type = self.get_model_details(
+            "Amazon Bedrock", "amazon-opensearch-service", model_name
+        )
 
-        if not connector_role_prefix:
-            connector_role_prefix = input("Enter your connector role prefix: ") or None
-            if not connector_role_prefix:
-                raise ValueError("Connector role prefix cannot be empty.")
-
-        id = str(uuid.uuid1())[:8]
-        connector_role_name = f"{connector_role_prefix}_bedrock_connector_{id}"
-        create_connector_role_name = (
-            f"{connector_role_prefix}_bedrock_connector_create_{id}"
+        # Create connector role
+        connector_role_name, create_connector_role_name = self.create_connector_role(
+            connector_role_prefix, "bedrock"
         )
 
         if model_type == "1":
@@ -86,7 +65,7 @@ class BedrockModel(ModelBase):
                     }
                 ],
             }
-            connector_payload = {
+            connector_body = {
                 "name": "Amazon Bedrock Cohere Connector: embedding v3",
                 "description": "The connector to Bedrock Cohere embedding model",
                 "version": 1,
@@ -131,7 +110,7 @@ class BedrockModel(ModelBase):
                     }
                 ],
             }
-            connector_payload = {
+            connector_body = {
                 "name": "Amazon Bedrock Connector: titan embedding v1",
                 "description": "The connector to bedrock Titan embedding model",
                 "version": 1,
@@ -166,8 +145,8 @@ class BedrockModel(ModelBase):
                     }
                 ],
             }
-            if not connector_payload:
-                connector_payload = self.input_custom_model_details()
+            if not connector_body:
+                connector_body = self.input_custom_model_details()
         else:
             print(
                 f"\n{Fore.YELLOW}Invalid choice. Defaulting to 'Custom model'.{Style.RESET_ALL}"
@@ -185,8 +164,8 @@ class BedrockModel(ModelBase):
                     }
                 ],
             }
-            if not connector_payload:
-                connector_payload = self.input_custom_model_details()
+            if not connector_body:
+                connector_body = self.input_custom_model_details()
 
         # Create connector
         print("\nCreating Bedrock connector...")
@@ -194,7 +173,7 @@ class BedrockModel(ModelBase):
             connector_role_inline_policy,
             connector_role_name,
             create_connector_role_name,
-            connector_payload,
+            connector_body,
             sleep_time_in_seconds=10,
         )
 
