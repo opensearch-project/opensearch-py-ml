@@ -46,7 +46,11 @@ def clean_test_folder(TEST_FOLDER):
 
 
 def compare_model_config(
-    model_config_path, model_id, model_format, expected_model_description=None
+    model_config_path,
+    model_id,
+    model_format,
+    expected_model_description=None,
+    function_name="SPARSE_ENCODING",
 ):
     try:
         with open(model_config_path) as json_file:
@@ -67,7 +71,7 @@ def compare_model_config(
 
     assert (
         "function_name" in model_config_data
-        and model_config_data["function_name"] == "SPARSE_ENCODING"
+        and model_config_data["function_name"] == function_name
     ), f"Missing or Wrong function_name in {model_format} model config file"
 
     if expected_model_description is not None:

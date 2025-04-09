@@ -105,6 +105,7 @@ def test_make_model_config_json_for_torch_script():
         model_id,
         model_format,
         expected_model_description=expected_model_description,
+        function_name="SPARSE_TOKENIZE",
     )
 
     clean_test_folder(TEST_FOLDER)
