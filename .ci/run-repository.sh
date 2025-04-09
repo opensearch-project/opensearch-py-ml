@@ -86,6 +86,7 @@ elif [[ "$TASK_TYPE" == "SentenceTransformerTrace" || "$TASK_TYPE" == "SparseTra
       EXTRA_ARGS="-spr ${SPARSE_PRUNE_RATIO} -act ${ACTIVATION}"
   elif [[ "$TASK_TYPE" == "SparseTokenizerTrace" ]]; then
       NOX_TRACE_TYPE="sparsetrace"
+      # use extra args to trigger the tokenizer tracing logics
       EXTRA_ARGS="-t"
   else
       echo "Unknown TASK_TYPE: $TASK_TYPE"
