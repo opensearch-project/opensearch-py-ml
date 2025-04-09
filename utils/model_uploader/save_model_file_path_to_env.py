@@ -10,9 +10,13 @@
 # model hub before continuing the workflow.
 
 import argparse
+import json
 import re
+from pathlib import Path
 
 VERSION_PATTERN = r"^([1-9]\d*|0)(\.(([1-9]\d*)|0)){0,3}$"
+UPLOAD_PREFIX_KEY = "upload_prefix"
+MODEL_NAME_KEY = "model_name"
 
 
 def verify_inputs(model_id: str, model_version: str) -> None:
@@ -33,7 +37,11 @@ def verify_inputs(model_id: str, model_version: str) -> None:
 
 
 def get_model_file_path(
-    model_folder: str, model_id: str, model_version: str, model_format: str
+    model_folder: str,
+    model_id: str,
+    model_version: str,
+    model_format: str,
+    custom_params: dict = {},
 ) -> str:
     """
     Construct the expected model file path on model hub
@@ -46,14 +54,22 @@ def get_model_file_path(
     :type model_version: string
     :param model_format: Model format ("TORCH_SCRIPT" or "ONNX")
     :type model_format: string
+    :param custom_params: Custom params for model folder and name
+    :type custom_params: dict
     :return: Expected model file path on model hub
     :rtype: string
     """
     model_type, model_name = model_id.split("/")
+    if UPLOAD_PREFIX_KEY in custom_params:
+        model_type = custom_params[UPLOAD_PREFIX_KEY]
+    if MODEL_NAME_KEY in custom_params:
+        model_name = custom_params[MODEL_NAME_KEY]
     model_format = model_format.lower()
-    model_dirname = f"{model_folder}{model_name}/{model_version}/{model_format}"
     model_filename = f"{model_type}_{model_name}-{model_version}-{model_format}.zip"
-    model_file_path = model_dirname + "/" + model_filename
+    # robust to inputs, no matter a component endswith "/" or not
+    model_file_path = str(
+        Path(model_folder) / model_name / model_version / model_format / model_filename
+    )
     return model_file_path
 
 
@@ -77,11 +93,18 @@ if __name__ == "__main__":
         choices=["TORCH_SCRIPT", "ONNX"],
         help="Model format for auto-tracing",
     )
+    parser.add_argument(
+        "custom_params", type=str, help="Custom parameters in json string"
+    )
 
     args = parser.parse_args()
     verify_inputs(args.model_id, args.model_version)
     model_file_path = get_model_file_path(
-        args.model_folder, args.model_id, args.model_version, args.model_format
+        args.model_folder,
+        args.model_id,
+        args.model_version,
+        args.model_format,
+        json.loads(args.custom_params),
     )
 
     # Print the model file path so that the workflow can store it in the variable (See model_uploader.yml)
