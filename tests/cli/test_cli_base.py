@@ -8,7 +8,7 @@
 import json
 import os
 import unittest
-from unittest.mock import Mock, mock_open, patch
+from unittest.mock import MagicMock, Mock, mock_open, patch
 
 import yaml
 from colorama import Fore, Style
@@ -25,6 +25,22 @@ class TestCLIBase(unittest.TestCase):
         self.test_config = {
             "section1": {"key1": "value1"},
             "section2": {"key2": "value2"},
+        }
+        self.valid_config = {
+            "service_type": "amazon-opensearch-service",
+            "opensearch_config": {
+                "opensearch_domain_endpoint": "https://test-endpoint",
+                "opensearch_domain_region": "us-west-2",
+                "opensearch_domain_username": "admin",
+                "opensearch_domain_password": "password",
+            },
+            "aws_credentials": {
+                "aws_role_name": "test-role",
+                "aws_user_name": "test-user",
+                "aws_access_key": "test-key",
+                "aws_secret_access_key": "test-secret",
+                "aws_session_token": "test-token",
+            },
         }
 
     def tearDown(self):
@@ -677,6 +693,101 @@ class TestCLIBase(unittest.TestCase):
                     expected_output,
                     f"Failed for input '{input_url}'. Expected '{expected_output}', got '{result}'",
                 )
+
+    @patch("builtins.print")
+    def test_check_config_opensource(self, mock_print):
+        """Test check_config with open-source service successful"""
+        # Setup
+        self.valid_config["service_type"] = "open-source"
+        service_type = self.valid_config["service_type"]
+        opensearch_config = self.valid_config["opensearch_config"]
+
+        # Execute
+        self.cli_base.check_config(self.valid_config, service_type, opensearch_config)
+
+        # Verify
+        self.assertEqual(self.cli_base.opensearch_domain_name, None)
+        mock_print.assert_not_called()
+
+    @patch("builtins.print")
+    def test_check_config_opensource_no_credentials(self, mock_print):
+        """Test check_config with open-source service and no credentials"""
+        # Setup
+        self.valid_config["service_type"] = "open-source"
+        self.valid_config["opensearch_config"]["opensearch_domain_username"] = ""
+        service_type = self.valid_config["service_type"]
+        opensearch_config = self.valid_config["opensearch_config"]
+
+        # Execute
+        result = self.cli_base.check_config(
+            self.valid_config, service_type, opensearch_config
+        )
+
+        # Verify
+        self.assertFalse(result)
+        mock_print.assert_called_with(
+            f"{Fore.RED}OpenSearch username or password not set. Please run setup first.{Style.RESET_ALL}\n"
+        )
+
+    @patch("builtins.print")
+    @patch("boto3.client")
+    def test_check_config_managed(self, mock_boto3_client, mock_print):
+        """Test check_config with managed service successful"""
+        # Setup
+        service_type = self.valid_config["service_type"]
+        opensearch_config = self.valid_config["opensearch_config"]
+
+        # Mock the AWS client
+        mock_opensearch_client = MagicMock()
+        mock_boto3_client.return_value = mock_opensearch_client
+
+        # Mock the get_opensearch_domain_name method
+        self.cli_base.get_opensearch_domain_name = Mock(return_value="test-domain")
+
+        # Execute
+        self.cli_base.check_config(self.valid_config, service_type, opensearch_config)
+
+        # Verify
+        self.assertEqual(self.cli_base.opensearch_domain_name, "test-domain")
+        mock_print.assert_not_called()
+
+    @patch("builtins.print")
+    def test_check_config_managed_no_region(self, mock_print):
+        """Test check_config with managed service and no region"""
+        # Setup
+        self.valid_config["opensearch_config"]["opensearch_domain_region"] = ""
+        service_type = self.valid_config["service_type"]
+        opensearch_config = self.valid_config["opensearch_config"]
+
+        # Execute
+        result = self.cli_base.check_config(
+            self.valid_config, service_type, opensearch_config
+        )
+
+        # Verify
+        self.assertFalse(result)
+        mock_print.assert_called_with(
+            f"{Fore.RED}AWS region or domain name not set. Please run setup first.{Style.RESET_ALL}\n"
+        )
+
+    @patch("builtins.print")
+    def test_check_config_no_endpoint(self, mock_print):
+        """Test check_config with no OpenSearch endpoint"""
+        # Setup
+        self.valid_config["opensearch_config"]["opensearch_domain_endpoint"] = ""
+        service_type = self.valid_config["service_type"]
+        opensearch_config = self.valid_config["opensearch_config"]
+
+        # Execute
+        result = self.cli_base.check_config(
+            self.valid_config, service_type, opensearch_config
+        )
+
+        # Verify
+        self.assertFalse(result)
+        mock_print.assert_called_with(
+            f"\n{Fore.RED}OpenSearch endpoint not set. Please run setup first.{Style.RESET_ALL}\n"
+        )
 
 
 if __name__ == "__main__":

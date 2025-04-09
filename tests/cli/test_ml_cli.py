@@ -288,6 +288,14 @@ class TestMLCLI(unittest.TestCase):
                 model_description="test description",
             )
 
+    @patch("argparse.ArgumentParser.error")
+    def test_connector_id_missing_value(self, mock_error):
+        """Test connector ID handling when value is missing"""
+        test_args = ["ml_cli.py", "model", "register", "--connectorId"]
+        with patch.object(sys, "argv", test_args):
+            main()
+            mock_error.assert_called_once_with("--connectorId requires a value")
+
     def test_dash_prefixed_model_id(self):
         """Test dash-prefixed model ID handling"""
         test_args = [
@@ -306,6 +314,19 @@ class TestMLCLI(unittest.TestCase):
                 model_id="-model123",
                 body='{"parameters": {}}',
             )
+
+    @patch("argparse.ArgumentParser.error")
+    def test_model_id_missing_value(self, mock_error):
+        """Test model ID handling when value is missing"""
+        test_args = [
+            "ml_cli.py",
+            "model",
+            "predict",
+            "--modelId",
+        ]
+        with patch.object(sys, "argv", test_args):
+            main()
+            mock_error.assert_called_once_with("--modelId requires a value")
 
 
 if __name__ == "__main__":

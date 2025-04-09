@@ -112,7 +112,7 @@ Examples:
   Predict a model:
     opensearch-ml model predict
 
-  Predict a model with a model ID and the request payload:
+  Predict a model with a model ID and the request body:
     opensearch-ml model predict --modelId 'model123' --body '{"parameters": {"texts": ["hello world"]}}'
 """,
     )
@@ -185,7 +185,7 @@ Examples:
         nargs="?",
     )
     model_predict.add_argument(
-        "--body", help="Payload of the predict request", metavar="PREDICT_BODY"
+        "--body", help="Body of the predict request", metavar="PREDICT_BODY"
     )
 
     args, unknown = parser.parse_known_args()

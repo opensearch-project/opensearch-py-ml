@@ -30,8 +30,10 @@ class TestSageMakerModel(unittest.TestCase):
     @patch(
         "opensearch_py_ml.ml_commons.cli.ml_models.model_base.ModelBase.get_model_details"
     )
+    @patch("builtins.input", side_effect=["test-url", ""])
+    @patch("builtins.print")
     def test_create_connector_deepseek(
-        self, mock_get_model_details, mock_set_trusted_endpoint
+        self, mock_print, mock_input, mock_get_model_details, mock_set_trusted_endpoint
     ):
         """Test creating a SageMaker connector with DeepSeek R1 model"""
         # Setup mocks
@@ -44,13 +46,11 @@ class TestSageMakerModel(unittest.TestCase):
             helper=self.mock_helper,
             save_config_method=self.mock_save_config,
             connector_role_prefix=self.connector_role_prefix,
-            region=self.region,
             model_name="DeepSeek R1 model",
             endpoint_arn=self.connector_endpoint_arn,
-            endpoint_url=self.connector_endpoint_url,
         )
 
-        # Verify method cals
+        # Verify method calls
         mock_set_trusted_endpoint.assert_called_once_with(
             self.mock_helper,
             "^https://runtime\\.sagemaker\\..*[a-z0-9-]\\.amazonaws\\.com/.*$",
@@ -58,6 +58,8 @@ class TestSageMakerModel(unittest.TestCase):
         mock_get_model_details.assert_called_once_with(
             "Amazon SageMaker", "amazon-opensearch-service", "DeepSeek R1 model"
         )
+        mock_input.assert_any_call("Enter your SageMaker inference endpoint URL: ")
+        mock_input.assert_any_call(f"Enter your SageMaker region [{self.region}]: ")
         self.assertTrue(result)
 
     @patch(
@@ -66,8 +68,10 @@ class TestSageMakerModel(unittest.TestCase):
     @patch(
         "opensearch_py_ml.ml_commons.cli.ml_models.model_base.ModelBase.get_model_details"
     )
+    @patch("builtins.input", side_effect=["test-url", ""])
+    @patch("builtins.print")
     def test_create_connector_embedding(
-        self, mock_get_model_details, mock_set_trusted_endpoint
+        self, mock_print, mock_input, mock_get_model_details, mock_set_trusted_endpoint
     ):
         """Test creating a SageMaker connector with embedding model"""
         # Setup mocks
@@ -80,10 +84,8 @@ class TestSageMakerModel(unittest.TestCase):
             helper=self.mock_helper,
             save_config_method=self.mock_save_config,
             connector_role_prefix=self.connector_role_prefix,
-            region=self.region,
             model_name="Embedding model",
             endpoint_arn=self.connector_endpoint_arn,
-            endpoint_url=self.connector_endpoint_url,
         )
 
         # Verify method cals
@@ -94,8 +96,13 @@ class TestSageMakerModel(unittest.TestCase):
         mock_get_model_details.assert_called_once_with(
             "Amazon SageMaker", "amazon-opensearch-service", "Embedding model"
         )
+        mock_input.assert_any_call("Enter your SageMaker inference endpoint URL: ")
+        mock_input.assert_any_call(f"Enter your SageMaker region [{self.region}]: ")
         self.assertTrue(result)
 
+    @patch(
+        "opensearch_py_ml.ml_commons.cli.ml_models.model_base.ModelBase.input_custom_model_details"
+    )
     @patch(
         "opensearch_py_ml.ml_commons.cli.ml_models.model_base.ModelBase.set_trusted_endpoint"
     )
@@ -103,14 +110,14 @@ class TestSageMakerModel(unittest.TestCase):
         "opensearch_py_ml.ml_commons.cli.ml_models.model_base.ModelBase.get_model_details"
     )
     def test_create_connector_custom_model(
-        self, mock_get_model_details, mock_set_trusted_endpoint
+        self, mock_get_model_details, mock_set_trusted_endpoint, mock_custom_model
     ):
         """Test creating a SageMaker connector with custom model"""
         self.mock_helper.create_connector_with_role.return_value = (
             "test_connector_id",
             "test_role_arn",
         )
-        custom_payload = {
+        mock_custom_model.return_value = {
             "name": "Custom Model",
             "description": "Custom description",
             "version": "1",
@@ -124,7 +131,6 @@ class TestSageMakerModel(unittest.TestCase):
             model_name="Custom model",
             endpoint_arn=self.connector_endpoint_arn,
             endpoint_url=self.connector_endpoint_url,
-            connector_body=custom_payload,
         )
 
         # Verify method calls
@@ -135,6 +141,7 @@ class TestSageMakerModel(unittest.TestCase):
         mock_get_model_details.assert_called_once_with(
             "Amazon SageMaker", "amazon-opensearch-service", "Custom model"
         )
+        mock_custom_model.assert_called_once()
         self.assertTrue(result)
 
     @patch("builtins.input", side_effect=["1"])
@@ -226,33 +233,26 @@ class TestSageMakerModel(unittest.TestCase):
         _, _, _, connector_body = create_connector_calls[0][0]
         self.assertEqual(connector_body["parameters"]["region"], "us-east-1")
 
-    @patch("builtins.input")
-    def test_input_custom_model_details(self, mock_input):
-        """Test create_connector for input_custom_model_details method"""
-        mock_input.side_effect = [
-            '{"name": "test-model",',
-            '"description": "test description",',
-            '"parameters": {"param": "value"}}',
-            "",
-        ]
-        result = self.sagemaker_model.input_custom_model_details()
-        expected_result = {
-            "name": "test-model",
-            "description": "test description",
-            "parameters": {"param": "value"},
-        }
-        self.assertEqual(result, expected_result)
-
+    @patch(
+        "opensearch_py_ml.ml_commons.cli.ml_models.model_base.ModelBase.input_custom_model_details"
+    )
     @patch(
         "opensearch_py_ml.ml_commons.cli.ml_models.model_base.ModelBase.get_model_details"
     )
     @patch("builtins.print")
-    def test_create_connector_invalid_choice(self, mock_print, mock_get_model_details):
+    def test_create_connector_invalid_choice(
+        self, mock_print, mock_get_model_details, mock_custom_model
+    ):
         """Test creating a SageMaker connector with invalid model choice"""
         self.mock_helper.create_connector_with_role.return_value = (
             "mock_connector_id",
             "mock_role_arn",
         )
+        mock_custom_model.return_value = {
+            "name": "Custom Model",
+            "description": "Custom description",
+            "version": "1",
+        }
         self.sagemaker_model.create_connector(
             helper=self.mock_helper,
             save_config_method=self.mock_save_config,
@@ -261,8 +261,8 @@ class TestSageMakerModel(unittest.TestCase):
             model_name="Invalid Model",
             endpoint_arn=self.connector_endpoint_arn,
             endpoint_url=self.connector_endpoint_url,
-            connector_body={"name": "test-model"},
         )
+        mock_custom_model.assert_called_once()
         mock_print.assert_any_call(
             f"\n{Fore.YELLOW}Invalid choice. Defaulting to 'Custom model'.{Style.RESET_ALL}"
         )

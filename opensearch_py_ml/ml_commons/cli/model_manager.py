@@ -30,7 +30,6 @@ class ModelManager(CLIBase):
         """
         super().__init__()
         self.config = {}
-        self.opensearch_domain_name = ""
 
     def initialize_predict_model(self, config_path, model_id=None, body=None):
         """
@@ -50,12 +49,12 @@ class ModelManager(CLIBase):
             if not ai_helper:
                 return False
 
-            # Prompt for model id and predict request payload if not provided
+            # Prompt for model id and predict request body if not provided
             if not model_id:
                 model_id = input("\nEnter the model ID: ").strip()
             if not body:
                 print(
-                    "\nEnter your predict request payload as a JSON object (press Enter twice when done): "
+                    "\nEnter your predict request body as a JSON object (press Enter twice when done): "
                 )
                 json_input = ""
                 lines = []

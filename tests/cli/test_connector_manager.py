@@ -57,7 +57,7 @@ class TestConnectorManager(unittest.TestCase):
             name="Test Connector",
             connector_class="TestModel",
             init_params=["param1", "param2"],
-            connector_params=["model_name"],
+            connector_params=["param1", "param2", "param3"],
             available_models=[ModelInfo(id="1", name="Test Model 1")],
         )
         self.test_config = {"service_type": "open-source", "some_config": "value"}
@@ -329,7 +329,7 @@ class TestConnectorManager(unittest.TestCase):
     @patch("opensearch_py_ml.ml_commons.cli.AIConnectorHelper")
     def test_create_connector_instance_with_opensearch_config(self, mock_ai_helper):
         """Test create_connector_instance with opensearch config"""
-        opensearch_config = {"param1": "os_value1", "param2": "os_value2"}
+        opensearch_config = {"param1": "value1", "param2": None}
         mock_model = MagicMock()
         result = self.connector_manager.create_connector_instance(
             connector_config_path=None,
@@ -340,13 +340,18 @@ class TestConnectorManager(unittest.TestCase):
             model=mock_model,
             ai_helper=mock_ai_helper,
         )
+        # Check that create_connector was called with correct kwargs
+        expected_kwargs = {"param1": "value1"}
 
+        mock_model.create_connector.assert_called_once_with(
+            mock_ai_helper, self.connector_manager.connector_output, **expected_kwargs
+        )
         self.assertEqual(result, mock_model.create_connector.return_value)
 
     @patch("opensearch_py_ml.ml_commons.cli.AIConnectorHelper")
     def test_create_connector_instance_with_config(self, mock_ai_helper):
         """Test create_connector_instance with general config"""
-        config = {"param1": "value1", "param2": "value2"}
+        config = {"param1": None, "param2": "value2"}
         mock_model = MagicMock()
         result = self.connector_manager.create_connector_instance(
             connector_config_path=None,
@@ -356,6 +361,12 @@ class TestConnectorManager(unittest.TestCase):
             config=config,
             model=mock_model,
             ai_helper=mock_ai_helper,
+        )
+        # Check that create_connector was called with correct kwargs
+        expected_kwargs = {"param2": "value2"}
+
+        mock_model.create_connector.assert_called_once_with(
+            mock_ai_helper, self.connector_manager.connector_output, **expected_kwargs
         )
         self.assertEqual(result, mock_model.create_connector.return_value)
 
@@ -489,6 +500,54 @@ class TestConnectorManager(unittest.TestCase):
         mock_print.assert_called_once()
         self.assertIn(
             "No setup configuration found. Please run setup first.",
+            mock_print.call_args[0][0],
+        )
+
+    @patch("builtins.input", side_effect=[""])
+    def test_initialize_create_connector_fail_configuration_check(self, mock_input):
+        """Test initialize_create_connector when configuration validity check fails"""
+        self.connector_manager.load_config = MagicMock(return_value=self.test_config)
+        self.connector_manager.check_config = MagicMock(return_value=False)
+        result = self.connector_manager.initialize_create_connector()
+        self.assertFalse(result)
+
+    @patch("builtins.print")
+    @patch("builtins.input", side_effect=[""])
+    def test_initialize_create_connector_invalid_connector_name(
+        self, mock_input, mock_print
+    ):
+        """Test initialize_create_connector when the connector name is invalid and ValueError is raised"""
+        self.connector_manager.load_connector_config = MagicMock(
+            return_value=self.test_connector_config
+        )
+        self.connector_manager.load_config = MagicMock(return_value=self.test_config)
+        self.connector_manager.check_config = MagicMock(return_value=True)
+        self.connector_manager.get_connector_by_name = MagicMock(side_effect=ValueError)
+        result = self.connector_manager.initialize_create_connector(
+            "test-connector-config.yml"
+        )
+        self.assertFalse(result)
+        mock_print.assert_called_once()
+        self.assertIn(
+            "Invalid connector choice. Operation cancelled.",
+            mock_print.call_args[0][0],
+        )
+
+    @patch("builtins.print")
+    @patch("builtins.input", return_value="0")
+    def test_initialize_create_connector_invalid_connector_id(
+        self, mock_input, mock_print
+    ):
+        """Test initialize_create_connector when the connector ID is invalid and ValueError is raised"""
+        self.connector_manager.load_config = MagicMock(return_value=self.test_config)
+        self.connector_manager.check_config = MagicMock(return_value=True)
+        self.connector_manager.print_available_connectors = MagicMock()
+        self.connector_manager.get_connector_by_id = MagicMock(side_effect=ValueError)
+        result = self.connector_manager.initialize_create_connector()
+        self.assertFalse(result)
+        mock_print.assert_called_once()
+        self.assertIn(
+            "Invalid connector choice. Operation cancelled.",
             mock_print.call_args[0][0],
         )
 

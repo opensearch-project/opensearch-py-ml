@@ -147,7 +147,7 @@ class DeepSeekModel(ModelBase):
             print("\nCreating DeepSeek connector...")
             connector_id = helper.create_connector(
                 create_connector_role_name=None,
-                payload=connector_body,
+                body=connector_body,
             )
 
         if connector_id:

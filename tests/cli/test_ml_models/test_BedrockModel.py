@@ -92,20 +92,23 @@ class TestBedrockModel(unittest.TestCase):
         self.assertTrue(result)
 
     @patch(
+        "opensearch_py_ml.ml_commons.cli.ml_models.model_base.ModelBase.input_custom_model_details"
+    )
+    @patch(
         "opensearch_py_ml.ml_commons.cli.ml_models.model_base.ModelBase.set_trusted_endpoint"
     )
     @patch(
         "opensearch_py_ml.ml_commons.cli.ml_models.model_base.ModelBase.get_model_details"
     )
     def test_create_connector_custom_model(
-        self, mock_get_model_details, mock_set_trusted_endpoint
+        self, mock_get_model_details, mock_set_trusted_endpoint, mock_custom_model
     ):
         """Test creating a Bedrock connector with custom model"""
         self.mock_helper.create_connector_with_role.return_value = (
             "test_connector_id",
             "test_role_arn",
         )
-        custom_payload = {
+        mock_custom_model.return_value = {
             "name": "Custom Model",
             "description": "Custom description",
             "version": "1",
@@ -118,7 +121,6 @@ class TestBedrockModel(unittest.TestCase):
             region=self.region,
             model_name="Custom model",
             model_arn="test-model-arn",
-            connector_body=custom_payload,
         )
 
         # Verify method calls
@@ -129,6 +131,7 @@ class TestBedrockModel(unittest.TestCase):
         mock_get_model_details.assert_called_once_with(
             "Amazon Bedrock", "amazon-opensearch-service", "Custom model"
         )
+        mock_custom_model.assert_called_once()
         self.assertTrue(result)
 
     @patch("builtins.input", side_effect=["1"])
@@ -166,7 +169,7 @@ class TestBedrockModel(unittest.TestCase):
         _, _, _, connector_body = create_connector_calls[0][0]
         self.assertEqual(connector_body["parameters"]["region"], "us-west-2")
 
-    @patch("builtins.input", side_effect=["1", "test_prefix", "us-east-1"])
+    @patch("builtins.input", side_effect=["2", "test_prefix", "us-east-1"])
     def test_create_connector_custom_region(self, mock_input):
         """Test creating a Bedrock connector with a custom region"""
         self.mock_helper.create_connector_with_role.return_value = (
@@ -188,7 +191,7 @@ class TestBedrockModel(unittest.TestCase):
     @patch("builtins.input", side_effect=["3", "test_prefix", "test-model-arn"])
     def test_enter_custom_model_arn(self, mock_input):
         """Test creating a Bedrock connector with a custom model ARN"""
-        payload = {"test": "payload"}
+        body = {"test": "body"}
         self.mock_helper.create_connector_with_role.return_value = (
             "mock_connector_id",
             "mock_role_arn",
@@ -196,7 +199,7 @@ class TestBedrockModel(unittest.TestCase):
         self.bedrock_model.create_connector(
             helper=self.mock_helper,
             save_config_method=self.mock_save_config,
-            connector_body=payload,
+            connector_body=body,
         )
         mock_input.assert_any_call("Enter your custom model ARN: ")
         connector_role_inline_policy = (
@@ -206,45 +209,39 @@ class TestBedrockModel(unittest.TestCase):
             connector_role_inline_policy["Statement"][0]["Resource"], "test-model-arn"
         )
 
-    @patch("builtins.input")
-    def test_input_custom_model_details(self, mock_input):
-        """Test create_connector for input_custom_model_details method"""
-        mock_input.side_effect = [
-            '{"name": "test-model",',
-            '"description": "test description",',
-            '"parameters": {"param": "value"}}',
-            "",
-        ]
-        result = self.bedrock_model.input_custom_model_details()
-        expected_result = {
-            "name": "test-model",
-            "description": "test description",
-            "parameters": {"param": "value"},
-        }
-        self.assertEqual(result, expected_result)
-
+    @patch(
+        "opensearch_py_ml.ml_commons.cli.ml_models.model_base.ModelBase.input_custom_model_details"
+    )
     @patch(
         "opensearch_py_ml.ml_commons.cli.ml_models.model_base.ModelBase.get_model_details"
     )
     @patch("builtins.print")
-    def test_create_connector_invalid_choice(self, mock_print, mock_get_model_details):
+    @patch("builtins.input", return_value="test-model-arn")
+    def test_create_connector_invalid_choice(
+        self, mock_input, mock_print, mock_get_model_details, mock_custom_model
+    ):
         """Test creating a Bedrock connector with an invalid model choice"""
         self.mock_helper.create_connector_with_role.return_value = (
             "mock_connector_id",
             "mock_role_arn",
         )
+        mock_custom_model.return_value = {
+            "name": "Custom Model",
+            "description": "Custom description",
+            "version": "1",
+        }
         self.bedrock_model.create_connector(
             helper=self.mock_helper,
             save_config_method=self.mock_save_config,
             connector_role_prefix=self.connector_role_prefix,
             region=self.region,
             model_name="Invalid Model",
-            model_arn="test-arn",
-            connector_body={"name": "test-model"},
         )
+        mock_input.assert_called_once_with("Enter your custom model ARN: ")
         mock_print.assert_any_call(
             f"\n{Fore.YELLOW}Invalid choice. Defaulting to 'Custom model'.{Style.RESET_ALL}"
         )
+        mock_custom_model.assert_called_once()
 
     def test_create_connector_failure(self):
         """Test creating a Bedrock connector in failure scenario"""

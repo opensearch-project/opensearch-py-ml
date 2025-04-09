@@ -30,10 +30,10 @@ class TestOpenAIModel(unittest.TestCase):
     @patch(
         "opensearch_py_ml.ml_commons.cli.ml_models.model_base.ModelBase.get_model_details"
     )
-    def test_create_connector_embedding_model(
+    def test_create_connector_embedding_model_managed(
         self, mock_get_model_details, mock_set_trusted_endpoint
     ):
-        """Test creating an OpenAI connector with embedding model"""
+        """Test creating an OpenAI connector with embedding model in managed service"""
         # Setup mocks
         mock_get_model_details.return_value = "1"
         self.mock_helper.create_connector_with_secret.return_value = (
@@ -60,20 +60,23 @@ class TestOpenAIModel(unittest.TestCase):
         self.assertTrue(result)
 
     @patch(
+        "opensearch_py_ml.ml_commons.cli.ml_models.model_base.ModelBase.input_custom_model_details"
+    )
+    @patch(
         "opensearch_py_ml.ml_commons.cli.ml_models.model_base.ModelBase.set_trusted_endpoint"
     )
     @patch(
         "opensearch_py_ml.ml_commons.cli.ml_models.model_base.ModelBase.get_model_details"
     )
-    def test_create_connector_custom_model(
-        self, mock_get_model_details, mock_set_trusted_endpoint
+    def test_create_connector_custom_model_managed(
+        self, mock_get_model_details, mock_set_trusted_endpoint, mock_custom_model
     ):
-        """Test creating an OpenAI connector with custom model"""
+        """Test creating an OpenAI connector with custom model in managed service"""
         self.mock_helper.create_connector_with_secret.return_value = (
             "test_connector_id",
             "test_role_arn",
         )
-        custom_payload = {
+        mock_custom_model.return_value = {
             "name": "Custom Model",
             "description": "Custom description",
             "version": "1",
@@ -86,7 +89,6 @@ class TestOpenAIModel(unittest.TestCase):
             model_name="Custom model",
             api_key=self.api_key,
             secret_name=self.secret_name,
-            connector_body=custom_payload,
         )
 
         # Verify method calls
@@ -96,7 +98,42 @@ class TestOpenAIModel(unittest.TestCase):
         mock_get_model_details.assert_called_once_with(
             "OpenAI", "amazon-opensearch-service", "Custom model"
         )
+        mock_custom_model.assert_called_once_with(external=True)
         self.assertTrue(result)
+
+    @patch(
+        "opensearch_py_ml.ml_commons.cli.ml_models.model_base.ModelBase.input_custom_model_details"
+    )
+    @patch(
+        "opensearch_py_ml.ml_commons.cli.ml_models.model_base.ModelBase.get_model_details"
+    )
+    @patch("builtins.print")
+    def test_create_connector_invalid_choice_managed(
+        self, mock_print, mock_get_model_details, mock_custom_model
+    ):
+        """Test creating an OpenAI connector with invalid model choice in managed service"""
+        self.mock_helper.create_connector_with_secret.return_value = (
+            "mock_connector_id",
+            "mock_role_arn",
+        )
+        mock_custom_model.return_value = {
+            "name": "Custom Model",
+            "description": "Custom description",
+            "version": "1",
+        }
+
+        self.openai_model.create_connector(
+            helper=self.mock_helper,
+            save_config_method=self.mock_save_config,
+            connector_role_prefix=self.connector_role_prefix,
+            model_name="Invalid Model",
+            api_key=self.api_key,
+            secret_name=self.secret_name,
+        )
+        mock_print.assert_any_call(
+            f"\n{Fore.YELLOW}Invalid choice. Defaulting to 'Custom model'.{Style.RESET_ALL}"
+        )
+        mock_custom_model.assert_called_once_with(external=True)
 
     def test_create_connector_failure(self):
         """Test creating an OpenAI connector in failure scenario"""
@@ -111,10 +148,38 @@ class TestOpenAIModel(unittest.TestCase):
         )
         self.assertFalse(result)
 
-    def test_create_connector_open_source(self):
-        """Test creating a OpenAI connector for open-source service"""
-        # Create model with non-AWS service type
+    @patch(
+        "opensearch_py_ml.ml_commons.cli.ml_models.model_base.ModelBase.get_model_details"
+    )
+    def test_create_connector_chat_model_open_source(self, mock_get_model_details):
+        """Test creating an OpenAI connector with chat model in open-source service"""
+        # Create model with open-source service type
         open_source_model = OpenAIModel(service_type="open-source")
+        mock_get_model_details.return_value = "1"
+
+        result = open_source_model.create_connector(
+            helper=self.mock_helper,
+            save_config_method=self.mock_save_config,
+            connector_role_prefix=self.connector_role_prefix,
+            model_name="Chat model",
+            api_key=self.api_key,
+        )
+        # Verify method call
+        mock_get_model_details.assert_called_once_with(
+            "OpenAI", "open-source", "Chat model"
+        )
+        # Verify that create_connector was called instead of create_connector_with_secret
+        self.mock_helper.create_connector.assert_called_once()
+        self.assertTrue(result)
+
+    @patch(
+        "opensearch_py_ml.ml_commons.cli.ml_models.model_base.ModelBase.get_model_details"
+    )
+    def test_create_connector_embedding_model_open_source(self, mock_get_model_details):
+        """Test creating a OpenAI connector with embedding model in open-source service"""
+        # Create model with open-source service type
+        open_source_model = OpenAIModel(service_type="open-source")
+        mock_get_model_details.return_value = "2"
 
         result = open_source_model.create_connector(
             helper=self.mock_helper,
@@ -123,10 +188,76 @@ class TestOpenAIModel(unittest.TestCase):
             model_name="Embedding model",
             api_key=self.api_key,
         )
-
+        # Verify method call
+        mock_get_model_details.assert_called_once_with(
+            "OpenAI", "open-source", "Embedding model"
+        )
         # Verify that create_connector was called instead of create_connector_with_secret
         self.mock_helper.create_connector.assert_called_once()
         self.assertTrue(result)
+
+    @patch(
+        "opensearch_py_ml.ml_commons.cli.ml_models.model_base.ModelBase.input_custom_model_details"
+    )
+    @patch(
+        "opensearch_py_ml.ml_commons.cli.ml_models.model_base.ModelBase.get_model_details"
+    )
+    def test_create_connector_custom_model_open_source(
+        self, mock_get_model_details, mock_custom_model
+    ):
+        """Test creating a OpenAI connector with custom model in open-source service"""
+        # Create model with open-source service type
+        open_source_model = OpenAIModel(service_type="open-source")
+        mock_custom_model.return_value = {
+            "name": "Custom Model",
+            "description": "Custom description",
+            "version": "1",
+        }
+        result = open_source_model.create_connector(
+            helper=self.mock_helper,
+            save_config_method=self.mock_save_config,
+            connector_role_prefix=self.connector_role_prefix,
+            model_name="Custom model",
+            api_key=self.api_key,
+        )
+        # Verify method call
+        mock_get_model_details.assert_called_once_with(
+            "OpenAI", "open-source", "Custom model"
+        )
+        # Verify that create_connector was called instead of create_connector_with_secret
+        self.mock_helper.create_connector.assert_called_once()
+        mock_custom_model.assert_called_once_with(external=True)
+        self.assertTrue(result)
+
+    @patch(
+        "opensearch_py_ml.ml_commons.cli.ml_models.model_base.ModelBase.input_custom_model_details"
+    )
+    @patch(
+        "opensearch_py_ml.ml_commons.cli.ml_models.model_base.ModelBase.get_model_details"
+    )
+    @patch("builtins.print")
+    def test_create_connector_invalid_choice_open_source(
+        self, mock_print, mock_get_model_details, mock_custom_model
+    ):
+        """Test creating a OpenAI connector with an invalid model choice in open-source service"""
+        # Create model with open-source service type
+        open_source_model = OpenAIModel(service_type="open-source")
+        mock_custom_model.return_value = {
+            "name": "Custom Model",
+            "description": "Custom description",
+            "version": "1",
+        }
+        open_source_model.create_connector(
+            helper=self.mock_helper,
+            save_config_method=self.mock_save_config,
+            connector_role_prefix=self.connector_role_prefix,
+            model_name="Invalid model",
+            api_key=self.api_key,
+        )
+        mock_print.assert_any_call(
+            f"\n{Fore.YELLOW}Invalid choice. Defaulting to 'Custom model'.{Style.RESET_ALL}"
+        )
+        mock_custom_model.assert_called_once_with(external=True)
 
     @patch("builtins.input", side_effect=["1"])
     def test_create_connector_select_model_interactive(self, mock_input):
@@ -146,46 +277,6 @@ class TestOpenAIModel(unittest.TestCase):
 
         self.mock_helper.create_connector_with_secret.assert_called_once()
         self.assertTrue(result)
-
-    @patch("builtins.input")
-    def test_input_custom_model_details(self, mock_input):
-        """Test create_connector for input_custom_model_details method"""
-        mock_input.side_effect = [
-            '{"name": "test-model",',
-            '"description": "test description",',
-            '"parameters": {"param": "value"}}',
-            "",
-        ]
-        result = self.openai_model.input_custom_model_details()
-        expected_result = {
-            "name": "test-model",
-            "description": "test description",
-            "parameters": {"param": "value"},
-        }
-        self.assertEqual(result, expected_result)
-
-    @patch(
-        "opensearch_py_ml.ml_commons.cli.ml_models.model_base.ModelBase.get_model_details"
-    )
-    @patch("builtins.print")
-    def test_create_connector_invalid_choice(self, mock_print, mock_get_model_details):
-        """Test creating an OpenAI connector with invalid model choice"""
-        self.mock_helper.create_connector_with_secret.return_value = (
-            "mock_connector_id",
-            "mock_role_arn",
-        )
-        self.openai_model.create_connector(
-            helper=self.mock_helper,
-            save_config_method=self.mock_save_config,
-            connector_role_prefix=self.connector_role_prefix,
-            model_name="Invalid Model",
-            api_key=self.api_key,
-            secret_name=self.secret_name,
-            connector_body={"name": "test-model"},
-        )
-        mock_print.assert_any_call(
-            f"\n{Fore.YELLOW}Invalid choice. Defaulting to 'Custom model'.{Style.RESET_ALL}"
-        )
 
 
 if __name__ == "__main__":
