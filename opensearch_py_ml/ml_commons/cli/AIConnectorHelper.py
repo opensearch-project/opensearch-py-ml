@@ -10,10 +10,8 @@ import time
 from urllib.parse import urlparse
 
 import boto3
-import requests
 from colorama import Fore, Style
 from opensearchpy import OpenSearch, RequestsHttpConnection
-from requests.auth import HTTPBasicAuth
 from requests_aws4auth import AWS4Auth
 
 from opensearch_py_ml.ml_commons.cli.aws_config import AWSConfig
@@ -21,9 +19,7 @@ from opensearch_py_ml.ml_commons.cli.opensearch_domain_config import (
     OpenSearchDomainConfig,
 )
 from opensearch_py_ml.ml_commons.IAMRoleHelper import IAMRoleHelper
-from opensearch_py_ml.ml_commons.ml_commons_client import MLCommonClient
-from opensearch_py_ml.ml_commons.model_access_control import ModelAccessControl
-from opensearch_py_ml.ml_commons.model_connector import Connector
+from opensearch_py_ml.ml_commons.ml_common_utils import TIMEOUT
 from opensearch_py_ml.ml_commons.SecretHelper import SecretHelper
 
 
@@ -75,9 +71,6 @@ class AIConnectorHelper:
             connection_class=RequestsHttpConnection,
         )
 
-        # Initialize ModelAccessControl for managing model groups
-        self.model_access_control = ModelAccessControl(self.opensearch_client)
-
         # Initialize helpers for IAM roles and secrets management
         if self.service_type == "open-source":
             self.iam_helper = None
@@ -90,9 +83,6 @@ class AIConnectorHelper:
             self.secret_helper = SecretHelper(
                 opensearch_config=self.opensearch_config, aws_config=self.aws_config
             )
-
-        # Initialize MLCommonClient for reuse of get_task_info
-        self.ml_commons_client = MLCommonClient(self.opensearch_client)
 
     @staticmethod
     def get_opensearch_domain_info(
@@ -156,11 +146,153 @@ class AIConnectorHelper:
         )
         return awsauth
 
-    def create_connector(self, create_connector_role_name, payload):
+    def get_task_info(self, task_id: str, wait_until_task_done: bool = False) -> object:
         """
-        Create a connector in OpenSearch using the specified role and payload.
-        Reusing create_standalone_connector from Connector class.
+        Returns information about a task running into opensearch cluster
+        Replicating the get_task_info in ml_commons_client.py
+        since ML client APIs will be deprecated
         """
+        if wait_until_task_done:
+            end = time.time() + TIMEOUT  # timeout seconds
+            task_flag = False
+            while not task_flag and time.time() < end:
+                time.sleep(1)
+                output = self._get_task_info(task_id)
+                if (
+                    output["state"] == "COMPLETED"
+                    or output["state"] == "FAILED"
+                    or output["state"] == "COMPLETED_WITH_ERROR"
+                ):
+                    task_flag = True
+        return self._get_task_info(task_id)
+
+    def _get_task_info(self, task_id: str):
+        """
+        Perform the get request to get the task status
+        Replicating the _get_task_info in ml_commons_client.py
+        since ML client APIs will be deprecated
+        """
+        headers = {"Content-Type": "application/json"}
+        response = self.opensearch_client.transport.perform_request(
+            method="GET", url=f"/_plugins/_ml/tasks/{task_id}", headers=headers
+        )
+        return response
+
+    def get_task(self, task_id, wait_until_task_done=False):
+        """
+        Retrieve the status of a specific task using its ID.
+        """
+        try:
+            response = self.get_task_info(task_id, wait_until_task_done)
+            print("Get Task Response:", json.dumps(response))
+            return response
+        except Exception as e:
+            print(f"Error in get_task: {e}")
+            raise
+
+    def register_model(
+        self,
+        model_name,
+        description,
+        connector_id,
+        deploy=True,
+    ):
+        """
+        Register a new model in OpenSearch and optionally deploy it.
+        """
+        try:
+            body = {
+                "name": model_name,
+                "function_name": "remote",
+                "description": description,
+                "connector_id": connector_id,
+            }
+            headers = {"Content-Type": "application/json"}
+            deploy_str = str(deploy).lower()
+
+            response = self.opensearch_client.transport.perform_request(
+                method="POST",
+                url="/_plugins/_ml/models/_register",
+                params={"deploy": deploy_str},
+                body=body,
+                headers=headers,
+            )
+            if "model_id" in response:
+                return response["model_id"]
+            elif "task_id" in response:
+                # Handle asynchronous task by leveraging wait_until_task_done
+                task_response = self.get_task(
+                    response["task_id"],
+                    wait_until_task_done=True,
+                )
+                print("Task Response:", json.dumps(task_response))
+                if "model_id" in task_response:
+                    return task_response["model_id"]
+                else:
+                    raise KeyError(
+                        f"'model_id' not found in task response: {task_response}"
+                    )
+            elif "error" in response:
+                raise Exception(f"Error registering model: {response['error']}")
+            else:
+                raise KeyError(
+                    f"The response does not contain 'model_id' or 'task_id'. Response content: {response}"
+                )
+        except Exception as e:
+            print(f"{Fore.RED}Error registering model: {str(e)}{Style.RESET_ALL}")
+            raise
+
+    def deploy_model(self, model_id):
+        """
+        Deploy a specified model in OpenSearch.
+        """
+        headers = {"Content-Type": "application/json"}
+        response = self.opensearch_client.transport.perform_request(
+            method="POST",
+            url=f"/_plugins/_ml/models/{model_id}/_deploy",
+            headers=headers,
+        )
+        print(f"Deploy Model Response: {response}")
+        return response
+
+    def predict(self, model_id, body):
+        """
+        Make a prediction using the specified model and input body.
+        """
+        headers = {"Content-Type": "application/json"}
+        response = self.opensearch_client.transport.perform_request(
+            method="POST",
+            url=f"/_plugins/_ml/models/{model_id}/_predict",
+            body=body,
+            headers=headers,
+        )
+        response_text = json.dumps(response)
+        status = response.get("inference_results", [{}])[0].get("status_code")
+        print("Predict Response:", response_text[:200] + "..." + response_text[-21:])
+        return response_text, status
+
+    def get_connector(self, connector_id):
+        """
+        Get a connector information from the connector ID.
+        """
+        headers = {"Content-Type": "application/json"}
+        response = self.opensearch_client.transport.perform_request(
+            method="GET",
+            url=f"/_plugins/_ml/connectors/{connector_id}",
+            headers=headers,
+        )
+        return json.dumps(response)
+
+    def create_connector(self, create_connector_role_name, body):
+        """
+        Create a connector in OpenSearch using the specified role and body.
+        """
+        # Verify connector body is not empty and in dict format
+        if body is None:
+            raise ValueError("A 'body' parameter must be provided as a dictionary.")
+        if not isinstance(body, dict):
+            raise ValueError("'body' needs to be a dictionary.")
+
         if self.service_type == "amazon-opensearch-service":
             create_connector_role_arn = self.iam_helper.get_role_arn(
                 create_connector_role_name
@@ -201,134 +333,16 @@ class AIConnectorHelper:
                 connection_class=RequestsHttpConnection,
             )
 
-        temp_connector = Connector(temp_os_client)
-        response = temp_connector.create_standalone_connector(payload)
+        # Create connector using the body parameter
+        headers = {"Content-Type": "application/json"}
+        response = temp_os_client.transport.perform_request(
+            method="POST",
+            url="/_plugins/_ml/connectors/_create",
+            body=body,
+            headers=headers,
+        )
         connector_id = response.get("connector_id")
         return connector_id
-
-    def get_task(self, task_id, wait_until_task_done=False):
-        """
-        Retrieve the status of a specific task using its ID.
-        Reusing the get_task_info method from MLCommonClient and allowing
-        optional wait until the task completes.
-        """
-        try:
-            # No need to re-authenticate here; ml_commons_client uses self.opensearch_client
-            task_response = self.ml_commons_client.get_task_info(
-                task_id, wait_until_task_done
-            )
-            print("Get Task Response:", json.dumps(task_response))
-            return task_response
-        except Exception as e:
-            print(f"Error in get_task: {e}")
-            raise
-
-    def register_model(
-        self,
-        model_name,
-        description,
-        connector_id,
-        deploy=True,
-    ):
-        """
-        Register a new model in OpenSearch and optionally deploy it.
-        """
-        try:
-            payload = {
-                "name": model_name,
-                "function_name": "remote",
-                "description": description,
-                "connector_id": connector_id,
-            }
-            headers = {"Content-Type": "application/json"}
-            deploy_str = str(deploy).lower()
-
-            response = requests.post(
-                f"{self.opensearch_config.opensearch_domain_endpoint}/_plugins/_ml/models/_register?deploy={deploy_str}",
-                auth=HTTPBasicAuth(
-                    self.opensearch_config.opensearch_domain_username,
-                    self.opensearch_config.opensearch_domain_password,
-                ),
-                json=payload,
-                headers=headers,
-            )
-
-            response_data = json.loads(response.text)
-
-            if "model_id" in response_data:
-                return response_data["model_id"]
-            elif "task_id" in response_data:
-                # Handle asynchronous task by leveraging wait_until_task_done
-                task_response = self.get_task(
-                    response_data["task_id"],
-                    wait_until_task_done=True,
-                )
-                print("Task Response:", json.dumps(task_response))
-                if "model_id" in task_response:
-                    return task_response["model_id"]
-                else:
-                    raise KeyError(
-                        f"'model_id' not found in task response: {task_response}"
-                    )
-            elif "error" in response_data:
-                raise Exception(f"Error registering model: {response_data['error']}")
-            else:
-                raise KeyError(
-                    f"The response does not contain 'model_id' or 'task_id'. Response content: {response_data}"
-                )
-        except Exception as e:
-            print(f"{Fore.RED}Error registering model: {str(e)}{Style.RESET_ALL}")
-            raise
-
-    def deploy_model(self, model_id):
-        """
-        Deploy a specified model in OpenSearch.
-        """
-        headers = {"Content-Type": "application/json"}
-        response = requests.post(
-            f"{self.opensearch_config.opensearch_domain_endpoint}/_plugins/_ml/models/{model_id}/_deploy",
-            auth=HTTPBasicAuth(
-                self.opensearch_config.opensearch_domain_username,
-                self.opensearch_config.opensearch_domain_password,
-            ),
-            headers=headers,
-        )
-        print(f"Deploy Model Response: {response.text}")
-        return response
-
-    def predict(self, model_id, payload):
-        """
-        Make a prediction using the specified model and input payload.
-        """
-        headers = {"Content-Type": "application/json"}
-        response = requests.post(
-            f"{self.opensearch_config.opensearch_domain_endpoint}/_plugins/_ml/models/{model_id}/_predict",
-            auth=HTTPBasicAuth(
-                self.opensearch_config.opensearch_domain_username,
-                self.opensearch_config.opensearch_domain_password,
-            ),
-            json=payload,
-            headers=headers,
-        )
-        response_json = response.json()
-        status = response_json.get("inference_results", [{}])[0].get("status_code")
-        print("Predict Response:", response.text[:200] + "..." + response.text[-21:])
-        return response.text, status
-
-    def get_connector(self, connector_id):
-        """
-        Get a connector information from the connector ID.
-        """
-        headers = {"Content-Type": "application/json"}
-        response = requests.get(
-            f"{self.opensearch_config.opensearch_domain_endpoint}/_plugins/_ml/connectors/{connector_id}",
-            auth=HTTPBasicAuth(
-                self.opensearch_config.opensearch_domain_username,
-                self.opensearch_config.opensearch_domain_password,
-            ),
-            headers=headers,
-        )
-        return response.text
 
     def create_connector_with_secret(
         self,
@@ -451,9 +465,9 @@ class AIConnectorHelper:
             print(f"\rTime remaining: {remaining} seconds...", end="", flush=True)
             time.sleep(1)
         print("\nWait completed, creating connector...")
-        payload = create_connector_input
-        payload["credential"] = {"secretArn": secret_arn, "roleArn": connector_role_arn}
-        connector_id = self.create_connector(create_connector_role_name, payload)
+        body = create_connector_input
+        body["credential"] = {"secretArn": secret_arn, "roleArn": connector_role_arn}
+        connector_id = self.create_connector(create_connector_role_name, body)
         print("----------")
         return connector_id, connector_role_arn
 
@@ -554,9 +568,9 @@ class AIConnectorHelper:
             print(f"\rTime remaining: {remaining} seconds...", end="", flush=True)
             time.sleep(1)
         print("\nWait completed, creating connector...")
-        payload = create_connector_input
+        body = create_connector_input
         print("Connector role arn: ", connector_role_arn)
-        payload["credential"] = {"roleArn": connector_role_arn}
-        connector_id = self.create_connector(create_connector_role_name, payload)
+        body["credential"] = {"roleArn": connector_role_arn}
+        connector_id = self.create_connector(create_connector_role_name, body)
         print("----------")
         return connector_id, connector_role_arn

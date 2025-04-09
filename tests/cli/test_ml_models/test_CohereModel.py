@@ -59,20 +59,23 @@ class TestCohereModel(unittest.TestCase):
         self.assertTrue(result)
 
     @patch(
+        "opensearch_py_ml.ml_commons.cli.ml_models.model_base.ModelBase.input_custom_model_details"
+    )
+    @patch(
         "opensearch_py_ml.ml_commons.cli.ml_models.model_base.ModelBase.set_trusted_endpoint"
     )
     @patch(
         "opensearch_py_ml.ml_commons.cli.ml_models.model_base.ModelBase.get_model_details"
     )
     def test_create_connector_custom_model(
-        self, mock_get_model_details, mock_set_trusted_endpoint
+        self, mock_get_model_details, mock_set_trusted_endpoint, mock_custom_model
     ):
         """Test creating a Cohere connector with custom model"""
         self.mock_helper.create_connector_with_secret.return_value = (
             "test_connector_id",
             "test_role_arn",
         )
-        custom_payload = {
+        mock_custom_model.return_value = {
             "name": "Custom Model",
             "description": "Custom description",
             "version": "1",
@@ -85,7 +88,6 @@ class TestCohereModel(unittest.TestCase):
             model_name="Custom model",
             api_key=self.api_key,
             secret_name=self.secret_name,
-            connector_body=custom_payload,
         )
 
         # Verify method calls
@@ -95,6 +97,7 @@ class TestCohereModel(unittest.TestCase):
         mock_get_model_details.assert_called_once_with(
             "Cohere", "amazon-opensearch-service", "Custom model"
         )
+        mock_custom_model.assert_called_once_with(external=True)
         self.assertTrue(result)
 
     @patch("builtins.input", side_effect=["1"])
@@ -116,33 +119,26 @@ class TestCohereModel(unittest.TestCase):
         self.mock_helper.create_connector_with_secret.assert_called_once()
         self.assertTrue(result)
 
-    @patch("builtins.input")
-    def test_input_custom_model_details(self, mock_input):
-        """Test create_connector for input_custom_model_details method"""
-        mock_input.side_effect = [
-            '{"name": "test-model",',
-            '"description": "test description",',
-            '"parameters": {"param": "value"}}',
-            "",
-        ]
-        result = self.cohere_model.input_custom_model_details()
-        expected_result = {
-            "name": "test-model",
-            "description": "test description",
-            "parameters": {"param": "value"},
-        }
-        self.assertEqual(result, expected_result)
-
+    @patch(
+        "opensearch_py_ml.ml_commons.cli.ml_models.model_base.ModelBase.input_custom_model_details"
+    )
     @patch(
         "opensearch_py_ml.ml_commons.cli.ml_models.model_base.ModelBase.get_model_details"
     )
     @patch("builtins.print")
-    def test_create_connector_invalid_choice(self, mock_print, mock_get_model_details):
+    def test_create_connector_invalid_choice(
+        self, mock_print, mock_get_model_details, mock_custom_model
+    ):
         """Test creating a Cohere connector with an invalid model choice"""
         self.mock_helper.create_connector_with_secret.return_value = (
             "mock_connector_id",
             "mock_role_arn",
         )
+        mock_custom_model.return_value = {
+            "name": "Custom Model",
+            "description": "Custom description",
+            "version": "1",
+        }
         self.cohere_model.create_connector(
             helper=self.mock_helper,
             save_config_method=self.mock_save_config,
@@ -150,11 +146,11 @@ class TestCohereModel(unittest.TestCase):
             model_name="Invalid Model",
             api_key=self.api_key,
             secret_name=self.secret_name,
-            connector_body={"name": "test-model"},
         )
         mock_print.assert_any_call(
             f"\n{Fore.YELLOW}Invalid choice. Defaulting to 'Custom model'.{Style.RESET_ALL}"
         )
+        mock_custom_model.assert_called_once_with(external=True)
 
     def test_create_connector_failure(self):
         """Test creating a Cohere connector in failure scenario"""

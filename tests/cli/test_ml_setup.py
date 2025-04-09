@@ -369,10 +369,10 @@ class TestSetup(unittest.TestCase):
     )
     @patch.object(Setup, "get_password_with_asterisks", return_value="pass")
     @patch("boto3.Session")
-    def test_setup_configuration_managed_service(
+    def test_setup_configuration_iam_role_managed_service(
         self, mock_session, mock_get_password, mock_input
     ):
-        """Test setup_configuration in managed service"""
+        """Test setup_configuration with IAM role ARN in managed service"""
         # Mock the STS client
         mock_sts_client = MagicMock()
         mock_session.return_value.client.return_value = mock_sts_client
@@ -398,6 +398,98 @@ class TestSetup(unittest.TestCase):
             config["aws_credentials"]["aws_role_name"], "test-iam-role-arn"
         )
         self.assertEqual(config["aws_credentials"]["aws_user_name"], "")
+
+    @patch(
+        "builtins.input",
+        side_effect=[
+            "1",
+            "2",
+            "test-iam-user-arn",
+            "us-west-2",
+            "test-domain-endpoint",
+            "admin",
+            "pass",
+        ],
+    )
+    @patch.object(Setup, "get_password_with_asterisks", return_value="pass")
+    @patch("boto3.Session")
+    def test_setup_configuration_iam_user_managed_service(
+        self, mock_session, mock_get_password, mock_input
+    ):
+        """Test setup_configuration with IAM user ARN in managed service"""
+        # Mock the STS client
+        mock_sts_client = MagicMock()
+        mock_session.return_value.client.return_value = mock_sts_client
+        mock_sts_client.get_caller_identity.return_value = {"UserId": "test-user"}
+
+        self.setup_instance.setup_configuration()
+        config = self.setup_instance.config
+        self.assertEqual(config["service_type"], "amazon-opensearch-service")
+        self.assertEqual(
+            config["opensearch_config"]["opensearch_domain_region"], "us-west-2"
+        )
+        self.assertEqual(
+            config["opensearch_config"]["opensearch_domain_endpoint"],
+            "test-domain-endpoint",
+        )
+        self.assertEqual(
+            config["opensearch_config"]["opensearch_domain_username"], "admin"
+        )
+        self.assertEqual(
+            config["opensearch_config"]["opensearch_domain_password"], "pass"
+        )
+        self.assertEqual(config["aws_credentials"]["aws_role_name"], "")
+        self.assertEqual(
+            config["aws_credentials"]["aws_user_name"], "test-iam-user-arn"
+        )
+
+    @patch(
+        "builtins.input",
+        side_effect=[
+            "1",
+            "3",
+            "test-iam-role-arn",
+            "us-west-2",
+            "test-domain-endpoint",
+            "admin",
+            "pass",
+        ],
+    )
+    @patch.object(Setup, "get_password_with_asterisks", return_value="pass")
+    @patch("boto3.Session")
+    @patch("builtins.print")
+    def test_setup_configuration_invalid_arn_managed_service(
+        self, mock_print, mock_session, mock_get_password, mock_input
+    ):
+        """Test setup_configuration with invalid ARN type in managed service"""
+        # Mock the STS client
+        mock_sts_client = MagicMock()
+        mock_session.return_value.client.return_value = mock_sts_client
+        mock_sts_client.get_caller_identity.return_value = {"UserId": "test-user"}
+
+        self.setup_instance.setup_configuration()
+        config = self.setup_instance.config
+        self.assertEqual(config["service_type"], "amazon-opensearch-service")
+        self.assertEqual(
+            config["opensearch_config"]["opensearch_domain_region"], "us-west-2"
+        )
+        self.assertEqual(
+            config["opensearch_config"]["opensearch_domain_endpoint"],
+            "test-domain-endpoint",
+        )
+        self.assertEqual(
+            config["opensearch_config"]["opensearch_domain_username"], "admin"
+        )
+        self.assertEqual(
+            config["opensearch_config"]["opensearch_domain_password"], "pass"
+        )
+        self.assertEqual(
+            config["aws_credentials"]["aws_role_name"], "test-iam-role-arn"
+        )
+        self.assertEqual(config["aws_credentials"]["aws_user_name"], "")
+        mock_print.assert_any_call(
+            f"\n{Fore.YELLOW}Invalid choice. Defaulting to 'IAM Role ARN'.{Style.RESET_ALL}"
+        )
 
     @patch("builtins.input", side_effect=["2", "", "yes", "admin"])
     @patch.object(Setup, "get_password_with_asterisks", return_value="pass")
@@ -641,10 +733,10 @@ class TestSetup(unittest.TestCase):
     @patch("builtins.print")
     @patch.object(Setup, "load_config")
     @patch.object(Setup, "setup_configuration")
-    def test_setup_command_invalid_config_path(
+    def test_setup_command_load_config_failure_with_config_path(
         self, mock_setup_configuration, mock_load_config, mock_print, mock_input
     ):
-        """Test setup_command with invalid config path"""
+        """Test setup_command with config path when load_config fails"""
         # Setup
         config_path = "invalid_config.yml"
         mock_load_config.return_value = False
@@ -655,6 +747,27 @@ class TestSetup(unittest.TestCase):
 
         # Verify
         mock_load_config.assert_called_once_with(config_path)
+        mock_print.assert_any_call(
+            f"{Fore.YELLOW}Could not load existing configuration. Creating new configuration...{Style.RESET_ALL}"
+        )
+
+    @patch("builtins.input", side_effect=["yes", ""])
+    @patch("builtins.print")
+    @patch.object(Setup, "load_config")
+    @patch.object(Setup, "setup_configuration")
+    def test_setup_command_load_config_failure(
+        self, mock_setup_configuration, mock_load_config, mock_print, mock_input
+    ):
+        """Test setup_command when load_config fails"""
+        # Setup
+        mock_load_config.return_value = False
+        mock_setup_configuration.return_value = "new_config.yml"
+
+        # Execute
+        self.setup_instance.setup_command()
+
+        # Verify
+        mock_load_config.assert_called_once()
         mock_print.assert_any_call(
             f"{Fore.YELLOW}Could not load existing configuration. Creating new configuration...{Style.RESET_ALL}"
         )
@@ -707,6 +820,30 @@ class TestSetup(unittest.TestCase):
         mock_setup_configuration.assert_called_once()
         mock_initialize_client.assert_called_once()
         mock_print.assert_any_call("Let's create a new configuration file.")
+
+    @patch("builtins.input", side_effect=["yes", ""])
+    @patch("builtins.print")
+    @patch.object(Setup, "load_config")
+    @patch.object(Setup, "_update_from_config")
+    def test_setup_command_update_config_failure_with_config_path(
+        self, mock_update_config, mock_load_config, mock_print, mock_input
+    ):
+        """Test setup_command with config path when update_from_config fails"""
+        # Setup
+        config_path = "test_config.yml"
+        mock_load_config.return_value = True
+        mock_update_config.return_value = False
+        self.setup_instance.service_type = "amazon-opensearch-service"
+
+        # Execute
+        self.setup_instance.setup_command(config_path)
+
+        # Verify
+        mock_update_config.assert_any_call()
+        self.assertEqual(
+            mock_print.call_args_list[0],
+            call(f"{Fore.RED}Failed to update configuration.{Style.RESET_ALL}"),
+        )
 
     @patch("builtins.input", side_effect=["yes", "test_config.yml"])
     @patch("builtins.print")

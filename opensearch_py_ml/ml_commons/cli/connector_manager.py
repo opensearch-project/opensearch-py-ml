@@ -29,7 +29,6 @@ class ConnectorManager(CLIBase):
         """
         super().__init__()
         self.config = {}
-        self.opensearch_domain_name = ""
         self.connector_list = ConnectorList()
 
     def get_connectors(self, service_type: str):
@@ -206,7 +205,6 @@ class ConnectorManager(CLIBase):
             # Set the initial value of the connector creation result to False
             result = False
 
-            # TODO: might need to refactor this
             # Initialize variables with None
             connector_name = model_name = connector_role_prefix = None
             region = model_arn = connector_body = None
