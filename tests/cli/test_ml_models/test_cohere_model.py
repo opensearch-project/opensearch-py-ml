@@ -10,7 +10,7 @@ from unittest.mock import Mock, patch
 
 from colorama import Fore, Style
 
-from opensearch_py_ml.ml_commons.cli.ml_models.CohereModel import CohereModel
+from opensearch_py_ml.ml_commons.cli.ml_models.cohere_model import CohereModel
 
 
 class TestCohereModel(unittest.TestCase):

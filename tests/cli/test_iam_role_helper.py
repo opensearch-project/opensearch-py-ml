@@ -6,10 +6,8 @@
 # GitHub history for details.
 
 import json
-import sys
 import unittest
 from datetime import datetime, timedelta
-from io import StringIO
 from unittest.mock import Mock, patch
 
 from botocore.exceptions import ClientError
@@ -19,7 +17,7 @@ from opensearch_py_ml.ml_commons.cli.aws_config import AWSConfig
 from opensearch_py_ml.ml_commons.cli.opensearch_domain_config import (
     OpenSearchDomainConfig,
 )
-from opensearch_py_ml.ml_commons.IAMRoleHelper import IAMRoleHelper
+from opensearch_py_ml.ml_commons.iam_role_helper import IAMRoleHelper
 
 
 class TestIAMRoleHelper(unittest.TestCase):
@@ -71,6 +69,30 @@ class TestIAMRoleHelper(unittest.TestCase):
     def tearDown(self):
         self.patcher_boto3.stop()
 
+    @patch("opensearch_py_ml.ml_commons.iam_role_helper.logger")
+    def test_handle_client_error_no_such_entity(self, mock_logger):
+        """Test _handle_client_error when error code is NO_SUCH_ENTITY"""
+        error_response = {
+            "Error": {"Code": "NoSuchEntity", "Message": "Role does not exist"}
+        }
+        error = ClientError(error_response, "GetRole")
+        resource_name = "test-resource-name"
+        result = self.helper._handle_client_error(error, resource_name)
+        self.assertFalse(result)
+        mock_logger.warning.assert_called_once_with(
+            f"Role '{resource_name}' does not exist."
+        )
+
+    @patch("opensearch_py_ml.ml_commons.iam_role_helper.logger")
+    def test_handle_client_error_other_error(self, mock_logger):
+        """Test _handle_client_error when error code is not NO_SUCH_ENTITY"""
+        error_response = {"Error": {"Code": "ValidationError", "Message": "Test error"}}
+        error = ClientError(error_response, "GetRole")
+        resource_name = "test-resource-name"
+        result = self.helper._handle_client_error(error, resource_name)
+        self.assertFalse(result)
+        mock_logger.error.assert_called_once_with(f"An error occurred: {error}")
+
     def test_role_exists_found(self):
         """Test role_exists returns True when role is found."""
         # Mock successful get_role call
@@ -82,8 +104,9 @@ class TestIAMRoleHelper(unittest.TestCase):
         self.assertTrue(result)
         self.mock_iam_client.get_role.assert_called_once_with(RoleName="my-test-role")
 
-    def test_role_exists_not_found(self):
-        """Test role_exists returns False when role is not found."""
+    @patch.object(IAMRoleHelper, "_handle_client_error")
+    def test_role_exists_client_error(self, mock_handle_client_error):
+        """Test role_exists call _handle_client_error when having ClientError"""
         # Mock get_role call to raise NoSuchEntity
         error_response = {
             "Error": {"Code": "NoSuchEntity", "Message": "Role not found"}
@@ -91,21 +114,11 @@ class TestIAMRoleHelper(unittest.TestCase):
         self.mock_iam_client.get_role.side_effect = ClientError(
             error_response, "GetRole"
         )
+        mock_handle_client_error.return_value = False
 
         result = self.helper.role_exists("non-existent-role")
         self.assertFalse(result)
-
-    def test_role_exists_other_error(self):
-        """Test role_exists returns False (and prints error) when another ClientError occurs."""
-        error_response = {
-            "Error": {"Code": "SomeOtherError", "Message": "Unexpected error"}
-        }
-        self.mock_iam_client.get_role.side_effect = ClientError(
-            error_response, "GetRole"
-        )
-
-        result = self.helper.role_exists("some-role")
-        self.assertFalse(result)
+        mock_handle_client_error.assert_called_once()
 
     def test_delete_role_happy_path(self):
         """Test delete_role successfully detaches and deletes a role."""
@@ -136,28 +149,20 @@ class TestIAMRoleHelper(unittest.TestCase):
             RoleName="my-test-role"
         )
 
-    def test_delete_role_no_such_entity(self):
-        """Test delete_role prints message if role does not exist."""
+    @patch.object(IAMRoleHelper, "_handle_client_error")
+    def test_delete_role_client_error(self, mock_handle_client_error):
+        """Test delete_role call _handle_client_error when having ClientError"""
         error_response = {
             "Error": {"Code": "NoSuchEntity", "Message": "Role not found"}
         }
         self.mock_iam_client.list_attached_role_policies.side_effect = ClientError(
             error_response, "ListAttachedRolePolicies"
         )
+        mock_handle_client_error.return_value = False
 
-        self.helper.delete_role("non-existent-role")
-        # We expect it to print a message, and not raise. The method should handle it.
-
-    def test_delete_role_other_error(self):
-        """Test delete_role prints error for unexpected ClientError."""
-        error_response = {
-            "Error": {"Code": "SomeOtherError", "Message": "Unexpected error"}
-        }
-        self.mock_iam_client.list_attached_role_policies.side_effect = ClientError(
-            error_response, "ListAttachedRolePolicies"
-        )
-
-        self.helper.delete_role("some-role")
+        result = self.helper.delete_role("non-existent-role")
+        self.assertFalse(result)
+        mock_handle_client_error.assert_called_once()
 
     def test_create_iam_role_happy_path(self):
         """Test create_iam_role creates a role with trust and inline policy."""
@@ -270,43 +275,25 @@ class TestIAMRoleHelper(unittest.TestCase):
         self.assertEqual(details["RoleName"], "my-test-role")
         self.assertEqual(details["InlinePolicies"].keys(), {"inlinePolicyTest"})
 
-    def test_get_role_info_not_found(self):
-        """Test get_role_info returns None if role is not found."""
+    def test_get_role_info_no_role_name(self):
+        """Test get_role_info returns None if role_name not provided."""
+        details = self.helper.get_role_info("", include_details=True)
+        self.assertIsNone(details)
+
+    @patch.object(IAMRoleHelper, "_handle_client_error")
+    def test_get_role_info_client_error(self, mock_handle_client_error):
+        """Test get_role_info call _handle_client_error when having ClientError"""
         error_response = {
             "Error": {"Code": "NoSuchEntity", "Message": "Role not found"}
         }
         self.mock_iam_client.get_role.side_effect = ClientError(
             error_response, "GetRole"
         )
+        mock_handle_client_error.return_value = False
 
-        details = self.helper.get_role_info("non-existent-role", include_details=True)
-        self.assertIsNone(details)
-
-    def test_get_role_info_no_role_name(self):
-        """Test get_role_info returns None if role_name not provided."""
-        details = self.helper.get_role_info("", include_details=True)
-        self.assertIsNone(details)
-
-    def test_get_role_info_client_error(self):
-        """Test get_role_info when a ClientError occurs."""
-        error_response = {
-            "Error": {"Code": "SomeError", "Message": "Something went wrong"}
-        }
-        self.mock_iam_client.get_role.side_effect = ClientError(
-            error_response, "GetRole"
-        )
-
-        # Capture stdout to verify print output
-        captured_output = StringIO()
-        sys.stdout = captured_output
-        try:
-            result = self.helper.get_role_info("test-role")
-            self.assertIsNone(result)
-            expected_error = "An error occurred: An error occurred (SomeError) when calling the GetRole operation: Something went wrong"
-            self.assertIn(expected_error, captured_output.getvalue().strip())
-        finally:
-            # Restore stdout
-            sys.stdout = sys.__stdout__
+        result = self.helper.get_role_info("non-existent-role")
+        self.assertFalse(result)
+        mock_handle_client_error.assert_called_once()
 
     def test_get_role_arn_success(self):
         """Test get_role_arn returns ARN if role is found."""
@@ -320,43 +307,25 @@ class TestIAMRoleHelper(unittest.TestCase):
         arn = self.helper.get_role_arn("TestRole")
         self.assertEqual(arn, "arn:aws:iam::123456789012:user/TestRole")
 
-    def test_get_role_arn_not_found(self):
-        """Test get_role_arn returns None if user does not exist."""
+    def test_get_role_arn_no_rolename(self):
+        """Test get_role_arn returns None if rolename not provided."""
+        arn = self.helper.get_role_arn("")
+        self.assertIsNone(arn)
+
+    @patch.object(IAMRoleHelper, "_handle_client_error")
+    def test_get_role_arn_client_error(self, mock_handle_client_error):
+        """Test get_role_arn call _handle_client_error when having ClientError"""
         error_response = {
             "Error": {"Code": "NoSuchEntity", "Message": "Role not found"}
         }
         self.mock_iam_client.get_role.side_effect = ClientError(
             error_response, "GetRole"
         )
+        mock_handle_client_error.return_value = False
 
-        arn = self.helper.get_role_arn("NonExistentUser")
-        self.assertIsNone(arn)
-
-    def test_get_role_arn_no_rolename(self):
-        """Test get_role_arn returns None if rolename not provided."""
-        arn = self.helper.get_role_arn("")
-        self.assertIsNone(arn)
-
-    def test_get_role_arn_client_error(self):
-        """Test get_role_arn when a ClientError occurs."""
-        error_response = {
-            "Error": {"Code": "SomeError", "Message": "Something went wrong"}
-        }
-        self.mock_iam_client.get_role.side_effect = ClientError(
-            error_response, "GetRole"
-        )
-
-        # Capture stdout to verify print output
-        captured_output = StringIO()
-        sys.stdout = captured_output
-        try:
-            result = self.helper.get_role_arn("test-role")
-            self.assertIsNone(result)
-            expected_error = "An error occurred: An error occurred (SomeError) when calling the GetRole operation: Something went wrong"
-            self.assertIn(expected_error, captured_output.getvalue().strip())
-        finally:
-            # Restore stdout
-            sys.stdout = sys.__stdout__
+        result = self.helper.get_role_arn("non-existent-role")
+        self.assertFalse(result)
+        mock_handle_client_error.assert_called_once()
 
     def test_get_user_arn_success(self):
         """Test get_user_arn returns ARN if user is found."""
@@ -370,43 +339,25 @@ class TestIAMRoleHelper(unittest.TestCase):
         arn = self.helper.get_user_arn("TestUser")
         self.assertEqual(arn, "arn:aws:iam::123456789012:user/TestUser")
 
-    def test_get_user_arn_not_found(self):
-        """Test get_user_arn returns None if user does not exist."""
-        error_response = {
-            "Error": {"Code": "NoSuchEntity", "Message": "User not found"}
-        }
-        self.mock_iam_client.get_user.side_effect = ClientError(
-            error_response, "GetUser"
-        )
-
-        arn = self.helper.get_user_arn("NonExistentUser")
-        self.assertIsNone(arn)
-
     def test_get_user_arn_no_username(self):
         """Test get_user_arn returns None if username not provided."""
         arn = self.helper.get_user_arn("")
         self.assertIsNone(arn)
 
-    def test_get_user_arn_client_error(self):
-        """Test get_user_arn when a ClientError occurs."""
+    @patch.object(IAMRoleHelper, "_handle_client_error")
+    def test_get_user_arn_client_error(self, mock_handle_client_error):
+        """Test get_user_arn call _handle_client_error when having ClientError"""
         error_response = {
-            "Error": {"Code": "SomeError", "Message": "Something went wrong"}
+            "Error": {"Code": "NoSuchEntity", "Message": "Role not found"}
         }
         self.mock_iam_client.get_user.side_effect = ClientError(
             error_response, "GetUser"
         )
+        mock_handle_client_error.return_value = False
 
-        # Capture stdout to verify print output
-        captured_output = StringIO()
-        sys.stdout = captured_output
-        try:
-            result = self.helper.get_user_arn("test-user")
-            self.assertIsNone(result)
-            expected_error = "An error occurred: An error occurred (SomeError) when calling the GetUser operation: Something went wrong"
-            self.assertIn(expected_error, captured_output.getvalue().strip())
-        finally:
-            # Restore stdout
-            sys.stdout = sys.__stdout__
+        result = self.helper.get_user_arn("non-existent-role")
+        self.assertFalse(result)
+        mock_handle_client_error.assert_called_once()
 
     @patch("requests.get")
     @patch("requests.put")
@@ -552,8 +503,8 @@ class TestIAMRoleHelper(unittest.TestCase):
         username = self.helper.get_iam_user_name_from_arn(None)
         self.assertIsNone(username)
 
-    @patch("builtins.print")
-    def test_get_iam_user_name_from_arn_exception(self, mock_print):
+    @patch("opensearch_py_ml.ml_commons.iam_role_helper.logger")
+    def test_get_iam_user_name_from_arn_exception(self, mock_logger):
         """Test get_iam_user_name_from_arn for exception handling and print output."""
         result = self.helper.get_iam_user_name_from_arn(123)
 
@@ -561,7 +512,7 @@ class TestIAMRoleHelper(unittest.TestCase):
         expected_error = (
             "Error extracting IAM user name: 'int' object has no attribute 'startswith'"
         )
-        mock_print.assert_called_once_with(expected_error)
+        mock_logger.error.assert_called_once_with(expected_error)
 
 
 if __name__ == "__main__":

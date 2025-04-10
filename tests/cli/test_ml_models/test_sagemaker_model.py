@@ -10,17 +10,19 @@ from unittest.mock import Mock, patch
 
 from colorama import Fore, Style
 
-from opensearch_py_ml.ml_commons.cli.ml_models.BedrockModel import BedrockModel
+from opensearch_py_ml.ml_commons.cli.ml_models.sagemaker_model import SageMakerModel
 
 
-class TestBedrockModel(unittest.TestCase):
+class TestSageMakerModel(unittest.TestCase):
 
     def setUp(self):
         self.region = "us-west-2"
         self.mock_helper = Mock()
         self.mock_save_config = Mock()
-        self.bedrock_model = BedrockModel(opensearch_domain_region=self.region)
+        self.sagemaker_model = SageMakerModel(opensearch_domain_region=self.region)
         self.connector_role_prefix = "test_role"
+        self.connector_endpoint_arn = "test_arn"
+        self.connector_endpoint_url = "test_url"
 
     @patch(
         "opensearch_py_ml.ml_commons.cli.ml_models.model_base.ModelBase.set_trusted_endpoint"
@@ -28,33 +30,36 @@ class TestBedrockModel(unittest.TestCase):
     @patch(
         "opensearch_py_ml.ml_commons.cli.ml_models.model_base.ModelBase.get_model_details"
     )
-    def test_create_connector_cohere(
-        self, mock_get_model_details, mock_set_trusted_endpoint
+    @patch("builtins.input", side_effect=["test-url", ""])
+    @patch("builtins.print")
+    def test_create_connector_deepseek(
+        self, mock_print, mock_input, mock_get_model_details, mock_set_trusted_endpoint
     ):
-        """Test creating a Bedrock connector with Cohere embedding model"""
+        """Test creating a SageMaker connector with DeepSeek R1 model"""
         # Setup mocks
         mock_get_model_details.return_value = "1"
         self.mock_helper.create_connector_with_role.return_value = (
             "test_connector_id",
             "test_role_arn",
         )
-
-        result = self.bedrock_model.create_connector(
+        result = self.sagemaker_model.create_connector(
             helper=self.mock_helper,
             save_config_method=self.mock_save_config,
             connector_role_prefix=self.connector_role_prefix,
-            region=self.region,
-            model_name="Cohere embedding model",
+            model_name="DeepSeek R1 model",
+            endpoint_arn=self.connector_endpoint_arn,
         )
 
-        # Verify method cals
+        # Verify method calls
         mock_set_trusted_endpoint.assert_called_once_with(
             self.mock_helper,
-            "^https://bedrock-runtime\\..*[a-z0-9-]\\.amazonaws\\.com/.*$",
+            "^https://runtime\\.sagemaker\\..*[a-z0-9-]\\.amazonaws\\.com/.*$",
         )
         mock_get_model_details.assert_called_once_with(
-            "Amazon Bedrock", "amazon-opensearch-service", "Cohere embedding model"
+            "Amazon SageMaker", "amazon-opensearch-service", "DeepSeek R1 model"
         )
+        mock_input.assert_any_call("Enter your SageMaker inference endpoint URL: ")
+        mock_input.assert_any_call(f"Enter your SageMaker region [{self.region}]: ")
         self.assertTrue(result)
 
     @patch(
@@ -63,32 +68,36 @@ class TestBedrockModel(unittest.TestCase):
     @patch(
         "opensearch_py_ml.ml_commons.cli.ml_models.model_base.ModelBase.get_model_details"
     )
-    def test_create_connector_titan(
-        self, mock_get_model_details, mock_set_trusted_endpoint
+    @patch("builtins.input", side_effect=["test-url", ""])
+    @patch("builtins.print")
+    def test_create_connector_embedding(
+        self, mock_print, mock_input, mock_get_model_details, mock_set_trusted_endpoint
     ):
-        """Test creating a Bedrock connector with Titan embedding model"""
+        """Test creating a SageMaker connector with embedding model"""
         # Setup mocks
         mock_get_model_details.return_value = "2"
         self.mock_helper.create_connector_with_role.return_value = (
             "test_connector_id",
             "test_role_arn",
         )
-        result = self.bedrock_model.create_connector(
+        result = self.sagemaker_model.create_connector(
             helper=self.mock_helper,
             save_config_method=self.mock_save_config,
             connector_role_prefix=self.connector_role_prefix,
-            region=self.region,
-            model_name="Titan embedding model",
+            model_name="Embedding model",
+            endpoint_arn=self.connector_endpoint_arn,
         )
 
         # Verify method cals
         mock_set_trusted_endpoint.assert_called_once_with(
             self.mock_helper,
-            "^https://bedrock-runtime\\..*[a-z0-9-]\\.amazonaws\\.com/.*$",
+            "^https://runtime\\.sagemaker\\..*[a-z0-9-]\\.amazonaws\\.com/.*$",
         )
         mock_get_model_details.assert_called_once_with(
-            "Amazon Bedrock", "amazon-opensearch-service", "Titan embedding model"
+            "Amazon SageMaker", "amazon-opensearch-service", "Embedding model"
         )
+        mock_input.assert_any_call("Enter your SageMaker inference endpoint URL: ")
+        mock_input.assert_any_call(f"Enter your SageMaker region [{self.region}]: ")
         self.assertTrue(result)
 
     @patch(
@@ -103,7 +112,7 @@ class TestBedrockModel(unittest.TestCase):
     def test_create_connector_custom_model(
         self, mock_get_model_details, mock_set_trusted_endpoint, mock_custom_model
     ):
-        """Test creating a Bedrock connector with custom model"""
+        """Test creating a SageMaker connector with custom model"""
         self.mock_helper.create_connector_with_role.return_value = (
             "test_connector_id",
             "test_role_arn",
@@ -114,22 +123,23 @@ class TestBedrockModel(unittest.TestCase):
             "version": "1",
         }
 
-        result = self.bedrock_model.create_connector(
+        result = self.sagemaker_model.create_connector(
             helper=self.mock_helper,
             save_config_method=self.mock_save_config,
             connector_role_prefix=self.connector_role_prefix,
             region=self.region,
             model_name="Custom model",
-            model_arn="test-model-arn",
+            endpoint_arn=self.connector_endpoint_arn,
+            endpoint_url=self.connector_endpoint_url,
         )
 
         # Verify method calls
         mock_set_trusted_endpoint.assert_called_once_with(
             self.mock_helper,
-            "^https://bedrock-runtime\\..*[a-z0-9-]\\.amazonaws\\.com/.*$",
+            "^https://runtime\\.sagemaker\\..*[a-z0-9-]\\.amazonaws\\.com/.*$",
         )
         mock_get_model_details.assert_called_once_with(
-            "Amazon Bedrock", "amazon-opensearch-service", "Custom model"
+            "Amazon SageMaker", "amazon-opensearch-service", "Custom model"
         )
         mock_custom_model.assert_called_once()
         self.assertTrue(result)
@@ -141,27 +151,58 @@ class TestBedrockModel(unittest.TestCase):
             "mock_connector_id",
             "mock_role_arn",
         )
-        result = self.bedrock_model.create_connector(
+
+        result = self.sagemaker_model.create_connector(
             helper=self.mock_helper,
             save_config_method=self.mock_save_config,
             connector_role_prefix=self.connector_role_prefix,
             region=self.region,
+            endpoint_arn=self.connector_endpoint_arn,
+            endpoint_url=self.connector_endpoint_url,
         )
         self.mock_helper.create_connector_with_role.assert_called_once()
         self.assertTrue(result)
 
-    @patch("builtins.input", side_effect=["1", "test_prefix", ""])
-    def test_create_connector_default_region(self, mock_input):
-        """Test creating a Bedrock connector with default region"""
+    @patch("builtins.input", side_effect=["test-endpoint-arn"])
+    def test_create_connector_endpoint_arn(self, mock_input):
+        """Test creating a SageMaker connector when user provides an endpoint ARN through the prompt"""
         self.mock_helper.create_connector_with_role.return_value = (
             "mock_connector_id",
             "mock_role_arn",
         )
-        self.bedrock_model.create_connector(
+        self.sagemaker_model.create_connector(
             helper=self.mock_helper,
             save_config_method=self.mock_save_config,
+            connector_role_prefix=self.connector_role_prefix,
+            region=self.region,
+            model_name="Embedding model",
+            endpoint_url=self.connector_endpoint_url,
         )
-        mock_input.assert_any_call(f"Enter your Bedrock region [{self.region}]: ")
+        mock_input.assert_any_call("Enter your SageMaker inference endpoint ARN: ")
+        connector_role_inline_policy = (
+            self.mock_helper.create_connector_with_role.call_args[0][0]
+        )
+        self.assertEqual(
+            connector_role_inline_policy["Statement"][0]["Resource"],
+            "test-endpoint-arn",
+        )
+
+    @patch("builtins.input", side_effect=[""])
+    def test_create_connector_default_region(self, mock_input):
+        """Test creating a SageMaker connector with default region"""
+        self.mock_helper.create_connector_with_role.return_value = (
+            "mock_connector_id",
+            "mock_role_arn",
+        )
+        self.sagemaker_model.create_connector(
+            helper=self.mock_helper,
+            save_config_method=self.mock_save_config,
+            connector_role_prefix=self.connector_role_prefix,
+            model_name="Embedding model",
+            endpoint_arn=self.connector_endpoint_arn,
+            endpoint_url=self.connector_endpoint_url,
+        )
+        mock_input.assert_any_call(f"Enter your SageMaker region [{self.region}]: ")
         create_connector_calls = (
             self.mock_helper.create_connector_with_role.call_args_list
         )
@@ -169,45 +210,28 @@ class TestBedrockModel(unittest.TestCase):
         _, _, _, connector_body = create_connector_calls[0][0]
         self.assertEqual(connector_body["parameters"]["region"], "us-west-2")
 
-    @patch("builtins.input", side_effect=["2", "test_prefix", "us-east-1"])
+    @patch("builtins.input", side_effect=["us-east-1"])
     def test_create_connector_custom_region(self, mock_input):
-        """Test creating a Bedrock connector with a custom region"""
+        """Test creating a SageMaker connector with a custom region"""
         self.mock_helper.create_connector_with_role.return_value = (
             "mock_connector_id",
             "mock_role_arn",
         )
-        self.bedrock_model.create_connector(
+        self.sagemaker_model.create_connector(
             helper=self.mock_helper,
             save_config_method=self.mock_save_config,
+            connector_role_prefix=self.connector_role_prefix,
+            model_name="Embedding model",
+            endpoint_arn=self.connector_endpoint_arn,
+            endpoint_url=self.connector_endpoint_url,
         )
-        mock_input.assert_any_call(f"Enter your Bedrock region [{self.region}]: ")
+        mock_input.assert_any_call(f"Enter your SageMaker region [{self.region}]: ")
         create_connector_calls = (
             self.mock_helper.create_connector_with_role.call_args_list
         )
         self.assertEqual(len(create_connector_calls), 1)
         _, _, _, connector_body = create_connector_calls[0][0]
         self.assertEqual(connector_body["parameters"]["region"], "us-east-1")
-
-    @patch("builtins.input", side_effect=["3", "test_prefix", "test-model-arn"])
-    def test_enter_custom_model_arn(self, mock_input):
-        """Test creating a Bedrock connector with a custom model ARN"""
-        body = {"test": "body"}
-        self.mock_helper.create_connector_with_role.return_value = (
-            "mock_connector_id",
-            "mock_role_arn",
-        )
-        self.bedrock_model.create_connector(
-            helper=self.mock_helper,
-            save_config_method=self.mock_save_config,
-            connector_body=body,
-        )
-        mock_input.assert_any_call("Enter your custom model ARN: ")
-        connector_role_inline_policy = (
-            self.mock_helper.create_connector_with_role.call_args[0][0]
-        )
-        self.assertEqual(
-            connector_role_inline_policy["Statement"][0]["Resource"], "test-model-arn"
-        )
 
     @patch(
         "opensearch_py_ml.ml_commons.cli.ml_models.model_base.ModelBase.input_custom_model_details"
@@ -216,11 +240,10 @@ class TestBedrockModel(unittest.TestCase):
         "opensearch_py_ml.ml_commons.cli.ml_models.model_base.ModelBase.get_model_details"
     )
     @patch("builtins.print")
-    @patch("builtins.input", return_value="test-model-arn")
     def test_create_connector_invalid_choice(
-        self, mock_input, mock_print, mock_get_model_details, mock_custom_model
+        self, mock_print, mock_get_model_details, mock_custom_model
     ):
-        """Test creating a Bedrock connector with an invalid model choice"""
+        """Test creating a SageMaker connector with invalid model choice"""
         self.mock_helper.create_connector_with_role.return_value = (
             "mock_connector_id",
             "mock_role_arn",
@@ -230,28 +253,31 @@ class TestBedrockModel(unittest.TestCase):
             "description": "Custom description",
             "version": "1",
         }
-        self.bedrock_model.create_connector(
+        self.sagemaker_model.create_connector(
             helper=self.mock_helper,
             save_config_method=self.mock_save_config,
             connector_role_prefix=self.connector_role_prefix,
             region=self.region,
             model_name="Invalid Model",
+            endpoint_arn=self.connector_endpoint_arn,
+            endpoint_url=self.connector_endpoint_url,
         )
-        mock_input.assert_called_once_with("Enter your custom model ARN: ")
+        mock_custom_model.assert_called_once()
         mock_print.assert_any_call(
             f"\n{Fore.YELLOW}Invalid choice. Defaulting to 'Custom model'.{Style.RESET_ALL}"
         )
-        mock_custom_model.assert_called_once()
 
     def test_create_connector_failure(self):
-        """Test creating a Bedrock connector in failure scenario"""
+        """Test creating a SageMaker connector in failure scenario"""
         self.mock_helper.create_connector_with_role.return_value = None, None
-        result = self.bedrock_model.create_connector(
+        result = self.sagemaker_model.create_connector(
             helper=self.mock_helper,
             save_config_method=self.mock_save_config,
             connector_role_prefix=self.connector_role_prefix,
             region=self.region,
-            model_name="Cohere embedding model",
+            model_name="Embedding model",
+            endpoint_arn=self.connector_endpoint_arn,
+            endpoint_url=self.connector_endpoint_url,
         )
         self.assertFalse(result)
 

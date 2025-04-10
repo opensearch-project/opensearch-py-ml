@@ -98,7 +98,7 @@ class ConnectorManager(CLIBase):
         connector = self.get_connector_info(connector_name)
         if connector:
             module_path = (
-                f"opensearch_py_ml.ml_commons.cli.ml_models.{connector.connector_class}"
+                f"opensearch_py_ml.ml_commons.cli.ml_models.{connector.file_name}"
             )
             module = __import__(module_path, fromlist=[connector.connector_class])
             return getattr(module, connector.connector_class)
@@ -175,7 +175,7 @@ class ConnectorManager(CLIBase):
         try:
             # Check if connector config file path is given in the command
             if connector_config_path:
-                connector_config = self.load_connector_config(connector_config_path)
+                connector_config = self.load_config(connector_config_path, "connector")
                 setup_config_path = connector_config.get("setup_config_path")
                 if not connector_config:
                     print(
@@ -187,20 +187,11 @@ class ConnectorManager(CLIBase):
                     "\nEnter the path to your existing setup configuration file: "
                 ).strip()
 
-            config = self.load_config(setup_config_path)
-            if not config:
-                print(
-                    f"{Fore.RED}No setup configuration found. Please run setup first.{Style.RESET_ALL}\n"
-                )
+            # Load and check configuration
+            config_result = self.load_and_check_config(setup_config_path)
+            if not config_result:
                 return False
-
-            service_type = config.get("service_type")
-            opensearch_config = self.config.get("opensearch_config", {})
-
-            # Check configuration validity
-            ai_helper = self.check_config(config, service_type, opensearch_config)
-            if not ai_helper:
-                return False
+            ai_helper, config, service_type, opensearch_config = config_result
 
             # Set the initial value of the connector creation result to False
             result = False

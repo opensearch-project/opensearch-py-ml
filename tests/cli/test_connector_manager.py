@@ -21,6 +21,7 @@ class TestConnectorManager(unittest.TestCase):
             ConnectorInfo(
                 id=1,
                 name="Aleph Alpha",
+                file_name="aleph_alpha_model",
                 connector_class="AlephAlphaModel",
                 init_params=[],
                 connector_params=["model_name", "api_key", "connector_body"],
@@ -32,6 +33,7 @@ class TestConnectorManager(unittest.TestCase):
             ConnectorInfo(
                 id=2,
                 name="Bedrock",
+                file_name="bedrock_model",
                 connector_class="BedrockModel",
                 init_params=[],
                 connector_params=["model_name", "region", "connector_body"],
@@ -44,6 +46,7 @@ class TestConnectorManager(unittest.TestCase):
             ConnectorInfo(
                 id=1,
                 name="Managed Connector",
+                file_name="managed_connector",
                 connector_class="ManagedModel",
                 init_params=[],
                 connector_params=["model_name", "endpoint"],
@@ -55,6 +58,7 @@ class TestConnectorManager(unittest.TestCase):
         self.test_connector_info = ConnectorInfo(
             id=1,
             name="Test Connector",
+            file_name="test_connector",
             connector_class="TestModel",
             init_params=["param1", "param2"],
             connector_params=["param1", "param2", "param3"],
@@ -249,7 +253,7 @@ class TestConnectorManager(unittest.TestCase):
 
         result = self.connector_manager.get_connector_class("Aleph Alpha")
         mock_import.assert_called_once_with(
-            "opensearch_py_ml.ml_commons.cli.ml_models.AlephAlphaModel",
+            "opensearch_py_ml.ml_commons.cli.ml_models.aleph_alpha_model",
             fromlist=["AlephAlphaModel"],
         )
         self.assertEqual(result, mock_class)
@@ -306,7 +310,7 @@ class TestConnectorManager(unittest.TestCase):
         )
         mock_class.assert_called_once_with(param1="value1", param2="value2")
 
-    @patch("opensearch_py_ml.ml_commons.cli.AIConnectorHelper")
+    @patch("opensearch_py_ml.ml_commons.cli.ai_connector_helper")
     def test_create_connector_instance_with_config_path(self, mock_ai_helper):
         """Test create_connector_instance with connector config path"""
         connector_config_params = {
@@ -326,7 +330,7 @@ class TestConnectorManager(unittest.TestCase):
         )
         self.assertEqual(result, mock_model.create_connector.return_value)
 
-    @patch("opensearch_py_ml.ml_commons.cli.AIConnectorHelper")
+    @patch("opensearch_py_ml.ml_commons.cli.ai_connector_helper")
     def test_create_connector_instance_with_opensearch_config(self, mock_ai_helper):
         """Test create_connector_instance with opensearch config"""
         opensearch_config = {"param1": "value1", "param2": None}
@@ -348,7 +352,7 @@ class TestConnectorManager(unittest.TestCase):
         )
         self.assertEqual(result, mock_model.create_connector.return_value)
 
-    @patch("opensearch_py_ml.ml_commons.cli.AIConnectorHelper")
+    @patch("opensearch_py_ml.ml_commons.cli.ai_connector_helper")
     def test_create_connector_instance_with_config(self, mock_ai_helper):
         """Test create_connector_instance with general config"""
         config = {"param1": None, "param2": "value2"}
@@ -372,13 +376,10 @@ class TestConnectorManager(unittest.TestCase):
 
     @patch("builtins.print")
     @patch(
-        "opensearch_py_ml.ml_commons.cli.connector_manager.ConnectorManager.load_connector_config"
-    )
-    @patch(
         "opensearch_py_ml.ml_commons.cli.connector_manager.ConnectorManager.load_config"
     )
     @patch(
-        "opensearch_py_ml.ml_commons.cli.connector_manager.ConnectorManager.check_config"
+        "opensearch_py_ml.ml_commons.cli.connector_manager.ConnectorManager.load_and_check_config"
     )
     @patch(
         "opensearch_py_ml.ml_commons.cli.connector_manager.ConnectorManager.get_connector_by_name"
@@ -394,28 +395,30 @@ class TestConnectorManager(unittest.TestCase):
         mock_create_model,
         mock_get_class,
         mock_get_connector,
-        mock_check_config,
+        mock_load_check_config,
         mock_load_config,
-        mock_load_connector_config,
         mock_print,
     ):
         """Test initialize_create_connector with config path"""
         # Setup mocks
-        mock_load_connector_config.return_value = self.test_connector_config
         mock_load_config.return_value = self.test_config
-        mock_check_config.return_value = MagicMock()
         mock_get_connector.return_value = self.test_connector_info
         mock_get_class.return_value = MagicMock()
         mock_create_model.return_value = MagicMock()
+        mock_load_check_config.return_value = (
+            "ai_helper",
+            self.test_config,
+            "service_type",
+            self.test_connector_config,
+        )
 
         # Call method
         self.connector_manager.initialize_create_connector("test/config/path")
 
         # Verify calls
-        mock_load_connector_config.assert_called_once_with("test/config/path")
-        mock_load_config.assert_called_once_with("test/setup/path")
-        mock_check_config.assert_called_once()
-        mock_get_connector.assert_called_once_with("Test Connector", "open-source")
+        mock_load_config.assert_any_call("test/config/path", "connector")
+        mock_load_check_config.assert_called_once()
+        mock_get_connector.assert_called_once()
         mock_get_class.assert_called_once()
         mock_create_model.assert_called_once()
 
@@ -425,7 +428,7 @@ class TestConnectorManager(unittest.TestCase):
         "opensearch_py_ml.ml_commons.cli.connector_manager.ConnectorManager.load_config"
     )
     @patch(
-        "opensearch_py_ml.ml_commons.cli.connector_manager.ConnectorManager.check_config"
+        "opensearch_py_ml.ml_commons.cli.connector_manager.ConnectorManager._check_config"
     )
     @patch(
         "opensearch_py_ml.ml_commons.cli.connector_manager.ConnectorManager.print_available_connectors"
@@ -482,26 +485,19 @@ class TestConnectorManager(unittest.TestCase):
         self, mock_input, mock_print
     ):
         """Test initialize_create_connector with no connector configuration found"""
-        self.connector_manager.load_connector_config = MagicMock(return_value={})
+        self.connector_manager.load_config = MagicMock(return_value={})
         result = self.connector_manager.initialize_create_connector(
             "test-connector-config.yml"
         )
         self.assertFalse(result)
-        mock_print.assert_called_once()
-        self.assertIn("No connector configuration found", mock_print.call_args[0][0])
 
     @patch("builtins.print")
     @patch("builtins.input", side_effect=[""])
     def test_initialize_create_connector_no_setup_config(self, mock_input, mock_print):
-        """Test initialize_create_connector with no connector configuration found"""
+        """Test initialize_create_connector with no setup configuration found"""
         self.connector_manager.load_config = MagicMock(return_value=None)
         result = self.connector_manager.initialize_create_connector()
         self.assertFalse(result)
-        mock_print.assert_called_once()
-        self.assertIn(
-            "No setup configuration found. Please run setup first.",
-            mock_print.call_args[0][0],
-        )
 
     @patch("builtins.input", side_effect=[""])
     def test_initialize_create_connector_fail_configuration_check(self, mock_input):
@@ -517,11 +513,15 @@ class TestConnectorManager(unittest.TestCase):
         self, mock_input, mock_print
     ):
         """Test initialize_create_connector when the connector name is invalid and ValueError is raised"""
-        self.connector_manager.load_connector_config = MagicMock(
-            return_value=self.test_connector_config
+        self.connector_manager.load_and_check_config = MagicMock(
+            return_value=(
+                "ai_helper",
+                self.test_config,
+                "service_type",
+                self.test_connector_config,
+            )
         )
         self.connector_manager.load_config = MagicMock(return_value=self.test_config)
-        self.connector_manager.check_config = MagicMock(return_value=True)
         self.connector_manager.get_connector_by_name = MagicMock(side_effect=ValueError)
         result = self.connector_manager.initialize_create_connector(
             "test-connector-config.yml"
@@ -539,8 +539,14 @@ class TestConnectorManager(unittest.TestCase):
         self, mock_input, mock_print
     ):
         """Test initialize_create_connector when the connector ID is invalid and ValueError is raised"""
-        self.connector_manager.load_config = MagicMock(return_value=self.test_config)
-        self.connector_manager.check_config = MagicMock(return_value=True)
+        self.connector_manager.load_and_check_config = MagicMock(
+            return_value=(
+                "ai_helper",
+                self.test_config,
+                "service_type",
+                self.test_connector_config,
+            )
+        )
         self.connector_manager.print_available_connectors = MagicMock()
         self.connector_manager.get_connector_by_id = MagicMock(side_effect=ValueError)
         result = self.connector_manager.initialize_create_connector()

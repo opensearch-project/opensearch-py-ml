@@ -39,6 +39,7 @@ class Setup(CLIBase):
         super().__init__()
         self.config = configparser.ConfigParser()
         self.service_type = ""
+        self.ssl_check_enabled = True
         self.opensearch_client = None
         self.session = None
         self.opensearch_config = OpenSearchDomainConfig(
@@ -56,33 +57,30 @@ class Setup(CLIBase):
             aws_session_token="",
         )
 
-    def check_credentials_validity(self, access_key, secret_key, session_token):
+    def check_credentials_validity(
+        self, access_key=None, secret_key=None, session_token=None, use_config=False
+    ):
         """
         Check if the provided AWS credentials are valid.
         """
         try:
-            self.session = boto3.Session(
-                aws_access_key_id=access_key,
-                aws_secret_access_key=secret_key,
-                aws_session_token=session_token,
-            )
-            sts_client = self.session.client("sts")
-            sts_client.get_caller_identity()
-            return True
-        except ClientError:
-            return False
-
-    def check_credentials_validity_from_config_file(self):
-        """
-        Check if the provided AWS credentials in the config file are valid.
-        """
-        aws_credentials = self.config.get("aws_credentials", {})
-        try:
-            self.session = boto3.Session(
-                aws_access_key_id=aws_credentials.get("aws_access_key", ""),
-                aws_secret_access_key=aws_credentials.get("aws_secret_access_key", ""),
-                aws_session_token=aws_credentials.get("aws_session_token", ""),
-            )
+            if use_config:
+                # Check credentials from a config file
+                aws_credentials = self.config.get("aws_credentials", {})
+                credentials = {
+                    "aws_access_key_id": aws_credentials.get("aws_access_key", ""),
+                    "aws_secret_access_key": aws_credentials.get(
+                        "aws_secret_access_key", ""
+                    ),
+                    "aws_session_token": aws_credentials.get("aws_session_token", ""),
+                }
+            else:
+                credentials = {
+                    "aws_access_key_id": access_key,
+                    "aws_secret_access_key": secret_key,
+                    "aws_session_token": session_token,
+                }
+            self.session = boto3.Session(**credentials)
             sts_client = self.session.client("sts")
             sts_client.get_caller_identity()
             return True
@@ -108,7 +106,7 @@ class Setup(CLIBase):
         """
         Check if AWS credentials are configured and offer to reconfigure if needed.
         """
-        if not self.check_credentials_validity_from_config_file():
+        if not self.check_credentials_validity(use_config=True):
             print(
                 f"{Fore.YELLOW}Your AWS credentials are invalid or have expired.{Style.RESET_ALL}"
             )
@@ -293,6 +291,17 @@ class Setup(CLIBase):
                 ).strip()
                 or default_endpoint
             )
+            if self.opensearch_config.opensearch_domain_endpoint.startswith("https://"):
+                ssl_check = (
+                    input(
+                        "Do you want to disable SSL certificate check? (yes/no), or press Enter for default 'Enable': "
+                    )
+                    .strip()
+                    .lower()
+                    or self.ssl_check_enabled
+                )
+                if ssl_check == "yes":
+                    self.ssl_check_enabled = False
             auth_required = (
                 input(
                     "Does your OpenSearch instance require authentication? (yes/no): "
@@ -319,6 +328,7 @@ class Setup(CLIBase):
         # Update configuration dictionary
         self.config = {
             "service_type": self.service_type,
+            "ssl_check_enabled": self.ssl_check_enabled,
             "opensearch_config": {
                 "opensearch_domain_region": self.opensearch_config.opensearch_domain_region,
                 "opensearch_domain_endpoint": self.opensearch_config.opensearch_domain_endpoint,
@@ -333,7 +343,7 @@ class Setup(CLIBase):
                 "aws_session_token": self.aws_config.aws_session_token,
             },
         }
-        config_path = self.save_config(self.config)
+        config_path = self.save_yaml_file(self.config, "configuration", False)
         return config_path
 
     def initialize_opensearch_client(self) -> bool:
@@ -380,14 +390,13 @@ class Setup(CLIBase):
             return False
 
         use_ssl = parsed_url.scheme == "https"
-        verify_certs = True
 
         try:
             self.opensearch_client = OpenSearch(
                 hosts=[{"host": host, "port": port}],
                 http_auth=auth,
                 use_ssl=use_ssl,
-                verify_certs=verify_certs,
+                verify_certs=self.ssl_check_enabled,
                 ssl_show_warn=False,
                 connection_class=RequestsHttpConnection,
                 pool_maxsize=20,
@@ -396,9 +405,9 @@ class Setup(CLIBase):
                 f"{Fore.GREEN}Initialized OpenSearch client with host: {host} and port: {port}{Style.RESET_ALL}\n"
             )
             return True
-        except Exception as ex:
+        except Exception as e:
             print(
-                f"{Fore.RED}Error initializing OpenSearch client: {ex}{Style.RESET_ALL}\n"
+                f"{Fore.RED}Error initializing OpenSearch client: {e}{Style.RESET_ALL}\n"
             )
             return False
 
@@ -410,6 +419,7 @@ class Setup(CLIBase):
             return False
 
         self.service_type = self.config.get("service_type", "")
+        self.ssl_check_enabled = self.config.get("ssl_check_enabled")
         # OpenSearch config
         opensearch_config = self.config.get("opensearch_config", {})
         self.opensearch_config.opensearch_domain_region = opensearch_config.get(
@@ -435,67 +445,59 @@ class Setup(CLIBase):
         self.aws_config.aws_session_token = aws_credentials.get("aws_session_token", "")
         return True
 
+    def _process_config(self, config_path):
+        """
+        Process the configuration file
+        """
+        if self.load_config(config_path):
+            if self._update_from_config():
+                if self.service_type == "amazon-opensearch-service":
+                    self.check_and_configure_aws(config_path)
+                print(
+                    f"{Fore.GREEN}\nSetup complete. You are now ready to use the ML features.{Style.RESET_ALL}"
+                )
+                return config_path
+            else:
+                print(f"{Fore.RED}Failed to update configuration.{Style.RESET_ALL}")
+        else:
+            print(
+                f"{Fore.YELLOW}Could not load existing configuration. Creating new configuration...{Style.RESET_ALL}"
+            )
+            config_path = self.setup_configuration()
+
     def setup_command(self, config_path=None):
         """
         Main setup command that orchestrates the entire setup process.
         """
         # Check if setup config file path is given in the command
-        if config_path:
-            if self.load_config(config_path):
-                if self._update_from_config():
-                    if self.service_type == "amazon-opensearch-service":
-                        self.check_and_configure_aws(config_path)
+        if not config_path:
+            config_exist = (
+                input("\nDo you already have a configuration file? (yes/no): ")
+                .strip()
+                .lower()
+            )
+            if config_exist == "yes":
+                print("\nGreat! Let's use your existing configuration.")
+                config_path = input(
+                    "Enter the path to your existing configuration file: "
+                ).strip()
+                return self._process_config(config_path)
+            else:
+                print("Let's create a new configuration file.")
+                config_path = self.setup_configuration()
+
+            # Initialize OpenSearch client
+            if config_path:
+                if self.initialize_opensearch_client():
                     print(
-                        f"{Fore.GREEN}\nSetup complete. You are now ready to use the ML features.{Style.RESET_ALL}"
+                        f"{Fore.GREEN}Setup complete. You are now ready to use the ML features.{Style.RESET_ALL}"
                     )
                     return config_path
                 else:
-                    print(f"{Fore.RED}Failed to update configuration.{Style.RESET_ALL}")
-            else:
-                print(
-                    f"{Fore.YELLOW}Could not load existing configuration. Creating new configuration...{Style.RESET_ALL}"
-                )
-                config_path = self.setup_configuration()
-        config_path = ""
-        config_exist = (
-            input("\nDo you already have a configuration file? (yes/no): ")
-            .strip()
-            .lower()
-        )
-        if config_exist == "yes":
-            print("\nGreat! Let's use your existing configuration.")
-            config_path = input(
-                "Enter the path to your existing configuration file: "
-            ).strip()
-
-            if self.load_config(config_path):
-                if self._update_from_config():
-                    if self.service_type == "amazon-opensearch-service":
-                        self.check_and_configure_aws(config_path)
+                    # Handle failure to initialize OpenSearch client
                     print(
-                        f"{Fore.GREEN}\nSetup complete. You are now ready to use the ML features.{Style.RESET_ALL}"
+                        f"\n{Fore.RED}Failed to initialize OpenSearch client. Setup incomplete.{Style.RESET_ALL}\n"
                     )
-                    return config_path
-                else:
-                    print(f"{Fore.RED}Failed to update configuration.{Style.RESET_ALL}")
-            else:
-                print(
-                    f"{Fore.YELLOW}Could not load existing configuration. Creating new configuration...{Style.RESET_ALL}"
-                )
-                config_path = self.setup_configuration()
-        else:
-            print("Let's create a new configuration file.")
-            config_path = self.setup_configuration()
+                    return None
 
-        # Initialize OpenSearch client
-        if config_path:
-            if self.initialize_opensearch_client():
-                print(
-                    f"{Fore.GREEN}Setup complete. You are now ready to use the ML features.{Style.RESET_ALL}"
-                )
-                return config_path
-            else:
-                # Handle failure to initialize OpenSearch client
-                print(
-                    f"\n{Fore.RED}Failed to initialize OpenSearch client. Setup incomplete.{Style.RESET_ALL}\n"
-                )
+        return self._process_config(config_path)

@@ -48,29 +48,41 @@ class TestCLIBase(unittest.TestCase):
             os.remove(CLIBase.CONFIG_FILE)
 
     @patch("builtins.print")
+    def test_load_config_setup(self, mock_print):
+        """Test load_config to load setup config"""
+        with open(CLIBase.CONFIG_FILE, "w") as f:
+            yaml.dump(self.valid_config, f)
+        config = self.cli_base.load_config(CLIBase.CONFIG_FILE, "setup")
+        self.assertEqual(config, self.valid_config)
+        self.assertEqual(self.cli_base.config, self.valid_config)
+        mock_print.assert_called_once()
+        self.assertIn(
+            "Setup configuration loaded successfully", mock_print.call_args[0][0]
+        )
+
+    @patch("builtins.print")
+    def test_load_config_connector(self, mock_print):
+        """Test load_config to load connector config"""
+        connector_config_path = "test_connector_config.yml"
+        connector_config = {"connector": {"name": "test-connector", "type": "s3"}}
+
+        with open(connector_config_path, "w") as f:
+            yaml.dump(connector_config, f)
+        config = self.cli_base.load_config(connector_config_path, "connector")
+        self.assertEqual(config, connector_config)
+        self.assertNotEqual(self.cli_base.config, connector_config)
+        mock_print.assert_called_once()
+        self.assertIn(
+            "Connector configuration loaded successfully", mock_print.call_args[0][0]
+        )
+
+    @patch("builtins.print")
     def test_load_config_no_file(self, mock_print):
         """Test load_config with a non-existent file"""
         config = self.cli_base.load_config("nonexistent_config.yaml")
         self.assertEqual(config, {})
         mock_print.assert_called_once()
         self.assertIn("Configuration file not found", mock_print.call_args[0][0])
-
-    @patch("builtins.print")
-    def test_load_config_valid_yaml(self, mock_print):
-        """Test load_config with a valid YAML file"""
-        test_config = {
-            "service_type": "amazon-opensearch-service",
-            "opensearch_domain_region": "test-region",
-        }
-        with open(CLIBase.CONFIG_FILE, "w") as f:
-            yaml.dump(test_config, f)
-        config = self.cli_base.load_config(CLIBase.CONFIG_FILE)
-        self.assertEqual(config, test_config)
-        self.assertEqual(self.cli_base.config, test_config)
-        mock_print.assert_called_once()
-        self.assertIn(
-            "Setup configuration loaded successfully", mock_print.call_args[0][0]
-        )
 
     @patch("builtins.print")
     def test_load_config_invalid_yaml(self, mock_print):
@@ -90,11 +102,7 @@ class TestCLIBase(unittest.TestCase):
         mock_exists.return_value = True
         with patch("builtins.open", side_effect=PermissionError):
             config = self.cli_base.load_config(CLIBase.CONFIG_FILE)
-
-            # Verify empty dict is returned
             self.assertEqual(config, {})
-
-            # Verify exact error message
             expected_message = f"{Fore.RED}Permission denied: Unable to read {CLIBase.CONFIG_FILE}{Style.RESET_ALL}"
             mock_print.assert_called_once_with(expected_message)
 
@@ -111,184 +119,144 @@ class TestCLIBase(unittest.TestCase):
                 "Error loading setup configuration", mock_print.call_args[0][0]
             )
 
-    def test_load_connector_config_valid_yaml(self):
-        """Test load_connector_config with a valid YAML connector configuration"""
-        test_connector_config = {
-            "setup_config_path": "test_path",
-            "connector_name": "test_connector",
-        }
-        mock_file_content = yaml.dump(test_connector_config)
-
-        with patch(
-            "builtins.open", mock_open(read_data=mock_file_content)
-        ) as mock_file, patch("os.path.exists", return_value=True), patch(
-            "os.access", return_value=True
-        ):
-
-            result = self.cli_base.load_connector_config("test_config.yml")
-
-            mock_file.assert_called_once_with("test_config.yml", "r")
-            self.assertEqual(result, test_connector_config)
-
-    @patch("builtins.print")
-    def test_load_connector_config_invalid_yaml(self, mock_print):
-        """Test load_connector_config with an invalid YAML file"""
-        with open(CLIBase.CONFIG_FILE, "w") as f:
-            f.write("invalid: yaml: content:")
-
-        config = self.cli_base.load_connector_config(CLIBase.CONFIG_FILE)
-        self.assertEqual(config, {})
-        mock_print.assert_called_once()
-        self.assertIn("Error parsing YAML configuration", mock_print.call_args[0][0])
-
-    def test_load_connector_config_file_not_found(self):
-        """Test load_connector_config with a non-existent file"""
-        with patch("builtins.open", mock_open()) as mock_file:
-            mock_file.side_effect = FileNotFoundError()
-            result = self.cli_base.load_connector_config("nonexistent.yml")
-            self.assertEqual(result, {})
-
-    @patch("builtins.print")
-    @patch("os.path.exists")
-    def test_load_connector_config_permission_error(self, mock_exists, mock_print):
-        """Test load_connector_config with permission error"""
-        mock_exists.return_value = True
-        with patch("builtins.open", side_effect=PermissionError):
-            config = self.cli_base.load_connector_config(CLIBase.CONFIG_FILE)
-
-            # Verify empty dict is returned
-            self.assertEqual(config, {})
-
-            # Verify exact error message
-            expected_message = f"{Fore.RED}Permission denied: Unable to read {CLIBase.CONFIG_FILE}{Style.RESET_ALL}"
-            mock_print.assert_called_once_with(expected_message)
-
-    @patch("builtins.print")
-    @patch("os.path.exists")
-    def test_load_connector_config_exception(self, mock_exists, mock_print):
-        """Test load_connector_config with general exception"""
-        mock_exists.return_value = True
-        with patch("builtins.open", side_effect=Exception("Test error")):
-            config = self.cli_base.load_connector_config(CLIBase.CONFIG_FILE)
-            mock_print.assert_called_once()
-            self.assertEqual(config, {})
-            self.assertIn(
-                "Error loading connector configuration", mock_print.call_args[0][0]
-            )
-
-    @patch("builtins.print")
-    @patch("builtins.input", return_value="")
-    def test_save_config(self, mock_input, mock_print):
-        """Test save_config successful"""
-        test_config = {"key": "value"}
-        save_result = self.cli_base.save_config(test_config)
-        mock_print.assert_called_once()
-        self.assertTrue(save_result)
-        self.assertTrue(os.path.exists(CLIBase.CONFIG_FILE))
-        self.assertIn("Configuration saved successfully", mock_print.call_args[0][0])
-
-    @patch("builtins.input")
-    @patch("os.path.exists")
-    @patch("builtins.print")
-    def test_save_config_yes_overwrite(self, mock_print, mock_exists, mock_input):
-        """Test save_config when file exists and user chooses to overwrite"""
-        config = {"test": "data"}
-
-        # Mock file exists
-        mock_exists.return_value = True
-
-        # Mock user inputs: first for file path (empty for default), then 'yes' for overwrite
-        mock_input.side_effect = ["", "yes"]
-
-        with patch("builtins.open", mock_open()), patch("yaml.dump") as mock_dump:
-
-            result = self.cli_base.save_config(config)
-
-            # Verify the overwrite confirmation was asked
-            mock_input.assert_any_call(
-                f"{Fore.YELLOW}File already exists at {self.cli_base.CONFIG_FILE}. "
-                f"Do you want to overwrite it? (yes/no): {Style.RESET_ALL}"
-            )
-
-            # Verify file was saved
-            self.assertIsNotNone(result)
-            mock_dump.assert_called_once()
-
-    @patch("builtins.input")
-    @patch("os.path.exists")
-    @patch("builtins.print")
-    def test_save_config_no_overwrite(self, mock_print, mock_exists, mock_input):
-        """Test save_config when file exists and user chooses not to overwrite"""
-        config = {"test": "data"}
-
-        # Mock file exists
-        mock_exists.return_value = True
-
-        # Mock user inputs: first for file path (empty for default), then 'no' for overwrite
-        mock_input.side_effect = ["", "no"]
-
-        with patch("builtins.open", mock_open()):
-            result = self.cli_base.save_config(config)
-
-            # Verify the overwrite confirmation was asked
-            mock_input.assert_any_call(
-                f"{Fore.YELLOW}File already exists at {self.cli_base.CONFIG_FILE}. "
-                f"Do you want to overwrite it? (yes/no): {Style.RESET_ALL}"
-            )
-
-            # Verify operation was cancelled
-            self.assertIsNone(result)
-            mock_print.assert_any_call(
-                f"{Fore.YELLOW}Operation cancelled. Please choose a different path.{Style.RESET_ALL}"
-            )
-
-    @patch("builtins.input")
-    @patch("os.path.exists")
-    @patch("builtins.print")
-    def test_save_config_invalid_response(self, mock_print, mock_exists, mock_input):
-        """Test save_config for invalid response"""
-        config = {"test": "data"}
-        mock_exists.return_value = True
-        mock_input.side_effect = ["", "invalid"]
-
-        with patch("builtins.open", mock_open()):
-            self.cli_base.save_config(config)
-            expected_message = (
-                f"{Fore.YELLOW}Please enter 'yes or 'no'.{Style.RESET_ALL}"
-            )
-            mock_print.assert_any_call(expected_message)
-
+    @patch("os.path.abspath", return_value="/default/path/config.yml")
+    @patch("os.path.exists", return_value=False)
     @patch("os.makedirs")
-    @patch("os.path.exists")
-    @patch("builtins.input")
-    def test_save_config_create_directory(self, mock_input, mock_exists, mock_makedirs):
-        """Test save_config with directory creation"""
-        config = {"test": "data"}
-        test_path = "/test/path/config.yaml"
+    @patch("builtins.print")
+    @patch("builtins.input", return_value="")
+    @patch("builtins.open", new_callable=mock_open)
+    def test_save_yaml_file_config(
+        self,
+        mock_file,
+        mock_input,
+        mock_print,
+        mock_makedirs,
+        mock_exists,
+        mock_abspath,
+    ):
+        """Test save_yaml_file for saving config to a YAML file"""
+        # Execute
+        save_result = self.cli_base.save_yaml_file(
+            config=self.test_config, file_type="configuration"
+        )
 
-        # Mock user input to return custom path
-        mock_input.return_value = test_path
+        # Verify result
+        self.assertEqual(save_result, "/default/path/config.yml")
+        self.assertEqual(self.cli_base.CONFIG_FILE, "/default/path/config.yml")
 
-        # Mock directory doesn't exist
-        mock_exists.side_effect = [
-            False,
-            False,
-        ]  # First for file check, second for directory check
+        # Verify file operation
+        mock_file.assert_called_once_with("/default/path/config.yml", "w")
 
-        with patch("builtins.open", mock_open()), patch("yaml.dump"):
-            self.cli_base.save_config(config)
+        # Verify success message
+        mock_print.assert_called_once()
+        self.assertIn(
+            "Configuration information saved successfully", mock_print.call_args[0][0]
+        )
 
-            # Verify makedirs was called with the correct directory
-            expected_directory = "/test/path"
-            mock_makedirs.assert_called_once_with(expected_directory)
+    @patch("os.path.abspath", return_value="/default/path/config.yml")
+    @patch("os.path.exists", return_value=True)
+    @patch("os.makedirs")
+    @patch("builtins.print")
+    @patch("builtins.input", side_effect=["", "yes"])
+    @patch("builtins.open", new_callable=mock_open)
+    @patch.object(CLIBase, "_confirm_overwrite")
+    def test_save_yaml_file_config_overwrite(
+        self,
+        mock_overwrite,
+        mock_file,
+        mock_input,
+        mock_print,
+        mock_makedirs,
+        mock_exists,
+        mock_abspath,
+    ):
+        """Test save_yaml_file for overwriting existing config file"""
+        # Setup
+        mock_overwrite.return_value = True
+
+        # Execute
+        save_result = self.cli_base.save_yaml_file(config=self.test_config)
+
+        # Verify result
+        self.assertEqual(save_result, "/default/path/config.yml")
+
+        # Verify method call
+        mock_overwrite.assert_called_once()
+
+    @patch("os.path.abspath", return_value="/default/path/config.yml")
+    @patch("os.path.exists", return_value=True)
+    @patch("builtins.print")
+    @patch("builtins.input", side_effect=["", "no"])
+    @patch.object(CLIBase, "_confirm_overwrite")
+    def test_save_yaml_file_config_cancel_overwrite(
+        self, mock_overwrite, mock_input, mock_print, mock_exists, mock_abspath
+    ):
+        """Test save_yaml_file when user cancels config overwrite"""
+        # Setup
+        mock_overwrite.return_value = False
+
+        # Execute
+        save_result = self.cli_base.save_yaml_file(config=self.test_config)
+
+        # Verify result and method call
+        self.assertIsNone(save_result)
+        mock_overwrite.assert_called_once()
+
+    @patch("os.path.abspath", return_value="/default/path/output.yml")
+    @patch("os.path.exists", return_value=True)
+    @patch("os.makedirs")
+    @patch("builtins.print")
+    @patch("builtins.input", return_value="")
+    @patch("builtins.open", new_callable=mock_open)
+    @patch.object(CLIBase, "_merge_configs")
+    def test_save_yaml_file_output(
+        self,
+        mock_merge_configs,
+        mock_file,
+        mock_input,
+        mock_print,
+        mock_makedirs,
+        mock_exists,
+        mock_abspath,
+    ):
+        """Test save_yaml_file for saving output information to a YAML file"""
+        # Setup
+        test_config = {"test": "data"}
+        existing_config = {"existing": "data"}
+        merged_config = {"test": "data", "existing": "data"}
+        mock_merge_configs.return_value = merged_config
+
+        # Mock file read operation for existing config
+        mock_file.return_value.read.return_value = yaml.dump(existing_config)
+
+        # Execute
+        save_result = self.cli_base.save_yaml_file(
+            config=test_config, file_type="output", merge_existing=True
+        )
+
+        # Verify result
+        self.assertEqual(save_result, "/default/path/output.yml")
+        self.assertEqual(self.cli_base.OUTPUT_FILE, "/default/path/output.yml")
+
+        # Verify interactions
+        mock_input.assert_called_once_with(
+            "\nEnter the path to save the output information, "
+            "or press Enter to save it in the current directory [/default/path/output.yml]: "
+        )
+        mock_merge_configs.assert_called_once_with(
+            self.cli_base.OUTPUT_FILE, test_config
+        )
+        mock_print.assert_called_once()
+        self.assertIn(
+            "Output information saved successfully", mock_print.call_args[0][0]
+        )
 
     @patch("builtins.print")
     @patch("builtins.input", return_value="")
-    def test_save_config_permission_error(self, mock_input, mock_print):
-        """Test save_config with permission error"""
+    def test_save_yaml_file_permission_error(self, mock_input, mock_print):
+        """Test save_yaml_file with permission error"""
         with patch("builtins.open", side_effect=PermissionError("Permission denied")):
-            config = {"key": "value"}
-            result = self.cli_base.save_config(config)
+            result = self.cli_base.save_yaml_file(self.test_config)
             mock_print.assert_called_once()
             self.assertIsNone(result)
             self.assertFalse(os.path.exists(CLIBase.CONFIG_FILE))
@@ -296,11 +264,10 @@ class TestCLIBase(unittest.TestCase):
 
     @patch("builtins.input")
     @patch("builtins.print")
-    def test_save_config_keyboard_interrupt(self, mock_print, mock_input):
-        """Test save_config keyboard interrupt handling"""
-        config = {"test": "data"}
+    def test_save_yaml_file_keyboard_interrupt(self, mock_print, mock_input):
+        """Test save_yaml_file keyboard interrupt handling"""
         mock_input.side_effect = KeyboardInterrupt()
-        result = self.cli_base.save_config(config)
+        result = self.cli_base.save_yaml_file(self.test_config)
         self.assertIsNone(result)
         expected_message = (
             f"\n{Fore.YELLOW}Operation cancelled by user.{Style.RESET_ALL}"
@@ -309,14 +276,63 @@ class TestCLIBase(unittest.TestCase):
 
     @patch("builtins.print")
     @patch("builtins.input", return_value="")
-    def test_save_config_exception(self, mock_input, mock_print):
-        """Test save_config with exception"""
+    def test_save_yaml_file_exception(self, mock_input, mock_print):
+        """Test save_yaml_file with exception"""
         with patch("builtins.open", side_effect=Exception("Test error")):
-            config = {"key": "value"}
-            self.cli_base.save_config(config)
+            self.cli_base.save_yaml_file(self.test_config)
             mock_print.assert_called_once()
             self.assertFalse(os.path.exists(CLIBase.CONFIG_FILE))
             self.assertIn("Error saving configuration", mock_print.call_args[0][0])
+
+    @patch("builtins.open", new_callable=mock_open)
+    def test_merge_configs_empty_existing(self, mock_file):
+        """Test _merge_configs when existing file is empty"""
+        # Setup
+        mock_file.return_value.read.return_value = ""
+        new_config = {"key1": "value1"}
+
+        # Execute
+        result = self.cli_base._merge_configs(CLIBase.OUTPUT_FILE, new_config)
+
+        # Verify
+        self.assertEqual(result, new_config)
+
+    @patch("builtins.input", return_value="yes")
+    def test_confirm_overwrite_yes(self, mock_input):
+        """Test _confirm_overwrite when user chooses to overwrite"""
+        self.cli_base._confirm_overwrite(self.cli_base.CONFIG_FILE)
+        mock_input.assert_any_call(
+            f"{Fore.YELLOW}File already exists at {self.cli_base.CONFIG_FILE}. "
+            f"Do you want to overwrite it? (yes/no): {Style.RESET_ALL}"
+        )
+
+    @patch("builtins.print")
+    @patch("builtins.input", return_value="no")
+    def test_confirm_overwrite_no(self, mock_input, mock_print):
+        """Test _confirm_overwrite when user chooses not to overwrite"""
+        result = self.cli_base._confirm_overwrite(self.cli_base.CONFIG_FILE)
+        mock_input.assert_any_call(
+            f"{Fore.YELLOW}File already exists at {self.cli_base.CONFIG_FILE}. "
+            f"Do you want to overwrite it? (yes/no): {Style.RESET_ALL}"
+        )
+        mock_print.assert_called_once_with(
+            f"{Fore.YELLOW}Operation cancelled. Please choose a different path.{Style.RESET_ALL}"
+        )
+        self.assertFalse(result)
+
+    @patch("builtins.print")
+    @patch("builtins.input", side_effect=["invalid", "no"])
+    def test_confirm_overwrite_invalid_response(self, mock_input, mock_print):
+        """Test _confirm_overwrite when user gives invalid response"""
+        result = self.cli_base._confirm_overwrite(self.cli_base.CONFIG_FILE)
+        mock_input.assert_any_call(
+            f"{Fore.YELLOW}File already exists at {self.cli_base.CONFIG_FILE}. "
+            f"Do you want to overwrite it? (yes/no): {Style.RESET_ALL}"
+        )
+        mock_print.assert_any_call(
+            f"{Fore.YELLOW}Please enter 'yes' or 'no'.{Style.RESET_ALL}"
+        )
+        self.assertFalse(result)
 
     def test_update_config(self):
         """Test update_config successful"""
@@ -434,7 +450,7 @@ class TestCLIBase(unittest.TestCase):
                 {}, mock_file(), default_flow_style=False, sort_keys=False
             )
 
-    @patch.object(CLIBase, "save_output", Mock())
+    @patch.object(CLIBase, "save_yaml_file", Mock())
     def test_connector_output(self):
         """Test connector_output with all parameters provided"""
         output_id = "test-id"
@@ -464,10 +480,12 @@ class TestCLIBase(unittest.TestCase):
             self.cli_base.output_config["connector_create"], expected_update
         )
 
-        # Verify save_output was called with the updated config
-        self.cli_base.save_output.assert_called_once_with(self.cli_base.output_config)
+        # Verify save_yaml_file was called with the updated config
+        self.cli_base.save_yaml_file.assert_called_once_with(
+            self.cli_base.output_config, "output", merge_existing=True
+        )
 
-    @patch.object(CLIBase, "save_output", Mock())
+    @patch.object(CLIBase, "save_yaml_file", Mock())
     def test_connector_output_invalid_json(self):
         """Test connector_output with invalid JSON"""
         output_id = "test-id"
@@ -478,10 +496,10 @@ class TestCLIBase(unittest.TestCase):
                 output_id=output_id, output_config=output_config
             )
 
-        # Verify save_output was not called
-        self.cli_base.save_output.assert_not_called()
+        # Verify save_yaml_file was not called
+        self.cli_base.save_yaml_file.assert_not_called()
 
-    @patch.object(CLIBase, "save_output", Mock())
+    @patch.object(CLIBase, "save_yaml_file", Mock())
     def test_register_model_output(self):
         """Test register_model_output with all parameters provided"""
         model_id = "test-id"
@@ -494,10 +512,12 @@ class TestCLIBase(unittest.TestCase):
         # Verify the output_config was updated correctly
         self.assertEqual(self.cli_base.output_config["register_model"], expected_update)
 
-        # Verify save_output was called with the updated config
-        self.cli_base.save_output.assert_called_once_with(self.cli_base.output_config)
+        # Verify save_yaml_file was called with the updated config
+        self.cli_base.save_yaml_file.assert_called_once_with(
+            self.cli_base.output_config, "output", merge_existing=True
+        )
 
-    @patch.object(CLIBase, "save_output", Mock())
+    @patch.object(CLIBase, "save_yaml_file", Mock())
     def test_predict_model_output(self):
         """Test predict_model_output with all parameters provided"""
         response = "test-response"
@@ -508,150 +528,10 @@ class TestCLIBase(unittest.TestCase):
         # Verify the output_config was updated correctly
         self.assertEqual(self.cli_base.output_config["predict_model"], expected_update)
 
-        # Verify save_output was called with the updated config
-        self.cli_base.save_output.assert_called_once_with(self.cli_base.output_config)
-
-    @patch("builtins.input", return_value="")
-    @patch("os.path.exists", return_value=False)
-    @patch("os.path.abspath", return_value="/default/path/output.yml")
-    @patch("os.makedirs")
-    @patch("builtins.open", new_callable=mock_open)
-    def test_save_output_default_path(
-        self, mock_file, mock_makedirs, mock_abspath, mock_exists, mock_input
-    ):
-        """Test save_output with default path"""
-        result = self.cli_base.save_output(self.test_config)
-
-        # Verify the result
-        self.assertEqual(result, "/default/path/output.yml")
-
-        # Verify file operations
-        mock_file.assert_called_with("/default/path/output.yml", "w")
-        mock_file().write.assert_called()
-
-        # Verify the OUTPUT_FILE was updated
-        self.assertEqual(self.cli_base.OUTPUT_FILE, "/default/path/output.yml")
-
-    @patch("builtins.input", return_value="/custom/path/config")
-    @patch("os.path.exists", return_value=False)
-    @patch("os.path.abspath", return_value="/custom/path/config.yaml")
-    @patch("os.makedirs")
-    @patch("builtins.open", new_callable=mock_open)
-    def test_save_output_custom_path(
-        self, mock_file, mock_makedirs, mock_abspath, mock_exists, mock_input
-    ):
-        """Test save_output with custom path"""
-        result = self.cli_base.save_output(self.test_config)
-
-        self.assertEqual(result, "/custom/path/config.yaml")
-        mock_file.assert_called_with("/custom/path/config.yaml", "w")
-
-    @patch("builtins.input")
-    def test_save_output_adds_yaml_extension(self, mock_input):
-        """Test save_output add .yaml extension when missing"""
-        config = {"test": "data"}
-        test_path = "/test/path/file"
-        expected_path = "/test/path/file.yaml"
-
-        mock_input.return_value = test_path
-
-        with patch("os.path.exists") as mock_exists, patch(
-            "os.path.abspath"
-        ) as mock_abspath, patch("os.path.dirname") as mock_dirname, patch(
-            "os.makedirs"
-        ), patch(
-            "builtins.open", mock_open()
-        ), patch(
-            "yaml.dump"
-        ):
-
-            mock_exists.return_value = False
-            mock_abspath.side_effect = lambda x: x
-            mock_dirname.return_value = "/test/path"
-            result = self.cli_base.save_output(config)
-            self.assertEqual(result, expected_path)
-
-    @patch("builtins.input", return_value="")
-    @patch("os.path.exists", return_value=True)
-    @patch("os.path.abspath", return_value="/default/path/output.yml")
-    @patch("os.path.dirname", return_value="/default/path")
-    @patch("yaml.safe_load")
-    @patch("builtins.open", new_callable=mock_open)
-    def test_save_config_merge_config(
-        self,
-        mock_file,
-        mock_yaml_load,
-        mock_dirname,
-        mock_abspath,
-        mock_exists,
-        mock_input,
-    ):
-        """Test save_output merging with existing config"""
-        existing_config = {
-            "section1": {"existing_key": "existing_value"},
-            "section3": {"key3": "value3"},
-        }
-        mock_yaml_load.return_value = existing_config
-        with patch("yaml.dump") as mock_yaml_dump:
-            result = self.cli_base.save_output(self.test_config)
-            self.assertEqual(result, "/default/path/output.yml")
-            mock_yaml_dump.assert_called_once()
-            actual_config = mock_yaml_dump.call_args[0][0]
-            expected_merged_config = {
-                "section1": {
-                    "existing_key": "existing_value",
-                    "key1": "value1",  # From test_config
-                },
-                "section2": {"key2": "value2"},  # From test_config
-                "section3": {"key3": "value3"},  # From existing_config
-            }
-            self.assertEqual(actual_config, expected_merged_config)
-
-    @patch("builtins.input", return_value="")
-    @patch("os.path.exists", side_effect=PermissionError)
-    @patch("os.path.abspath", return_value="/default/path/output.yml")
-    def test_save_output_permission_error(self, mock_abspath, mock_exists, mock_input):
-        """Test save_output with permission error"""
-        result = self.cli_base.save_output(self.test_config)
-
-        self.assertIsNone(result)
-
-    @patch("builtins.input", side_effect=KeyboardInterrupt)
-    def test_save_output_keyboard_interrupt(self, mock_input):
-        """Test save_output with keyboard interrupt"""
-        result = self.cli_base.save_output(self.test_config)
-
-        self.assertIsNone(result)
-
-    @patch("builtins.input", return_value="")
-    @patch("os.path.exists", return_value=False)
-    @patch("os.path.abspath", return_value="/default/path/output.yml")
-    @patch("os.makedirs", side_effect=OSError("Test error"))
-    def test_save_output_general_error(
-        self, mock_makedirs, mock_abspath, mock_exists, mock_input
-    ):
-        """Test save_output with general error"""
-        result = self.cli_base.save_output(self.test_config)
-
-        self.assertIsNone(result)
-
-    @patch("builtins.input", return_value="")
-    @patch("os.path.exists", return_value=True)
-    @patch("os.path.abspath", return_value="/default/path/output.yml")
-    @patch(
-        "builtins.open",
-        side_effect=[
-            mock_open(read_data="invalid: yaml: content: :").return_value,
-            mock_open().return_value,
-        ],
-    )
-    def test_save_output_invalid_existing_yaml(
-        self, mock_file, mock_abspath, mock_exists, mock_input
-    ):
-        """Test save_output with invalid existing YAML"""
-        result = self.cli_base.save_output(self.test_config)
-
-        self.assertIsNone(result)
+        # Verify save_yaml_file was called with the updated config
+        self.cli_base.save_yaml_file.assert_called_once_with(
+            self.cli_base.output_config, "output", merge_existing=True
+        )
 
     def test_get_opensearch_domain_name(self):
         """Test get_opensearch_domain_name with various inputs, including edge cases"""
@@ -696,43 +576,21 @@ class TestCLIBase(unittest.TestCase):
 
     @patch("builtins.print")
     def test_check_config_opensource(self, mock_print):
-        """Test check_config with open-source service successful"""
+        """Test _check_config with open-source service successful"""
         # Setup
         self.valid_config["service_type"] = "open-source"
         service_type = self.valid_config["service_type"]
         opensearch_config = self.valid_config["opensearch_config"]
 
         # Execute
-        self.cli_base.check_config(self.valid_config, service_type, opensearch_config)
+        self.cli_base._check_config(self.valid_config, service_type, opensearch_config)
 
         # Verify
-        self.assertEqual(self.cli_base.opensearch_domain_name, None)
         mock_print.assert_not_called()
 
-    @patch("builtins.print")
-    def test_check_config_opensource_no_credentials(self, mock_print):
-        """Test check_config with open-source service and no credentials"""
-        # Setup
-        self.valid_config["service_type"] = "open-source"
-        self.valid_config["opensearch_config"]["opensearch_domain_username"] = ""
-        service_type = self.valid_config["service_type"]
-        opensearch_config = self.valid_config["opensearch_config"]
-
-        # Execute
-        result = self.cli_base.check_config(
-            self.valid_config, service_type, opensearch_config
-        )
-
-        # Verify
-        self.assertFalse(result)
-        mock_print.assert_called_with(
-            f"{Fore.RED}OpenSearch username or password not set. Please run setup first.{Style.RESET_ALL}\n"
-        )
-
-    @patch("builtins.print")
     @patch("boto3.client")
-    def test_check_config_managed(self, mock_boto3_client, mock_print):
-        """Test check_config with managed service successful"""
+    def test_check_config_managed(self, mock_boto3_client):
+        """Test _check_config with managed service successful"""
         # Setup
         service_type = self.valid_config["service_type"]
         opensearch_config = self.valid_config["opensearch_config"]
@@ -745,22 +603,21 @@ class TestCLIBase(unittest.TestCase):
         self.cli_base.get_opensearch_domain_name = Mock(return_value="test-domain")
 
         # Execute
-        self.cli_base.check_config(self.valid_config, service_type, opensearch_config)
+        self.cli_base._check_config(self.valid_config, service_type, opensearch_config)
 
         # Verify
         self.assertEqual(self.cli_base.opensearch_domain_name, "test-domain")
-        mock_print.assert_not_called()
 
     @patch("builtins.print")
     def test_check_config_managed_no_region(self, mock_print):
-        """Test check_config with managed service and no region"""
+        """Test _check_config with managed service and no region"""
         # Setup
         self.valid_config["opensearch_config"]["opensearch_domain_region"] = ""
         service_type = self.valid_config["service_type"]
         opensearch_config = self.valid_config["opensearch_config"]
 
         # Execute
-        result = self.cli_base.check_config(
+        result = self.cli_base._check_config(
             self.valid_config, service_type, opensearch_config
         )
 
@@ -772,14 +629,14 @@ class TestCLIBase(unittest.TestCase):
 
     @patch("builtins.print")
     def test_check_config_no_endpoint(self, mock_print):
-        """Test check_config with no OpenSearch endpoint"""
+        """Test _check_config with no OpenSearch endpoint"""
         # Setup
         self.valid_config["opensearch_config"]["opensearch_domain_endpoint"] = ""
         service_type = self.valid_config["service_type"]
         opensearch_config = self.valid_config["opensearch_config"]
 
         # Execute
-        result = self.cli_base.check_config(
+        result = self.cli_base._check_config(
             self.valid_config, service_type, opensearch_config
         )
 
@@ -788,6 +645,51 @@ class TestCLIBase(unittest.TestCase):
         mock_print.assert_called_with(
             f"\n{Fore.RED}OpenSearch endpoint not set. Please run setup first.{Style.RESET_ALL}\n"
         )
+
+    def test_load_and_check_config(self):
+        """Test load_and_check_config successful"""
+        # Setup
+        mock_ai_helper = MagicMock()
+        self.cli_base.load_config = MagicMock(return_value=self.valid_config)
+        self.cli_base._check_config = MagicMock(return_value=mock_ai_helper)
+
+        # Execute
+        result = self.cli_base.load_and_check_config("test_config.yml")
+
+        # Verify
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result), 4)
+        ai_helper, config, service_type, opensearch_config = result
+
+        self.assertEqual(ai_helper, mock_ai_helper)
+        self.assertEqual(config, self.valid_config)
+
+    def test_load_and_check_config_fail_load(self):
+        """Test load_and_check_config when load_config fails"""
+        # Setup
+        self.cli_base.load_config = MagicMock(return_value=None)
+        self.cli_base._check_config = MagicMock()
+
+        # Execute
+        result = self.cli_base.load_and_check_config("test_config.yml")
+
+        # Verify
+        self.assertFalse(result)
+        self.cli_base.load_config.assert_called_once_with("test_config.yml")
+        self.cli_base._check_config.assert_not_called()
+
+    def test_load_and_check_config_invalid_config(self):
+        """Test load_and_check_config when config is invalid"""
+        # Setup
+        self.cli_base.load_config = MagicMock(return_value={})
+        self.cli_base._check_config = MagicMock(return_value=None)
+
+        # Execute
+        result = self.cli_base.load_and_check_config("test_config.yml")
+
+        # Verify
+        self.assertFalse(result)
+        self.cli_base.load_config.assert_called_once_with("test_config.yml")
 
 
 if __name__ == "__main__":

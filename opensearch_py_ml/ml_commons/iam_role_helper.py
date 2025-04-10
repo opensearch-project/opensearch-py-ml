@@ -20,6 +20,9 @@ from opensearch_py_ml.ml_commons.cli.opensearch_domain_config import (
     OpenSearchDomainConfig,
 )
 
+# Configure the logger for this module
+logger = logging.getLogger(__name__)
+
 
 class IAMRoleHelper:
     """
@@ -54,6 +57,16 @@ class IAMRoleHelper:
             aws_session_token=self.aws_config.aws_session_token,
         )
 
+    def _handle_client_error(self, error, resource_name, resource_type="Role") -> bool:
+        """
+        Handle ClientError exception
+        """
+        if error.response["Error"]["Code"].lower() == self.NO_SUCH_ENTITY:
+            logger.warning(f"{resource_type} '{resource_name}' does not exist.")
+        else:
+            logger.error(f"An error occurred: {error}")
+        return False
+
     def role_exists(self, role_name):
         """
         Check if an IAM role exists.
@@ -64,11 +77,7 @@ class IAMRoleHelper:
             self.iam_client.get_role(RoleName=role_name)
             return True
         except ClientError as e:
-            if e.response["Error"]["Code"].lower() == self.NO_SUCH_ENTITY:
-                print(f"The requested role '{role_name}' does not exist.")
-            else:
-                print(f"An error occurred: {e}")
-            return False
+            return self._handle_client_error(e, role_name)
 
     def delete_role(self, role_name):
         """
@@ -84,7 +93,7 @@ class IAMRoleHelper:
                 self.iam_client.detach_role_policy(
                     RoleName=role_name, PolicyArn=policy["PolicyArn"]
                 )
-            print(f"All managed policies detached from role '{role_name}'.")
+            logger.info(f"All managed policies detached from role '{role_name}'.")
 
             # Delete inline policies associated with the role
             inline_policies = self.iam_client.list_role_policies(RoleName=role_name)[
@@ -94,17 +103,14 @@ class IAMRoleHelper:
                 self.iam_client.delete_role_policy(
                     RoleName=role_name, PolicyName=policy_name
                 )
-            print(f"All inline policies deleted from role '{role_name}'.")
+            logger.info(f"All inline policies deleted from role '{role_name}'.")
 
             # Finally, delete the IAM role
             self.iam_client.delete_role(RoleName=role_name)
-            print(f"Role '{role_name}' deleted.")
+            logger.info(f"Role '{role_name}' deleted.")
 
         except ClientError as e:
-            if e.response["Error"]["Code"].lower() == self.NO_SUCH_ENTITY:
-                print(f"Role '{role_name}' does not exist.")
-            else:
-                print(f"An error occurred: {e}")
+            return self._handle_client_error(e, role_name)
 
     def create_iam_role(
         self,
@@ -144,11 +150,11 @@ class IAMRoleHelper:
                 PolicyDocument=json.dumps(inline_policy_json),
             )
 
-            print(f"Created role: {role_name} with inline policy: {policy_name}")
+            logger.info(f"Created role: {role_name} with inline policy: {policy_name}")
             return role_arn
 
         except ClientError as e:
-            print(f"Error creating the role: {e}")
+            logger.error(f"Error creating the role: {e}")
             return None
 
     def get_role_info(self, role_name, include_details=False):
@@ -195,11 +201,7 @@ class IAMRoleHelper:
             return role_details
 
         except ClientError as e:
-            if e.response["Error"]["Code"].lower() == self.NO_SUCH_ENTITY:
-                print(f"Role '{role_name}' does not exist.")
-            else:
-                print(f"An error occurred: {e}")
-            return None
+            return self._handle_client_error(e, role_name)
 
     def get_role_arn(self, role_name):
         """
@@ -214,11 +216,7 @@ class IAMRoleHelper:
             # Return ARN of the role
             return response["Role"]["Arn"]
         except ClientError as e:
-            if e.response["Error"]["Code"].lower() == self.NO_SUCH_ENTITY:
-                print(f"IAM role '{role_name}' not found.")
-            else:
-                print(f"An error occurred: {e}")
-            return None
+            return self._handle_client_error(e, role_name)
 
     def get_user_arn(self, username):
         """
@@ -232,11 +230,7 @@ class IAMRoleHelper:
             response = self.iam_client.get_user(UserName=username)
             return response["User"]["Arn"]
         except ClientError as e:
-            if e.response["Error"]["Code"].lower() == self.NO_SUCH_ENTITY:
-                print(f"IAM user '{username}' not found.")
-            else:
-                print(f"An error occurred: {e}")
-            return None
+            return self._handle_client_error(e, username, "User")
 
     def map_iam_role_to_backend_role(self, role_arn, os_security_role="ml_full_access"):
         """
@@ -269,7 +263,7 @@ class IAMRoleHelper:
                     self.opensearch_config.opensearch_domain_password,
                 ),
             )
-            print(response.text)
+            logger.info(response.text)
         else:
             role_mapping = role_mapping[os_security_role]
             role_mapping["backend_roles"].append(role_arn)
@@ -289,7 +283,7 @@ class IAMRoleHelper:
                     self.opensearch_config.opensearch_domain_password,
                 ),
             )
-            print(response.text)
+            logger.info(response.text)
 
     def assume_role(self, role_arn, role_session_name=None, session=None):
         """
@@ -300,7 +294,7 @@ class IAMRoleHelper:
         :return: Dictionary with temporary security credentials and metadata, or None on failure.
         """
         if not role_arn:
-            logging.error("Role ARN is required.")
+            logger.error("Role ARN is required.")
             return None
 
         sts_client = session.client("sts") if session else self.sts_client
@@ -316,7 +310,7 @@ class IAMRoleHelper:
             temp_credentials = assumed_role_object["Credentials"]
             expiration = temp_credentials["Expiration"]
 
-            logging.info(
+            logger.info(
                 f"Assumed role: {role_arn}. Temporary credentials valid until: {expiration}"
             )
 
@@ -332,7 +326,7 @@ class IAMRoleHelper:
 
         except ClientError as e:
             error_code = e.response["Error"]["Code"]
-            logging.error(f"Error assuming role {role_arn}: {error_code} - {e}")
+            logger.error(f"Error assuming role {role_arn}: {error_code} - {e}")
             return None
 
     def get_iam_user_name_from_arn(self, iam_principal_arn):
@@ -349,5 +343,5 @@ class IAMRoleHelper:
             ):
                 return iam_principal_arn.split(":user/")[-1]
         except Exception as e:
-            print(f"Error extracting IAM user name: {e}")
+            logger.error(f"Error extracting IAM user name: {e}")
         return None

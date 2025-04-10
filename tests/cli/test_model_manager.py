@@ -56,7 +56,7 @@ class TestModelManager(unittest.TestCase):
     @patch.object(ModelManager, "load_config")
     @patch.object(ModelManager, "get_opensearch_domain_name")
     @patch("boto3.client")
-    @patch("opensearch_py_ml.ml_commons.cli.AIConnectorHelper.OpenSearch")
+    @patch("opensearch_py_ml.ml_commons.cli.ai_connector_helper.OpenSearch")
     def test_initialize_predict_model_with_input(
         self,
         mock_opensearch,
@@ -113,7 +113,7 @@ class TestModelManager(unittest.TestCase):
     @patch.object(ModelManager, "load_config")
     @patch.object(ModelManager, "get_opensearch_domain_name")
     @patch("boto3.client")
-    @patch("opensearch_py_ml.ml_commons.cli.AIConnectorHelper.OpenSearch")
+    @patch("opensearch_py_ml.ml_commons.cli.ai_connector_helper.OpenSearch")
     @patch("builtins.input", side_effect=["yes"])
     def test_initialize_predict_model_with_params(
         self,
@@ -174,7 +174,7 @@ class TestModelManager(unittest.TestCase):
     @patch("builtins.print")
     @patch.object(ModelManager, "load_config")
     @patch.object(ModelManager, "get_opensearch_domain_name")
-    @patch("opensearch_py_ml.ml_commons.cli.AIConnectorHelper.OpenSearch")
+    @patch("opensearch_py_ml.ml_commons.cli.ai_connector_helper.OpenSearch")
     def test_initialize_predict_model_failure_response(
         self, mock_opensearch, mock_get_domain, mock_load_config, mock_print
     ):
@@ -235,7 +235,7 @@ class TestModelManager(unittest.TestCase):
     )
     @patch.object(ModelManager, "load_config")
     @patch.object(ModelManager, "get_opensearch_domain_name")
-    @patch("opensearch_py_ml.ml_commons.cli.AIConnectorHelper.OpenSearch")
+    @patch("opensearch_py_ml.ml_commons.cli.ai_connector_helper.OpenSearch")
     def test_initialize_register_model_with_input(
         self, mock_opensearch, mock_get_domain, mock_load_config, mock_input
     ):
@@ -279,7 +279,7 @@ class TestModelManager(unittest.TestCase):
     @patch("builtins.input", side_effect=[""])
     @patch.object(ModelManager, "load_config")
     @patch.object(ModelManager, "get_opensearch_domain_name")
-    @patch("opensearch_py_ml.ml_commons.cli.AIConnectorHelper.OpenSearch")
+    @patch("opensearch_py_ml.ml_commons.cli.ai_connector_helper.OpenSearch")
     def test_initialize_register_model_with_params(
         self, mock_opensearch, mock_get_domain, mock_load_config, mock_input
     ):

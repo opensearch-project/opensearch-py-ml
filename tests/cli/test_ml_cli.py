@@ -289,12 +289,16 @@ class TestMLCLI(unittest.TestCase):
             )
 
     @patch("argparse.ArgumentParser.error")
-    def test_connector_id_missing_value(self, mock_error):
+    @patch("os.path.expanduser", return_value="/mock/home")
+    @patch("builtins.open", new_callable=mock_open, read_data="mock_config_path")
+    def test_connector_id_missing_value(self, mock_file, mock_expanduser, mock_error):
         """Test connector ID handling when value is missing"""
         test_args = ["ml_cli.py", "model", "register", "--connectorId"]
         with patch.object(sys, "argv", test_args):
             main()
             mock_error.assert_called_once_with("--connectorId requires a value")
+        mock_expanduser.assert_called_with("~/.opensearch-ml")
+        mock_file.assert_called_with("/mock/home/config_path", "r")
 
     def test_dash_prefixed_model_id(self):
         """Test dash-prefixed model ID handling"""
