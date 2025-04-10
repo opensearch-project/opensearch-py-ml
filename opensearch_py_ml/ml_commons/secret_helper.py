@@ -74,10 +74,10 @@ class SecretHelper:
             response = self.secretsmanager.describe_secret(SecretId=secret_name)
             return response["ARN"]
         except self.secretsmanager.exceptions.ResourceNotFoundException:
-            print(f"The requested secret {secret_name} was not found")
+            logger.warning(f"The requested secret {secret_name} was not found")
             return None
         except Exception as e:
-            print(f"An error occurred: {e}")
+            logger.error(f"An error occurred: {e}")
             return None
 
     def get_secret_details(self, secret_name: str, fetch_value: bool = False) -> dict:

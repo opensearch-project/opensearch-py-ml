@@ -7,9 +7,11 @@
 
 import json
 import time
+import warnings
 from urllib.parse import urlparse
 
 import boto3
+import urllib3
 from colorama import Fore, Style
 from opensearchpy import OpenSearch, RequestsHttpConnection
 from requests_aws4auth import AWS4Auth
@@ -18,9 +20,13 @@ from opensearch_py_ml.ml_commons.cli.aws_config import AWSConfig
 from opensearch_py_ml.ml_commons.cli.opensearch_domain_config import (
     OpenSearchDomainConfig,
 )
-from opensearch_py_ml.ml_commons.IAMRoleHelper import IAMRoleHelper
+from opensearch_py_ml.ml_commons.iam_role_helper import IAMRoleHelper
 from opensearch_py_ml.ml_commons.ml_common_utils import TIMEOUT
-from opensearch_py_ml.ml_commons.SecretHelper import SecretHelper
+from opensearch_py_ml.ml_commons.secret_helper import SecretHelper
+
+# Disable warnings when verify_certs=False
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+warnings.filterwarnings("ignore", category=UserWarning, module="opensearchpy")
 
 
 class AIConnectorHelper:
@@ -31,6 +37,7 @@ class AIConnectorHelper:
     def __init__(
         self,
         service_type,
+        ssl_check_enabled,
         opensearch_config: OpenSearchDomainConfig,
         aws_config: AWSConfig,
     ):
@@ -38,6 +45,7 @@ class AIConnectorHelper:
         Initialize the AIConnectorHelper with necessary AWS and OpenSearch configurations.
         """
         self.service_type = service_type
+        self.ssl_check_enabled = ssl_check_enabled
         self.opensearch_config = opensearch_config
         self.aws_config = aws_config
 
@@ -67,7 +75,7 @@ class AIConnectorHelper:
                 self.opensearch_config.opensearch_domain_password,
             ),
             use_ssl=(parsed_url.scheme == "https"),
-            verify_certs=True,
+            verify_certs=self.ssl_check_enabled,
             connection_class=RequestsHttpConnection,
         )
 
@@ -103,7 +111,7 @@ class AIConnectorHelper:
                 print(f"{Fore.RED}No valid credentials found.{Style.RESET_ALL}")
                 return None, None
 
-            # Get frozen credentials (this converts to accessible format)
+            # Get frozen credentials
             frozen_credentials = credentials.get_frozen_credentials()
 
             # Create client with explicit credentials
@@ -268,7 +276,7 @@ class AIConnectorHelper:
         )
         response_text = json.dumps(response)
         status = response.get("inference_results", [{}])[0].get("status_code")
-        print("Predict Response:", response_text[:200] + "..." + response_text[-21:])
+        print(f"Predict Response: {response_text[:200]}...{response_text[-21:]}")
         return response_text, status
 
     def get_connector(self, connector_id):
@@ -293,6 +301,11 @@ class AIConnectorHelper:
         if not isinstance(body, dict):
             raise ValueError("'body' needs to be a dictionary.")
 
+        # Parse the OpenSearch domain URL to extract host and port
+        parsed_url = urlparse(self.opensearch_config.opensearch_domain_endpoint)
+        host = parsed_url.hostname
+        port = parsed_url.port or (443 if parsed_url.scheme == "https" else 9200)
+
         if self.service_type == "amazon-opensearch-service":
             create_connector_role_arn = self.iam_helper.get_role_arn(
                 create_connector_role_name
@@ -306,22 +319,14 @@ class AIConnectorHelper:
                 session_token=temp_credentials["credentials"]["SessionToken"],
             )
 
-            parsed_url = urlparse(self.opensearch_config.opensearch_domain_endpoint)
-            host = parsed_url.hostname
-            port = parsed_url.port or (443 if parsed_url.scheme == "https" else 9200)
-
             temp_os_client = OpenSearch(
                 hosts=[{"host": host, "port": port}],
                 http_auth=temp_awsauth,
                 use_ssl=(parsed_url.scheme == "https"),
-                verify_certs=True,
+                verify_certs=self.ssl_check_enabled,
                 connection_class=RequestsHttpConnection,
             )
         else:
-            parsed_url = urlparse(self.opensearch_config.opensearch_domain_endpoint)
-            host = parsed_url.hostname
-            port = parsed_url.port or (443 if parsed_url.scheme == "https" else 9200)
-
             temp_os_client = OpenSearch(
                 hosts=[{"host": host, "port": port}],
                 http_auth=(
@@ -329,7 +334,7 @@ class AIConnectorHelper:
                     self.opensearch_config.opensearch_domain_password,
                 ),
                 use_ssl=(parsed_url.scheme == "https"),
-                verify_certs=True,
+                verify_certs=self.ssl_check_enabled,
                 connection_class=RequestsHttpConnection,
             )
 

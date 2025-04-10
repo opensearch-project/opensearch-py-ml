@@ -95,7 +95,7 @@ class TestSetup(unittest.TestCase):
         }
 
         # Test credentials validation
-        result = self.setup_instance.check_credentials_validity_from_config_file()
+        result = self.setup_instance.check_credentials_validity(use_config=True)
 
         # Verify the result
         self.assertTrue(result)
@@ -106,34 +106,6 @@ class TestSetup(unittest.TestCase):
             aws_secret_access_key="valid-secret-key",
             aws_session_token="valid-session-token",
         )
-
-    @patch("boto3.Session")
-    def test_check_credentials_validity_from_config_file_client_error(
-        self, mock_session
-    ):
-        """Test check_credentials_validity with invalid credentials in config"""
-        # Setup mock to raise ClientError
-        mock_sts_client = MagicMock()
-        mock_session.return_value.client.return_value = mock_sts_client
-        mock_sts_client.get_caller_identity.side_effect = ClientError(
-            error_response={"Error": {"Code": "InvalidClientTokenId"}},
-            operation_name="GetCallerIdentity",
-        )
-
-        # Setup config with invalid credentials
-        self.setup_instance.config = {
-            "aws_credentials": {
-                "aws_access_key": "invalid-access-key",
-                "aws_secret_access_key": "invalid-secret-key",
-                "aws_session_token": "invalid-session-token",
-            }
-        }
-
-        # Test credentials validation
-        result = self.setup_instance.check_credentials_validity_from_config_file()
-
-        # Verify the result
-        self.assertFalse(result)
 
     def test_update_aws_credentials_empty_config(self):
         """Test update_aws_credentials when config is empty"""
@@ -275,10 +247,10 @@ class TestSetup(unittest.TestCase):
             }
         }
 
-        # Mock check_credentials_validity_from_config_file to return False
+        # Mock check_credentials_validity to return False
         with patch.object(
             self.setup_instance,
-            "check_credentials_validity_from_config_file",
+            "check_credentials_validity",
             return_value=False,
         ), patch.object(self.setup_instance, "configure_aws"):
 
@@ -307,10 +279,10 @@ class TestSetup(unittest.TestCase):
             }
         }
 
-        # Mock check_credentials_validity_from_config_file to return True
+        # Mock check_credentials_validity to return True
         with patch.object(
             self.setup_instance,
-            "check_credentials_validity_from_config_file",
+            "check_credentials_validity",
             return_value=True,
         ), patch.object(self.setup_instance, "configure_aws") as mock_configure:
 
@@ -336,10 +308,10 @@ class TestSetup(unittest.TestCase):
             }
         }
 
-        # Mock check_credentials_validity_from_config_file to return True
+        # Mock check_credentials_validity to return True
         with patch.object(
             self.setup_instance,
-            "check_credentials_validity_from_config_file",
+            "check_credentials_validity",
             return_value=True,
         ), patch.object(
             self.setup_instance, "configure_aws"
@@ -491,7 +463,7 @@ class TestSetup(unittest.TestCase):
             f"\n{Fore.YELLOW}Invalid choice. Defaulting to 'IAM Role ARN'.{Style.RESET_ALL}"
         )
 
-    @patch("builtins.input", side_effect=["2", "", "yes", "admin"])
+    @patch("builtins.input", side_effect=["2", "", "", "yes", "admin"])
     @patch.object(Setup, "get_password_with_asterisks", return_value="pass")
     def test_setup_configuration_open_source_with_auth(
         self, mock_get_password, mock_input

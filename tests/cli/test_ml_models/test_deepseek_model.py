@@ -10,7 +10,7 @@ from unittest.mock import Mock, patch
 
 from colorama import Fore, Style
 
-from opensearch_py_ml.ml_commons.cli.ml_models.DeepSeekModel import DeepSeekModel
+from opensearch_py_ml.ml_commons.cli.ml_models.deepseek_model import DeepSeekModel
 
 
 class TestDeepSeekModel(unittest.TestCase):

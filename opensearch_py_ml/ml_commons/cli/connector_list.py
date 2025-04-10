@@ -27,6 +27,7 @@ class ConnectorInfo:
 
     id: int
     name: str
+    file_name: str
     connector_class: str
     init_params: List[str]
     connector_params: List[str]
@@ -41,6 +42,7 @@ class ConnectorList:
             ConnectorInfo(
                 id=1,
                 name="Aleph Alpha",
+                file_name="aleph_alpha_model",
                 connector_class="AlephAlphaModel",
                 init_params=[],
                 connector_params=["model_name", "api_key", "connector_body"],
@@ -52,6 +54,7 @@ class ConnectorList:
             ConnectorInfo(
                 id=2,
                 name="DeepSeek",
+                file_name="deepseek_model",
                 connector_class="DeepSeekModel",
                 init_params=["service_type"],
                 connector_params=[
@@ -69,6 +72,7 @@ class ConnectorList:
             ConnectorInfo(
                 id=3,
                 name="OpenAI",
+                file_name="openai_model",
                 connector_class="OpenAIModel",
                 init_params=["service_type"],
                 connector_params=[
@@ -90,6 +94,7 @@ class ConnectorList:
             ConnectorInfo(
                 id=1,
                 name="Amazon Bedrock",
+                file_name="bedrock_model",
                 connector_class="BedrockModel",
                 init_params=["opensearch_domain_region"],
                 connector_params=[
@@ -108,6 +113,7 @@ class ConnectorList:
             ConnectorInfo(
                 id=2,
                 name="Amazon SageMaker",
+                file_name="sagemaker_model",
                 connector_class="SageMakerModel",
                 init_params=["opensearch_domain_region"],
                 connector_params=[
@@ -127,6 +133,7 @@ class ConnectorList:
             ConnectorInfo(
                 id=3,
                 name="Cohere",
+                file_name="cohere_model",
                 connector_class="CohereModel",
                 init_params=[],
                 connector_params=[
@@ -144,6 +151,7 @@ class ConnectorList:
             ConnectorInfo(
                 id=4,
                 name="DeepSeek",
+                file_name="deepseek_model",
                 connector_class="DeepSeekModel",
                 init_params=["service_type"],
                 connector_params=[
@@ -161,6 +169,7 @@ class ConnectorList:
             ConnectorInfo(
                 id=5,
                 name="OpenAI",
+                file_name="openai_model",
                 connector_class="OpenAIModel",
                 init_params=["service_type"],
                 connector_params=[

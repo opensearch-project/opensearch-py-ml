@@ -14,7 +14,7 @@ from urllib.parse import urlparse
 from colorama import Fore, Style
 from opensearchpy import RequestsHttpConnection
 
-from opensearch_py_ml.ml_commons.cli.AIConnectorHelper import AIConnectorHelper
+from opensearch_py_ml.ml_commons.cli.ai_connector_helper import AIConnectorHelper
 from opensearch_py_ml.ml_commons.cli.aws_config import AWSConfig
 from opensearch_py_ml.ml_commons.cli.opensearch_domain_config import (
     OpenSearchDomainConfig,
@@ -40,6 +40,7 @@ class TestAIConnectorHelper(unittest.TestCase):
             aws_session_token="test-session-token",
         )
         self.service_type = "amazon-opensearch-service"
+        self.ssl_check_enabled = (True,)
         self.domain_arn = "arn:aws:es:us-east-1:123456789012:domain/test-domain"
         self.test_data = {
             "secret_name": "test-secret",
@@ -64,11 +65,11 @@ class TestAIConnectorHelper(unittest.TestCase):
         }
 
     @patch(
-        "opensearch_py_ml.ml_commons.cli.AIConnectorHelper.AIConnectorHelper.get_opensearch_domain_info"
+        "opensearch_py_ml.ml_commons.cli.ai_connector_helper.AIConnectorHelper.get_opensearch_domain_info"
     )
-    @patch("opensearch_py_ml.ml_commons.cli.AIConnectorHelper.OpenSearch")
-    @patch("opensearch_py_ml.ml_commons.cli.AIConnectorHelper.SecretHelper")
-    @patch("opensearch_py_ml.ml_commons.cli.AIConnectorHelper.IAMRoleHelper")
+    @patch("opensearch_py_ml.ml_commons.cli.ai_connector_helper.OpenSearch")
+    @patch("opensearch_py_ml.ml_commons.cli.ai_connector_helper.SecretHelper")
+    @patch("opensearch_py_ml.ml_commons.cli.ai_connector_helper.IAMRoleHelper")
     def test___init__(
         self,
         mock_iam_role_helper,
@@ -92,7 +93,10 @@ class TestAIConnectorHelper(unittest.TestCase):
 
         # Instantiate AIConnectorHelper
         helper = AIConnectorHelper(
-            self.service_type, self.opensearch_config, self.aws_config
+            self.service_type,
+            self.ssl_check_enabled,
+            self.opensearch_config,
+            self.aws_config,
         )
 
         # Assert basic attributes
@@ -111,7 +115,7 @@ class TestAIConnectorHelper(unittest.TestCase):
                 self.opensearch_config.opensearch_domain_password,
             ),
             use_ssl=expected_use_ssl,
-            verify_certs=True,
+            verify_certs=self.ssl_check_enabled,
             connection_class=RequestsHttpConnection,
         )
 
@@ -135,6 +139,7 @@ class TestAIConnectorHelper(unittest.TestCase):
         # Initialize helper with open-source service type
         helper = AIConnectorHelper(
             service_type="open-source",
+            ssl_check_enabled=self.ssl_check_enabled,
             opensearch_config=OpenSearchDomainConfig(
                 opensearch_domain_region="",
                 opensearch_domain_name=self.opensearch_config.opensearch_domain_name,
@@ -299,8 +304,8 @@ class TestAIConnectorHelper(unittest.TestCase):
                 in str(context.exception)
             )
 
-    @patch("opensearch_py_ml.ml_commons.cli.AIConnectorHelper.OpenSearch")
-    @patch("opensearch_py_ml.ml_commons.cli.AIConnectorHelper.AWS4Auth")
+    @patch("opensearch_py_ml.ml_commons.cli.ai_connector_helper.OpenSearch")
+    @patch("opensearch_py_ml.ml_commons.cli.ai_connector_helper.AWS4Auth")
     @patch.object(AIConnectorHelper, "iam_helper", create=True)
     def test_create_connector_managed(
         self, mock_iam_helper, mock_aws4auth, mock_opensearch
@@ -339,6 +344,7 @@ class TestAIConnectorHelper(unittest.TestCase):
         with patch.object(AIConnectorHelper, "__init__", return_value=None):
             helper = AIConnectorHelper()
             helper.service_type = self.service_type
+            helper.ssl_check_enabled = self.ssl_check_enabled
             helper.opensearch_config = self.opensearch_config
             helper.opensearch_client = mock_opensearch_instance
             helper.iam_helper = mock_iam_helper
@@ -358,7 +364,7 @@ class TestAIConnectorHelper(unittest.TestCase):
             # Assert that the connector_id is returned
             self.assertEqual(connector_id, "test-connector-id")
 
-    @patch("opensearch_py_ml.ml_commons.cli.AIConnectorHelper.OpenSearch")
+    @patch("opensearch_py_ml.ml_commons.cli.ai_connector_helper.OpenSearch")
     def test_create_connector_open_source(self, mock_opensearch):
         """Test create_connector in open-source service"""
         # Mock OpenSearch client and its transport
@@ -376,6 +382,7 @@ class TestAIConnectorHelper(unittest.TestCase):
         # Instantiate helper
         with patch.object(AIConnectorHelper, "__init__", return_value=None):
             helper = AIConnectorHelper()
+            helper.ssl_check_enabled = self.ssl_check_enabled
             helper.service_type = "open-source"
             helper.opensearch_config = self.opensearch_config
             helper.opensearch_config.opensearch_domain_endpoint = (
@@ -397,7 +404,7 @@ class TestAIConnectorHelper(unittest.TestCase):
             # Assert that the connector_id is returned
             self.assertEqual(connector_id, "test-connector-id")
 
-    @patch("opensearch_py_ml.ml_commons.cli.AIConnectorHelper.OpenSearch")
+    @patch("opensearch_py_ml.ml_commons.cli.ai_connector_helper.OpenSearch")
     @patch("sys.stdout", new_callable=StringIO)
     def test_get_task(self, mock_stdout, mock_opensearch):
         """Test get_task with successful response"""
@@ -432,7 +439,7 @@ class TestAIConnectorHelper(unittest.TestCase):
             expected_output = f"Get Task Response: {json.dumps(mock_task_response)}\n"
             self.assertEqual(mock_stdout.getvalue(), expected_output)
 
-    @patch("opensearch_py_ml.ml_commons.cli.AIConnectorHelper.OpenSearch")
+    @patch("opensearch_py_ml.ml_commons.cli.ai_connector_helper.OpenSearch")
     def test_get_task_exception(self, mock_opensearch):
         """Test get_task with exception"""
         # Mock OpenSearch client and its transport
@@ -455,7 +462,7 @@ class TestAIConnectorHelper(unittest.TestCase):
 
             self.assertTrue("Test Exception" in str(context.exception))
 
-    @patch("opensearch_py_ml.ml_commons.cli.AIConnectorHelper.OpenSearch")
+    @patch("opensearch_py_ml.ml_commons.cli.ai_connector_helper.OpenSearch")
     @patch.object(AIConnectorHelper, "get_task")
     def test_register_model_direct_response(self, mock_get_task, mock_opensearch):
         """Test register_model when model_id is directly in the response"""
@@ -492,7 +499,7 @@ class TestAIConnectorHelper(unittest.TestCase):
             # Assert that model_id is returned
             self.assertEqual(model_id, "task-model-id")
 
-    @patch("opensearch_py_ml.ml_commons.cli.AIConnectorHelper.OpenSearch")
+    @patch("opensearch_py_ml.ml_commons.cli.ai_connector_helper.OpenSearch")
     @patch.object(AIConnectorHelper, "get_task")
     def test_register_model_task_response(self, mock_get_task, mock_opensearch):
         """Test register_model when model_id comes from task response"""
@@ -543,7 +550,7 @@ class TestAIConnectorHelper(unittest.TestCase):
             # Assert that model_id is returned
             self.assertEqual(model_id, "test-model-id")
 
-    @patch("opensearch_py_ml.ml_commons.cli.AIConnectorHelper.OpenSearch")
+    @patch("opensearch_py_ml.ml_commons.cli.ai_connector_helper.OpenSearch")
     @patch.object(AIConnectorHelper, "get_task")
     def test_register_model_no_model_id(self, mock_get_task, mock_opensearch):
         """Test register_model when no model_id is returned from task response"""
@@ -578,7 +585,7 @@ class TestAIConnectorHelper(unittest.TestCase):
                 "'model_id' not found in task response", str(context.exception)
             )
 
-    @patch("opensearch_py_ml.ml_commons.cli.AIConnectorHelper.OpenSearch")
+    @patch("opensearch_py_ml.ml_commons.cli.ai_connector_helper.OpenSearch")
     @patch.object(AIConnectorHelper, "get_task")
     def test_register_model_error_response(self, mock_get_task, mock_opensearch):
         """Test register_model with error response"""
@@ -614,7 +621,7 @@ class TestAIConnectorHelper(unittest.TestCase):
             # Verify get_task was not called
             mock_get_task.assert_not_called()
 
-    @patch("opensearch_py_ml.ml_commons.cli.AIConnectorHelper.OpenSearch")
+    @patch("opensearch_py_ml.ml_commons.cli.ai_connector_helper.OpenSearch")
     @patch.object(AIConnectorHelper, "get_task")
     def test_register_model_key_error(self, mock_get_task, mock_opensearch):
         """Test register_model when response contains neither model_id nor task_id"""
@@ -654,7 +661,7 @@ class TestAIConnectorHelper(unittest.TestCase):
             mock_get_task.assert_not_called()
 
     @patch("sys.stdout", new_callable=StringIO)
-    @patch("opensearch_py_ml.ml_commons.cli.AIConnectorHelper.OpenSearch")
+    @patch("opensearch_py_ml.ml_commons.cli.ai_connector_helper.OpenSearch")
     def test_register_model_exception_handling(self, mock_opensearch, mock_stdout):
         """Test register_model exception handling and error output"""
         # Mock OpenSearch client and its transport
@@ -688,7 +695,7 @@ class TestAIConnectorHelper(unittest.TestCase):
             expected_output = f"{Fore.RED}Error registering model: Test error message{Style.RESET_ALL}\n"
             self.assertEqual(mock_stdout.getvalue(), expected_output)
 
-    @patch("opensearch_py_ml.ml_commons.cli.AIConnectorHelper.OpenSearch")
+    @patch("opensearch_py_ml.ml_commons.cli.ai_connector_helper.OpenSearch")
     def test_deploy_model(self, mock_opensearch):
         """Test deploy_model successful"""
         # Mock OpenSearch client and its transport
@@ -718,7 +725,7 @@ class TestAIConnectorHelper(unittest.TestCase):
             # Assert the response
             self.assertEqual(result, mock_response)
 
-    @patch("opensearch_py_ml.ml_commons.cli.AIConnectorHelper.OpenSearch")
+    @patch("opensearch_py_ml.ml_commons.cli.ai_connector_helper.OpenSearch")
     def test_predict(self, mock_opensearch):
         """Test predict successful"""
         # Mock OpenSearch client and its transport
@@ -755,7 +762,7 @@ class TestAIConnectorHelper(unittest.TestCase):
             expected_status = response_json["inference_results"][0]["status_code"]
             self.assertEqual(status, expected_status)
 
-    @patch("opensearch_py_ml.ml_commons.cli.AIConnectorHelper.OpenSearch")
+    @patch("opensearch_py_ml.ml_commons.cli.ai_connector_helper.OpenSearch")
     def test_get_connector(self, mock_opensearch):
         """Test get_connector successful"""
         # Mock OpenSearch client and its transport
@@ -792,8 +799,8 @@ class TestAIConnectorHelper(unittest.TestCase):
             expected_result = json.dumps(mock_response)
             self.assertEqual(result, expected_result)
 
-    @patch("opensearch_py_ml.ml_commons.cli.AIConnectorHelper.OpenSearch")
-    @patch("opensearch_py_ml.ml_commons.cli.AIConnectorHelper.AWS4Auth")
+    @patch("opensearch_py_ml.ml_commons.cli.ai_connector_helper.OpenSearch")
+    @patch("opensearch_py_ml.ml_commons.cli.ai_connector_helper.AWS4Auth")
     @patch.object(AIConnectorHelper, "iam_helper", create=True)
     @patch.object(AIConnectorHelper, "secret_helper", create=True)
     @patch("time.sleep")
@@ -842,6 +849,7 @@ class TestAIConnectorHelper(unittest.TestCase):
         with patch.object(AIConnectorHelper, "__init__", return_value=None):
             helper = AIConnectorHelper()
             helper.service_type = self.service_type
+            helper.ssl_check_enabled = self.ssl_check_enabled
             helper.opensearch_config = self.opensearch_config
             helper.aws_config = self.aws_config
             helper.iam_helper = mock_iam_helper
@@ -978,8 +986,8 @@ class TestAIConnectorHelper(unittest.TestCase):
             self.assertEqual(connector_id, "test-connector-id")
             self.assertEqual(role_arn, self.test_data["connector_role_arn"])
 
-    @patch("opensearch_py_ml.ml_commons.cli.AIConnectorHelper.OpenSearch")
-    @patch("opensearch_py_ml.ml_commons.cli.AIConnectorHelper.AWS4Auth")
+    @patch("opensearch_py_ml.ml_commons.cli.ai_connector_helper.OpenSearch")
+    @patch("opensearch_py_ml.ml_commons.cli.ai_connector_helper.AWS4Auth")
     @patch.object(AIConnectorHelper, "iam_helper", create=True)
     @patch.object(AIConnectorHelper, "secret_helper", create=True)
     def test_create_connector_with_secret_existing_resources(
@@ -1079,8 +1087,8 @@ class TestAIConnectorHelper(unittest.TestCase):
                 self.assertEqual(mock_secret_helper.secret_exists.call_count, 1)
                 self.assertEqual(mock_secret_helper.get_secret_arn.call_count, 1)
 
-    @patch("opensearch_py_ml.ml_commons.cli.AIConnectorHelper.OpenSearch")
-    @patch("opensearch_py_ml.ml_commons.cli.AIConnectorHelper.AWS4Auth")
+    @patch("opensearch_py_ml.ml_commons.cli.ai_connector_helper.OpenSearch")
+    @patch("opensearch_py_ml.ml_commons.cli.ai_connector_helper.AWS4Auth")
     @patch.object(AIConnectorHelper, "iam_helper", create=True)
     @patch("time.sleep")
     @patch("builtins.print")
@@ -1116,6 +1124,7 @@ class TestAIConnectorHelper(unittest.TestCase):
         # Create helper instance
         with patch.object(AIConnectorHelper, "__init__", return_value=None):
             helper = AIConnectorHelper()
+            helper.ssl_check_enabled = self.ssl_check_enabled
             helper.service_type = self.service_type
             helper.opensearch_config = self.opensearch_config
             helper.aws_config = self.aws_config
@@ -1226,8 +1235,8 @@ class TestAIConnectorHelper(unittest.TestCase):
             self.assertEqual(connector_id, "test-connector-id")
             self.assertEqual(role_arn, self.test_data["connector_role_arn"])
 
-    @patch("opensearch_py_ml.ml_commons.cli.AIConnectorHelper.OpenSearch")
-    @patch("opensearch_py_ml.ml_commons.cli.AIConnectorHelper.AWS4Auth")
+    @patch("opensearch_py_ml.ml_commons.cli.ai_connector_helper.OpenSearch")
+    @patch("opensearch_py_ml.ml_commons.cli.ai_connector_helper.AWS4Auth")
     @patch.object(AIConnectorHelper, "iam_helper", create=True)
     def test_create_connector_with_role_existing_resources(
         self, mock_iam_helper, mock_aws4auth, mock_opensearch

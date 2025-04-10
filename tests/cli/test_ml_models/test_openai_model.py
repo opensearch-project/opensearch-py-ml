@@ -10,7 +10,7 @@ from unittest.mock import Mock, patch
 
 from colorama import Fore, Style
 
-from opensearch_py_ml.ml_commons.cli.ml_models.OpenAIModel import OpenAIModel
+from opensearch_py_ml.ml_commons.cli.ml_models.openai_model import OpenAIModel
 
 
 class TestOpenAIModel(unittest.TestCase):

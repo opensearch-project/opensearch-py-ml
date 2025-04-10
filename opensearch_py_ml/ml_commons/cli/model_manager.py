@@ -36,18 +36,11 @@ class ModelManager(CLIBase):
         Orchestrates the entire model prediction process.
         """
         try:
-            # Load configuration
-            config = self.load_config(config_path)
-            if not config:
+            # Load and check configuration
+            config_result = self.load_and_check_config(config_path)
+            if not config_result:
                 return False
-
-            service_type = config.get("service_type")
-            opensearch_config = self.config.get("opensearch_config", {})
-
-            # Check configuration validity
-            ai_helper = self.check_config(config, service_type, opensearch_config)
-            if not ai_helper:
-                return False
+            ai_helper, _, _, _ = config_result
 
             # Prompt for model id and predict request body if not provided
             if not model_id:
@@ -93,18 +86,11 @@ class ModelManager(CLIBase):
         Orchestrates the entire model registration process.
         """
         try:
-            # Load configuration
-            config = self.load_config(config_path)
-            if not config:
+            # Load and check configuration
+            config_result = self.load_and_check_config(config_path)
+            if not config_result:
                 return False
-
-            service_type = config.get("service_type")
-            opensearch_config = self.config.get("opensearch_config", {})
-
-            # Check configuration validity
-            ai_helper = self.check_config(config, service_type, opensearch_config)
-            if not ai_helper:
-                return False
+            ai_helper, _, _, _ = config_result
 
             # Prompt for model name, description, and connector ID if not provided
             if not model_name:
