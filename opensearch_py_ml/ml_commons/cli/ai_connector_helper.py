@@ -349,6 +349,131 @@ class AIConnectorHelper:
         connector_id = response.get("connector_id")
         return connector_id
 
+    def _create_iam_role(self, step_number, connector_role_name, inline_policy):
+        """
+        Create an IAM role in OpenSearch using the specified inline policy
+        """
+        trust_policy = {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Principal": {"Service": "es.amazonaws.com"},
+                    "Action": "sts:AssumeRole",
+                }
+            ],
+        }
+        print(f"Step {step_number}: Create IAM role configured in connector")
+        if not self.iam_helper.role_exists(connector_role_name):
+            connector_role_arn = self.iam_helper.create_iam_role(
+                connector_role_name, trust_policy, inline_policy
+            )
+        else:
+            print(f"{connector_role_name} role exists, skipping creation.")
+            connector_role_arn = self.iam_helper.get_role_arn(connector_role_name)
+        print("----------")
+        return connector_role_arn
+
+    def _configure_iam_role(
+        self, step_number, connector_role_arn, create_connector_role_name
+    ):
+        """
+        Configure an IAM role in OpenSearch
+        """
+        statements = []
+        if self.aws_config.aws_user_name:
+            statements.append(
+                {
+                    "Effect": "Allow",
+                    "Principal": {"AWS": self.aws_config.aws_user_name},
+                    "Action": "sts:AssumeRole",
+                }
+            )
+        if self.aws_config.aws_role_name:
+            statements.append(
+                {
+                    "Effect": "Allow",
+                    "Principal": {"AWS": self.aws_config.aws_role_name},
+                    "Action": "sts:AssumeRole",
+                }
+            )
+        trust_policy = {"Version": "2012-10-17", "Statement": statements}
+
+        inline_policy = {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Action": "iam:PassRole",
+                    "Resource": connector_role_arn,
+                },
+                {
+                    "Effect": "Allow",
+                    "Action": "es:ESHttpPost",
+                    "Resource": self.opensearch_domain_arn,
+                },
+            ],
+        }
+
+        print(f"Step {step_number}: Configure IAM role in OpenSearch")
+        print(
+            f"Step {step_number}.1: Create IAM role for Signing create connector request"
+        )
+        if not self.iam_helper.role_exists(create_connector_role_name):
+            create_connector_role_arn = self.iam_helper.create_iam_role(
+                create_connector_role_name, trust_policy, inline_policy
+            )
+        else:
+            print(f"{create_connector_role_name} role exists, skipping creation.")
+            create_connector_role_arn = self.iam_helper.get_role_arn(
+                create_connector_role_name
+            )
+        print("----------")
+        return create_connector_role_arn
+
+    def _map_iam_role(
+        self, step_number, create_connector_role_arn, create_connector_role_name
+    ):
+        """
+        Map IAM role in OpenSearch
+        """
+        print(
+            f"Step {step_number}.2: Map IAM role {create_connector_role_name} to OpenSearch permission role"
+        )
+        self.iam_helper.map_iam_role_to_backend_role(create_connector_role_arn)
+        print("----------")
+
+    def _create_connector_with_credentials(
+        self,
+        step_number,
+        create_connector_input,
+        create_connector_role_name,
+        connector_role_arn,
+        sleep_time_in_seconds,
+        secret_arn=None,
+    ):
+        """
+        Create connector in OpenSearch with either role ARN only or both secret and role ARN.
+        """
+        print(f"Step {step_number}: Create connector in OpenSearch")
+        print("Waiting for resources to be ready...")
+        for remaining in range(sleep_time_in_seconds, 0, -1):
+            print(f"\rTime remaining: {remaining} seconds...", end="", flush=True)
+            time.sleep(1)
+        print("\nWait completed, creating connector...")
+        print("Connector role arn: ", connector_role_arn)
+        body = create_connector_input
+        if secret_arn:
+            body["credential"] = {
+                "secretArn": secret_arn,
+                "roleArn": connector_role_arn,
+            }
+        else:
+            body["credential"] = {"roleArn": connector_role_arn}
+        connector_id = self.create_connector(create_connector_role_name, body)
+        print("----------")
+        return connector_id, connector_role_arn
+
     def create_connector_with_secret(
         self,
         secret_name,
@@ -371,17 +496,6 @@ class AIConnectorHelper:
         print("----------")
 
         # Step 2: Create IAM role configured in connector
-        trust_policy = {
-            "Version": "2012-10-17",
-            "Statement": [
-                {
-                    "Effect": "Allow",
-                    "Principal": {"Service": "es.amazonaws.com"},
-                    "Action": "sts:AssumeRole",
-                }
-            ],
-        }
-
         inline_policy = {
             "Version": "2012-10-17",
             "Statement": [
@@ -395,86 +509,28 @@ class AIConnectorHelper:
                 }
             ],
         }
-
-        print("Step 2: Create IAM role configured in connector")
-        if not self.iam_helper.role_exists(connector_role_name):
-            connector_role_arn = self.iam_helper.create_iam_role(
-                connector_role_name, trust_policy, inline_policy
-            )
-        else:
-            print(f"{connector_role_name} role exists, skipping creation.")
-            connector_role_arn = self.iam_helper.get_role_arn(connector_role_name)
-        print("----------")
+        connector_role_arn = self._create_iam_role(
+            "2", connector_role_name, inline_policy
+        )
 
         # Step 3: Configure IAM role in OpenSearch
         # 3.1 Create IAM role for signing create connector request
-        statements = []
-        if self.aws_config.aws_user_name:
-            statements.append(
-                {
-                    "Effect": "Allow",
-                    "Principal": {"AWS": self.aws_config.aws_user_name},
-                    "Action": "sts:AssumeRole",
-                }
-            )
-        if self.aws_config.aws_role_name:
-            statements.append(
-                {
-                    "Effect": "Allow",
-                    "Principal": {"AWS": self.aws_config.aws_role_name},
-                    "Action": "sts:AssumeRole",
-                }
-            )
-        trust_policy = {"Version": "2012-10-17", "Statement": statements}
-
-        inline_policy = {
-            "Version": "2012-10-17",
-            "Statement": [
-                {
-                    "Effect": "Allow",
-                    "Action": "iam:PassRole",
-                    "Resource": connector_role_arn,
-                },
-                {
-                    "Effect": "Allow",
-                    "Action": "es:ESHttpPost",
-                    "Resource": self.opensearch_domain_arn,
-                },
-            ],
-        }
-
-        print("Step 3: Configure IAM role in OpenSearch")
-        print("Step 3.1: Create IAM role for Signing create connector request")
-        if not self.iam_helper.role_exists(create_connector_role_name):
-            create_connector_role_arn = self.iam_helper.create_iam_role(
-                create_connector_role_name, trust_policy, inline_policy
-            )
-        else:
-            print(f"{create_connector_role_name} role exists, skipping creation.")
-            create_connector_role_arn = self.iam_helper.get_role_arn(
-                create_connector_role_name
-            )
-        print("----------")
+        create_connector_role_arn = self._configure_iam_role(
+            "3", connector_role_arn, create_connector_role_name
+        )
 
         # 3.2 Map IAM role to backend role in OpenSearch
-        print(
-            f"Step 3.2: Map IAM role {create_connector_role_name} to OpenSearch permission role"
-        )
-        self.iam_helper.map_iam_role_to_backend_role(create_connector_role_arn)
-        print("----------")
+        self._map_iam_role("3", create_connector_role_arn, create_connector_role_name)
 
         # Step 4: Create connector
-        print("Step 4: Create connector in OpenSearch")
-        print("Waiting for resources to be ready...")
-        for remaining in range(sleep_time_in_seconds, 0, -1):
-            print(f"\rTime remaining: {remaining} seconds...", end="", flush=True)
-            time.sleep(1)
-        print("\nWait completed, creating connector...")
-        body = create_connector_input
-        body["credential"] = {"secretArn": secret_arn, "roleArn": connector_role_arn}
-        connector_id = self.create_connector(create_connector_role_name, body)
-        print("----------")
-        return connector_id, connector_role_arn
+        return self._create_connector_with_credentials(
+            "4",
+            create_connector_input,
+            create_connector_role_name,
+            connector_role_arn,
+            sleep_time_in_seconds,
+            secret_arn,
+        )
 
     def create_connector_with_role(
         self,
@@ -488,94 +544,24 @@ class AIConnectorHelper:
         Create a connector in OpenSearch using an IAM role for credentials.
         """
         # Step 1: Create IAM role configured in connector
-        trust_policy = {
-            "Version": "2012-10-17",
-            "Statement": [
-                {
-                    "Effect": "Allow",
-                    "Principal": {"Service": "es.amazonaws.com"},
-                    "Action": "sts:AssumeRole",
-                }
-            ],
-        }
-
-        print("Step 1: Create IAM role configured in connector")
-        if not self.iam_helper.role_exists(connector_role_name):
-            connector_role_arn = self.iam_helper.create_iam_role(
-                connector_role_name, trust_policy, connector_role_inline_policy
-            )
-        else:
-            print(f"{connector_role_name} role exists, skipping creation.")
-            connector_role_arn = self.iam_helper.get_role_arn(connector_role_name)
-        print("----------")
+        connector_role_arn = self._create_iam_role(
+            "1", connector_role_name, connector_role_inline_policy
+        )
 
         # Step 2: Configure IAM role in OpenSearch
         # 2.1 Create IAM role for signing create connector request
-        statements = []
-        if self.aws_config.aws_user_name:
-            statements.append(
-                {
-                    "Effect": "Allow",
-                    "Principal": {"AWS": self.aws_config.aws_user_name},
-                    "Action": "sts:AssumeRole",
-                }
-            )
-        if self.aws_config.aws_role_name:
-            statements.append(
-                {
-                    "Effect": "Allow",
-                    "Principal": {"AWS": self.aws_config.aws_role_name},
-                    "Action": "sts:AssumeRole",
-                }
-            )
-        trust_policy = {"Version": "2012-10-17", "Statement": statements}
-
-        inline_policy = {
-            "Version": "2012-10-17",
-            "Statement": [
-                {
-                    "Effect": "Allow",
-                    "Action": "iam:PassRole",
-                    "Resource": connector_role_arn,
-                },
-                {
-                    "Effect": "Allow",
-                    "Action": "es:ESHttpPost",
-                    "Resource": self.opensearch_domain_arn,
-                },
-            ],
-        }
-
-        print("Step 2: Configure IAM role in OpenSearch")
-        print("Step 2.1: Create IAM role for Signing create connector request")
-        if not self.iam_helper.role_exists(create_connector_role_name):
-            create_connector_role_arn = self.iam_helper.create_iam_role(
-                create_connector_role_name, trust_policy, inline_policy
-            )
-        else:
-            print(f"{create_connector_role_name} role exists, skipping creation.")
-            create_connector_role_arn = self.iam_helper.get_role_arn(
-                create_connector_role_name
-            )
-        print("----------")
+        create_connector_role_arn = self._configure_iam_role(
+            "2", connector_role_arn, create_connector_role_name
+        )
 
         # 2.2 Map IAM role to backend role in OpenSearch
-        print(
-            f"Step 2.2: Map IAM role {create_connector_role_name} to OpenSearch permission role"
-        )
-        self.iam_helper.map_iam_role_to_backend_role(create_connector_role_arn)
-        print("----------")
+        self._map_iam_role("2", create_connector_role_arn, create_connector_role_name)
 
         # Step 3: Create connector
-        print("Step 3: Create connector in OpenSearch")
-        print("Waiting for resources to be ready...")
-        for remaining in range(sleep_time_in_seconds, 0, -1):
-            print(f"\rTime remaining: {remaining} seconds...", end="", flush=True)
-            time.sleep(1)
-        print("\nWait completed, creating connector...")
-        body = create_connector_input
-        print("Connector role arn: ", connector_role_arn)
-        body["credential"] = {"roleArn": connector_role_arn}
-        connector_id = self.create_connector(create_connector_role_name, body)
-        print("----------")
-        return connector_id, connector_role_arn
+        return self._create_connector_with_credentials(
+            "3",
+            create_connector_input,
+            create_connector_role_name,
+            connector_role_arn,
+            sleep_time_in_seconds,
+        )
