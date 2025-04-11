@@ -6,6 +6,7 @@
 # GitHub history for details.
 
 import json
+import logging
 
 from colorama import Fore, Style, init
 from rich.console import Console
@@ -17,6 +18,9 @@ console = Console()
 
 # Initialize colorama for colored terminal output
 init(autoreset=True)
+
+# Configure the logger for this module
+logger = logging.getLogger(__name__)
 
 
 class ModelManager(CLIBase):
@@ -73,10 +77,10 @@ class ModelManager(CLIBase):
                     self.predict_model_output(response)
                 return True
             else:
-                print(f"{Fore.RED}Failed to predict model.{Style.RESET_ALL}")
+                logger.warning(f"{Fore.RED}Failed to predict model.{Style.RESET_ALL}")
                 return False
         except Exception as e:
-            print(f"{Fore.RED}Error predicting model: {str(e)}{Style.RESET_ALL}")
+            logger.error(f"{Fore.RED}Error predicting model: {str(e)}{Style.RESET_ALL}")
             return False
 
     def initialize_register_model(
@@ -111,7 +115,7 @@ class ModelManager(CLIBase):
                 self.register_model_output(model_id, model_name)
                 return True
             else:
-                print(f"{Fore.RED}Failed to register model.{Style.RESET_ALL}")
+                logger.warning(f"{Fore.RED}Failed to register model.{Style.RESET_ALL}")
                 return False
         except Exception:
             return False

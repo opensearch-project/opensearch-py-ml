@@ -93,7 +93,7 @@ class OpenAIModel(ModelBase):
             )
 
             # Create connector
-            print("Creating OpenAI connector...")
+            print("\nCreating OpenAI connector...")
             connector_id, connector_role_arn = helper.create_connector_with_secret(
                 secret_name,
                 secret_value,

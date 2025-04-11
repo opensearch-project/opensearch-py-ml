@@ -6,6 +6,7 @@
 # GitHub history for details.
 
 import json
+import logging
 import os
 from urllib.parse import urlparse
 
@@ -21,6 +22,9 @@ from opensearch_py_ml.ml_commons.cli.opensearch_domain_config import (
 
 # Initialize Rich console for enhanced CLI outputs
 console = Console()
+
+# Configure the logger for this module
+logger = logging.getLogger(__name__)
 
 
 class CLIBase:
@@ -54,7 +58,7 @@ class CLIBase:
 
             # Check if file exists
             if not os.path.exists(config_path):
-                print(
+                logger.warning(
                     f"{Fore.YELLOW}Configuration file not found at {config_path}{Style.RESET_ALL}"
                 )
                 return {}
@@ -72,15 +76,15 @@ class CLIBase:
                 )
                 return config
         except yaml.YAMLError as ye:
-            print(
+            logger.error(
                 f"{Fore.RED}Error parsing YAML configuration: {str(ye)}{Style.RESET_ALL}"
             )
         except PermissionError:
-            print(
+            logger.error(
                 f"{Fore.RED}Permission denied: Unable to read {config_path}{Style.RESET_ALL}"
             )
         except Exception as e:
-            print(
+            logger.error(
                 f"{Fore.RED}Error loading {config_type} configuration: {str(e)}{Style.RESET_ALL}"
             )
         return {}
@@ -138,13 +142,17 @@ class CLIBase:
             return path
 
         except PermissionError:
-            print(
+            logger.error(
                 f"{Fore.RED}Error: Permission denied. Unable to write to {path}{Style.RESET_ALL}"
             )
         except KeyboardInterrupt:
-            print(f"\n{Fore.YELLOW}Operation cancelled by user.{Style.RESET_ALL}")
+            logger.error(
+                f"\n{Fore.YELLOW}Operation cancelled by user.{Style.RESET_ALL}"
+            )
         except Exception as e:
-            print(f"{Fore.RED}Error saving {file_type}: {str(e)}{Style.RESET_ALL}")
+            logger.error(
+                f"{Fore.RED}Error saving {file_type}: {str(e)}{Style.RESET_ALL}"
+            )
         return None
 
     def _merge_configs(self, path, new_config):
@@ -174,10 +182,10 @@ class CLIBase:
             )
             if response in ["yes", "no"]:
                 break
-            print(f"{Fore.YELLOW}Please enter 'yes' or 'no'.{Style.RESET_ALL}")
+            logger.warning(f"{Fore.YELLOW}Please enter 'yes' or 'no'.{Style.RESET_ALL}")
 
         if response == "no":
-            print(
+            logger.warning(
                 f"{Fore.YELLOW}Operation cancelled. Please choose a different path.{Style.RESET_ALL}"
             )
             return False
@@ -195,7 +203,9 @@ class CLIBase:
             )
             return True
         except Exception as e:
-            print(f"{Fore.RED}Error saving configuration: {str(e)}{Style.RESET_ALL}")
+            logger.error(
+                f"{Fore.RED}Error saving configuration: {str(e)}{Style.RESET_ALL}"
+            )
             return False
 
     def connector_output(
@@ -282,7 +292,7 @@ class CLIBase:
         self.opensearch_domain_name = None
 
         if not opensearch_domain_endpoint:
-            print(
+            logger.warning(
                 f"\n{Fore.RED}OpenSearch endpoint not set. Please run setup first.{Style.RESET_ALL}\n"
             )
             return False
@@ -296,7 +306,7 @@ class CLIBase:
                 not opensearch_config.get("opensearch_domain_region")
                 or not self.opensearch_domain_name
             ):
-                print(
+                logger.warning(
                     f"{Fore.RED}AWS region or domain name not set. Please run setup first.{Style.RESET_ALL}\n"
                 )
                 return False

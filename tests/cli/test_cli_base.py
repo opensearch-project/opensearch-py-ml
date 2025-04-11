@@ -76,47 +76,49 @@ class TestCLIBase(unittest.TestCase):
             "Connector configuration loaded successfully", mock_print.call_args[0][0]
         )
 
-    @patch("builtins.print")
-    def test_load_config_no_file(self, mock_print):
+    @patch("opensearch_py_ml.ml_commons.cli.cli_base.logger")
+    def test_load_config_no_file(self, mock_logger):
         """Test load_config with a non-existent file"""
         config = self.cli_base.load_config("nonexistent_config.yaml")
         self.assertEqual(config, {})
-        mock_print.assert_called_once()
-        self.assertIn("Configuration file not found", mock_print.call_args[0][0])
+        mock_logger.warning.assert_called_once_with(
+            f"{Fore.YELLOW}Configuration file not found at /Volumes/workplace/opensearch-py-ml/nonexistent_config.yaml{Style.RESET_ALL}"
+        )
 
-    @patch("builtins.print")
-    def test_load_config_invalid_yaml(self, mock_print):
+    @patch("opensearch_py_ml.ml_commons.cli.cli_base.logger")
+    def test_load_config_invalid_yaml(self, mock_logger):
         """Test load_config with an invalid YAML file"""
         with open(CLIBase.CONFIG_FILE, "w") as f:
             f.write("invalid: yaml: content:")
 
         config = self.cli_base.load_config(CLIBase.CONFIG_FILE)
         self.assertEqual(config, {})
-        mock_print.assert_called_once()
-        self.assertIn("Error parsing YAML configuration", mock_print.call_args[0][0])
+        mock_logger.error.assert_called_once_with(
+            f"{Fore.RED}Error parsing YAML configuration: mapping values are not allowed here\n"
+            f'  in "{CLIBase.CONFIG_FILE}", line 1, column 14{Style.RESET_ALL}'
+        )
 
-    @patch("builtins.print")
+    @patch("opensearch_py_ml.ml_commons.cli.cli_base.logger")
     @patch("os.path.exists")
-    def test_load_config_permission_error(self, mock_exists, mock_print):
+    def test_load_config_permission_error(self, mock_exists, mock_logger):
         """Test load_config with permission error"""
         mock_exists.return_value = True
         with patch("builtins.open", side_effect=PermissionError):
             config = self.cli_base.load_config(CLIBase.CONFIG_FILE)
             self.assertEqual(config, {})
-            expected_message = f"{Fore.RED}Permission denied: Unable to read {CLIBase.CONFIG_FILE}{Style.RESET_ALL}"
-            mock_print.assert_called_once_with(expected_message)
+            mock_logger.error.assert_called_once_with(
+                f"{Fore.RED}Permission denied: Unable to read {CLIBase.CONFIG_FILE}{Style.RESET_ALL}"
+            )
 
-    @patch("builtins.print")
+    @patch("opensearch_py_ml.ml_commons.cli.cli_base.logger")
     @patch("os.path.exists")
-    def test_load_config_exception(self, mock_exists, mock_print):
+    def test_load_config_exception(self, mock_exists, mock_logger):
         """Test load_config with general exception"""
         mock_exists.return_value = True
         with patch("builtins.open", side_effect=Exception("Test error")):
-            config = self.cli_base.load_config(CLIBase.CONFIG_FILE)
-            mock_print.assert_called_once()
-            self.assertEqual(config, {})
-            self.assertIn(
-                "Error loading setup configuration", mock_print.call_args[0][0]
+            self.cli_base.load_config(CLIBase.CONFIG_FILE)
+            mock_logger.error.assert_called_once_with(
+                f"{Fore.RED}Error loading setup configuration: Test error{Style.RESET_ALL}"
             )
 
     @patch("os.path.abspath", return_value="/default/path/config.yml")
@@ -251,38 +253,39 @@ class TestCLIBase(unittest.TestCase):
             "Output information saved successfully", mock_print.call_args[0][0]
         )
 
-    @patch("builtins.print")
+    @patch("opensearch_py_ml.ml_commons.cli.cli_base.logger")
     @patch("builtins.input", return_value="")
-    def test_save_yaml_file_permission_error(self, mock_input, mock_print):
+    def test_save_yaml_file_permission_error(self, mock_input, mock_logger):
         """Test save_yaml_file with permission error"""
         with patch("builtins.open", side_effect=PermissionError("Permission denied")):
             result = self.cli_base.save_yaml_file(self.test_config)
-            mock_print.assert_called_once()
             self.assertIsNone(result)
             self.assertFalse(os.path.exists(CLIBase.CONFIG_FILE))
-            self.assertIn("Permission denied", mock_print.call_args[0][0])
+            mock_logger.error.assert_called_once_with(
+                f"{Fore.RED}Error: Permission denied. Unable to write to {CLIBase.CONFIG_FILE}{Style.RESET_ALL}"
+            )
 
+    @patch("opensearch_py_ml.ml_commons.cli.cli_base.logger")
     @patch("builtins.input")
-    @patch("builtins.print")
-    def test_save_yaml_file_keyboard_interrupt(self, mock_print, mock_input):
+    def test_save_yaml_file_keyboard_interrupt(self, mock_input, mock_logger):
         """Test save_yaml_file keyboard interrupt handling"""
         mock_input.side_effect = KeyboardInterrupt()
         result = self.cli_base.save_yaml_file(self.test_config)
         self.assertIsNone(result)
-        expected_message = (
+        mock_logger.error.assert_called_once_with(
             f"\n{Fore.YELLOW}Operation cancelled by user.{Style.RESET_ALL}"
         )
-        mock_print.assert_called_once_with(expected_message)
 
-    @patch("builtins.print")
+    @patch("opensearch_py_ml.ml_commons.cli.cli_base.logger")
     @patch("builtins.input", return_value="")
-    def test_save_yaml_file_exception(self, mock_input, mock_print):
+    def test_save_yaml_file_exception(self, mock_input, mock_logger):
         """Test save_yaml_file with exception"""
         with patch("builtins.open", side_effect=Exception("Test error")):
             self.cli_base.save_yaml_file(self.test_config)
-            mock_print.assert_called_once()
             self.assertFalse(os.path.exists(CLIBase.CONFIG_FILE))
-            self.assertIn("Error saving configuration", mock_print.call_args[0][0])
+            mock_logger.error.assert_called_once_with(
+                f"{Fore.RED}Error saving configuration: Test error{Style.RESET_ALL}"
+            )
 
     @patch("builtins.open", new_callable=mock_open)
     def test_merge_configs_empty_existing(self, mock_file):
@@ -306,30 +309,30 @@ class TestCLIBase(unittest.TestCase):
             f"Do you want to overwrite it? (yes/no): {Style.RESET_ALL}"
         )
 
-    @patch("builtins.print")
+    @patch("opensearch_py_ml.ml_commons.cli.cli_base.logger")
     @patch("builtins.input", return_value="no")
-    def test_confirm_overwrite_no(self, mock_input, mock_print):
+    def test_confirm_overwrite_no(self, mock_input, mock_logger):
         """Test _confirm_overwrite when user chooses not to overwrite"""
         result = self.cli_base._confirm_overwrite(self.cli_base.CONFIG_FILE)
         mock_input.assert_any_call(
             f"{Fore.YELLOW}File already exists at {self.cli_base.CONFIG_FILE}. "
             f"Do you want to overwrite it? (yes/no): {Style.RESET_ALL}"
         )
-        mock_print.assert_called_once_with(
+        mock_logger.warning.assert_called_once_with(
             f"{Fore.YELLOW}Operation cancelled. Please choose a different path.{Style.RESET_ALL}"
         )
         self.assertFalse(result)
 
-    @patch("builtins.print")
+    @patch("opensearch_py_ml.ml_commons.cli.cli_base.logger")
     @patch("builtins.input", side_effect=["invalid", "no"])
-    def test_confirm_overwrite_invalid_response(self, mock_input, mock_print):
+    def test_confirm_overwrite_invalid_response(self, mock_input, mock_logger):
         """Test _confirm_overwrite when user gives invalid response"""
         result = self.cli_base._confirm_overwrite(self.cli_base.CONFIG_FILE)
         mock_input.assert_any_call(
             f"{Fore.YELLOW}File already exists at {self.cli_base.CONFIG_FILE}. "
             f"Do you want to overwrite it? (yes/no): {Style.RESET_ALL}"
         )
-        mock_print.assert_any_call(
+        mock_logger.warning.assert_any_call(
             f"{Fore.YELLOW}Please enter 'yes' or 'no'.{Style.RESET_ALL}"
         )
         self.assertFalse(result)
@@ -365,14 +368,13 @@ class TestCLIBase(unittest.TestCase):
                 "Configuration saved successfully", mock_print.call_args[0][0]
             )
 
-    def test_update_config_permission_error(self):
+    @patch("opensearch_py_ml.ml_commons.cli.cli_base.logger")
+    def test_update_config_permission_error(self, mock_logger):
         """Test update_config with permission error"""
         test_config = {"test": "config"}
         test_path = "test_config.yml"
 
-        with patch("builtins.open", mock_open()) as mock_file, patch(
-            "builtins.print"
-        ) as mock_print:
+        with patch("builtins.open", mock_open()) as mock_file:
 
             # Simulate permission error
             mock_file.side_effect = PermissionError("Permission denied")
@@ -383,18 +385,17 @@ class TestCLIBase(unittest.TestCase):
             self.assertFalse(result)
 
             # Verify error message
-            mock_print.assert_called_once()
-            self.assertIn("Error saving configuration", mock_print.call_args[0][0])
-            self.assertIn("Permission denied", mock_print.call_args[0][0])
+            mock_logger.error.assert_called_once_with(
+                f"{Fore.RED}Error saving configuration: Permission denied{Style.RESET_ALL}"
+            )
 
-    def test_update_config_yaml_error(self):
+    @patch("opensearch_py_ml.ml_commons.cli.cli_base.logger")
+    def test_update_config_yaml_error(self, mock_logger):
         """Test update_config with YAML error"""
         test_config = {"test": "config"}
         test_path = "test_config.yml"
 
-        with patch("builtins.open", mock_open()), patch(
-            "yaml.dump"
-        ) as mock_yaml_dump, patch("builtins.print") as mock_print:
+        with patch("builtins.open", mock_open()), patch("yaml.dump") as mock_yaml_dump:
 
             # Simulate YAML error
             mock_yaml_dump.side_effect = yaml.YAMLError("Invalid YAML")
@@ -405,18 +406,17 @@ class TestCLIBase(unittest.TestCase):
             self.assertFalse(result)
 
             # Verify error message
-            mock_print.assert_called_once()
-            self.assertIn("Error saving configuration", mock_print.call_args[0][0])
-            self.assertIn("Invalid YAML", mock_print.call_args[0][0])
+            mock_logger.error.assert_called_once_with(
+                f"{Fore.RED}Error saving configuration: Invalid YAML{Style.RESET_ALL}"
+            )
 
-    def test_update_config_invalid_path(self):
+    @patch("opensearch_py_ml.ml_commons.cli.cli_base.logger")
+    def test_update_config_invalid_path(self, mock_logger):
         """Test update_config with invalid path"""
         test_config = {"test": "config"}
         test_path = "/invalid/path/test_config.yml"
 
-        with patch("builtins.open", mock_open()) as mock_file, patch(
-            "builtins.print"
-        ) as mock_print:
+        with patch("builtins.open", mock_open()) as mock_file:
 
             # Simulate FileNotFoundError
             mock_file.side_effect = FileNotFoundError("No such file or directory")
@@ -427,9 +427,9 @@ class TestCLIBase(unittest.TestCase):
             self.assertFalse(result)
 
             # Verify error message
-            mock_print.assert_called_once()
-            self.assertIn("Error saving configuration", mock_print.call_args[0][0])
-            self.assertIn("No such file or directory", mock_print.call_args[0][0])
+            mock_logger.error.assert_called_once_with(
+                f"{Fore.RED}Error saving configuration: No such file or directory{Style.RESET_ALL}"
+            )
 
     def test_update_config_empty_config(self):
         """Test update_config with empty config"""
@@ -608,8 +608,8 @@ class TestCLIBase(unittest.TestCase):
         # Verify
         self.assertEqual(self.cli_base.opensearch_domain_name, "test-domain")
 
-    @patch("builtins.print")
-    def test_check_config_managed_no_region(self, mock_print):
+    @patch("opensearch_py_ml.ml_commons.cli.cli_base.logger")
+    def test_check_config_managed_no_region(self, mock_logger):
         """Test _check_config with managed service and no region"""
         # Setup
         self.valid_config["opensearch_config"]["opensearch_domain_region"] = ""
@@ -623,12 +623,12 @@ class TestCLIBase(unittest.TestCase):
 
         # Verify
         self.assertFalse(result)
-        mock_print.assert_called_with(
+        mock_logger.warning.assert_called_with(
             f"{Fore.RED}AWS region or domain name not set. Please run setup first.{Style.RESET_ALL}\n"
         )
 
-    @patch("builtins.print")
-    def test_check_config_no_endpoint(self, mock_print):
+    @patch("opensearch_py_ml.ml_commons.cli.cli_base.logger")
+    def test_check_config_no_endpoint(self, mock_logger):
         """Test _check_config with no OpenSearch endpoint"""
         # Setup
         self.valid_config["opensearch_config"]["opensearch_domain_endpoint"] = ""
@@ -642,7 +642,7 @@ class TestCLIBase(unittest.TestCase):
 
         # Verify
         self.assertFalse(result)
-        mock_print.assert_called_with(
+        mock_logger.warning.assert_called_with(
             f"\n{Fore.RED}OpenSearch endpoint not set. Please run setup first.{Style.RESET_ALL}\n"
         )
 

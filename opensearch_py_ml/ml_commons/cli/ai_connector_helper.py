@@ -6,6 +6,7 @@
 # GitHub history for details.
 
 import json
+import logging
 import time
 import warnings
 from urllib.parse import urlparse
@@ -28,6 +29,9 @@ from opensearch_py_ml.ml_commons.secret_helper import SecretHelper
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 warnings.filterwarnings("ignore", category=UserWarning, module="opensearchpy")
 
+# Configure the logger for this module
+logger = logging.getLogger(__name__)
+
 
 class AIConnectorHelper:
     """
@@ -42,7 +46,7 @@ class AIConnectorHelper:
         aws_config: AWSConfig,
     ):
         """
-        Initialize the AIConnectorHelper with necessary AWS and OpenSearch configurations.
+        Initialize the AIConnectorHelper with necessary AWS and OpenSearch configurations
         """
         self.service_type = service_type
         self.ssl_check_enabled = ssl_check_enabled
@@ -53,6 +57,7 @@ class AIConnectorHelper:
             domain_endpoint = self.opensearch_config.opensearch_domain_endpoint
             domain_arn = None
         else:
+            # Get domain info for AOS
             domain_endpoint, domain_arn = self.get_opensearch_domain_info(
                 self.opensearch_config.opensearch_domain_region,
                 self.opensearch_config.opensearch_domain_name,
@@ -106,9 +111,10 @@ class AIConnectorHelper:
                 aws_secret_access_key=aws_secret_access_key,
                 aws_session_token=aws_session_token,
             )
+            # Check if credentials are valid
             credentials = session.get_credentials()
             if not credentials:
-                print(f"{Fore.RED}No valid credentials found.{Style.RESET_ALL}")
+                logger.error(f"{Fore.RED}No valid credentials found.{Style.RESET_ALL}")
                 return None, None
 
             # Get frozen credentials
@@ -131,26 +137,28 @@ class AIConnectorHelper:
             domain_arn = domain_status["ARN"]
             return domain_endpoint, domain_arn
         except Exception as e:
-            print(f"Error retrieving OpenSearch domain info: {e}")
+            logger.error(f"Error retrieving OpenSearch domain info: {e}")
             return None, None
 
     def get_ml_auth(self, create_connector_role_name):
         """
         Obtain AWS4Auth credentials for ML API calls using the specified IAM role.
         """
+        # Get role ARN
         create_connector_role_arn = self.iam_helper.get_role_arn(
             create_connector_role_name
         )
         if not create_connector_role_arn:
             raise Exception(f"IAM role '{create_connector_role_name}' not found.")
 
+        # Obtain AWS4Auth with temporary credentials
         temp_credentials = self.iam_helper.assume_role(create_connector_role_arn)
         awsauth = AWS4Auth(
-            temp_credentials["AccessKeyId"],
-            temp_credentials["SecretAccessKey"],
+            temp_credentials["credentials"]["AccessKeyId"],
+            temp_credentials["credentials"]["SecretAccessKey"],
             self.opensearch_config.opensearch_domain_region,
             "es",
-            session_token=temp_credentials["SessionToken"],
+            session_token=temp_credentials["credentials"]["SessionToken"],
         )
         return awsauth
 
@@ -195,7 +203,7 @@ class AIConnectorHelper:
             print("Get Task Response:", json.dumps(response))
             return response
         except Exception as e:
-            print(f"Error in get_task: {e}")
+            logger.error(f"Error in get_task: {e}")
             raise
 
     def register_model(
@@ -247,7 +255,9 @@ class AIConnectorHelper:
                     f"The response does not contain 'model_id' or 'task_id'. Response content: {response}"
                 )
         except Exception as e:
-            print(f"{Fore.RED}Error registering model: {str(e)}{Style.RESET_ALL}")
+            logger.error(
+                f"{Fore.RED}Error registering model: {str(e)}{Style.RESET_ALL}"
+            )
             raise
 
     def deploy_model(self, model_id):
@@ -307,18 +317,8 @@ class AIConnectorHelper:
         port = parsed_url.port or (443 if parsed_url.scheme == "https" else 9200)
 
         if self.service_type == "amazon-opensearch-service":
-            create_connector_role_arn = self.iam_helper.get_role_arn(
-                create_connector_role_name
-            )
-            temp_credentials = self.iam_helper.assume_role(create_connector_role_arn)
-            temp_awsauth = AWS4Auth(
-                temp_credentials["credentials"]["AccessKeyId"],
-                temp_credentials["credentials"]["SecretAccessKey"],
-                self.opensearch_config.opensearch_domain_region,
-                "es",
-                session_token=temp_credentials["credentials"]["SessionToken"],
-            )
-
+            # Obtain AWS4Auth credentials and initialize OpenSearch client with the credentials
+            temp_awsauth = self.get_ml_auth(create_connector_role_name)
             temp_os_client = OpenSearch(
                 hosts=[{"host": host, "port": port}],
                 http_auth=temp_awsauth,
@@ -327,6 +327,7 @@ class AIConnectorHelper:
                 connection_class=RequestsHttpConnection,
             )
         else:
+            # For open-source, initialize OpenSearch client with domain username and password
             temp_os_client = OpenSearch(
                 hosts=[{"host": host, "port": port}],
                 http_auth=(

@@ -162,8 +162,8 @@ class TestSetup(unittest.TestCase):
             "new-session-token",
         )
 
-    @patch("builtins.print")
-    def test_update_aws_credentials_exception(self, mock_print):
+    @patch("opensearch_py_ml.ml_commons.cli.ml_setup.logger")
+    def test_update_aws_credentials_exception(self, mock_logger):
         """Test update_aws_credentials exception handling"""
         # Make config an integer to force TypeError exception
         self.setup_instance.config = 123
@@ -176,7 +176,7 @@ class TestSetup(unittest.TestCase):
             )
 
         # Verify error message was printed with correct formatting
-        mock_print.assert_called_once_with(
+        mock_logger.error.assert_called_once_with(
             f"{Fore.RED}Failed to update AWS credentials: argument of type 'int' is not iterable{Style.RESET_ALL}"
         )
 
@@ -211,8 +211,8 @@ class TestSetup(unittest.TestCase):
                 f"{Fore.GREEN}New AWS credentials have been successfully configured and verified.{Style.RESET_ALL}"
             )
 
-    @patch("builtins.print")
-    def test_configure_aws_invalid_credentials(self, mock_print):
+    @patch("opensearch_py_ml.ml_commons.cli.ml_setup.logger")
+    def test_configure_aws_invalid_credentials(self, mock_logger):
         """Test configure_aws with invalid credentials"""
         mock_get_password = MagicMock(
             side_effect=["fake_access_key", "fake_secret_key", "fake_session_token"]
@@ -225,16 +225,12 @@ class TestSetup(unittest.TestCase):
             check_credentials_validity=MagicMock(return_value=False),
         ):
             self.setup_instance.configure_aws()
-            second_call = mock_print.call_args_list[1]
-            self.assertEqual(
-                second_call,
-                call(
-                    f"{Fore.RED}The provided credentials are invalid or expired.{Style.RESET_ALL}"
-                ),
+            mock_logger.warning.assert_called_once_with(
+                f"{Fore.RED}The provided credentials are invalid or expired.{Style.RESET_ALL}"
             )
 
-    @patch("builtins.print")
-    def test_check_and_configure_aws_invalid_credentials(self, mock_print):
+    @patch("opensearch_py_ml.ml_commons.cli.ml_setup.logger")
+    def test_check_and_configure_aws_invalid_credentials(self, mock_logger):
         """Test check_and_configure_aws with invalid credentials"""
         config_path = "test_config.yml"
 
@@ -256,12 +252,8 @@ class TestSetup(unittest.TestCase):
 
             # Execute
             self.setup_instance.check_and_configure_aws(config_path)
-            first_call = mock_print.call_args_list[0]
-            self.assertEqual(
-                first_call,
-                call(
-                    f"{Fore.YELLOW}Your AWS credentials are invalid or have expired.{Style.RESET_ALL}"
-                ),
+            mock_logger.warning.assert_called_once_with(
+                f"{Fore.YELLOW}Your AWS credentials are invalid or have expired.{Style.RESET_ALL}"
             )
 
     @patch("boto3.Session")
@@ -429,9 +421,9 @@ class TestSetup(unittest.TestCase):
     )
     @patch.object(Setup, "get_password_with_asterisks", return_value="pass")
     @patch("boto3.Session")
-    @patch("builtins.print")
+    @patch("opensearch_py_ml.ml_commons.cli.ml_setup.logger")
     def test_setup_configuration_invalid_arn_managed_service(
-        self, mock_print, mock_session, mock_get_password, mock_input
+        self, mock_logger, mock_session, mock_get_password, mock_input
     ):
         """Test setup_configuration with invalid ARN type in managed service"""
         # Mock the STS client
@@ -459,7 +451,7 @@ class TestSetup(unittest.TestCase):
             config["aws_credentials"]["aws_role_name"], "test-iam-role-arn"
         )
         self.assertEqual(config["aws_credentials"]["aws_user_name"], "")
-        mock_print.assert_any_call(
+        mock_logger.warning.assert_any_call(
             f"\n{Fore.YELLOW}Invalid choice. Defaulting to 'IAM Role ARN'.{Style.RESET_ALL}"
         )
 
@@ -505,21 +497,17 @@ class TestSetup(unittest.TestCase):
         ],
     )
     @patch.object(Setup, "get_password_with_asterisks", return_value="pass")
-    @patch("builtins.print")
+    @patch("opensearch_py_ml.ml_commons.cli.ml_setup.logger")
     @patch.object(Setup, "configure_aws")
     def test_setup_configuration_invalid_service_type(
-        self, mock_configure_aws, mock_print, mock_get_password, mock_input
+        self, mock_configure_aws, mock_logger, mock_get_password, mock_input
     ):
         """Test setup_configuration with invalid service type"""
         self.setup_instance.setup_configuration()
         config = self.setup_instance.config
         self.assertEqual(config["service_type"], "amazon-opensearch-service")
-        fourth_call = mock_print.call_args_list[3]
-        self.assertEqual(
-            fourth_call,
-            call(
-                f"\n{Fore.YELLOW}Invalid choice. Defaulting to 'amazon-opensearch-service'.{Style.RESET_ALL}"
-            ),
+        mock_logger.warning.assert_called_once_with(
+            f"\n{Fore.YELLOW}Invalid choice. Defaulting to 'amazon-opensearch-service'.{Style.RESET_ALL}"
         )
         mock_configure_aws.assert_called_once()
 
@@ -562,20 +550,20 @@ class TestSetup(unittest.TestCase):
         self.assertTrue(result)
         mock_opensearch.assert_called_once()
 
-    @patch("builtins.print")
-    def test_initialize_opensearch_client_no_endpoint(self, mock_print):
+    @patch("opensearch_py_ml.ml_commons.cli.ml_setup.logger")
+    def test_initialize_opensearch_client_no_endpoint(self, mock_logger):
         """Test initialize_opensearch_client without domain endpoint"""
         self.setup_instance.service_type = "amazon-opensearch-service"
         self.setup_instance.opensearch_domain_username = "admin"
         self.setup_instance.opensearch_domain_password = "pass"
         result = self.setup_instance.initialize_opensearch_client()
         self.assertFalse(result)
-        mock_print.assert_called_once_with(
+        mock_logger.warning.assert_called_once_with(
             f"{Fore.RED}OpenSearch endpoint not set. Please run setup first.{Style.RESET_ALL}\n"
         )
 
-    @patch("builtins.print")
-    def test_initialize_opensearch_client_no_username_password(self, mock_print):
+    @patch("opensearch_py_ml.ml_commons.cli.ml_setup.logger")
+    def test_initialize_opensearch_client_no_username_password(self, mock_logger):
         """Test initialize_opensearch_client without domain username and password"""
         self.setup_instance.service_type = "amazon-opensearch-service"
         self.setup_instance.opensearch_config.opensearch_domain_endpoint = (
@@ -583,12 +571,12 @@ class TestSetup(unittest.TestCase):
         )
         result = self.setup_instance.initialize_opensearch_client()
         self.assertFalse(result)
-        mock_print.assert_called_once_with(
+        mock_logger.warning.assert_called_once_with(
             f"{Fore.RED}OpenSearch username or password not set. Please run setup first.{Style.RESET_ALL}\n"
         )
 
-    @patch("builtins.print")
-    def test_initialize_opensearch_client_invalid_service_type(self, mock_print):
+    @patch("opensearch_py_ml.ml_commons.cli.ml_setup.logger")
+    def test_initialize_opensearch_client_invalid_service_type(self, mock_logger):
         """Test initialize_opensearch_client with invalid service type"""
         self.setup_instance.service_type = "invalid-service"
         self.setup_instance.opensearch_config.opensearch_domain_endpoint = (
@@ -596,13 +584,13 @@ class TestSetup(unittest.TestCase):
         )
         result = self.setup_instance.initialize_opensearch_client()
         self.assertFalse(result)
-        mock_print.assert_called_once_with(
+        mock_logger.warning.assert_called_once_with(
             "Invalid service type. Please check your configuration."
         )
 
-    @patch("builtins.print")
+    @patch("opensearch_py_ml.ml_commons.cli.ml_setup.logger")
     @patch("opensearch_py_ml.ml_commons.cli.ml_setup.OpenSearch")
-    def test_initialize_opensearch_client_exception(self, mock_opensearch, mock_print):
+    def test_initialize_opensearch_client_exception(self, mock_opensearch, mock_logger):
         """Test initialize_opensearch_client exception handling"""
         self.setup_instance.service_type = "open-source"
         self.setup_instance.opensearch_config.opensearch_domain_endpoint = (
@@ -611,7 +599,7 @@ class TestSetup(unittest.TestCase):
         mock_opensearch.side_effect = Exception("Connection failed")
         result = self.setup_instance.initialize_opensearch_client()
         self.assertFalse(result)
-        mock_print.assert_called_with(
+        mock_logger.error.assert_called_with(
             f"{Fore.RED}Error initializing OpenSearch client: Connection failed{Style.RESET_ALL}\n"
         )
 
@@ -702,11 +690,11 @@ class TestSetup(unittest.TestCase):
         )
 
     @patch("builtins.input", side_effect=["no"])
-    @patch("builtins.print")
+    @patch("opensearch_py_ml.ml_commons.cli.ml_setup.logger")
     @patch.object(Setup, "load_config")
     @patch.object(Setup, "setup_configuration")
     def test_setup_command_load_config_failure_with_config_path(
-        self, mock_setup_configuration, mock_load_config, mock_print, mock_input
+        self, mock_setup_configuration, mock_load_config, mock_logger, mock_input
     ):
         """Test setup_command with config path when load_config fails"""
         # Setup
@@ -719,16 +707,16 @@ class TestSetup(unittest.TestCase):
 
         # Verify
         mock_load_config.assert_called_once_with(config_path)
-        mock_print.assert_any_call(
+        mock_logger.warning.assert_any_call(
             f"{Fore.YELLOW}Could not load existing configuration. Creating new configuration...{Style.RESET_ALL}"
         )
 
     @patch("builtins.input", side_effect=["yes", ""])
-    @patch("builtins.print")
+    @patch("opensearch_py_ml.ml_commons.cli.ml_setup.logger")
     @patch.object(Setup, "load_config")
     @patch.object(Setup, "setup_configuration")
     def test_setup_command_load_config_failure(
-        self, mock_setup_configuration, mock_load_config, mock_print, mock_input
+        self, mock_setup_configuration, mock_load_config, mock_logger, mock_input
     ):
         """Test setup_command when load_config fails"""
         # Setup
@@ -740,7 +728,7 @@ class TestSetup(unittest.TestCase):
 
         # Verify
         mock_load_config.assert_called_once()
-        mock_print.assert_any_call(
+        mock_logger.warning.assert_any_call(
             f"{Fore.YELLOW}Could not load existing configuration. Creating new configuration...{Style.RESET_ALL}"
         )
 
@@ -794,11 +782,11 @@ class TestSetup(unittest.TestCase):
         mock_print.assert_any_call("Let's create a new configuration file.")
 
     @patch("builtins.input", side_effect=["yes", ""])
-    @patch("builtins.print")
+    @patch("opensearch_py_ml.ml_commons.cli.ml_setup.logger")
     @patch.object(Setup, "load_config")
     @patch.object(Setup, "_update_from_config")
     def test_setup_command_update_config_failure_with_config_path(
-        self, mock_update_config, mock_load_config, mock_print, mock_input
+        self, mock_update_config, mock_load_config, mock_logger, mock_input
     ):
         """Test setup_command with config path when update_from_config fails"""
         # Setup
@@ -812,17 +800,16 @@ class TestSetup(unittest.TestCase):
 
         # Verify
         mock_update_config.assert_any_call()
-        self.assertEqual(
-            mock_print.call_args_list[0],
-            call(f"{Fore.RED}Failed to update configuration.{Style.RESET_ALL}"),
+        mock_logger.warning.assert_called_once_with(
+            f"{Fore.RED}Failed to update configuration.{Style.RESET_ALL}"
         )
 
     @patch("builtins.input", side_effect=["yes", "test_config.yml"])
-    @patch("builtins.print")
+    @patch("opensearch_py_ml.ml_commons.cli.ml_setup.logger")
     @patch.object(Setup, "load_config")
     @patch.object(Setup, "_update_from_config")
     def test_setup_command_update_config_failure(
-        self, mock_update_config, mock_load_config, mock_print, mock_input
+        self, mock_update_config, mock_load_config, mock_logger, mock_input
     ):
         """Test setup_command when update_from_config fails"""
         # Setup
@@ -833,7 +820,7 @@ class TestSetup(unittest.TestCase):
         self.setup_instance.setup_command()
 
         # Verify
-        mock_print.assert_any_call(
+        mock_logger.warning.assert_any_call(
             f"{Fore.RED}Failed to update configuration.{Style.RESET_ALL}"
         )
 
@@ -858,11 +845,11 @@ class TestSetup(unittest.TestCase):
         )
 
     @patch("builtins.input", side_effect=["no"])
-    @patch("builtins.print")
+    @patch("opensearch_py_ml.ml_commons.cli.ml_setup.logger")
     @patch.object(Setup, "initialize_opensearch_client")
     @patch.object(Setup, "setup_configuration")
     def test_setup_command_initialize_opensearch_client_failure(
-        self, mock_setup_configuration, mock_initialize_client, mock_print, mock_input
+        self, mock_setup_configuration, mock_initialize_client, mock_logger, mock_input
     ):
         """Test setup_command when OpenSearch client initialization fails"""
         # Mock the configuration loading process
@@ -873,7 +860,7 @@ class TestSetup(unittest.TestCase):
         self.setup_instance.setup_command()
 
         # Verify
-        mock_print.assert_called_with(
+        mock_logger.warning.assert_called_with(
             f"\n{Fore.RED}Failed to initialize OpenSearch client. Setup incomplete.{Style.RESET_ALL}\n"
         )
 

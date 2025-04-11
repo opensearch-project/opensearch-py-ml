@@ -10,6 +10,7 @@ Main CLI script for connector creation
 """
 
 import argparse
+import logging
 import os
 import sys
 
@@ -25,6 +26,9 @@ init(autoreset=True)
 
 # Initialize Rich console for enhanced CLI outputs
 console = Console()
+
+# Configure the logger for this module
+logger = logging.getLogger(__name__)
 
 
 class AllowDashActionConnector(argparse.Action):
@@ -242,7 +246,7 @@ Examples:
                 with open(os.path.join(config_dir, "config_path"), "r") as f:
                     config_path = f.read().strip()
             except FileNotFoundError:
-                print(
+                logger.error(
                     f"{Fore.RED}No setup configuration found. Please run setup first.{Style.RESET_ALL}"
                 )
                 sys.exit(1)
@@ -264,7 +268,7 @@ Examples:
                 with open(os.path.join(config_dir, "config_path"), "r") as f:
                     config_path = f.read().strip()
             except FileNotFoundError:
-                print(
+                logger.error(
                     f"{Fore.RED}No setup configuration found. Please run setup first.{Style.RESET_ALL}"
                 )
                 sys.exit(1)

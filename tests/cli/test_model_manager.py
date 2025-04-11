@@ -171,12 +171,12 @@ class TestModelManager(unittest.TestCase):
         )
         mock_predict_output.assert_called_once()
 
-    @patch("builtins.print")
+    @patch("opensearch_py_ml.ml_commons.cli.model_manager.logger")
     @patch.object(ModelManager, "load_config")
     @patch.object(ModelManager, "get_opensearch_domain_name")
     @patch("opensearch_py_ml.ml_commons.cli.ai_connector_helper.OpenSearch")
     def test_initialize_predict_model_failure_response(
-        self, mock_opensearch, mock_get_domain, mock_load_config, mock_print
+        self, mock_opensearch, mock_get_domain, mock_load_config, mock_logger
     ):
         """Test initialize_predict_model with failed prediction"""
         # Setup
@@ -202,16 +202,16 @@ class TestModelManager(unittest.TestCase):
 
         # Verify
         self.assertFalse(result)
-        mock_print.assert_called_with(
+        mock_logger.warning.assert_called_with(
             f"{Fore.RED}Failed to predict model.{Style.RESET_ALL}"
         )
 
-    @patch("builtins.print")
-    def test_initialize_predict_model_exception_handling(self, mock_print):
+    @patch("opensearch_py_ml.ml_commons.cli.model_manager.logger")
+    def test_initialize_predict_model_exception_handling(self, mock_logger):
         """Test initialize_predict_model for exception handling"""
         self.model_manager.load_config = MagicMock(side_effect=Exception("Test error"))
         result = self.model_manager.initialize_predict_model(self.config_path)
-        mock_print.assert_called_with(
+        mock_logger.error.assert_called_with(
             f"{Fore.RED}Error predicting model: Test error{Style.RESET_ALL}"
         )
         self.assertFalse(result)
