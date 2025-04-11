@@ -1,4 +1,3 @@
 include LICENSE.txt
 include README.md
 include opensearch_py_ml/py.typed
-recursive-include opensearch_py_ml/ml_commons/cli/ml_models *.py
