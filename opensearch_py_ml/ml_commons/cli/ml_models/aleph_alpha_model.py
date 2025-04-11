@@ -67,7 +67,7 @@ class AlephAlphaModel(ModelBase):
                 connector_body = self.input_custom_model_details()
 
         # Create connector
-        print("Creating Aleph Alpha connector...")
+        print("\nCreating Aleph Alpha connector...")
         connector_id = helper.create_connector(
             create_connector_role_name=None,
             body=connector_body,

@@ -162,7 +162,7 @@ class OpenAIModel(ModelBase):
             )
 
             # Create connector
-            print("Creating OpenAI connector...")
+            print("\nCreating OpenAI connector...")
             connector_id = helper.create_connector(
                 create_connector_role_name=None,
                 body=connector_body,
