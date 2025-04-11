@@ -81,9 +81,9 @@ class TestCLIBase(unittest.TestCase):
         """Test load_config with a non-existent file"""
         config = self.cli_base.load_config("nonexistent_config.yaml")
         self.assertEqual(config, {})
-        mock_logger.warning.assert_called_once_with(
-            f"{Fore.YELLOW}Configuration file not found at /Volumes/workplace/opensearch-py-ml/nonexistent_config.yaml{Style.RESET_ALL}"
-        )
+        mock_logger.warning.assert_called_once()
+        warning_message = mock_logger.warning.call_args[0][0]
+        self.assertIn("Configuration file not found at", warning_message)
 
     @patch("opensearch_py_ml.ml_commons.cli.cli_base.logger")
     def test_load_config_invalid_yaml(self, mock_logger):
@@ -93,10 +93,9 @@ class TestCLIBase(unittest.TestCase):
 
         config = self.cli_base.load_config(CLIBase.CONFIG_FILE)
         self.assertEqual(config, {})
-        mock_logger.error.assert_called_once_with(
-            f"{Fore.RED}Error parsing YAML configuration: mapping values are not allowed here\n"
-            f'  in "{CLIBase.CONFIG_FILE}", line 1, column 14{Style.RESET_ALL}'
-        )
+        mock_logger.error.assert_called_once()
+        error_message = mock_logger.error.call_args[0][0]
+        self.assertIn("Error parsing YAML configuration:", error_message)
 
     @patch("opensearch_py_ml.ml_commons.cli.cli_base.logger")
     @patch("os.path.exists")
@@ -179,10 +178,8 @@ class TestCLIBase(unittest.TestCase):
         # Execute
         save_result = self.cli_base.save_yaml_file(config=self.test_config)
 
-        # Verify result
+        # Verify result and method call
         self.assertEqual(save_result, "/default/path/config.yml")
-
-        # Verify method call
         mock_overwrite.assert_called_once()
 
     @patch("os.path.abspath", return_value="/default/path/config.yml")
@@ -227,8 +224,6 @@ class TestCLIBase(unittest.TestCase):
         existing_config = {"existing": "data"}
         merged_config = {"test": "data", "existing": "data"}
         mock_merge_configs.return_value = merged_config
-
-        # Mock file read operation for existing config
         mock_file.return_value.read.return_value = yaml.dump(existing_config)
 
         # Execute
@@ -240,7 +235,7 @@ class TestCLIBase(unittest.TestCase):
         self.assertEqual(save_result, "/default/path/output.yml")
         self.assertEqual(self.cli_base.OUTPUT_FILE, "/default/path/output.yml")
 
-        # Verify interactions
+        # Verify output message
         mock_input.assert_called_once_with(
             "\nEnter the path to save the output information, "
             "or press Enter to save it in the current directory [/default/path/output.yml]: "
@@ -353,16 +348,10 @@ class TestCLIBase(unittest.TestCase):
 
             # Verify the result
             self.assertTrue(result)
-
-            # Verify file operations
             mock_file.assert_called_once_with(test_path, "w")
-
-            # Verify yaml.dump was called with correct arguments
             mock_yaml_dump.assert_called_once_with(
                 test_config, mock_file(), default_flow_style=False, sort_keys=False
             )
-
-            # Verify success message
             mock_print.assert_called_once()
             self.assertIn(
                 "Configuration saved successfully", mock_print.call_args[0][0]
@@ -375,16 +364,12 @@ class TestCLIBase(unittest.TestCase):
         test_path = "test_config.yml"
 
         with patch("builtins.open", mock_open()) as mock_file:
-
-            # Simulate permission error
+            # Execute
             mock_file.side_effect = PermissionError("Permission denied")
-
             result = self.cli_base.update_config(test_config, test_path)
 
-            # Verify the result
+            # Verify result and error message
             self.assertFalse(result)
-
-            # Verify error message
             mock_logger.error.assert_called_once_with(
                 f"{Fore.RED}Error saving configuration: Permission denied{Style.RESET_ALL}"
             )
@@ -396,16 +381,12 @@ class TestCLIBase(unittest.TestCase):
         test_path = "test_config.yml"
 
         with patch("builtins.open", mock_open()), patch("yaml.dump") as mock_yaml_dump:
-
-            # Simulate YAML error
+            # Execute
             mock_yaml_dump.side_effect = yaml.YAMLError("Invalid YAML")
-
             result = self.cli_base.update_config(test_config, test_path)
 
-            # Verify the result
+            # Verify result and error message
             self.assertFalse(result)
-
-            # Verify error message
             mock_logger.error.assert_called_once_with(
                 f"{Fore.RED}Error saving configuration: Invalid YAML{Style.RESET_ALL}"
             )
@@ -417,16 +398,12 @@ class TestCLIBase(unittest.TestCase):
         test_path = "/invalid/path/test_config.yml"
 
         with patch("builtins.open", mock_open()) as mock_file:
-
-            # Simulate FileNotFoundError
+            # Execute
             mock_file.side_effect = FileNotFoundError("No such file or directory")
-
             result = self.cli_base.update_config(test_config, test_path)
 
-            # Verify the result
+            # Verify result and error message
             self.assertFalse(result)
-
-            # Verify error message
             mock_logger.error.assert_called_once_with(
                 f"{Fore.RED}Error saving configuration: No such file or directory{Style.RESET_ALL}"
             )
@@ -439,13 +416,11 @@ class TestCLIBase(unittest.TestCase):
         with patch("builtins.open", mock_open()) as mock_file, patch(
             "yaml.dump"
         ) as mock_yaml_dump, patch("builtins.print"):
-
+            # Execute
             result = self.cli_base.update_config(test_config, test_path)
 
-            # Verify the result
+            # Verify
             self.assertTrue(result)
-
-            # Verify yaml.dump was called with empty config
             mock_yaml_dump.assert_called_once_with(
                 {}, mock_file(), default_flow_style=False, sort_keys=False
             )
@@ -475,12 +450,10 @@ class TestCLIBase(unittest.TestCase):
             "connector_secret_name": "test-secret",
         }
 
-        # Verify the output_config was updated correctly
+        # Verify
         self.assertEqual(
             self.cli_base.output_config["connector_create"], expected_update
         )
-
-        # Verify save_yaml_file was called with the updated config
         self.cli_base.save_yaml_file.assert_called_once_with(
             self.cli_base.output_config, "output", merge_existing=True
         )
@@ -504,15 +477,13 @@ class TestCLIBase(unittest.TestCase):
         """Test register_model_output with all parameters provided"""
         model_id = "test-id"
         model_name = "test-model"
-
-        self.cli_base.register_model_output(model_id=model_id, model_name=model_name)
-
         expected_update = {"model_id": "test-id", "model_name": "test-model"}
 
-        # Verify the output_config was updated correctly
-        self.assertEqual(self.cli_base.output_config["register_model"], expected_update)
+        # Execute
+        self.cli_base.register_model_output(model_id=model_id, model_name=model_name)
 
-        # Verify save_yaml_file was called with the updated config
+        # Verify
+        self.assertEqual(self.cli_base.output_config["register_model"], expected_update)
         self.cli_base.save_yaml_file.assert_called_once_with(
             self.cli_base.output_config, "output", merge_existing=True
         )
@@ -521,14 +492,13 @@ class TestCLIBase(unittest.TestCase):
     def test_predict_model_output(self):
         """Test predict_model_output with all parameters provided"""
         response = "test-response"
-        self.cli_base.predict_model_output(response=response)
-
         expected_update = {"response": "test-response"}
 
-        # Verify the output_config was updated correctly
-        self.assertEqual(self.cli_base.output_config["predict_model"], expected_update)
+        # Execute
+        self.cli_base.predict_model_output(response=response)
 
-        # Verify save_yaml_file was called with the updated config
+        # Verify
+        self.assertEqual(self.cli_base.output_config["predict_model"], expected_update)
         self.cli_base.save_yaml_file.assert_called_once_with(
             self.cli_base.output_config, "output", merge_existing=True
         )

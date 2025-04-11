@@ -374,92 +374,57 @@ class TestConnectorManager(unittest.TestCase):
         self.assertEqual(result, mock_model.create_connector.return_value)
 
     @patch("builtins.print")
-    @patch(
-        "opensearch_py_ml.ml_commons.cli.connector_manager.ConnectorManager.load_config"
-    )
-    @patch(
-        "opensearch_py_ml.ml_commons.cli.connector_manager.ConnectorManager.load_and_check_config"
-    )
-    @patch(
-        "opensearch_py_ml.ml_commons.cli.connector_manager.ConnectorManager.get_connector_by_name"
-    )
-    @patch(
-        "opensearch_py_ml.ml_commons.cli.connector_manager.ConnectorManager.get_connector_class"
-    )
-    @patch(
-        "opensearch_py_ml.ml_commons.cli.connector_manager.ConnectorManager.create_model_instance"
-    )
     def test_initialize_create_connector_with_config_path(
         self,
-        mock_create_model,
-        mock_get_class,
-        mock_get_connector,
-        mock_load_check_config,
-        mock_load_config,
         mock_print,
     ):
         """Test initialize_create_connector with config path"""
         # Setup mocks
-        mock_load_config.return_value = self.test_config
-        mock_get_connector.return_value = self.test_connector_info
-        mock_get_class.return_value = MagicMock()
-        mock_create_model.return_value = MagicMock()
-        mock_load_check_config.return_value = (
-            "ai_helper",
-            self.test_config,
-            "service_type",
-            self.test_connector_config,
+        self.connector_manager.load_config = MagicMock(return_value=self.test_config)
+        self.connector_manager.load_and_check_config = MagicMock(
+            return_value=(
+                "ai_helper",
+                self.test_config,
+                "service_type",
+                self.test_connector_config,
+            )
         )
+        self.connector_manager.get_connector_by_name = MagicMock(
+            return_value=self.test_connector_info
+        )
+        self.connector_manager.get_connector_class = MagicMock()
+        self.connector_manager.create_model_instance = MagicMock()
 
         # Call method
         self.connector_manager.initialize_create_connector("test/config/path")
 
         # Verify calls
-        mock_load_config.assert_any_call("test/config/path", "connector")
-        mock_load_check_config.assert_called_once()
-        mock_get_connector.assert_called_once()
-        mock_get_class.assert_called_once()
-        mock_create_model.assert_called_once()
+        self.connector_manager.load_config.assert_any_call(
+            "test/config/path", "connector"
+        )
+        self.connector_manager.load_and_check_config.assert_called_once()
+        self.connector_manager.get_connector_by_name.assert_called_once()
+        self.connector_manager.get_connector_class.assert_called_once()
+        self.connector_manager.create_model_instance.assert_called_once()
 
     @patch("builtins.input")
     @patch("builtins.print")
-    @patch(
-        "opensearch_py_ml.ml_commons.cli.connector_manager.ConnectorManager.load_config"
-    )
-    @patch(
-        "opensearch_py_ml.ml_commons.cli.connector_manager.ConnectorManager._check_config"
-    )
-    @patch(
-        "opensearch_py_ml.ml_commons.cli.connector_manager.ConnectorManager.print_available_connectors"
-    )
-    @patch(
-        "opensearch_py_ml.ml_commons.cli.connector_manager.ConnectorManager.get_connector_by_id"
-    )
-    @patch(
-        "opensearch_py_ml.ml_commons.cli.connector_manager.ConnectorManager.get_connector_class"
-    )
-    @patch(
-        "opensearch_py_ml.ml_commons.cli.connector_manager.ConnectorManager.create_model_instance"
-    )
     def test_initialize_create_connector_without_config_path(
         self,
-        mock_create_model,
-        mock_get_class,
-        mock_get_connector_id,
-        mock_print_connectors,
-        mock_check_config,
-        mock_load_config,
         mock_print,
         mock_input,
     ):
         """Test initialize_create_connector without config path"""
         # Setup mocks
         mock_input.side_effect = ["test/setup/path", "1"]
-        mock_load_config.return_value = self.test_config
-        mock_check_config.return_value = MagicMock()
-        mock_get_connector_id.return_value = self.test_connector_info
-        mock_get_class.return_value = MagicMock()
-        mock_create_model.return_value = MagicMock()
+        self.connector_manager.load_config = MagicMock(return_value=self.test_config)
+        self.connector_manager._check_config = MagicMock()
+        self.connector_manager.print_available_connectors = MagicMock()
+        self.connector_manager.get_connector_by_id = MagicMock(
+            return_value=self.test_connector_info
+        )
+        self.connector_manager.get_connector_class = MagicMock()
+        self.connector_manager.create_model_instance = MagicMock()
 
         # Call method
         self.connector_manager.initialize_create_connector()
@@ -471,12 +436,16 @@ class TestConnectorManager(unittest.TestCase):
                 call().strip(),
             ]
         )
-        mock_load_config.assert_called_once_with("test/setup/path")
-        mock_check_config.assert_called_once()
-        mock_print_connectors.assert_called_once_with("open-source")
-        mock_get_connector_id.assert_called_once_with(1, "open-source")
-        mock_get_class.assert_called_once()
-        mock_create_model.assert_called_once()
+        self.connector_manager.load_config.assert_called_once_with("test/setup/path")
+        self.connector_manager._check_config.assert_called_once()
+        self.connector_manager.print_available_connectors.assert_called_once_with(
+            "open-source"
+        )
+        self.connector_manager.get_connector_by_id.assert_called_once_with(
+            1, "open-source"
+        )
+        self.connector_manager.get_connector_class.assert_called_once()
+        self.connector_manager.create_model_instance.assert_called_once()
 
     @patch("builtins.print")
     @patch("builtins.input", side_effect=[""])
