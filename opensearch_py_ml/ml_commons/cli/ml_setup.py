@@ -6,6 +6,7 @@
 # GitHub history for details.
 
 import configparser
+import logging
 import sys
 import termios
 import tty
@@ -24,6 +25,9 @@ from opensearch_py_ml.ml_commons.cli.opensearch_domain_config import (
 
 # Initialize colorama for colored terminal output
 init(autoreset=True)
+
+# Configure the logger for this module
+logger = logging.getLogger(__name__)
 
 
 class Setup(CLIBase):
@@ -99,7 +103,9 @@ class Setup(CLIBase):
             self.config["aws_credentials"]["aws_secret_access_key"] = secret_key
             self.config["aws_credentials"]["aws_session_token"] = session_token
         except Exception as e:
-            print(f"{Fore.RED}Failed to update AWS credentials: {e}{Style.RESET_ALL}")
+            logger.error(
+                f"{Fore.RED}Failed to update AWS credentials: {e}{Style.RESET_ALL}"
+            )
             raise
 
     def check_and_configure_aws(self, config_path):
@@ -107,7 +113,7 @@ class Setup(CLIBase):
         Check if AWS credentials are configured and offer to reconfigure if needed.
         """
         if not self.check_credentials_validity(use_config=True):
-            print(
+            logger.warning(
                 f"{Fore.YELLOW}Your AWS credentials are invalid or have expired.{Style.RESET_ALL}"
             )
             self.configure_aws()
@@ -158,7 +164,7 @@ class Setup(CLIBase):
                 f"{Fore.GREEN}New AWS credentials have been successfully configured and verified.{Style.RESET_ALL}"
             )
         else:
-            print(
+            logger.warning(
                 f"{Fore.RED}The provided credentials are invalid or expired.{Style.RESET_ALL}"
             )
 
@@ -229,7 +235,7 @@ class Setup(CLIBase):
         elif service_choice == "2":
             self.service_type = "open-source"
         else:
-            print(
+            logger.warning(
                 f"\n{Fore.YELLOW}Invalid choice. Defaulting to 'amazon-opensearch-service'.{Style.RESET_ALL}"
             )
             self.service_type = "amazon-opensearch-service"
@@ -256,7 +262,7 @@ class Setup(CLIBase):
                     or self.aws_config.aws_user_name
                 )
             else:
-                print(
+                logger.warning(
                     f"\n{Fore.YELLOW}Invalid choice. Defaulting to 'IAM Role ARN'.{Style.RESET_ALL}"
                 )
                 self.aws_config.aws_role_name = (
@@ -351,7 +357,7 @@ class Setup(CLIBase):
         Initialize the OpenSearch client based on the service type and configuration.
         """
         if not self.opensearch_config.opensearch_domain_endpoint:
-            print(
+            logger.warning(
                 f"{Fore.RED}OpenSearch endpoint not set. Please run setup first.{Style.RESET_ALL}\n"
             )
             return False
@@ -366,7 +372,7 @@ class Setup(CLIBase):
                 not self.opensearch_config.opensearch_domain_username
                 or not self.opensearch_config.opensearch_domain_password
             ):
-                print(
+                logger.warning(
                     f"{Fore.RED}OpenSearch username or password not set. Please run setup first.{Style.RESET_ALL}\n"
                 )
                 return False
@@ -386,7 +392,7 @@ class Setup(CLIBase):
             else:
                 auth = None
         else:
-            print("Invalid service type. Please check your configuration.")
+            logger.warning("Invalid service type. Please check your configuration.")
             return False
 
         use_ssl = parsed_url.scheme == "https"
@@ -406,7 +412,7 @@ class Setup(CLIBase):
             )
             return True
         except Exception as e:
-            print(
+            logger.error(
                 f"{Fore.RED}Error initializing OpenSearch client: {e}{Style.RESET_ALL}\n"
             )
             return False
@@ -458,9 +464,11 @@ class Setup(CLIBase):
                 )
                 return config_path
             else:
-                print(f"{Fore.RED}Failed to update configuration.{Style.RESET_ALL}")
+                logger.warning(
+                    f"{Fore.RED}Failed to update configuration.{Style.RESET_ALL}"
+                )
         else:
-            print(
+            logger.warning(
                 f"{Fore.YELLOW}Could not load existing configuration. Creating new configuration...{Style.RESET_ALL}"
             )
             config_path = self.setup_configuration()
@@ -495,7 +503,7 @@ class Setup(CLIBase):
                     return config_path
                 else:
                     # Handle failure to initialize OpenSearch client
-                    print(
+                    logger.warning(
                         f"\n{Fore.RED}Failed to initialize OpenSearch client. Setup incomplete.{Style.RESET_ALL}\n"
                     )
                     return None

@@ -10,6 +10,8 @@ from io import StringIO
 from typing import List
 from unittest.mock import MagicMock, call, patch
 
+from colorama import Fore, Style
+
 from opensearch_py_ml.ml_commons.cli.connector_list import ConnectorInfo, ModelInfo
 from opensearch_py_ml.ml_commons.cli.connector_manager import ConnectorManager
 
@@ -128,19 +130,16 @@ class TestConnectorManager(unittest.TestCase):
         )
         self.assertEqual(mock_stdout.getvalue(), expected_output)
 
-    @patch("sys.stdout", new_callable=StringIO)
-    def test_print_available_connectors_no_connectors(self, mock_stdout):
+    @patch("opensearch_py_ml.ml_commons.cli.connector_manager.logger")
+    def test_print_available_connectors_no_connectors(self, mock_logger):
         """Test print_available_connectors with empty connector list"""
         # Temporarily set empty connector lists
         self.connector_manager.connector_list._opensource_connectors = []
         self.connector_manager.print_available_connectors("open-source")
 
-        expected_output = "\nNo connectors available for open-source\n"
-        self.assertEqual(mock_stdout.getvalue(), expected_output)
-
-        # Restore original connector lists
-        self.connector_manager.connector_list._opensource_connectors = (
-            self.test_opensource_connectors
+        # Verify error message
+        mock_logger.warning.assert_called_once_with(
+            "\nNo connectors available for open-source"
         )
 
     def test_get_connector_by_id_opensource(self):
@@ -507,10 +506,10 @@ class TestConnectorManager(unittest.TestCase):
         result = self.connector_manager.initialize_create_connector()
         self.assertFalse(result)
 
-    @patch("builtins.print")
+    @patch("opensearch_py_ml.ml_commons.cli.connector_manager.logger")
     @patch("builtins.input", side_effect=[""])
     def test_initialize_create_connector_invalid_connector_name(
-        self, mock_input, mock_print
+        self, mock_input, mock_logger
     ):
         """Test initialize_create_connector when the connector name is invalid and ValueError is raised"""
         self.connector_manager.load_and_check_config = MagicMock(
@@ -527,16 +526,14 @@ class TestConnectorManager(unittest.TestCase):
             "test-connector-config.yml"
         )
         self.assertFalse(result)
-        mock_print.assert_called_once()
-        self.assertIn(
-            "Invalid connector choice. Operation cancelled.",
-            mock_print.call_args[0][0],
+        mock_logger.error.assert_called_once_with(
+            f"{Fore.YELLOW}Invalid connector choice. Operation cancelled.{Style.RESET_ALL}"
         )
 
-    @patch("builtins.print")
+    @patch("opensearch_py_ml.ml_commons.cli.connector_manager.logger")
     @patch("builtins.input", return_value="0")
     def test_initialize_create_connector_invalid_connector_id(
-        self, mock_input, mock_print
+        self, mock_input, mock_logger
     ):
         """Test initialize_create_connector when the connector ID is invalid and ValueError is raised"""
         self.connector_manager.load_and_check_config = MagicMock(
@@ -551,10 +548,8 @@ class TestConnectorManager(unittest.TestCase):
         self.connector_manager.get_connector_by_id = MagicMock(side_effect=ValueError)
         result = self.connector_manager.initialize_create_connector()
         self.assertFalse(result)
-        mock_print.assert_called_once()
-        self.assertIn(
-            "Invalid connector choice. Operation cancelled.",
-            mock_print.call_args[0][0],
+        mock_logger.error.assert_called_once_with(
+            f"{Fore.YELLOW}Invalid connector choice. Operation cancelled.{Style.RESET_ALL}"
         )
 
     @patch("builtins.input", side_effect=[""])

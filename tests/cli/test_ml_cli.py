@@ -152,10 +152,10 @@ class TestMLCLI(unittest.TestCase):
                 model_description="test description",
             )
 
-    @patch("builtins.print")
+    @patch("opensearch_py_ml.ml_commons.cli.ml_cli.logger")
     @patch("sys.exit")
     def test_model_initialize_register_model_file_not_found(
-        self, mock_exit, mock_print
+        self, mock_exit, mock_logger
     ):
         """Test model_register command file not found handling"""
         test_args = ["ml_cli.py", "model", "register"]
@@ -164,7 +164,7 @@ class TestMLCLI(unittest.TestCase):
         ), patch("builtins.open", side_effect=FileNotFoundError()):
 
             main()
-            mock_print.assert_called_once_with(
+            mock_logger.error.assert_called_once_with(
                 f"{Fore.RED}No setup configuration found. Please run setup first.{Style.RESET_ALL}"
             )
             mock_exit.assert_called_once_with(1)
@@ -195,9 +195,11 @@ class TestMLCLI(unittest.TestCase):
                 body='{"parameters": {}}',
             )
 
-    @patch("builtins.print")
+    @patch("opensearch_py_ml.ml_commons.cli.ml_cli.logger")
     @patch("sys.exit")
-    def test_model_initialize_predict_model_file_not_found(self, mock_exit, mock_print):
+    def test_model_initialize_predict_model_file_not_found(
+        self, mock_exit, mock_logger
+    ):
         """Test model_predict command file not found handling"""
         test_args = ["ml_cli.py", "model", "predict"]
         with patch.object(sys, "argv", test_args), patch(
@@ -205,7 +207,7 @@ class TestMLCLI(unittest.TestCase):
         ), patch("builtins.open", side_effect=FileNotFoundError()):
 
             main()
-            mock_print.assert_called_once_with(
+            mock_logger.error.assert_called_once_with(
                 f"{Fore.RED}No setup configuration found. Please run setup first.{Style.RESET_ALL}"
             )
             mock_exit.assert_called_once_with(1)

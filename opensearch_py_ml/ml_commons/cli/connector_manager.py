@@ -5,6 +5,8 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
+import logging
+
 from colorama import Fore, Style, init
 from rich.console import Console
 
@@ -16,6 +18,9 @@ console = Console()
 
 # Initialize colorama for colored terminal output
 init(autoreset=True)
+
+# Configure the logger for this module
+logger = logging.getLogger(__name__)
 
 
 class ConnectorManager(CLIBase):
@@ -48,7 +53,7 @@ class ConnectorManager(CLIBase):
         """
         connectors = self.get_connectors(service_type)
         if not connectors:
-            print(f"\nNo connectors available for {service_type}")
+            logger.warning(f"\nNo connectors available for {service_type}")
             return
 
         print("\nPlease select a supported connector to create:")
@@ -155,12 +160,12 @@ class ConnectorManager(CLIBase):
                 and connector_config_params[param] is not None
             ):
                 connector_kwargs[param] = connector_config_params[param]
-            # Then check opensearch_config
+            # Check opensearch_config
             elif (
                 param in opensearch_config and opensearch_config.get(param) is not None
             ):
                 connector_kwargs[param] = opensearch_config.get(param)
-            # Finally check config
+            # Check config
             elif param in config and config.get(param) is not None:
                 connector_kwargs[param] = config.get(param)
 
@@ -178,7 +183,7 @@ class ConnectorManager(CLIBase):
                 connector_config = self.load_config(connector_config_path, "connector")
                 setup_config_path = connector_config.get("setup_config_path")
                 if not connector_config:
-                    print(
+                    logger.error(
                         f"{Fore.RED}No connector configuration found.{Style.RESET_ALL}\n"
                     )
                     return False
@@ -219,7 +224,7 @@ class ConnectorManager(CLIBase):
                         connector_name, service_type
                     )
                 except ValueError:
-                    print(
+                    logger.error(
                         f"{Fore.YELLOW}Invalid connector choice. Operation cancelled.{Style.RESET_ALL}"
                     )
                     return False
@@ -229,7 +234,7 @@ class ConnectorManager(CLIBase):
                     choice = int(input().strip())
                     connector_info = self.get_connector_by_id(choice, service_type)
                 except ValueError:
-                    print(
+                    logger.error(
                         f"{Fore.YELLOW}Invalid connector choice. Operation cancelled.{Style.RESET_ALL}"
                     )
                     return False
@@ -268,5 +273,7 @@ class ConnectorManager(CLIBase):
 
             return result, setup_config_path
         except Exception as e:
-            print(f"{Fore.RED}Error creating connector: {str(e)}{Style.RESET_ALL}")
+            logger.error(
+                f"{Fore.RED}Error creating connector: {str(e)}{Style.RESET_ALL}"
+            )
             return False

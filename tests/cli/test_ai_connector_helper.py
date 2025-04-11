@@ -7,7 +7,6 @@
 
 import json
 import unittest
-from io import StringIO
 from unittest.mock import MagicMock, call, patch
 from urllib.parse import urlparse
 
@@ -212,8 +211,8 @@ class TestAIConnectorHelper(unittest.TestCase):
         )
 
     @patch("boto3.Session")
-    @patch("sys.stdout", new_callable=StringIO)
-    def test_get_opensearch_domain_info_no_credentials(self, mock_stdout, mock_session):
+    @patch("opensearch_py_ml.ml_commons.cli.ai_connector_helper.logger")
+    def test_get_opensearch_domain_info_no_credentials(self, mock_logger, mock_session):
         """Test get_opensearch_domain_info when no valid credentials are provided"""
         # Mock the boto3 client to raise an exception
         mock_session_instance = MagicMock()
@@ -234,8 +233,9 @@ class TestAIConnectorHelper(unittest.TestCase):
         self.assertIsNone(arn)
 
         # Assert the error message was printed
-        expected_output = f"{Fore.RED}No valid credentials found.{Style.RESET_ALL}\n"
-        self.assertEqual(mock_stdout.getvalue(), expected_output)
+        mock_logger.error.assert_called_once_with(
+            f"{Fore.RED}No valid credentials found.{Style.RESET_ALL}"
+        )
 
         # Verify session was created with empty credentials
         mock_session.assert_called_once_with(
@@ -278,9 +278,11 @@ class TestAIConnectorHelper(unittest.TestCase):
 
         # Mock the assume_role to return temp credentials
         temp_credentials = {
-            "AccessKeyId": "test-access-key",
-            "SecretAccessKey": "test-secret-key",
-            "SessionToken": "test-session-token",
+            "credentials": {
+                "AccessKeyId": "test-access-key",
+                "SecretAccessKey": "test-secret-key",
+                "SessionToken": "test-session-token",
+            }
         }
         mock_iam_helper.assume_role.return_value = temp_credentials
 
@@ -331,22 +333,10 @@ class TestAIConnectorHelper(unittest.TestCase):
         """Test create_connector in managed service"""
         # Mock the IAM helper methods
         create_connector_role_name = "test-create-connector-role"
-        create_connector_role_arn = (
-            "arn:aws:iam::123456789012:role/test-create-connector-role"
-        )
-        mock_iam_helper.get_role_arn.return_value = create_connector_role_arn
-        temp_credentials = {
-            "credentials": {
-                "AccessKeyId": "test-access-key",
-                "SecretAccessKey": "test-secret-key",
-                "SessionToken": "test-session-token",
-            }
-        }
-        mock_iam_helper.assume_role.return_value = temp_credentials
 
-        # Mock AWS4Auth
-        mock_awsauth = MagicMock()
-        mock_aws4auth.return_value = mock_awsauth
+        # Mock get_ml_auth
+        mock_get_ml_auth = MagicMock()
+        mock_get_ml_auth.return_value = mock_get_ml_auth
 
         # Mock OpenSearch client and its transport
         mock_opensearch_instance = MagicMock()
@@ -366,6 +356,7 @@ class TestAIConnectorHelper(unittest.TestCase):
             helper.opensearch_config = self.opensearch_config
             helper.opensearch_client = mock_opensearch_instance
             helper.iam_helper = mock_iam_helper
+            helper.get_ml_auth = mock_get_ml_auth
 
             # Call the method
             body = {"key": "value"}
@@ -379,7 +370,8 @@ class TestAIConnectorHelper(unittest.TestCase):
                 headers={"Content-Type": "application/json"},
             )
 
-            # Assert that the connector_id is returned
+            # Verify method call and connector id is returned
+            helper.get_ml_auth.assert_called_once_with(create_connector_role_name)
             self.assertEqual(connector_id, "test-connector-id")
 
     @patch("opensearch_py_ml.ml_commons.cli.ai_connector_helper.OpenSearch")
@@ -422,8 +414,8 @@ class TestAIConnectorHelper(unittest.TestCase):
             # Assert that the connector_id is returned
             self.assertEqual(connector_id, "test-connector-id")
 
-    @patch("sys.stdout", new_callable=StringIO)
-    def test_get_task(self, mock_stdout):
+    @patch("builtins.print")
+    def test_get_task(self, mock_print):
         """Test get_task with successful response"""
         # Mock task response
         mock_task_response = {
@@ -439,9 +431,10 @@ class TestAIConnectorHelper(unittest.TestCase):
         response = self.helper.get_task("test-task-id")
 
         # Verify response and printed output
+        mock_print.assert_called_once_with(
+            "Get Task Response:", json.dumps(mock_task_response)
+        )
         self.assertEqual(response, mock_task_response)
-        expected_output = f"Get Task Response: {json.dumps(mock_task_response)}\n"
-        self.assertEqual(mock_stdout.getvalue(), expected_output)
 
     def test_get_task_exception(self):
         """Test get_task with exception"""
@@ -586,8 +579,8 @@ class TestAIConnectorHelper(unittest.TestCase):
         # Verify get_task was not called
         mock_get_task.assert_not_called()
 
-    @patch("sys.stdout", new_callable=StringIO)
-    def test_register_model_exception_handling(self, mock_stdout):
+    @patch("opensearch_py_ml.ml_commons.cli.ai_connector_helper.logger")
+    def test_register_model_exception_handling(self, mock_logger):
         """Test register_model exception handling and error output"""
         # Mock transport.perform_request to raise an exception
         test_error = Exception("Test error message")
@@ -606,10 +599,9 @@ class TestAIConnectorHelper(unittest.TestCase):
         self.assertEqual(str(context.exception), "Test error message")
 
         # Verify the error message was printed
-        expected_output = (
-            f"{Fore.RED}Error registering model: Test error message{Style.RESET_ALL}\n"
+        mock_logger.error.assert_called_once_with(
+            f"{Fore.RED}Error registering model: Test error message{Style.RESET_ALL}"
         )
-        self.assertEqual(mock_stdout.getvalue(), expected_output)
 
     def test_deploy_model(self):
         """Test deploy_model successful"""
