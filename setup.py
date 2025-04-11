@@ -94,6 +94,7 @@ setup(
         "requests-aws4auth>=1.1.0",
         "colorama>=0.4.6",
         "rich>=13.5.2",
+        "pyyaml>=6.0.2",
     ],
     python_requires=">=3.8",
     package_data={
