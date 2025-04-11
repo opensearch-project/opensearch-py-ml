@@ -40,27 +40,18 @@ class TestAIConnectorHelper(unittest.TestCase):
         )
         self.service_type = "amazon-opensearch-service"
         self.ssl_check_enabled = True
-        self.domain_arn = "arn:aws:es:us-east-1:123456789012:domain/test-domain"
+        self.domain_arn = "test-domain-arn"
         self.test_data = {
             "secret_name": "test-secret",
             "secret_value": "test-secret-value",
             "connector_role_name": "test-connector-role",
             "create_connector_role_name": "test-create-connector-role",
             "create_connector_input": {"test": "payload"},
-            "secret_arn": "arn:aws:secretsmanager:region:account:secret:test-secret",
-            "connector_role_arn": "arn:aws:iam::account:role/test-connector-role",
-            "create_connector_role_arn": "arn:aws:iam::account:role/test-create-connector-role",
+            "secret_arn": "test-secret-arn",
+            "connector_role_arn": "test-connector-role-arn",
+            "create_connector_role_arn": "test-create-connector-role-arn",
             "connector_id": "test-connector-id",
-            "connector_role_inline_policy": {
-                "Version": "2012-10-17",
-                "Statement": [
-                    {
-                        "Effect": "Allow",
-                        "Action": "iam:PassRole",
-                        "Resource": "arn:aws:iam::account:role/test-connector-role",
-                    }
-                ],
-            },
+            "connector_role_inline_policy": {"test": "policy"},
         }
         # Create and start the patcher
         self.opensearch_patcher = patch(
@@ -84,14 +75,12 @@ class TestAIConnectorHelper(unittest.TestCase):
     @patch(
         "opensearch_py_ml.ml_commons.cli.ai_connector_helper.AIConnectorHelper.get_opensearch_domain_info"
     )
-    @patch("opensearch_py_ml.ml_commons.cli.ai_connector_helper.OpenSearch")
     @patch("opensearch_py_ml.ml_commons.cli.ai_connector_helper.SecretHelper")
     @patch("opensearch_py_ml.ml_commons.cli.ai_connector_helper.IAMRoleHelper")
     def test___init__(
         self,
         mock_iam_role_helper,
         mock_secret_helper,
-        mock_opensearch,
         mock_get_opensearch_domain_info,
     ):
         # Mock get_opensearch_domain_info
@@ -125,7 +114,7 @@ class TestAIConnectorHelper(unittest.TestCase):
         self.assertEqual(helper.opensearch_domain_arn, self.domain_arn)
 
         # Assert OpenSearch client initialization
-        mock_opensearch.assert_called_once_with(
+        self.mock_opensearch.assert_called_once_with(
             hosts=[{"host": expected_host, "port": expected_port}],
             http_auth=(
                 self.opensearch_config.opensearch_domain_username,
@@ -324,12 +313,9 @@ class TestAIConnectorHelper(unittest.TestCase):
                 in str(context.exception)
             )
 
-    @patch("opensearch_py_ml.ml_commons.cli.ai_connector_helper.OpenSearch")
     @patch("opensearch_py_ml.ml_commons.cli.ai_connector_helper.AWS4Auth")
     @patch.object(AIConnectorHelper, "iam_helper", create=True)
-    def test_create_connector_managed(
-        self, mock_iam_helper, mock_aws4auth, mock_opensearch
-    ):
+    def test_create_connector_managed(self, mock_iam_helper, mock_aws4auth):
         """Test create_connector in managed service"""
         # Mock the IAM helper methods
         create_connector_role_name = "test-create-connector-role"
@@ -338,15 +324,9 @@ class TestAIConnectorHelper(unittest.TestCase):
         mock_get_ml_auth = MagicMock()
         mock_get_ml_auth.return_value = mock_get_ml_auth
 
-        # Mock OpenSearch client and its transport
-        mock_opensearch_instance = MagicMock()
-        mock_transport = MagicMock()
-        mock_opensearch_instance.transport = mock_transport
-        mock_opensearch.return_value = mock_opensearch_instance
-
         # Mock transport.perform_request response
         mock_response = {"connector_id": "test-connector-id"}
-        mock_transport.perform_request.return_value = mock_response
+        self.mock_transport.perform_request.return_value = mock_response
 
         # Instantiate helper
         with patch.object(AIConnectorHelper, "__init__", return_value=None):
@@ -354,7 +334,6 @@ class TestAIConnectorHelper(unittest.TestCase):
             helper.service_type = self.service_type
             helper.ssl_check_enabled = self.ssl_check_enabled
             helper.opensearch_config = self.opensearch_config
-            helper.opensearch_client = mock_opensearch_instance
             helper.iam_helper = mock_iam_helper
             helper.get_ml_auth = mock_get_ml_auth
 
@@ -363,7 +342,7 @@ class TestAIConnectorHelper(unittest.TestCase):
             connector_id = helper.create_connector(create_connector_role_name, body)
 
             # Assert that perform_request was called with correct arguments
-            mock_transport.perform_request.assert_called_once_with(
+            self.mock_transport.perform_request.assert_called_once_with(
                 method="POST",
                 url="/_plugins/_ml/connectors/_create",
                 body=body,
@@ -374,18 +353,11 @@ class TestAIConnectorHelper(unittest.TestCase):
             helper.get_ml_auth.assert_called_once_with(create_connector_role_name)
             self.assertEqual(connector_id, "test-connector-id")
 
-    @patch("opensearch_py_ml.ml_commons.cli.ai_connector_helper.OpenSearch")
-    def test_create_connector_open_source(self, mock_opensearch):
+    def test_create_connector_open_source(self):
         """Test create_connector in open-source service"""
-        # Mock OpenSearch client and its transport
-        mock_opensearch_instance = MagicMock()
-        mock_transport = MagicMock()
-        mock_opensearch_instance.transport = mock_transport
-        mock_opensearch.return_value = mock_opensearch_instance
-
         # Mock transport.perform_request response
         mock_response = {"connector_id": "test-connector-id"}
-        mock_transport.perform_request.return_value = mock_response
+        self.mock_transport.perform_request.return_value = mock_response
 
         create_connector_role_name = None
 
@@ -404,7 +376,7 @@ class TestAIConnectorHelper(unittest.TestCase):
             connector_id = helper.create_connector(create_connector_role_name, body)
 
             # Assert that perform_request was called with correct arguments
-            mock_transport.perform_request.assert_called_once_with(
+            self.mock_transport.perform_request.assert_called_once_with(
                 method="POST",
                 url="/_plugins/_ml/connectors/_create",
                 body=body,
