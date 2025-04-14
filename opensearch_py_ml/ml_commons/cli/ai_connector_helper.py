@@ -41,9 +41,9 @@ class AIConnectorHelper:
     def __init__(
         self,
         service_type,
-        ssl_check_enabled,
         opensearch_config: OpenSearchDomainConfig,
         aws_config: AWSConfig,
+        ssl_check_enabled=True,
     ):
         """
         Initialize the AIConnectorHelper with necessary AWS and OpenSearch configurations
@@ -70,7 +70,8 @@ class AIConnectorHelper:
         # Parse the OpenSearch domain URL to extract host and port
         parsed_url = urlparse(self.opensearch_config.opensearch_domain_endpoint)
         host = parsed_url.hostname
-        port = parsed_url.port or 9200
+        is_aos = "amazonaws.com" in host
+        port = parsed_url.port or (443 if is_aos else 9200)
 
         # Initialize OpenSearch client
         self.opensearch_client = OpenSearch(
@@ -314,7 +315,8 @@ class AIConnectorHelper:
         # Parse the OpenSearch domain URL to extract host and port
         parsed_url = urlparse(self.opensearch_config.opensearch_domain_endpoint)
         host = parsed_url.hostname
-        port = parsed_url.port or 9200
+        is_aos = "amazonaws.com" in host
+        port = parsed_url.port or (443 if is_aos else 9200)
 
         if self.service_type == "amazon-opensearch-service":
             # Obtain AWS4Auth credentials and initialize OpenSearch client with the credentials

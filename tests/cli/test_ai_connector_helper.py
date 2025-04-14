@@ -28,7 +28,7 @@ class TestAIConnectorHelper(unittest.TestCase):
             opensearch_domain_name="test-domain",
             opensearch_domain_username="admin",
             opensearch_domain_password="password",
-            opensearch_domain_endpoint="test-domain-url",
+            opensearch_domain_endpoint="https://localhost:9200",
         )
         # Create AWSConfig
         self.aws_config = AWSConfig(
@@ -92,15 +92,16 @@ class TestAIConnectorHelper(unittest.TestCase):
         # Parse the URL
         parsed_url = urlparse(self.opensearch_config.opensearch_domain_endpoint)
         expected_host = parsed_url.hostname
-        expected_port = parsed_url.port or 9200
+        is_aos = "amazonaws.com" in expected_host
+        expected_port = parsed_url.port or (443 if is_aos else 9200)
         expected_use_ssl = parsed_url.scheme == "https"
 
         # Instantiate AIConnectorHelper
         helper = AIConnectorHelper(
             self.service_type,
-            self.ssl_check_enabled,
             self.opensearch_config,
             self.aws_config,
+            self.ssl_check_enabled,
         )
 
         # Assert basic attributes
