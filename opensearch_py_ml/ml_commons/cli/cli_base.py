@@ -39,9 +39,9 @@ class CLIBase:
         """
         self.config = {}
         self.output_config = {
-            "connector_create": {},
-            "register_model": {},
-            "predict_model": {},
+            "connector_create": [],
+            "register_model": [],
+            "predict_model": [],
         }
 
     def load_config(self, config_path=None, config_type="setup"):
@@ -163,10 +163,10 @@ class CLIBase:
 
         # Merge new config with existing config
         for key, value in new_config.items():
-            if key in existing_config and isinstance(existing_config[key], dict):
-                existing_config[key].update(value)
-            else:
+            if key not in existing_config:
                 existing_config[key] = value
+            else:
+                existing_config[key].extend(value)
         return existing_config
 
     def _confirm_overwrite(self, path: str) -> bool:
@@ -222,7 +222,7 @@ class CLIBase:
         connector_data = json.loads(output_config)
         connector_name = connector_data.get("name")
         # Update the connector_create section
-        self.output_config["connector_create"].update(
+        self.output_config["connector_create"].append(
             {
                 "connector_id": output_id,
                 "connector_name": connector_name,
@@ -238,7 +238,7 @@ class CLIBase:
         Save register model output to a YAML file.
         """
         # Update the register_model section
-        self.output_config["register_model"].update(
+        self.output_config["register_model"].append(
             {
                 "model_id": model_id,
                 "model_name": model_name,
@@ -251,7 +251,7 @@ class CLIBase:
         Save predict model output to a YAML file.
         """
         # Update the predict_model section
-        self.output_config["predict_model"].update(
+        self.output_config["predict_model"].append(
             {
                 "response": response,
             }

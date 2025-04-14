@@ -442,13 +442,15 @@ class TestCLIBase(unittest.TestCase):
             role_arn=role_arn,
         )
 
-        expected_update = {
-            "connector_id": "test-id",
-            "connector_name": "test-connector",
-            "connector_role_arn": "test-arn",
-            "connector_role_name": "test-role",
-            "connector_secret_name": "test-secret",
-        }
+        expected_update = [
+            {
+                "connector_id": "test-id",
+                "connector_name": "test-connector",
+                "connector_role_arn": "test-arn",
+                "connector_role_name": "test-role",
+                "connector_secret_name": "test-secret",
+            }
+        ]
 
         # Verify
         self.assertEqual(
@@ -477,7 +479,7 @@ class TestCLIBase(unittest.TestCase):
         """Test register_model_output with all parameters provided"""
         model_id = "test-id"
         model_name = "test-model"
-        expected_update = {"model_id": "test-id", "model_name": "test-model"}
+        expected_update = [{"model_id": "test-id", "model_name": "test-model"}]
 
         # Execute
         self.cli_base.register_model_output(model_id=model_id, model_name=model_name)
@@ -492,7 +494,7 @@ class TestCLIBase(unittest.TestCase):
     def test_predict_model_output(self):
         """Test predict_model_output with all parameters provided"""
         response = "test-response"
-        expected_update = {"response": "test-response"}
+        expected_update = [{"response": "test-response"}]
 
         # Execute
         self.cli_base.predict_model_output(response=response)

@@ -364,8 +364,7 @@ class Setup(CLIBase):
 
         parsed_url = urlparse(self.opensearch_config.opensearch_domain_endpoint)
         host = parsed_url.hostname
-        port = parsed_url.port or (443 if parsed_url.scheme == "https" else 9200)
-
+        port = parsed_url.port or 9200
         # Determine auth based on service type
         if self.service_type == "amazon-opensearch-service":
             if (

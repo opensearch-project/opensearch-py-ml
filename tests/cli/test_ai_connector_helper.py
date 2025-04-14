@@ -92,9 +92,7 @@ class TestAIConnectorHelper(unittest.TestCase):
         # Parse the URL
         parsed_url = urlparse(self.opensearch_config.opensearch_domain_endpoint)
         expected_host = parsed_url.hostname
-        expected_port = parsed_url.port or (
-            443 if parsed_url.scheme == "https" else 9200
-        )
+        expected_port = parsed_url.port or 9200
         expected_use_ssl = parsed_url.scheme == "https"
 
         # Instantiate AIConnectorHelper
