@@ -338,9 +338,9 @@ class CLIBase:
         # Create AIConnectorHelper
         ai_helper = AIConnectorHelper(
             service_type=config.get("service_type"),
-            ssl_check_enabled=config.get("ssl_check_enabled"),
             opensearch_config=opensearch_config,
             aws_config=aws_config,
+            ssl_check_enabled=config.get("ssl_check_enabled"),
         )
         return ai_helper
 
