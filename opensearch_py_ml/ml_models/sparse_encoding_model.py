@@ -17,6 +17,9 @@ from opensearch_py_ml.ml_commons.ml_common_utils import (
 )
 from opensearch_py_ml.ml_models.base_models import SparseModel
 
+# l0 activation. apply the log(1+relu(x)) operator twice in activation process.
+ACTIVATION_L0 = "l0"
+
 
 def _generate_default_model_description() -> str:
     """
@@ -310,7 +313,7 @@ class NeuralSparseModel(torch.nn.Module):
                 self.id_to_token[idx] = token
         if activation is None:
             self.activation = lambda values: torch.log(1 + torch.relu(values))
-        elif activation == "l0":
+        elif activation == ACTIVATION_L0:
             self.activation = lambda values: torch.log(
                 1 + torch.log(1 + torch.relu(values))
             )
@@ -324,6 +327,9 @@ class NeuralSparseModel(torch.nn.Module):
         values, _ = torch.max(result * input[ATTENTION_MASK_KEY].unsqueeze(-1), dim=1)
         values = self.activation(values)
         values[:, self.special_token_ids] = 0
+        # max values prune
+        # we first find the max values for each sample in batch, then multiply the max value with the sparse_prune_ratio
+        # then we only keep those larger than the threshold
         max_values = values.max(dim=-1)[0].unsqueeze(1) * self.sparse_prune_ratio
         values = values * (values > max_values)
         return {OUTPUT_KEY: values}
