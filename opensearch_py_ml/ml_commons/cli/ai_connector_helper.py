@@ -70,7 +70,7 @@ class AIConnectorHelper:
         # Parse the OpenSearch domain URL to extract host and port
         parsed_url = urlparse(self.opensearch_config.opensearch_domain_endpoint)
         host = parsed_url.hostname
-        port = parsed_url.port or (443 if parsed_url.scheme == "https" else 9200)
+        port = parsed_url.port or 9200
 
         # Initialize OpenSearch client
         self.opensearch_client = OpenSearch(
@@ -314,7 +314,7 @@ class AIConnectorHelper:
         # Parse the OpenSearch domain URL to extract host and port
         parsed_url = urlparse(self.opensearch_config.opensearch_domain_endpoint)
         host = parsed_url.hostname
-        port = parsed_url.port or (443 if parsed_url.scheme == "https" else 9200)
+        port = parsed_url.port or 9200
 
         if self.service_type == "amazon-opensearch-service":
             # Obtain AWS4Auth credentials and initialize OpenSearch client with the credentials
