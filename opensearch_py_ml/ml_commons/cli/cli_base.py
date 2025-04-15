@@ -213,8 +213,9 @@ class CLIBase:
         output_id: str,
         output_config,
         role_name=None,
-        secret_name=None,
         role_arn=None,
+        secret_name=None,
+        secret_arn=None,
     ):
         """
         Save connector output to a YAML file.
@@ -228,12 +229,13 @@ class CLIBase:
                 "connector_name": connector_name,
                 "connector_role_arn": role_arn or "",
                 "connector_role_name": role_name or "",
+                "connector_secret_arn": secret_arn or "",
                 "connector_secret_name": secret_name or "",
             }
         )
         self.save_yaml_file(self.output_config, "output", merge_existing=True)
 
-    def register_model_output(self, model_id, model_name):
+    def register_model_output(self, model_id, model_name, connector_id):
         """
         Save register model output to a YAML file.
         """
@@ -242,17 +244,19 @@ class CLIBase:
             {
                 "model_id": model_id,
                 "model_name": model_name,
+                "connector_id": connector_id,
             }
         )
         self.save_yaml_file(self.output_config, "output", merge_existing=True)
 
-    def predict_model_output(self, response):
+    def predict_model_output(self, model_id, response):
         """
         Save predict model output to a YAML file.
         """
         # Update the predict_model section
         self.output_config["predict_model"].append(
             {
+                "model_id": model_id,
                 "response": response,
             }
         )

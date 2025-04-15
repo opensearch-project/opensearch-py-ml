@@ -40,6 +40,7 @@ class TestDeepSeekModel(unittest.TestCase):
         self.mock_helper.create_connector_with_secret.return_value = (
             "test_connector_id",
             "test_role_arn",
+            "test_secret_arn",
         )
 
         result = self.deepseek_model.create_connector(
@@ -76,6 +77,7 @@ class TestDeepSeekModel(unittest.TestCase):
         self.mock_helper.create_connector_with_secret.return_value = (
             "test_connector_id",
             "test_role_arn",
+            "test_secret_arn",
         )
         mock_custom_model.return_value = {
             "name": "Custom Model",
@@ -116,6 +118,7 @@ class TestDeepSeekModel(unittest.TestCase):
         self.mock_helper.create_connector_with_secret.return_value = (
             "mock_connector_id",
             "mock_role_arn",
+            "test_secret_arn",
         )
         mock_custom_model.return_value = {
             "name": "Custom Model",
@@ -137,7 +140,7 @@ class TestDeepSeekModel(unittest.TestCase):
 
     def test_create_connector_failure(self):
         """Test creating a DeepSeek connector in failure scenario"""
-        self.mock_helper.create_connector_with_secret.return_value = None, None
+        self.mock_helper.create_connector_with_secret.return_value = None, None, None
         result = self.deepseek_model.create_connector(
             helper=self.mock_helper,
             save_config_method=self.mock_save_config,
@@ -241,6 +244,7 @@ class TestDeepSeekModel(unittest.TestCase):
         self.mock_helper.create_connector_with_secret.return_value = (
             "mock_connector_id",
             "mock_role_arn",
+            "test_secret_arn",
         )
 
         result = self.deepseek_model.create_connector(

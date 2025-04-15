@@ -431,24 +431,27 @@ class TestCLIBase(unittest.TestCase):
         output_id = "test-id"
         output_config = json.dumps({"name": "test-connector"})
         role_name = "test-role"
-        secret_name = "test-secret"
         role_arn = "test-arn"
+        secret_name = "test-secret"
+        secret_arn = "test-secret-arn"
 
         self.cli_base.connector_output(
             output_id=output_id,
             output_config=output_config,
             role_name=role_name,
-            secret_name=secret_name,
             role_arn=role_arn,
+            secret_name=secret_name,
+            secret_arn=secret_arn,
         )
 
         expected_update = [
             {
                 "connector_id": "test-id",
                 "connector_name": "test-connector",
-                "connector_role_arn": "test-arn",
                 "connector_role_name": "test-role",
+                "connector_role_arn": "test-arn",
                 "connector_secret_name": "test-secret",
+                "connector_secret_arn": "test-secret-arn",
             }
         ]
 
@@ -479,10 +482,19 @@ class TestCLIBase(unittest.TestCase):
         """Test register_model_output with all parameters provided"""
         model_id = "test-id"
         model_name = "test-model"
-        expected_update = [{"model_id": "test-id", "model_name": "test-model"}]
+        connector_id = "test-connector-id"
+        expected_update = [
+            {
+                "model_id": "test-id",
+                "model_name": "test-model",
+                "connector_id": "test-connector-id",
+            }
+        ]
 
         # Execute
-        self.cli_base.register_model_output(model_id=model_id, model_name=model_name)
+        self.cli_base.register_model_output(
+            model_id=model_id, model_name=model_name, connector_id=connector_id
+        )
 
         # Verify
         self.assertEqual(self.cli_base.output_config["register_model"], expected_update)
@@ -493,11 +505,12 @@ class TestCLIBase(unittest.TestCase):
     @patch.object(CLIBase, "save_yaml_file", Mock())
     def test_predict_model_output(self):
         """Test predict_model_output with all parameters provided"""
+        model_id = "test-model-id"
         response = "test-response"
-        expected_update = [{"response": "test-response"}]
+        expected_update = [{"model_id": "test-model-id", "response": "test-response"}]
 
         # Execute
-        self.cli_base.predict_model_output(response=response)
+        self.cli_base.predict_model_output(model_id=model_id, response=response)
 
         # Verify
         self.assertEqual(self.cli_base.output_config["predict_model"], expected_update)

@@ -13,6 +13,135 @@ from opensearch_py_ml.ml_commons.cli.ml_models.model_base import ModelBase
 
 
 class CohereModel(ModelBase):
+    def __init__(
+        self,
+        service_type,
+    ):
+        """
+        Initializes the Cohere model with necessary configuration.
+        """
+        self.service_type = service_type
+
+    def _get_connector_body(self, model_type):
+        """
+        Get the connectory body
+        """
+        connector_configs = {
+            "amazon-opensearch-service": {
+                "1": {
+                    "name": "Cohere Embedding Model Connector",
+                    "description": "Connector for Cohere embedding model",
+                    "model": "embed-english-v3.0",
+                    "url": "https://api.cohere.ai/v1/embed",
+                    "request_body": '{ "texts": ${parameters.texts}, "truncate": "${parameters.truncate}", "model": "${parameters.model}", "input_type": "${parameters.input_type}" }',
+                    "pre_process_function": "connector.pre_process.cohere.embedding",
+                    "post_process_function": "connector.post_process.cohere.embedding",
+                    "parameters": {
+                        "input_type": "search_document",
+                        "truncate": "END",
+                    },
+                },
+                "2": "Custom model",
+            },
+            "open-source": {
+                "1": {
+                    "name": "Cohere Chat model",
+                    "description": "The connector to Cohere's public chat API",
+                    "model": "command",
+                    "credential": {"cohere_key": "${credential}"},
+                    "url": "https://api.cohere.ai/v1/chat",
+                    "request_body": '{ "message": "${parameters.message}", "model": "${parameters.model}" }',
+                    "pre_process_function": "connector.pre_process.cohere.embedding",
+                    "post_process_function": "connector.post_process.cohere.embedding",
+                    "parameters": {
+                        "input_type": "search_document",
+                        "truncate": "END",
+                    },
+                },
+                "2": {
+                    "name": "Cohere Embedding model",
+                    "description": "The connector to Cohere's public embed API",
+                    "model": "embed-english-v3.0",
+                    "credential": {"cohere_key": "${credential}"},
+                    "url": "https://api.cohere.ai/v1/embed",
+                    "request_body": '{ "texts": ${parameters.texts}, "truncate": "${parameters.truncate}", "model": "${parameters.model}", "input_type": "${parameters.input_type}" }',
+                    "pre_process_function": "connector.pre_process.cohere.embedding",
+                    "post_process_function": "connector.post_process.cohere.embedding",
+                    "parameters": {
+                        "input_type": "search_document",
+                        "truncate": "END",
+                    },
+                },
+                "3": {
+                    "name": "Cohere Image Embed model",
+                    "description": "The connector to Cohere's public embed API",
+                    "model": "embed-english-v3.0",
+                    "credential": {"cohere_key": "${credential}"},
+                    "url": "https://api.cohere.ai/v1/embed",
+                    "request_body": '{ "images": ${parameters.images}, "truncate": "${parameters.truncate}", "model": "${parameters.model}", "input_type": "${parameters.input_type}" }',
+                    "pre_process_function": "connector.pre_process.cohere.multimodal_embedding",
+                    "post_process_function": "connector.post_process.cohere.embedding",
+                    "parameters": {
+                        "input_type": "image",
+                        "truncate": "END",
+                    },
+                },
+                "4": "Custom model",
+            },
+        }
+
+        service_configs = connector_configs.get(self.service_type)
+
+        # Handle custom model or invalid choice
+        if (
+            model_type not in service_configs
+            or service_configs[model_type] == "Custom model"
+        ):
+            if model_type not in service_configs:
+                print(
+                    f"\n{Fore.YELLOW}Invalid choice. Defaulting to 'Custom model'.{Style.RESET_ALL}"
+                )
+            return self.input_custom_model_details(external=True)
+
+        config = service_configs[model_type]
+
+        # Base parameters that all connectors need
+        base_parameters = {"model": config["model"]}
+
+        # Merge with model-specific parameters if any
+        parameters = {**base_parameters, **config.get("parameters", {})}
+
+        # Return the connector body
+        return {
+            "name": config["name"],
+            "description": config["description"],
+            "version": 1,
+            "protocol": "http",
+            "parameters": parameters,
+            **({"credential": config["credential"]} if "credential" in config else {}),
+            "actions": [
+                {
+                    "action_type": "predict",
+                    "method": "POST",
+                    "headers": {
+                        "Authorization": "${auth}",
+                        "Request-Source": "unspecified:opensearch",
+                    },
+                    "url": config["url"],
+                    "request_body": config["request_body"],
+                    **(
+                        {"pre_process_function": config["pre_process_function"]}
+                        if "pre_process_function" in config
+                        else {}
+                    ),
+                    **(
+                        {"post_process_function": config["post_process_function"]}
+                        if "post_process_function" in config
+                        else {}
+                    ),
+                }
+            ],
+        }
 
     def create_connector(
         self,
@@ -32,72 +161,56 @@ class CohereModel(ModelBase):
         self.set_trusted_endpoint(helper, trusted_endpoint)
 
         # Prompt to choose model
-        model_type = self.get_model_details(
-            "Cohere", "amazon-opensearch-service", model_name
-        )
+        model_type = self.get_model_details("Cohere", self.service_type, model_name)
 
         # Prompt for API key
         cohere_api_key = self.set_api_key(api_key, "Cohere")
 
-        # Create connector role and secret name
-        connector_role_name, create_connector_role_name = self.create_connector_role(
-            connector_role_prefix, "cohere"
-        )
-        secret_name, secret_value = self.create_secret_name(
-            secret_name, "cohere", cohere_api_key
-        )
+        # Get connector body
+        connector_body = connector_body or self._get_connector_body(model_type)
 
-        if model_type == "1":
-            connector_body = {
-                "name": "Cohere Embedding Model Connector",
-                "description": "Connector for Cohere embedding model",
-                "version": "1",
-                "protocol": "http",
-                "parameters": {
-                    "model": "embed-english-v3.0",
-                    "input_type": "search_document",
-                    "truncate": "END",
-                },
-                "actions": [
-                    {
-                        "action_type": "predict",
-                        "method": "POST",
-                        "url": "https://api.cohere.ai/v1/embed",
-                        "headers": {
-                            "Authorization": "${auth}",
-                            "Request-Source": "unspecified:opensearch",
-                        },
-                        "request_body": '{ "texts": ${parameters.texts}, "truncate": "${parameters.truncate}", "model": "${parameters.model}", "input_type": "${parameters.input_type}" }',
-                        "pre_process_function": "connector.pre_process.cohere.embedding",
-                        "post_process_function": "connector.post_process.cohere.embedding",
-                    }
-                ],
-            }
-        elif model_type == "2":
-            if not connector_body:
-                connector_body = self.input_custom_model_details(external=True)
-        else:
-            print(
-                f"\n{Fore.YELLOW}Invalid choice. Defaulting to 'Custom model'.{Style.RESET_ALL}"
+        if self.service_type == "amazon-opensearch-service":
+            # Create connector role and secret name
+            connector_role_name, create_connector_role_name = (
+                self.create_connector_role(connector_role_prefix, "cohere")
             )
-            if not connector_body:
-                connector_body = self.input_custom_model_details(external=True)
+            secret_name, secret_value = self.create_secret_name(
+                secret_name, "cohere", cohere_api_key
+            )
 
-        auth_value = f"Bearer {cohere_api_key}"
-        connector_body = json.loads(
-            json.dumps(connector_body).replace("${auth}", auth_value)
-        )
+            auth_value = f"Bearer {cohere_api_key}"
+            connector_body = json.loads(
+                json.dumps(connector_body).replace("${auth}", auth_value)
+            )
 
-        # Create connector
-        print("\nCreating Cohere connector...")
-        connector_id, connector_role_arn = helper.create_connector_with_secret(
-            secret_name,
-            secret_value,
-            connector_role_name,
-            create_connector_role_name,
-            connector_body,
-            sleep_time_in_seconds=10,
-        )
+            # Create connector
+            print("\nCreating Cohere connector...")
+            connector_id, connector_role_arn, connector_secret_arn = (
+                helper.create_connector_with_secret(
+                    secret_name,
+                    secret_value,
+                    connector_role_name,
+                    create_connector_role_name,
+                    connector_body,
+                    sleep_time_in_seconds=10,
+                )
+            )
+        else:
+            auth_value = f"Bearer {cohere_api_key}"
+            connector_body = json.loads(
+                json.dumps(connector_body).replace("${auth}", auth_value)
+            )
+            credential_value = cohere_api_key
+            connector_body = json.loads(
+                json.dumps(connector_body).replace("${credential}", credential_value)
+            )
+
+            # Create connector
+            print("\nCreating Cohere connector...")
+            connector_id = helper.create_connector(
+                create_connector_role_name=None,
+                body=connector_body,
+            )
 
         if connector_id:
             print(
@@ -107,9 +220,26 @@ class CohereModel(ModelBase):
             save_config_method(
                 connector_id,
                 connector_output,
-                connector_role_name,
-                secret_name,
-                connector_role_arn,
+                (
+                    connector_role_name
+                    if self.service_type == "amazon-opensearch-service"
+                    else None
+                ),
+                (
+                    connector_role_arn
+                    if self.service_type == "amazon-opensearch-service"
+                    else None
+                ),
+                (
+                    secret_name
+                    if self.service_type == "amazon-opensearch-service"
+                    else None
+                ),
+                (
+                    connector_secret_arn
+                    if self.service_type == "amazon-opensearch-service"
+                    else None
+                ),
             )
             return True
         else:

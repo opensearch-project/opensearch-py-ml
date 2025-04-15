@@ -41,6 +41,7 @@ class TestSageMakerModel(unittest.TestCase):
         self.mock_helper.create_connector_with_role.return_value = (
             "test_connector_id",
             "test_role_arn",
+            "",
         )
         result = self.sagemaker_model.create_connector(
             helper=self.mock_helper,
@@ -79,11 +80,13 @@ class TestSageMakerModel(unittest.TestCase):
         self.mock_helper.create_connector_with_role.return_value = (
             "test_connector_id",
             "test_role_arn",
+            "",
         )
         result = self.sagemaker_model.create_connector(
             helper=self.mock_helper,
             save_config_method=self.mock_save_config,
             connector_role_prefix=self.connector_role_prefix,
+            region=self.region,
             model_name="Embedding model",
             endpoint_arn=self.connector_endpoint_arn,
         )
@@ -97,7 +100,6 @@ class TestSageMakerModel(unittest.TestCase):
             "Amazon SageMaker", "amazon-opensearch-service", "Embedding model"
         )
         mock_input.assert_any_call("Enter your SageMaker inference endpoint URL: ")
-        mock_input.assert_any_call(f"Enter your SageMaker region [{self.region}]: ")
         self.assertTrue(result)
 
     @patch(
@@ -116,6 +118,7 @@ class TestSageMakerModel(unittest.TestCase):
         self.mock_helper.create_connector_with_role.return_value = (
             "test_connector_id",
             "test_role_arn",
+            "",
         )
         mock_custom_model.return_value = {
             "name": "Custom Model",
@@ -148,8 +151,9 @@ class TestSageMakerModel(unittest.TestCase):
     def test_create_connector_select_model_interactive(self, mock_input):
         """Test create_connector for selecting the model through the prompt"""
         self.mock_helper.create_connector_with_role.return_value = (
-            "mock_connector_id",
-            "mock_role_arn",
+            "test_connector_id",
+            "test_role_arn",
+            "",
         )
 
         result = self.sagemaker_model.create_connector(
@@ -167,8 +171,9 @@ class TestSageMakerModel(unittest.TestCase):
     def test_create_connector_endpoint_arn(self, mock_input):
         """Test creating a SageMaker connector when user provides an endpoint ARN through the prompt"""
         self.mock_helper.create_connector_with_role.return_value = (
-            "mock_connector_id",
-            "mock_role_arn",
+            "test_connector_id",
+            "test_role_arn",
+            "",
         )
         self.sagemaker_model.create_connector(
             helper=self.mock_helper,
@@ -191,8 +196,9 @@ class TestSageMakerModel(unittest.TestCase):
     def test_create_connector_default_region(self, mock_input):
         """Test creating a SageMaker connector with default region"""
         self.mock_helper.create_connector_with_role.return_value = (
-            "mock_connector_id",
-            "mock_role_arn",
+            "test_connector_id",
+            "test_role_arn",
+            "",
         )
         self.sagemaker_model.create_connector(
             helper=self.mock_helper,
@@ -214,8 +220,9 @@ class TestSageMakerModel(unittest.TestCase):
     def test_create_connector_custom_region(self, mock_input):
         """Test creating a SageMaker connector with a custom region"""
         self.mock_helper.create_connector_with_role.return_value = (
-            "mock_connector_id",
-            "mock_role_arn",
+            "test_connector_id",
+            "test_role_arn",
+            "",
         )
         self.sagemaker_model.create_connector(
             helper=self.mock_helper,
@@ -245,8 +252,9 @@ class TestSageMakerModel(unittest.TestCase):
     ):
         """Test creating a SageMaker connector with invalid model choice"""
         self.mock_helper.create_connector_with_role.return_value = (
-            "mock_connector_id",
-            "mock_role_arn",
+            "test_connector_id",
+            "test_role_arn",
+            "",
         )
         mock_custom_model.return_value = {
             "name": "Custom Model",
@@ -269,7 +277,7 @@ class TestSageMakerModel(unittest.TestCase):
 
     def test_create_connector_failure(self):
         """Test creating a SageMaker connector in failure scenario"""
-        self.mock_helper.create_connector_with_role.return_value = None, None
+        self.mock_helper.create_connector_with_role.return_value = None, None, None
         result = self.sagemaker_model.create_connector(
             helper=self.mock_helper,
             save_config_method=self.mock_save_config,

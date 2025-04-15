@@ -18,7 +18,8 @@ class TestCohereModel(unittest.TestCase):
     def setUp(self):
         self.mock_helper = Mock()
         self.mock_save_config = Mock()
-        self.cohere_model = CohereModel()
+        self.service_type = "amazon-opensearch-service"
+        self.cohere_model = CohereModel(service_type=self.service_type)
         self.connector_role_prefix = "test_role"
         self.api_key = "test_api_key"
         self.secret_name = "test_secret_name"
@@ -29,15 +30,16 @@ class TestCohereModel(unittest.TestCase):
     @patch(
         "opensearch_py_ml.ml_commons.cli.ml_models.model_base.ModelBase.get_model_details"
     )
-    def test_create_connector_embedding(
+    def test_create_connector_embedding_model_managed(
         self, mock_get_model_details, mock_set_trusted_endpoint
     ):
-        """Test creating a Cohere connector with Embedding model"""
+        """Test creating a Cohere connector with Embedding model in managed service"""
         # Setup mocks
         mock_get_model_details.return_value = "1"
         self.mock_helper.create_connector_with_secret.return_value = (
             "test_connector_id",
             "test_role_arn",
+            "test_secret_arn",
         )
 
         result = self.cohere_model.create_connector(
@@ -59,6 +61,28 @@ class TestCohereModel(unittest.TestCase):
         self.assertTrue(result)
 
     @patch(
+        "opensearch_py_ml.ml_commons.cli.ml_models.model_base.ModelBase.get_model_details"
+    )
+    def test_create_connector_chat_model_open_source(self, mock_get_model_details):
+        """Test creating a Cohere connector with Chat model in open-source service"""
+        # Create model with open-source service type
+        open_source_model = CohereModel(service_type="open-source")
+        mock_get_model_details.return_value = "1"
+
+        result = open_source_model.create_connector(
+            helper=self.mock_helper,
+            save_config_method=self.mock_save_config,
+            connector_role_prefix=self.connector_role_prefix,
+            model_name="Chat model",
+            api_key=self.api_key,
+        )
+        # Verify method call
+        mock_get_model_details.assert_called_once_with(
+            "Cohere", "open-source", "Chat model"
+        )
+        self.assertTrue(result)
+
+    @patch(
         "opensearch_py_ml.ml_commons.cli.ml_models.model_base.ModelBase.input_custom_model_details"
     )
     @patch(
@@ -74,6 +98,7 @@ class TestCohereModel(unittest.TestCase):
         self.mock_helper.create_connector_with_secret.return_value = (
             "test_connector_id",
             "test_role_arn",
+            "test_secret_arn",
         )
         mock_custom_model.return_value = {
             "name": "Custom Model",
@@ -106,6 +131,7 @@ class TestCohereModel(unittest.TestCase):
         self.mock_helper.create_connector_with_secret.return_value = (
             "mock_connector_id",
             "mock_role_arn",
+            "test_secret_arn",
         )
 
         result = self.cohere_model.create_connector(
@@ -133,6 +159,7 @@ class TestCohereModel(unittest.TestCase):
         self.mock_helper.create_connector_with_secret.return_value = (
             "mock_connector_id",
             "mock_role_arn",
+            "test_secret_arn",
         )
         mock_custom_model.return_value = {
             "name": "Custom Model",
@@ -154,7 +181,7 @@ class TestCohereModel(unittest.TestCase):
 
     def test_create_connector_failure(self):
         """Test creating a Cohere connector in failure scenario"""
-        self.mock_helper.create_connector_with_secret.return_value = None, None
+        self.mock_helper.create_connector_with_secret.return_value = None, None, None
         result = self.cohere_model.create_connector(
             helper=self.mock_helper,
             save_config_method=self.mock_save_config,
