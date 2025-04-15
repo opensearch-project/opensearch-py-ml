@@ -69,12 +69,12 @@ class TestModelBase(unittest.TestCase):
         """Test create_connector_role with valid role prefix and model name"""
         # Mock UUID to return a fixed value
         mock_uuid_instance = Mock()
-        mock_uuid_instance.configure_mock(__str__=lambda _: "12345678")
+        mock_uuid_instance.configure_mock(__str__=lambda _: "123456")
         mock_uuid.return_value = mock_uuid_instance
 
         # Test inputs
-        connector_role_prefix = "test_prefix"
-        model_name = "test_model"
+        connector_role_prefix = "test-prefix"
+        model_name = "model"
 
         # Execute
         connector_role_name, create_connector_role_name = (
@@ -82,25 +82,25 @@ class TestModelBase(unittest.TestCase):
         )
 
         # Verify
-        expected_connector_role = "test_prefix_test_model_connector_12345678"
-        expected_create_role = "test_prefix_test_model_connector_create_12345678"
+        expected_connector_role = "test-prefix-model-connector-123456"
+        expected_create_role = "test-prefix-model-connector-create-123456"
 
         self.assertEqual(connector_role_name, expected_connector_role)
         self.assertEqual(create_connector_role_name, expected_create_role)
         mock_uuid.assert_called_once()
 
-    @patch("builtins.input", return_value="input_prefix")
+    @patch("builtins.input", return_value="input-prefix")
     @patch("uuid.uuid1")
     def test_create_connector_role_with_empty_prefix(self, mock_uuid, mock_input):
         """Test create_connector_role when prefix is empty and provided via input"""
         # Mock UUID to return a fixed value
         mock_uuid_instance = Mock()
-        mock_uuid_instance.configure_mock(__str__=lambda _: "12345678")
+        mock_uuid_instance.configure_mock(__str__=lambda _: "123456")
         mock_uuid.return_value = mock_uuid_instance
 
         # Test inputs
         connector_role_prefix = ""
-        model_name = "test_model"
+        model_name = "model"
 
         # Execute
         connector_role_name, create_connector_role_name = (
@@ -108,8 +108,8 @@ class TestModelBase(unittest.TestCase):
         )
 
         # Verify
-        expected_connector_role = "input_prefix_test_model_connector_12345678"
-        expected_create_role = "input_prefix_test_model_connector_create_12345678"
+        expected_connector_role = "input-prefix-model-connector-123456"
+        expected_create_role = "input-prefix-model-connector-create-123456"
 
         self.assertEqual(connector_role_name, expected_connector_role)
         self.assertEqual(create_connector_role_name, expected_create_role)
@@ -132,14 +132,8 @@ class TestModelBase(unittest.TestCase):
         )
         mock_input.assert_called_once_with("Enter your connector role prefix: ")
 
-    @patch("uuid.uuid1")
-    def test_create_secret_name_with_valid_inputs(self, mock_uuid):
+    def test_create_secret_name_with_valid_inputs(self):
         """Test create_secret_name with all valid inputs provided"""
-        # Mock UUID to return a fixed value
-        mock_uuid_instance = Mock()
-        mock_uuid_instance.configure_mock(__str__=lambda _: "12345678")
-        mock_uuid.return_value = mock_uuid_instance
-
         # Test inputs
         secret_name = "test_secret"
         model_name = "test_model"
@@ -151,22 +145,15 @@ class TestModelBase(unittest.TestCase):
         )
 
         # Verify
-        expected_secret_name = "test_secret_12345678"
+        expected_secret_name = "test_secret"
         expected_secret_value = {"test_model_api_key": "test_api_key_123"}
 
         self.assertEqual(result_secret_name, expected_secret_name)
         self.assertEqual(result_secret_value, expected_secret_value)
-        mock_uuid.assert_called_once()
 
     @patch("builtins.input", return_value="input_secret")
-    @patch("uuid.uuid1")
-    def test_create_secret_name_with_empty_secret_name(self, mock_uuid, mock_input):
+    def test_create_secret_name_with_empty_secret_name(self, mock_input):
         """Test create_secret_name when secret_name is empty and provided via input"""
-        # Mock UUID to return a fixed value
-        mock_uuid_instance = Mock()
-        mock_uuid_instance.configure_mock(__str__=lambda _: "12345678")
-        mock_uuid.return_value = mock_uuid_instance
-
         # Test inputs
         secret_name = ""
         model_name = "test_model"
@@ -178,7 +165,7 @@ class TestModelBase(unittest.TestCase):
         )
 
         # Verify
-        expected_secret_name = "input_secret_12345678"
+        expected_secret_name = "input_secret"
         expected_secret_value = {"test_model_api_key": "test_api_key_123"}
 
         self.assertEqual(result_secret_name, expected_secret_name)
@@ -186,7 +173,6 @@ class TestModelBase(unittest.TestCase):
         mock_input.assert_called_once_with(
             "Enter a name for the AWS Secrets Manager secret: "
         )
-        mock_uuid.assert_called_once()
 
     def test_set_api_key_with_provided_key(self):
         """Test set_api_key when API key is provided"""

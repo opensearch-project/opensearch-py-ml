@@ -475,7 +475,7 @@ class AIConnectorHelper:
             body["credential"] = {"roleArn": connector_role_arn}
         connector_id = self.create_connector(create_connector_role_name, body)
         print("----------")
-        return connector_id, connector_role_arn
+        return connector_id, connector_role_arn, secret_arn
 
     def create_connector_with_secret(
         self,

@@ -23,6 +23,64 @@ class DeepSeekModel(ModelBase):
         """
         self.service_type = service_type
 
+    def _get_connector_body(self, model_type):
+        """
+        Get the connectory body
+        """
+        connector_configs = {
+            "1": {
+                "name": "DeepSeek Chat",
+                "description": "The connector for DeepSeek Chat",
+                "model": "deepseek-chat",
+                "request_body": '{ "model": "${parameters.model}", "messages": ${parameters.messages} }',
+                "url": "https://api.deepseek.com/v1/chat/completions",
+                "parameters": {},
+            },
+            "2": "Custom model",
+        }
+
+        # Handle custom model or invalid choice
+        if (
+            model_type not in connector_configs
+            or connector_configs[model_type] == "Custom model"
+        ):
+            if model_type not in connector_configs:
+                print(
+                    f"\n{Fore.YELLOW}Invalid choice. Defaulting to 'Custom model'.{Style.RESET_ALL}"
+                )
+            return self.input_custom_model_details(external=True)
+
+        config = connector_configs[model_type]
+
+        # Base parameters that all connectors need
+        base_parameters = {
+            "model": config["model"],
+        }
+
+        # Merge with model-specific parameters if any
+        parameters = {**base_parameters, **config.get("parameters", {})}
+
+        # Return the connector body
+        return {
+            "name": config["name"],
+            "description": config["description"],
+            "version": 1,
+            "protocol": "http",
+            "parameters": parameters,
+            "actions": [
+                {
+                    "action_type": "predict",
+                    "method": "POST",
+                    "headers": {
+                        "Content-Type": "application/json",
+                        "Authorization": "${auth}",
+                    },
+                    "url": config["url"],
+                    "request_body": config["request_body"],
+                }
+            ],
+        }
+
     def create_connector(
         self,
         helper,
@@ -46,8 +104,9 @@ class DeepSeekModel(ModelBase):
         # Prompt for API key
         deepseek_api_key = self.set_api_key(api_key, "DeepSeek")
 
-        connector_role_arn = ""
-        connector_role_name = ""
+        # Get connector body
+        connector_body = connector_body or self._get_connector_body(model_type)
+
         if self.service_type == "amazon-opensearch-service":
             # Create connector role and secret name
             connector_role_name, create_connector_role_name = (
@@ -57,36 +116,6 @@ class DeepSeekModel(ModelBase):
                 secret_name, "deepseek", deepseek_api_key
             )
 
-            if model_type == "1":
-                connector_body = {
-                    "name": "DeepSeek Chat",
-                    "description": "Test connector for DeepSeek Chat",
-                    "version": "1",
-                    "protocol": "http",
-                    "parameters": {"model": "deepseek-chat"},
-                    "actions": [
-                        {
-                            "action_type": "predict",
-                            "method": "POST",
-                            "url": "https://api.deepseek.com/v1/chat/completions",
-                            "headers": {
-                                "Content-Type": "application/json",
-                                "Authorization": "${auth}",
-                            },
-                            "request_body": '{ "model": "${parameters.model}", "messages": ${parameters.messages} }',
-                        }
-                    ],
-                }
-            elif model_type == "2":
-                if not connector_body:
-                    connector_body = self.input_custom_model_details(external=True)
-            else:
-                print(
-                    f"\n{Fore.YELLOW}Invalid choice. Defaulting to 'Custom model'.{Style.RESET_ALL}"
-                )
-                if not connector_body:
-                    connector_body = self.input_custom_model_details(external=True)
-
             auth_value = f"Bearer {deepseek_api_key}"
             connector_body = json.loads(
                 json.dumps(connector_body).replace("${auth}", auth_value)
@@ -94,45 +123,20 @@ class DeepSeekModel(ModelBase):
 
             # Create connector
             print("\nCreating DeepSeek connector...")
-            connector_id, connector_role_arn = helper.create_connector_with_secret(
-                secret_name,
-                secret_value,
-                connector_role_name,
-                create_connector_role_name,
-                connector_body,
-                sleep_time_in_seconds=10,
+            connector_id, connector_role_arn, connector_secret_arn = (
+                helper.create_connector_with_secret(
+                    secret_name,
+                    secret_value,
+                    connector_role_name,
+                    create_connector_role_name,
+                    connector_body,
+                    sleep_time_in_seconds=10,
+                )
             )
         else:
-            if model_type == "1":
-                connector_body = {
-                    "name": "DeepSeek Chat",
-                    "description": "Test connector for DeepSeek Chat",
-                    "version": "1",
-                    "protocol": "http",
-                    "parameters": {"model": "deepseek-chat"},
-                    "credential": {"deepSeek_key": "${credential}"},
-                    "actions": [
-                        {
-                            "action_type": "predict",
-                            "method": "POST",
-                            "url": "https://api.deepseek.com/v1/chat/completions",
-                            "headers": {
-                                "Content-Type": "application/json",
-                                "Authorization": "${auth}",
-                            },
-                            "request_body": '{ "model": "${parameters.model}", "messages": ${parameters.messages} }',
-                        }
-                    ],
-                }
-            elif model_type == "2":
-                if not connector_body:
-                    connector_body = self.input_custom_model_details(external=True)
-            else:
-                print(
-                    f"\n{Fore.YELLOW}Invalid choice. Defaulting to 'Custom model'.{Style.RESET_ALL}"
-                )
-                if not connector_body:
-                    connector_body = self.input_custom_model_details(external=True)
+            connector_body["credential"] = {
+                "deepSeek_key": "${credential}",
+            }
 
             auth_value = f"Bearer {deepseek_api_key}"
             connector_body = json.loads(
@@ -158,9 +162,26 @@ class DeepSeekModel(ModelBase):
             save_config_method(
                 connector_id,
                 connector_output,
-                connector_role_name,
-                secret_name,
-                connector_role_arn,
+                (
+                    connector_role_name
+                    if self.service_type == "amazon-opensearch-service"
+                    else None
+                ),
+                (
+                    connector_role_arn
+                    if self.service_type == "amazon-opensearch-service"
+                    else None
+                ),
+                (
+                    secret_name
+                    if self.service_type == "amazon-opensearch-service"
+                    else None
+                ),
+                (
+                    connector_secret_arn
+                    if self.service_type == "amazon-opensearch-service"
+                    else None
+                ),
             )
             return True
         else:

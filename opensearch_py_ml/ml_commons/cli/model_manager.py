@@ -74,7 +74,7 @@ class ModelManager(CLIBase):
                     "Do you want to save the full prediction output? (yes/no): "
                 ).lower()
                 if predict_output == "yes":
-                    self.predict_model_output(response)
+                    self.predict_model_output(model_id, response)
                 return True
             else:
                 logger.warning(f"{Fore.RED}Failed to predict model.{Style.RESET_ALL}")
@@ -112,7 +112,7 @@ class ModelManager(CLIBase):
                 print(
                     f"{Fore.GREEN}\nSuccessfully registered a model with ID: {model_id}{Style.RESET_ALL}"
                 )
-                self.register_model_output(model_id, model_name)
+                self.register_model_output(model_id, model_name, connector_id)
                 return True
             else:
                 logger.warning(f"{Fore.RED}Failed to register model.{Style.RESET_ALL}")

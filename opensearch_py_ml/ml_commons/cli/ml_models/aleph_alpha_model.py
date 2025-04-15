@@ -11,6 +11,70 @@ from opensearch_py_ml.ml_commons.cli.ml_models.model_base import ModelBase
 
 
 class AlephAlphaModel(ModelBase):
+
+    def _get_connector_body(self, model_type, aleph_alpha_api_key):
+        """
+        Get the connectory body
+        """
+        connector_configs = {
+            "1": {
+                "name": "Aleph Alpha Connector: luminous-base, representation: document",
+                "description": "The connector to the Aleph Alpha luminous-base embedding model with representation: document",
+                "request_body": '{ "model": "luminous-base", "prompt": "${parameters.input}", "representation": "${parameters.representation}", "normalize": ${parameters.normalize}}',
+                "url": "https://api.aleph-alpha.com/semantic_embed",
+                "pre_process_function": '\n    StringBuilder builder = new StringBuilder();\n    builder.append("\\"");\n    String first = params.text_docs[0];\n    builder.append(first);\n    builder.append("\\"");\n    def parameters = "{" +"\\"input\\":" + builder + "}";\n    return  "{" +"\\"parameters\\":" + parameters + "}";',
+                "post_process_function": '\n      def name = "sentence_embedding";\n      def dataType = "FLOAT32";\n      if (params.embedding == null || params.embedding.length == 0) {\n        return params.message;\n      }\n      def shape = [params.embedding.length];\n      def json = "{" +\n                 "\\"name\\":\\"" + name + "\\"," +\n                 "\\"data_type\\":\\"" + dataType + "\\"," +\n                 "\\"shape\\":" + shape + "," +\n                 "\\"data\\":" + params.embedding +\n                 "}";\n      return json;\n    ',
+                "parameters": {"representation": "document"},
+            },
+            "2": "Custom model",
+        }
+
+        # Handle custom model or invalid choice
+        if (
+            model_type not in connector_configs
+            or connector_configs[model_type] == "Custom model"
+        ):
+            if model_type not in connector_configs:
+                print(
+                    f"\n{Fore.YELLOW}Invalid choice. Defaulting to 'Custom model'.{Style.RESET_ALL}"
+                )
+            return self.input_custom_model_details()
+
+        config = connector_configs[model_type]
+
+        # Return the connector body
+        return {
+            "name": config["name"],
+            "description": config["description"],
+            "version": "1",
+            "protocol": "http",
+            "parameters": config["parameters"],
+            "credential": {"AlephAlpha_API_Token": aleph_alpha_api_key},
+            "actions": [
+                {
+                    "action_type": "predict",
+                    "method": "POST",
+                    "headers": {
+                        "Content-Type": "application/json",
+                        "Accept": "application/json",
+                        "Authorization": f"Bearer {aleph_alpha_api_key}",
+                    },
+                    "url": config["url"],
+                    "request_body": config["request_body"],
+                    **(
+                        {"pre_process_function": config["pre_process_function"]}
+                        if "pre_process_function" in config
+                        else {}
+                    ),
+                    **(
+                        {"post_process_function": config["post_process_function"]}
+                        if "post_process_function" in config
+                        else {}
+                    ),
+                }
+            ],
+        }
+
     def create_connector(
         self,
         helper,
@@ -32,39 +96,10 @@ class AlephAlphaModel(ModelBase):
         # Prompt for API key
         aleph_alpha_api_key = self.set_api_key(api_key, "Aleph Alpha")
 
-        if model_type == "1":
-            connector_body = {
-                "name": "Aleph Alpha Connector: luminous-base, representation: document",
-                "description": "The connector to the Aleph Alpha luminous-base embedding model with representation: document",
-                "version": "1",
-                "protocol": "http",
-                "parameters": {"representation": "document"},
-                "credential": {"AlephAlpha_API_Token": aleph_alpha_api_key},
-                "actions": [
-                    {
-                        "action_type": "predict",
-                        "method": "POST",
-                        "url": "https://api.aleph-alpha.com/semantic_embed",
-                        "headers": {
-                            "Content-Type": "application/json",
-                            "Accept": "application/json",
-                            "Authorization": f"Bearer {aleph_alpha_api_key}",
-                        },
-                        "request_body": '{ "model": "luminous-base", "prompt": "${parameters.input}", "representation": "${parameters.representation}", "normalize": ${parameters.normalize}}',
-                        "pre_process_function": '\n    StringBuilder builder = new StringBuilder();\n    builder.append("\\"");\n    String first = params.text_docs[0];\n    builder.append(first);\n    builder.append("\\"");\n    def parameters = "{" +"\\"input\\":" + builder + "}";\n    return  "{" +"\\"parameters\\":" + parameters + "}";',
-                        "post_process_function": '\n      def name = "sentence_embedding";\n      def dataType = "FLOAT32";\n      if (params.embedding == null || params.embedding.length == 0) {\n        return params.message;\n      }\n      def shape = [params.embedding.length];\n      def json = "{" +\n                 "\\"name\\":\\"" + name + "\\"," +\n                 "\\"data_type\\":\\"" + dataType + "\\"," +\n                 "\\"shape\\":" + shape + "," +\n                 "\\"data\\":" + params.embedding +\n                 "}";\n      return json;\n    ',
-                    }
-                ],
-            }
-        elif model_type == "2":
-            if not connector_body:
-                connector_body = self.input_custom_model_details()
-        else:
-            print(
-                f"\n{Fore.YELLOW}Invalid choice. Defaulting to 'Custom model'.{Style.RESET_ALL}"
-            )
-            if not connector_body:
-                connector_body = self.input_custom_model_details()
+        # Get connector body
+        connector_body = connector_body or self._get_connector_body(
+            model_type, aleph_alpha_api_key
+        )
 
         # Create connector
         print("\nCreating Aleph Alpha connector...")

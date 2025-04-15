@@ -42,10 +42,10 @@ class ModelBase:
                 raise ValueError("Connector role prefix cannot be empty.")
 
         # Add a unique ID to prevent permission error
-        id = str(uuid.uuid1())[:8]
-        connector_role_name = f"{connector_role_prefix}_{model_name}_connector_{id}"
+        id = str(uuid.uuid1())[:6]
+        connector_role_name = f"{connector_role_prefix}-{model_name}-connector-{id}"
         create_connector_role_name = (
-            f"{connector_role_prefix}_{model_name}_connector_create_{id}"
+            f"{connector_role_prefix}-{model_name}-connector-create-{id}"
         )
         return connector_role_name, create_connector_role_name
 
@@ -58,9 +58,6 @@ class ModelBase:
                 "Enter a name for the AWS Secrets Manager secret: "
             ).strip()
 
-        # Add a unique ID to prevent permission error
-        id = str(uuid.uuid1())[:8]
-        secret_name = f"{secret_name}_{id}"
         secret_key = f"{model_name}_api_key"
         secret_value = {secret_key: api_key}
         return secret_name, secret_value

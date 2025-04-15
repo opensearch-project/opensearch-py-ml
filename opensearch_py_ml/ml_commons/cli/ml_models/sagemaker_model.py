@@ -20,6 +20,84 @@ class SageMakerModel(ModelBase):
         """
         self.opensearch_domain_region = opensearch_domain_region
 
+    def _get_connector_body(self, model_type, region, endpoint_url):
+        """
+        Get the connectory body
+        """
+        connector_configs = {
+            "1": {
+                "name": "Amazon SageMaker: DeepSeek R1 model",
+                "description": "The connector to SageMaker for DeepSeek R1 model",
+                "request_body": '{ "inputs": "${parameters.inputs}", "parameters": {"do_sample": ${parameters.do_sample}, "top_p": ${parameters.top_p}, "temperature": ${parameters.temperature}, "max_new_tokens": ${parameters.max_new_tokens}} }',
+                "post_process_function": "\n      if (params.result == null || params.result.length == 0) {\n        throw new Exception('No response available');\n      }\n      \n      def completion = params.result[0].generated_text;\n      return '{' +\n               '\"name\": \"response\",'+\n               '\"dataAsMap\": {' +\n                  '\"completion\":\"' + escape(completion) + '\"}' +\n             '}';\n    ",
+                "parameters": {
+                    "do_sample": "true",
+                    "top_p": 0.9,
+                    "temperature": 0.7,
+                    "max_new_tokens": 512,
+                },
+            },
+            "2": {
+                "name": "Amazon SageMaker: Embedding model",
+                "description": "The connector to SageMaker for embedding model",
+                "request_body": "${parameters.input}",
+                "pre_process_function": "connector.pre_process.default.embedding",
+                "post_process_function": "connector.post_process.default.embedding",
+                "parameters": {},
+            },
+            "3": "Custom model",
+        }
+
+        # Handle custom model or invalid choice
+        if (
+            model_type not in connector_configs
+            or connector_configs[model_type] == "Custom model"
+        ):
+            if model_type not in connector_configs:
+                print(
+                    f"\n{Fore.YELLOW}Invalid choice. Defaulting to 'Custom model'.{Style.RESET_ALL}"
+                )
+            return self.input_custom_model_details()
+
+        config = connector_configs[model_type]
+
+        # Base parameters that all connectors need
+        base_parameters = {
+            "region": region,
+            "service_name": "sagemaker",
+        }
+
+        # Merge with model-specific parameters if any
+        parameters = {**base_parameters, **config.get("parameters", {})}
+
+        # Return the connector body
+        return {
+            "name": config["name"],
+            "description": config["description"],
+            "version": "1.0",
+            "protocol": "aws_sigv4",
+            "parameters": parameters,
+            "actions": [
+                {
+                    "action_type": "predict",
+                    "method": "POST",
+                    "headers": {"content-type": "application/json"},
+                    "url": endpoint_url,
+                    "request_body": config["request_body"],
+                    **(
+                        {"pre_process_function": config["pre_process_function"]}
+                        if "pre_process_function" in config
+                        else {}
+                    ),
+                    **(
+                        {"post_process_function": config["post_process_function"]}
+                        if "post_process_function" in config
+                        else {}
+                    ),
+                }
+            ],
+        }
+
     def create_connector(
         self,
         helper,
@@ -66,89 +144,28 @@ class SageMakerModel(ModelBase):
             ],
         }
 
-        if model_type == "1":
-            if not endpoint_url:
-                endpoint_url = input(
-                    "Enter your SageMaker inference endpoint URL: "
+        # Prompt for endpoint URL and region for non-custom model
+        if model_type == "1" or model_type == "2":
+            region = (
+                region
+                or input(
+                    f"Enter your SageMaker region [{self.opensearch_domain_region}]: "
                 ).strip()
-
-            if not region:
-                region = (
-                    input(
-                        f"Enter your SageMaker region [{self.opensearch_domain_region}]: "
-                    ).strip()
-                    or self.opensearch_domain_region
-                )
-
-            connector_body = {
-                "name": "DeepSeek R1 model connector",
-                "description": "Connector for my Sagemaker DeepSeek model",
-                "version": "1.0",
-                "protocol": "aws_sigv4",
-                "parameters": {
-                    "service_name": "sagemaker",
-                    "region": region,
-                    "do_sample": "true",
-                    "top_p": 0.9,
-                    "temperature": 0.7,
-                    "max_new_tokens": 512,
-                },
-                "actions": [
-                    {
-                        "action_type": "PREDICT",
-                        "method": "POST",
-                        "url": endpoint_url,
-                        "headers": {"content-type": "application/json"},
-                        "request_body": '{ "inputs": "${parameters.inputs}", "parameters": {"do_sample": ${parameters.do_sample}, "top_p": ${parameters.top_p}, "temperature": ${parameters.temperature}, "max_new_tokens": ${parameters.max_new_tokens}} }',
-                        "post_process_function": "\n      if (params.result == null || params.result.length == 0) {\n        throw new Exception('No response available');\n      }\n      \n      def completion = params.result[0].generated_text;\n      return '{' +\n               '\"name\": \"response\",'+\n               '\"dataAsMap\": {' +\n                  '\"completion\":\"' + escape(completion) + '\"}' +\n             '}';\n    ",
-                    }
-                ],
-            }
-        elif model_type == "2":
-            if not endpoint_url:
-                endpoint_url = input(
-                    "Enter your SageMaker inference endpoint URL: "
-                ).strip()
-
-            if not region:
-                region = (
-                    input(
-                        f"Enter your SageMaker region [{self.opensearch_domain_region}]: "
-                    ).strip()
-                    or self.opensearch_domain_region
-                )
-
-            connector_body = {
-                "name": "SageMaker Embedding Model Connector",
-                "description": "Connector for SageMaker embedding model",
-                "version": "1.0",
-                "protocol": "aws_sigv4",
-                "parameters": {"region": region, "service_name": "sagemaker"},
-                "actions": [
-                    {
-                        "action_type": "predict",
-                        "method": "POST",
-                        "headers": {"Content-Type": "application/json"},
-                        "url": endpoint_url,
-                        "request_body": "${parameters.input}",
-                        "pre_process_function": "connector.pre_process.default.embedding",
-                        "post_process_function": "connector.post_process.default.embedding",
-                    }
-                ],
-            }
-        elif model_type == "3":
-            if not connector_body:
-                connector_body = self.input_custom_model_details()
-        else:
-            print(
-                f"\n{Fore.YELLOW}Invalid choice. Defaulting to 'Custom model'.{Style.RESET_ALL}"
+                or self.opensearch_domain_region
             )
-            if not connector_body:
-                connector_body = self.input_custom_model_details()
+            endpoint_url = (
+                endpoint_url
+                or input("Enter your SageMaker inference endpoint URL: ").strip()
+            )
+
+        # Get connector body
+        connector_body = connector_body or self._get_connector_body(
+            model_type, region, endpoint_url
+        )
 
         # Create connector
         print("\nCreating SageMaker connector...")
-        connector_id, connector_role_arn = helper.create_connector_with_role(
+        connector_id, connector_role_arn, _ = helper.create_connector_with_role(
             connector_role_inline_policy,
             connector_role_name,
             create_connector_role_name,
@@ -165,7 +182,6 @@ class SageMakerModel(ModelBase):
                 connector_id,
                 connector_output,
                 connector_role_name,
-                None,
                 connector_role_arn,
             )
             return True
