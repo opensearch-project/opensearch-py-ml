@@ -17,7 +17,7 @@ class TestBedrockModel(unittest.TestCase):
 
     def setUp(self):
         self.region = "us-west-2"
-        self.service_type = "amazon-opensearch-service"
+        self.service_type = BedrockModel.AMAZON_OPENSEARCH_SERVICE
         self.mock_helper = Mock()
         self.mock_save_config = Mock()
         self.bedrock_model = BedrockModel(
@@ -64,7 +64,7 @@ class TestBedrockModel(unittest.TestCase):
         )
         mock_get_model_details.assert_called_once_with(
             "Amazon Bedrock",
-            "amazon-opensearch-service",
+            BedrockModel.AMAZON_OPENSEARCH_SERVICE,
             "Cohere Embed Model v3 - English",
         )
         self.assertTrue(result)
@@ -103,7 +103,7 @@ class TestBedrockModel(unittest.TestCase):
             "^https://bedrock-runtime\\..*[a-z0-9-]\\.amazonaws\\.com/.*$",
         )
         mock_get_model_details.assert_called_once_with(
-            "Amazon Bedrock", "amazon-opensearch-service", "Custom model"
+            "Amazon Bedrock", BedrockModel.AMAZON_OPENSEARCH_SERVICE, "Custom model"
         )
         mock_custom_model.assert_called_once()
         self.assertTrue(result)
@@ -123,7 +123,7 @@ class TestBedrockModel(unittest.TestCase):
         """Test creating a Bedrock connector with Titan embedding model in open-source service"""
         # Create model with open-source service type
         open_source_model = BedrockModel(
-            opensearch_domain_region=self.region, service_type="open-source"
+            opensearch_domain_region=self.region, service_type=BedrockModel.OPEN_SOURCE
         )
         mock_get_model_details.return_value = "2"
         result = open_source_model.create_connector(
@@ -136,7 +136,7 @@ class TestBedrockModel(unittest.TestCase):
 
         # Verify method call
         mock_get_model_details.assert_called_once_with(
-            "Amazon Bedrock", "open-source", "Titan Text Embedding"
+            "Amazon Bedrock", BedrockModel.OPEN_SOURCE, "Titan Text Embedding"
         )
         # Verify that create_connector was called instead of create_connector_with_role
         self.mock_helper.create_connector.assert_called_once()

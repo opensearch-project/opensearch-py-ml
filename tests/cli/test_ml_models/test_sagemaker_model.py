@@ -57,7 +57,9 @@ class TestSageMakerModel(unittest.TestCase):
             "^https://runtime\\.sagemaker\\..*[a-z0-9-]\\.amazonaws\\.com/.*$",
         )
         mock_get_model_details.assert_called_once_with(
-            "Amazon SageMaker", "amazon-opensearch-service", "DeepSeek R1 model"
+            "Amazon SageMaker",
+            SageMakerModel.AMAZON_OPENSEARCH_SERVICE,
+            "DeepSeek R1 model",
         )
         mock_input.assert_any_call("Enter your SageMaker inference endpoint URL: ")
         mock_input.assert_any_call(f"Enter your SageMaker region [{self.region}]: ")
@@ -97,7 +99,9 @@ class TestSageMakerModel(unittest.TestCase):
             "^https://runtime\\.sagemaker\\..*[a-z0-9-]\\.amazonaws\\.com/.*$",
         )
         mock_get_model_details.assert_called_once_with(
-            "Amazon SageMaker", "amazon-opensearch-service", "Embedding model"
+            "Amazon SageMaker",
+            SageMakerModel.AMAZON_OPENSEARCH_SERVICE,
+            "Embedding model",
         )
         mock_input.assert_any_call("Enter your SageMaker inference endpoint URL: ")
         self.assertTrue(result)
@@ -142,7 +146,7 @@ class TestSageMakerModel(unittest.TestCase):
             "^https://runtime\\.sagemaker\\..*[a-z0-9-]\\.amazonaws\\.com/.*$",
         )
         mock_get_model_details.assert_called_once_with(
-            "Amazon SageMaker", "amazon-opensearch-service", "Custom model"
+            "Amazon SageMaker", SageMakerModel.AMAZON_OPENSEARCH_SERVICE, "Custom model"
         )
         mock_custom_model.assert_called_once()
         self.assertTrue(result)

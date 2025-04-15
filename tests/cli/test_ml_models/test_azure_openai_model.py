@@ -56,7 +56,7 @@ class TestAzureOpenAIModel(unittest.TestCase):
             self.mock_helper, "^https://.*\\.openai\\.azure\\.com/.*$"
         )
         mock_get_model_details.assert_called_once_with(
-            "Azure OpenAI", "open-source", "Embedding model"
+            "Azure OpenAI", AzureOpenAIModel.OPEN_SOURCE, "Embedding model"
         )
         mock_set_api_key.assert_called_once_with(self.api_key, "OpenAI")
         self.assertTrue(result)
@@ -94,7 +94,7 @@ class TestAzureOpenAIModel(unittest.TestCase):
             self.mock_helper, "^https://.*\\.openai\\.azure\\.com/.*$"
         )
         mock_get_model_details.assert_called_once_with(
-            "Azure OpenAI", "open-source", "Custom model"
+            "Azure OpenAI", AzureOpenAIModel.OPEN_SOURCE, "Custom model"
         )
         mock_set_api_key.assert_called_once_with("test_api_key", "OpenAI")
         mock_custom_model.assert_called_once()

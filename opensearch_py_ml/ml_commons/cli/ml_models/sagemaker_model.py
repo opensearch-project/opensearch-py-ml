@@ -120,7 +120,7 @@ class SageMakerModel(ModelBase):
 
         # Prompt to choose model
         model_type = self.get_model_details(
-            "Amazon SageMaker", "amazon-opensearch-service", model_name
+            "Amazon SageMaker", self.AMAZON_OPENSEARCH_SERVICE, model_name
         )
 
         if not endpoint_arn:

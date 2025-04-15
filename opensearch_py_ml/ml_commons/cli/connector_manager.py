@@ -40,9 +40,9 @@ class ConnectorManager(CLIBase):
         """
         Get connectors for specific service type
         """
-        if service_type == "open-source":
+        if service_type == self.OPEN_SOURCE:
             return self.connector_list._opensource_connectors
-        elif service_type == "amazon-opensearch-service":
+        elif service_type == self.AMAZON_OPENSEARCH_SERVICE:
             return self.connector_list._managed_connectors
         else:
             raise ValueError(f"Unknown service type: {service_type}")
@@ -88,7 +88,7 @@ class ConnectorManager(CLIBase):
         """
         connectors = (
             self.connector_list._managed_connectors
-            if service_type == "amazon-opensearch-service"
+            if service_type == self.AMAZON_OPENSEARCH_SERVICE
             else self.connector_list._opensource_connectors
         )
         for connector in connectors:

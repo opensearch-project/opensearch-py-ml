@@ -19,7 +19,7 @@ class TestModelManager(unittest.TestCase):
         self.model_manager = ModelManager()
         self.config_path = "test_config.yml"
         self.valid_config = {
-            "service_type": "amazon-opensearch-service",
+            "service_type": ModelManager.AMAZON_OPENSEARCH_SERVICE,
             "opensearch_config": {
                 "opensearch_domain_endpoint": "https://test-endpoint",
                 "opensearch_domain_region": "us-west-2",
@@ -233,27 +233,19 @@ class TestModelManager(unittest.TestCase):
         "builtins.input",
         side_effect=["test-model", "test-model-description", "test-connector-id"],
     )
-    @patch.object(ModelManager, "load_config")
+    @patch.object(ModelManager, "load_and_check_config")
     @patch.object(ModelManager, "get_opensearch_domain_name")
     @patch("opensearch_py_ml.ml_commons.cli.ai_connector_helper.OpenSearch")
     def test_initialize_register_model_with_input(
-        self, mock_opensearch, mock_get_domain, mock_load_config, mock_input
+        self, mock_opensearch, mock_get_domain, mock_load_check_config, mock_input
     ):
         """Test successful initialize_register_model with user input"""
         # Setup
-        self.model_manager.config = self.valid_config
-        mock_load_config.return_value = self.valid_config
-        mock_get_domain.return_value = "test-domain"
+        mock_ai_helper = MagicMock()
+        mock_ai_helper.register_model.return_value = "test-model-id"
 
-        # Mock OpenSearch client and its transport
-        mock_opensearch_instance = MagicMock()
-        mock_transport = MagicMock()
-        mock_opensearch_instance.transport = mock_transport
-        mock_opensearch.return_value = mock_opensearch_instance
-
-        # Mock transport.perform_request response
-        mock_response = {"model_id": "test-model-id"}
-        mock_transport.perform_request.return_value = mock_response
+        # Mock load_and_check_config to return a tuple with mock_ai_helper
+        mock_load_check_config.return_value = (mock_ai_helper, None, None, None)
 
         # Execute
         result = self.model_manager.initialize_register_model(self.config_path)
@@ -261,47 +253,29 @@ class TestModelManager(unittest.TestCase):
         # Verify result
         self.assertTrue(result)
 
-        # Verify that perform_request was called with correct arguments
-        expected_body = {
-            "name": "test-model",
-            "description": "test-model-description",
-            "connector_id": "test-connector-id",
-            "function_name": "remote",
-        }
-        mock_transport.perform_request.assert_called_once_with(
-            method="POST",
-            url="/_plugins/_ml/models/_register",
-            params={"deploy": "true"},
-            body=expected_body,
-            headers={"Content-Type": "application/json"},
+        # Verify that register_model was called with correct arguments
+        mock_ai_helper.register_model.assert_called_once_with(
+            "test-model", "test-model-description", "test-connector-id"
         )
 
     @patch("builtins.input", side_effect=[""])
-    @patch.object(ModelManager, "load_config")
+    @patch.object(ModelManager, "load_and_check_config")
     @patch.object(ModelManager, "get_opensearch_domain_name")
     @patch("opensearch_py_ml.ml_commons.cli.ai_connector_helper.OpenSearch")
     def test_initialize_register_model_with_params(
-        self, mock_opensearch, mock_get_domain, mock_load_config, mock_input
+        self, mock_opensearch, mock_get_domain, mock_load_check_config, mock_input
     ):
         """Test successful initialize_register_model with provided connector_id, model_name, and model_description"""
         # Setup
-        self.model_manager.config = self.valid_config
-        mock_load_config.return_value = self.valid_config
-        mock_get_domain.return_value = "test-domain"
+        mock_ai_helper = MagicMock()
+        mock_ai_helper.register_model.return_value = "test-model-id"
+
+        # Mock load_and_check_config to return a tuple with mock_ai_helper
+        mock_load_check_config.return_value = (mock_ai_helper, None, None, None)
 
         connector_id = "test-connector-id"
         model_name = "test-model"
         model_description = "test-model-description"
-
-        # Mock OpenSearch client and its transport
-        mock_opensearch_instance = MagicMock()
-        mock_transport = MagicMock()
-        mock_opensearch_instance.transport = mock_transport
-        mock_opensearch.return_value = mock_opensearch_instance
-
-        # Mock transport.perform_request response
-        mock_response = {"model_id": "test-model-id"}
-        mock_transport.perform_request.return_value = mock_response
 
         # Execute
         result = self.model_manager.initialize_register_model(
@@ -311,19 +285,9 @@ class TestModelManager(unittest.TestCase):
         # Verify result
         self.assertTrue(result)
 
-        # Verify that perform_request was called with correct arguments
-        expected_body = {
-            "name": "test-model",
-            "description": "test-model-description",
-            "connector_id": "test-connector-id",
-            "function_name": "remote",
-        }
-        mock_transport.perform_request.assert_called_once_with(
-            method="POST",
-            url="/_plugins/_ml/models/_register",
-            params={"deploy": "true"},
-            body=expected_body,
-            headers={"Content-Type": "application/json"},
+        # Verify that register_model was called with correct arguments
+        mock_ai_helper.register_model.assert_called_once_with(
+            model_name, model_description, connector_id
         )
 
     def test_initialize_register_model_exception_handling(self):

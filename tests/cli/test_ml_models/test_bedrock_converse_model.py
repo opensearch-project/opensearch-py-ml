@@ -19,7 +19,7 @@ class TestBedrockConverseModel(unittest.TestCase):
 
     def setUp(self):
         self.region = "us-west-2"
-        self.service_type = "amazon-opensearch-service"
+        self.service_type = BedrockConverseModel.AMAZON_OPENSEARCH_SERVICE
         self.mock_helper = Mock()
         self.mock_save_config = Mock()
         self.bedrock_converse_model = BedrockConverseModel(
@@ -68,7 +68,7 @@ class TestBedrockConverseModel(unittest.TestCase):
         )
         mock_get_model_details.assert_called_once_with(
             "Amazon Bedrock Converse",
-            "amazon-opensearch-service",
+            BedrockConverseModel.AMAZON_OPENSEARCH_SERVICE,
             "Anthropic Claude 3 Sonnet",
         )
         self.assertTrue(result)
@@ -109,7 +109,9 @@ class TestBedrockConverseModel(unittest.TestCase):
             "^https://bedrock-runtime\\..*[a-z0-9-]\\.amazonaws\\.com/.*$",
         )
         mock_get_model_details.assert_called_once_with(
-            "Amazon Bedrock Converse", "amazon-opensearch-service", "Custom model"
+            "Amazon Bedrock Converse",
+            BedrockConverseModel.AMAZON_OPENSEARCH_SERVICE,
+            "Custom model",
         )
         mock_custom_model.assert_called_once_with()
         self.assertTrue(result)
@@ -172,7 +174,8 @@ class TestBedrockConverseModel(unittest.TestCase):
         """Test creating a Bedrock Converse connector with Claude model in open-source service"""
         # Create model with open-source service type
         open_source_model = BedrockConverseModel(
-            opensearch_domain_region=self.region, service_type="open-source"
+            opensearch_domain_region=self.region,
+            service_type=BedrockConverseModel.OPEN_SOURCE,
         )
         mock_get_model_details.return_value = "1"
 
@@ -187,7 +190,9 @@ class TestBedrockConverseModel(unittest.TestCase):
 
         # Verify method call
         mock_get_model_details.assert_called_once_with(
-            "Amazon Bedrock Converse", "open-source", "Anthropic Claude 3 Sonnet"
+            "Amazon Bedrock Converse",
+            BedrockConverseModel.OPEN_SOURCE,
+            "Anthropic Claude 3 Sonnet",
         )
         # Verify that create_connector was called instead of create_connector_with_role
         self.mock_helper.create_connector.assert_called_once()
@@ -209,7 +214,8 @@ class TestBedrockConverseModel(unittest.TestCase):
         """Test creating a Bedrock Converse connector with custom model in open-source service"""
         # Create model with open-source service type
         open_source_model = BedrockConverseModel(
-            opensearch_domain_region=self.region, service_type="open-source"
+            opensearch_domain_region=self.region,
+            service_type=BedrockConverseModel.OPEN_SOURCE,
         )
         mock_custom_model.return_value = self.connector_body
         result = open_source_model.create_connector(
@@ -223,7 +229,7 @@ class TestBedrockConverseModel(unittest.TestCase):
 
         # Verify method call
         mock_get_model_details.assert_called_once_with(
-            "Amazon Bedrock Converse", "open-source", "Custom model"
+            "Amazon Bedrock Converse", BedrockConverseModel.OPEN_SOURCE, "Custom model"
         )
         # Verify that create_connector was called instead of create_connector_with_role
         self.mock_helper.create_connector.assert_called_once()
@@ -247,7 +253,8 @@ class TestBedrockConverseModel(unittest.TestCase):
         """Test creating a Bedrock Converse connector with an invalid model choice in open-source service"""
         # Create model with open-source service type
         open_source_model = BedrockConverseModel(
-            opensearch_domain_region=self.region, service_type="open-source"
+            opensearch_domain_region=self.region,
+            service_type=BedrockConverseModel.OPEN_SOURCE,
         )
         mock_custom_model.return_value = self.connector_body
 

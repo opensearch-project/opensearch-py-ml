@@ -33,6 +33,9 @@ class CLIBase:
     CONFIG_FILE = os.path.join(os.getcwd(), "setup_config.yml")
     OUTPUT_FILE = os.path.join(os.getcwd(), "output.yml")
 
+    OPEN_SOURCE = AIConnectorHelper.OPEN_SOURCE
+    AMAZON_OPENSEARCH_SERVICE = AIConnectorHelper.AMAZON_OPENSEARCH_SERVICE
+
     def __init__(self):
         """
         Initialize the CLIBase class.
@@ -301,7 +304,7 @@ class CLIBase:
             )
             return False
 
-        if service_type == "amazon-opensearch-service":
+        if service_type == self.AMAZON_OPENSEARCH_SERVICE:
             # For managed service, check AWS-specific configurations
             self.opensearch_domain_name = self.get_opensearch_domain_name(
                 opensearch_domain_endpoint

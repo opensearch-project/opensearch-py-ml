@@ -47,7 +47,7 @@ class TestAlephAlphaModel(unittest.TestCase):
             self.mock_helper, "^https://api\\.aleph-alpha\\.com/.*$"
         )
         mock_get_model_details.assert_called_once_with(
-            "Aleph Alpha", "open-source", "Luminous-Base embedding model"
+            "Aleph Alpha", AlephAlphaModel.OPEN_SOURCE, "Luminous-Base embedding model"
         )
         mock_set_api_key.assert_called_once_with("test_api_key", "Aleph Alpha")
         self.assertTrue(result)
@@ -82,7 +82,7 @@ class TestAlephAlphaModel(unittest.TestCase):
             self.mock_helper, "^https://api\\.aleph-alpha\\.com/.*$"
         )
         mock_get_model_details.assert_called_once_with(
-            "Aleph Alpha", "open-source", "Custom model"
+            "Aleph Alpha", AlephAlphaModel.OPEN_SOURCE, "Custom model"
         )
         mock_set_api_key.assert_called_once_with("test_api_key", "Aleph Alpha")
         mock_custom_model.assert_called_once()

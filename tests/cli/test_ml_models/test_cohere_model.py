@@ -18,7 +18,7 @@ class TestCohereModel(unittest.TestCase):
     def setUp(self):
         self.mock_helper = Mock()
         self.mock_save_config = Mock()
-        self.service_type = "amazon-opensearch-service"
+        self.service_type = CohereModel.AMAZON_OPENSEARCH_SERVICE
         self.cohere_model = CohereModel(service_type=self.service_type)
         self.connector_role_prefix = "test_role"
         self.api_key = "test_api_key"
@@ -56,7 +56,7 @@ class TestCohereModel(unittest.TestCase):
             self.mock_helper, "^https://api\\.cohere\\.ai/.*$"
         )
         mock_get_model_details.assert_called_once_with(
-            "Cohere", "amazon-opensearch-service", "Embedding model"
+            "Cohere", CohereModel.AMAZON_OPENSEARCH_SERVICE, "Embedding model"
         )
         self.assertTrue(result)
 
@@ -66,7 +66,7 @@ class TestCohereModel(unittest.TestCase):
     def test_create_connector_chat_model_open_source(self, mock_get_model_details):
         """Test creating a Cohere connector with Chat model in open-source service"""
         # Create model with open-source service type
-        open_source_model = CohereModel(service_type="open-source")
+        open_source_model = CohereModel(service_type=CohereModel.OPEN_SOURCE)
         mock_get_model_details.return_value = "1"
 
         result = open_source_model.create_connector(
@@ -78,7 +78,7 @@ class TestCohereModel(unittest.TestCase):
         )
         # Verify method call
         mock_get_model_details.assert_called_once_with(
-            "Cohere", "open-source", "Chat model"
+            "Cohere", CohereModel.OPEN_SOURCE, "Chat model"
         )
         self.assertTrue(result)
 
@@ -120,7 +120,7 @@ class TestCohereModel(unittest.TestCase):
             self.mock_helper, "^https://api\\.cohere\\.ai/.*$"
         )
         mock_get_model_details.assert_called_once_with(
-            "Cohere", "amazon-opensearch-service", "Custom model"
+            "Cohere", CohereModel.AMAZON_OPENSEARCH_SERVICE, "Custom model"
         )
         mock_custom_model.assert_called_once_with(external=True)
         self.assertTrue(result)

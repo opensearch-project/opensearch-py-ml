@@ -111,7 +111,9 @@ class AzureOpenAIModel(ModelBase):
         self.set_trusted_endpoint(helper, trusted_endpoint)
 
         # Prompt to choose model
-        model_type = self.get_model_details("Azure OpenAI", "open-source", model_name)
+        model_type = self.get_model_details(
+            "Azure OpenAI", self.OPEN_SOURCE, model_name
+        )
 
         # Prompt for API key
         openai_api_key = self.set_api_key(api_key, "OpenAI")

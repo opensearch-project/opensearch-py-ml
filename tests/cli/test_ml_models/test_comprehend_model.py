@@ -17,7 +17,7 @@ class TestComprehendModel(unittest.TestCase):
 
     def setUp(self):
         self.region = "us-west-2"
-        self.service_type = "amazon-opensearch-service"
+        self.service_type = ComprehendModel.AMAZON_OPENSEARCH_SERVICE
         self.mock_helper = Mock()
         self.mock_save_config = Mock()
         self.comprehend_model = ComprehendModel(
@@ -64,7 +64,9 @@ class TestComprehendModel(unittest.TestCase):
             self.mock_helper, "^https://comprehend\\..*[a-z0-9-]\\.amazonaws\\.com$"
         )
         mock_get_model_details.assert_called_once_with(
-            "Amazon Comprehend", "amazon-opensearch-service", "Metadata embedding model"
+            "Amazon Comprehend",
+            ComprehendModel.AMAZON_OPENSEARCH_SERVICE,
+            "Metadata embedding model",
         )
         self.assertTrue(result)
 
@@ -84,7 +86,8 @@ class TestComprehendModel(unittest.TestCase):
         """Test creating a Comprehend connector with custom model in open-source service"""
         # Create model with open-source service type
         open_source_model = ComprehendModel(
-            opensearch_domain_region=self.region, service_type="open-source"
+            opensearch_domain_region=self.region,
+            service_type=ComprehendModel.OPEN_SOURCE,
         )
         mock_custom_model.return_value = self.connector_body
 
@@ -99,7 +102,7 @@ class TestComprehendModel(unittest.TestCase):
 
         # Verify method calls
         mock_get_model_details.assert_called_once_with(
-            "Amazon Comprehend", "open-source", "Custom model"
+            "Amazon Comprehend", ComprehendModel.OPEN_SOURCE, "Custom model"
         )
         mock_custom_model.assert_called_once_with()
         self.assertTrue(result)

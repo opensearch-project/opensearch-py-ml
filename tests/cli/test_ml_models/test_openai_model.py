@@ -18,7 +18,7 @@ class TestOpenAIModel(unittest.TestCase):
     def setUp(self):
         self.mock_helper = Mock()
         self.mock_save_config = Mock()
-        self.service_type = "amazon-opensearch-service"
+        self.service_type = OpenAIModel.AMAZON_OPENSEARCH_SERVICE
         self.openai_model = OpenAIModel(self.service_type)
         self.connector_role_prefix = "test_role"
         self.api_key = "test_api_key"
@@ -61,7 +61,7 @@ class TestOpenAIModel(unittest.TestCase):
             self.mock_helper, "^https://api\\.openai\\.com/.*$"
         )
         mock_get_model_details.assert_called_once_with(
-            "OpenAI", "amazon-opensearch-service", "Embedding model"
+            "OpenAI", OpenAIModel.AMAZON_OPENSEARCH_SERVICE, "Embedding model"
         )
         self.assertTrue(result)
 
@@ -99,7 +99,7 @@ class TestOpenAIModel(unittest.TestCase):
             self.mock_helper, "^https://api\\.openai\\.com/.*$"
         )
         mock_get_model_details.assert_called_once_with(
-            "OpenAI", "amazon-opensearch-service", "Custom model"
+            "OpenAI", OpenAIModel.AMAZON_OPENSEARCH_SERVICE, "Custom model"
         )
         mock_custom_model.assert_called_once_with(external=True)
         self.assertTrue(result)
@@ -154,7 +154,7 @@ class TestOpenAIModel(unittest.TestCase):
     def test_create_connector_chat_model_open_source(self, mock_get_model_details):
         """Test creating an OpenAI connector with chat model in open-source service"""
         # Create model with open-source service type
-        open_source_model = OpenAIModel(service_type="open-source")
+        open_source_model = OpenAIModel(service_type=OpenAIModel.OPEN_SOURCE)
         mock_get_model_details.return_value = "1"
 
         result = open_source_model.create_connector(
@@ -166,7 +166,7 @@ class TestOpenAIModel(unittest.TestCase):
         )
         # Verify method call
         mock_get_model_details.assert_called_once_with(
-            "OpenAI", "open-source", "Chat model"
+            "OpenAI", OpenAIModel.OPEN_SOURCE, "Chat model"
         )
         # Verify that create_connector was called instead of create_connector_with_secret
         self.mock_helper.create_connector.assert_called_once()
@@ -178,7 +178,7 @@ class TestOpenAIModel(unittest.TestCase):
     def test_create_connector_embedding_model_open_source(self, mock_get_model_details):
         """Test creating a OpenAI connector with embedding model in open-source service"""
         # Create model with open-source service type
-        open_source_model = OpenAIModel(service_type="open-source")
+        open_source_model = OpenAIModel(service_type=OpenAIModel.OPEN_SOURCE)
         mock_get_model_details.return_value = "2"
 
         result = open_source_model.create_connector(
@@ -190,7 +190,7 @@ class TestOpenAIModel(unittest.TestCase):
         )
         # Verify method call
         mock_get_model_details.assert_called_once_with(
-            "OpenAI", "open-source", "Embedding model"
+            "OpenAI", OpenAIModel.OPEN_SOURCE, "Embedding model"
         )
         # Verify that create_connector was called instead of create_connector_with_secret
         self.mock_helper.create_connector.assert_called_once()
@@ -207,7 +207,7 @@ class TestOpenAIModel(unittest.TestCase):
     ):
         """Test creating a OpenAI connector with custom model in open-source service"""
         # Create model with open-source service type
-        open_source_model = OpenAIModel(service_type="open-source")
+        open_source_model = OpenAIModel(service_type=OpenAIModel.OPEN_SOURCE)
         mock_custom_model.return_value = self.connector_body
         result = open_source_model.create_connector(
             helper=self.mock_helper,
@@ -218,7 +218,7 @@ class TestOpenAIModel(unittest.TestCase):
         )
         # Verify method call
         mock_get_model_details.assert_called_once_with(
-            "OpenAI", "open-source", "Custom model"
+            "OpenAI", OpenAIModel.OPEN_SOURCE, "Custom model"
         )
         # Verify that create_connector was called instead of create_connector_with_secret
         self.mock_helper.create_connector.assert_called_once()
@@ -237,7 +237,7 @@ class TestOpenAIModel(unittest.TestCase):
     ):
         """Test creating a OpenAI connector with an invalid model choice in open-source service"""
         # Create model with open-source service type
-        open_source_model = OpenAIModel(service_type="open-source")
+        open_source_model = OpenAIModel(service_type=OpenAIModel.OPEN_SOURCE)
         mock_custom_model.return_value = self.connector_body
         open_source_model.create_connector(
             helper=self.mock_helper,

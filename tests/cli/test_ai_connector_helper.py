@@ -38,7 +38,7 @@ class TestAIConnectorHelper(unittest.TestCase):
             aws_secret_access_key="test-secret-access-key",
             aws_session_token="test-session-token",
         )
-        self.service_type = "amazon-opensearch-service"
+        self.service_type = AIConnectorHelper.AMAZON_OPENSEARCH_SERVICE
         self.ssl_check_enabled = True
         self.domain_arn = "test-domain-arn"
         self.test_data = {
@@ -59,16 +59,14 @@ class TestAIConnectorHelper(unittest.TestCase):
         )
         self.mock_opensearch = self.opensearch_patcher.start()
 
-        # Set up common mock objects
-        self.mock_opensearch_instance = MagicMock()
-        self.mock_transport = MagicMock()
-        self.mock_opensearch_instance.transport = self.mock_transport
-        self.mock_opensearch.return_value = self.mock_opensearch_instance
+        # Set up mock objects
+        self.mock_opensearch_client = MagicMock()
+        self.mock_opensearch_client.transport = MagicMock()
 
         # Create AIConnectorHelper instance with mocked dependencies
         with patch.object(AIConnectorHelper, "__init__", return_value=None):
             self.helper = AIConnectorHelper()
-            self.helper.opensearch_client = self.mock_opensearch_instance
+            self.helper.opensearch_client = self.mock_opensearch_client
             self.helper.aws_config = self.aws_config
             self.helper.opensearch_domain_arn = self.domain_arn
 
@@ -125,7 +123,7 @@ class TestAIConnectorHelper(unittest.TestCase):
         )
 
         # Assert helper initializations based on service_type
-        if self.service_type == "open-source":
+        if self.service_type == AIConnectorHelper.OPEN_SOURCE:
             self.assertIsNone(helper.iam_helper)
             self.assertIsNone(helper.secret_helper)
         else:
@@ -143,7 +141,7 @@ class TestAIConnectorHelper(unittest.TestCase):
         """Test when service_type is open-source"""
         # Initialize helper with open-source service type
         helper = AIConnectorHelper(
-            service_type="open-source",
+            service_type=AIConnectorHelper.OPEN_SOURCE,
             ssl_check_enabled=self.ssl_check_enabled,
             opensearch_config=OpenSearchDomainConfig(
                 opensearch_domain_region="",
@@ -161,7 +159,7 @@ class TestAIConnectorHelper(unittest.TestCase):
             ),
         )
         # Assert service_type is set correctly
-        self.assertEqual(helper.service_type, "open-source")
+        self.assertEqual(helper.service_type, AIConnectorHelper.OPEN_SOURCE)
         # Assert domain_arn, iam_helper, and secret_helper is None
         self.assertIsNone(helper.opensearch_domain_arn)
         self.assertIsNone(helper.iam_helper)
@@ -323,9 +321,15 @@ class TestAIConnectorHelper(unittest.TestCase):
         mock_get_ml_auth = MagicMock()
         mock_get_ml_auth.return_value = mock_get_ml_auth
 
-        # Mock transport.perform_request response
+        # Mock create_connector response
         mock_response = {"connector_id": "test-connector-id"}
-        self.mock_transport.perform_request.return_value = mock_response
+
+        # Create a mock for temp_os_client
+        mock_temp_client = MagicMock()
+        mock_temp_client.plugins.ml.create_connector.return_value = mock_response
+
+        # Set the mock_opensearch to return mock_temp_client
+        self.mock_opensearch.return_value = mock_temp_client
 
         # Instantiate helper
         with patch.object(AIConnectorHelper, "__init__", return_value=None):
@@ -340,11 +344,9 @@ class TestAIConnectorHelper(unittest.TestCase):
             body = {"key": "value"}
             connector_id = helper.create_connector(create_connector_role_name, body)
 
-            # Assert that perform_request was called with correct arguments
-            self.mock_transport.perform_request.assert_called_once_with(
-                method="POST",
-                url="/_plugins/_ml/connectors/_create",
-                body=body,
+            # Assert correct call to create_connector
+            mock_temp_client.plugins.ml.create_connector.assert_called_once_with(
+                body={"key": "value"},
                 headers={"Content-Type": "application/json"},
             )
 
@@ -354,17 +356,21 @@ class TestAIConnectorHelper(unittest.TestCase):
 
     def test_create_connector_open_source(self):
         """Test create_connector in open-source service"""
-        # Mock transport.perform_request response
+        # Mock create_connector response
         mock_response = {"connector_id": "test-connector-id"}
-        self.mock_transport.perform_request.return_value = mock_response
 
-        create_connector_role_name = None
+        # Create a mock for temp_os_client
+        mock_temp_client = MagicMock()
+        mock_temp_client.plugins.ml.create_connector.return_value = mock_response
+
+        # Set the mock_opensearch to return mock_temp_client
+        self.mock_opensearch.return_value = mock_temp_client
 
         # Instantiate helper
         with patch.object(AIConnectorHelper, "__init__", return_value=None):
             helper = AIConnectorHelper()
             helper.ssl_check_enabled = self.ssl_check_enabled
-            helper.service_type = "open-source"
+            helper.service_type = AIConnectorHelper.OPEN_SOURCE
             helper.opensearch_config = self.opensearch_config
             helper.opensearch_config.opensearch_domain_endpoint = (
                 "https://localhost:9200"
@@ -372,61 +378,24 @@ class TestAIConnectorHelper(unittest.TestCase):
 
             # Call the method
             body = {"key": "value"}
-            connector_id = helper.create_connector(create_connector_role_name, body)
+            connector_id = helper.create_connector(None, body)
 
-            # Assert that perform_request was called with correct arguments
-            self.mock_transport.perform_request.assert_called_once_with(
-                method="POST",
-                url="/_plugins/_ml/connectors/_create",
-                body=body,
+            # Assert correct call to create_connector
+            mock_temp_client.plugins.ml.create_connector.assert_called_once_with(
+                body={"key": "value"},
                 headers={"Content-Type": "application/json"},
             )
 
             # Assert that the connector_id is returned
             self.assertEqual(connector_id, "test-connector-id")
 
-    @patch("builtins.print")
-    def test_get_task(self, mock_print):
-        """Test get_task with successful response"""
-        # Mock task response
-        mock_task_response = {
-            "task_id": "test-task-id",
-            "status": "COMPLETED",
-            "task_type": "test-type",
+    def test_register_model_direct_response(self):
+        """Test register_model when model_id is directly in the response"""
+        # Mock register_model response
+        self.mock_opensearch_client.plugins.ml.register_model.return_value = {
+            "model_id": "test-model-id"
         }
 
-        # Mock transport.perform_request response
-        self.mock_transport.perform_request.return_value = mock_task_response
-
-        # Call get_task
-        response = self.helper.get_task("test-task-id")
-
-        # Verify response and printed output
-        mock_print.assert_called_once_with(
-            "Get Task Response:", json.dumps(mock_task_response)
-        )
-        self.assertEqual(response, mock_task_response)
-
-    def test_get_task_exception(self):
-        """Test get_task with exception"""
-        # Mock transport.perform_request response
-        self.mock_transport.perform_request.side_effect = Exception("Test Exception")
-
-        # Call get_task and expect exception
-        with self.assertRaises(Exception) as context:
-            self.helper.get_task("test-task-id")
-
-        self.assertTrue("Test Exception" in str(context.exception))
-
-    @patch.object(AIConnectorHelper, "get_task")
-    def test_register_model_direct_response(self, mock_get_task):
-        """Test register_model when model_id is directly in the response"""
-        # Mock transport.perform_request response
-        self.mock_transport.perform_request.return_value = {"task_id": "test-task-id"}
-
-        # Mock get_task
-        mock_get_task.return_value = {"model_id": "task-model-id"}
-
         # Call the method
         model_id = self.helper.register_model(
             "test-model",
@@ -434,21 +403,20 @@ class TestAIConnectorHelper(unittest.TestCase):
             "test-connector-id",
             deploy=True,
         )
-
-        # Verify get_task was called with correct parameters
-        mock_get_task.assert_called_once_with("test-task-id", wait_until_task_done=True)
-
         # Assert that model_id is returned
-        self.assertEqual(model_id, "task-model-id")
+        self.assertEqual(model_id, "test-model-id")
 
-    @patch.object(AIConnectorHelper, "get_task")
-    def test_register_model_task_response(self, mock_get_task):
+    def test_register_model_task_response(self):
         """Test register_model when model_id comes from task response"""
-        # Mock transport.perform_request response
-        self.mock_transport.perform_request.return_value = {"task_id": "test-task-id"}
+        # Mock register_model response
+        self.mock_opensearch_client.plugins.ml.register_model.return_value = {
+            "task_id": "test-task-id"
+        }
 
-        # Mock get_task
-        mock_get_task.return_value = {"model_id": "test-model-id"}
+        # Mock the get_task response
+        self.mock_opensearch_client.plugins.ml.get_task.return_value = {
+            "model_id": "test-model-id"
+        }
 
         # Call the method
         model_id = self.helper.register_model(
@@ -458,34 +426,36 @@ class TestAIConnectorHelper(unittest.TestCase):
             deploy=True,
         )
 
-        # Assert correct call to perform_request
-        self.mock_transport.perform_request.assert_called_once_with(
-            method="POST",
-            url="/_plugins/_ml/models/_register",
-            params={"deploy": "true"},
+        # Assert correct call to register_model
+        self.mock_opensearch_client.plugins.ml.register_model.assert_called_once_with(
             body={
                 "name": "test-model",
                 "function_name": "remote",
                 "description": "test description",
                 "connector_id": "test-connector-id",
             },
+            params={"deploy": "true"},
             headers={"Content-Type": "application/json"},
         )
-
         # Assert get_task was called correctly
-        mock_get_task.assert_called_once_with("test-task-id", wait_until_task_done=True)
+        self.mock_opensearch_client.plugins.ml.get_task.assert_called_once_with(
+            "test-task-id"
+        )
 
         # Assert that model_id is returned
         self.assertEqual(model_id, "test-model-id")
 
-    @patch.object(AIConnectorHelper, "get_task")
-    def test_register_model_no_model_id(self, mock_get_task):
+    def test_register_model_no_model_id(self):
         """Test register_model when no model_id is returned from task response"""
-        # Mock transport.perform_request response
-        self.mock_transport.perform_request.return_value = {"task_id": "test-task-id"}
+        # Mock register_model response
+        self.mock_opensearch_client.plugins.ml.register_model.return_value = {
+            "task_id": "test-task-id"
+        }
 
-        # Mock get_task
-        mock_get_task.return_value = {"status": "COMPLETED"}
+        # Mock the get_task response
+        self.mock_opensearch_client.plugins.ml.get_task.return_value = {
+            "status": "COMPLETED"
+        }
 
         # Verify KeyError is raised when no model_id is found
         with self.assertRaises(KeyError) as context:
@@ -499,12 +469,13 @@ class TestAIConnectorHelper(unittest.TestCase):
         # Verify error message
         self.assertIn("'model_id' not found in task response", str(context.exception))
 
-    @patch.object(AIConnectorHelper, "get_task")
-    def test_register_model_error_response(self, mock_get_task):
+    def test_register_model_error_response(self):
         """Test register_model with error response"""
-        # Mock transport.perform_request response
+        # Mock register_model response
         error_message = "Invalid model configuration"
-        self.mock_transport.perform_request.return_value = {"error": error_message}
+        self.mock_opensearch_client.plugins.ml.register_model.return_value = {
+            "error": error_message
+        }
 
         # Verify that the correct exception is raised with the error message
         with self.assertRaises(Exception) as context:
@@ -521,14 +492,15 @@ class TestAIConnectorHelper(unittest.TestCase):
         )
 
         # Verify get_task was not called
-        mock_get_task.assert_not_called()
+        self.mock_opensearch_client.plugins.ml.get_task.assert_not_called()
 
-    @patch.object(AIConnectorHelper, "get_task")
-    def test_register_model_key_error(self, mock_get_task):
+    def test_register_model_key_error(self):
         """Test register_model when response contains neither model_id nor task_id"""
-        # Mock transport.perform_request response
+        # Mock register_model response
         response_data = {"status": "success", "message": "Operation completed"}
-        self.mock_transport.perform_request.return_value = response_data
+        self.mock_opensearch_client.plugins.ml.register_model.return_value = (
+            response_data
+        )
 
         # Verify that KeyError is raised with correct message
         with self.assertRaises(KeyError) as context:
@@ -548,14 +520,14 @@ class TestAIConnectorHelper(unittest.TestCase):
         self.assertEqual(error_message, expected_error_message)
 
         # Verify get_task was not called
-        mock_get_task.assert_not_called()
+        self.mock_opensearch_client.plugins.ml.get_task.assert_not_called()
 
     @patch("opensearch_py_ml.ml_commons.cli.ai_connector_helper.logger")
     def test_register_model_exception_handling(self, mock_logger):
         """Test register_model exception handling and error output"""
-        # Mock transport.perform_request to raise an exception
+        # Mock register_model to raise an exception
         test_error = Exception("Test error message")
-        self.mock_transport.perform_request.side_effect = test_error
+        self.mock_opensearch_client.plugins.ml.register_model.side_effect = test_error
 
         # Verify that the original exception is re-raised
         with self.assertRaises(Exception) as context:
@@ -574,39 +546,22 @@ class TestAIConnectorHelper(unittest.TestCase):
             f"{Fore.RED}Error registering model: Test error message{Style.RESET_ALL}"
         )
 
-    def test_deploy_model(self):
-        """Test deploy_model successful"""
-        # Mock transport.perform_request response
-        mock_response = "Deploy model response"
-        self.mock_transport.perform_request.return_value = mock_response
-
-        # Call the method
-        result = self.helper.deploy_model("test-model-id")
-
-        # Assert that perform_request was called with correct arguments
-        self.mock_transport.perform_request.assert_called_once_with(
-            method="POST",
-            url="/_plugins/_ml/models/test-model-id/_deploy",
-            headers={"Content-Type": "application/json"},
-        )
-
-        # Assert the response
-        self.assertEqual(result, mock_response)
-
     def test_predict(self):
         """Test predict successful"""
         # Mock the transport.perform_request response
         mock_response = {
             "inference_results": [{"output": "Predict response", "status_code": 200}]
         }
-        self.mock_transport.perform_request.return_value = mock_response
+        self.mock_opensearch_client.transport.perform_request.return_value = (
+            mock_response
+        )
 
         # Call the method
         body = {"input": "test input"}
         _, status = self.helper.predict("test-model-id", body)
 
         # Assert that perform_request was called with correct arguments
-        self.mock_transport.perform_request.assert_called_once_with(
+        self.mock_opensearch_client.transport.perform_request.assert_called_once_with(
             method="POST",
             url="/_plugins/_ml/models/test-model-id/_predict",
             body=body,
@@ -614,8 +569,7 @@ class TestAIConnectorHelper(unittest.TestCase):
         )
 
         # Assert the response
-        response_json = self.mock_transport.perform_request.return_value
-        expected_status = response_json["inference_results"][0]["status_code"]
+        expected_status = mock_response["inference_results"][0]["status_code"]
         self.assertEqual(status, expected_status)
 
     def test_get_connector(self):
@@ -627,13 +581,15 @@ class TestAIConnectorHelper(unittest.TestCase):
             "description": "test description",
             "version": "1.0",
         }
-        self.mock_transport.perform_request.return_value = mock_response
+        self.mock_opensearch_client.transport.perform_request.return_value = (
+            mock_response
+        )
 
         # Call the method
         result = self.helper.get_connector("test-connector-id")
 
         # Assert that perform_request was called with correct arguments
-        self.mock_transport.perform_request.assert_called_once_with(
+        self.mock_opensearch_client.transport.perform_request.assert_called_once_with(
             method="GET",
             url="/_plugins/_ml/connectors/test-connector-id",
             headers={"Content-Type": "application/json"},
@@ -1001,3 +957,83 @@ class TestAIConnectorHelper(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+# def setUp(self):
+#     """Set up test fixtures."""
+#     # Create mock OpenSearch client
+#     self.mock_opensearch_client = Mock()
+
+#     # Create helper instance with mock client
+#     self.helper = AIConnectorHelper()
+#     self.helper.opensearch_client = self.mock_opensearch_client
+
+# @patch.object(AIConnectorHelper, "get_task")
+# def test_register_model_error_response(self, mock_get_task):
+#     """Test register_model when error is in response"""
+#     # Mock error response
+#     self.mock_opensearch_client.plugins.ml.register_model.return_value = {
+#         "error": "test error"
+#     }
+
+#     # Call the method and assert it raises exception
+#     with self.assertRaises(Exception) as context:
+#         self.helper.register_model(
+#             "test-model",
+#             "test description",
+#             "test-connector-id",
+#             deploy=True,
+#         )
+
+#     self.assertEqual(str(context.exception), "Error registering model: test error")
+
+# @patch.object(AIConnectorHelper, "get_task")
+# def test_register_model_invalid_response(self, mock_get_task):
+#     """Test register_model when response is invalid"""
+#     # Mock invalid response
+#     self.mock_opensearch_client.plugins.ml.register_model.return_value = {
+#         "invalid": "response"
+#     }
+
+#     # Call the method and assert it raises exception
+#     with self.assertRaises(KeyError) as context:
+#         self.helper.register_model(
+#             "test-model",
+#             "test description",
+#             "test-connector-id",
+#             deploy=True,
+#         )
+
+#     self.assertEqual(
+#         str(context.exception),
+#         "'The response does not contain \\'model_id\\' or \\'task_id\\'. Response content: {\\'invalid\\': \\'response\\'}'"
+#     )
+
+# def test_register_model_direct_model_id(self):
+#     """Test register_model when model_id is directly in response"""
+#     # Mock direct model_id response
+#     self.mock_opensearch_client.plugins.ml.register_model.return_value = {
+#         "model_id": "test-model-id"
+#     }
+
+#     # Call the method
+#     model_id = self.helper.register_model(
+#         "test-model",
+#         "test description",
+#         "test-connector-id",
+#         deploy=True,
+#     )
+
+#     # Assert correct call to register_model
+#     self.mock_opensearch_client.plugins.ml.register_model.assert_called_once_with(
+#         body={
+#             "name": "test-model",
+#             "function_name": "remote",
+#             "description": "test description",
+#             "connector_id": "test-connector-id",
+#         },
+#         params={"deploy": "true"},
+#         headers={"Content-Type": "application/json"},
+#     )
+
+#     # Assert that model_id is returned
+#     self.assertEqual(model_id, "test-model-id")

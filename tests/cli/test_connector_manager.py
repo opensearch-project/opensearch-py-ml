@@ -66,7 +66,10 @@ class TestConnectorManager(unittest.TestCase):
             connector_params=["param1", "param2", "param3"],
             available_models=[ModelInfo(id="1", name="Test Model 1")],
         )
-        self.test_config = {"service_type": "open-source", "some_config": "value"}
+        self.test_config = {
+            "service_type": ConnectorManager.OPEN_SOURCE,
+            "some_config": "value",
+        }
         self.test_connector_config = {
             "setup_config_path": "test/setup/path",
             "connector_name": "Test Connector",
@@ -84,7 +87,7 @@ class TestConnectorManager(unittest.TestCase):
 
     def test_get_connectors_opensource(self):
         """Test get_connectors with open-source service type"""
-        connectors = self.connector_manager.get_connectors("open-source")
+        connectors = self.connector_manager.get_connectors(ConnectorManager.OPEN_SOURCE)
         self.assertEqual(connectors, self.test_opensource_connectors)
         self.assertEqual(len(connectors), 2)
         self.assertEqual(connectors[0].name, "Aleph Alpha")
@@ -92,7 +95,9 @@ class TestConnectorManager(unittest.TestCase):
 
     def test_get_connectors_managed(self):
         """Test get_connectors with amazon-opensearch-service service type"""
-        connectors = self.connector_manager.get_connectors("amazon-opensearch-service")
+        connectors = self.connector_manager.get_connectors(
+            ConnectorManager.AMAZON_OPENSEARCH_SERVICE
+        )
         self.assertEqual(connectors, self.test_managed_connectors)
         self.assertEqual(len(connectors), 1)
         self.assertEqual(connectors[0].name, "Managed Connector")
@@ -108,7 +113,7 @@ class TestConnectorManager(unittest.TestCase):
     @patch("sys.stdout", new_callable=StringIO)
     def test_print_available_connectors_opensource(self, mock_stdout):
         """Test print_available_connectors with open-source connectors"""
-        self.connector_manager.print_available_connectors("open-source")
+        self.connector_manager.print_available_connectors(ConnectorManager.OPEN_SOURCE)
 
         expected_output = (
             "\nPlease select a supported connector to create:\n"
@@ -121,7 +126,9 @@ class TestConnectorManager(unittest.TestCase):
     @patch("sys.stdout", new_callable=StringIO)
     def test_print_available_connectors_managed(self, mock_stdout):
         """Test print_available_connectors with managed connectors"""
-        self.connector_manager.print_available_connectors("amazon-opensearch-service")
+        self.connector_manager.print_available_connectors(
+            ConnectorManager.AMAZON_OPENSEARCH_SERVICE
+        )
 
         expected_output = (
             "\nPlease select a supported connector to create:\n"
@@ -135,7 +142,7 @@ class TestConnectorManager(unittest.TestCase):
         """Test print_available_connectors with empty connector list"""
         # Temporarily set empty connector lists
         self.connector_manager.connector_list._opensource_connectors = []
-        self.connector_manager.print_available_connectors("open-source")
+        self.connector_manager.print_available_connectors(ConnectorManager.OPEN_SOURCE)
 
         # Verify error message
         mock_logger.warning.assert_called_once_with(
@@ -145,19 +152,23 @@ class TestConnectorManager(unittest.TestCase):
     def test_get_connector_by_id_opensource(self):
         """Test get_connector_by_id with open-source connectors"""
         # Test getting first connector
-        connector = self.connector_manager.get_connector_by_id(1, "open-source")
+        connector = self.connector_manager.get_connector_by_id(
+            1, ConnectorManager.OPEN_SOURCE
+        )
         self.assertEqual(connector.id, 1)
         self.assertEqual(connector.name, "Aleph Alpha")
 
         # Test getting second connector
-        connector = self.connector_manager.get_connector_by_id(2, "open-source")
+        connector = self.connector_manager.get_connector_by_id(
+            2, ConnectorManager.OPEN_SOURCE
+        )
         self.assertEqual(connector.id, 2)
         self.assertEqual(connector.name, "Bedrock")
 
     def test_get_connector_by_id_managed(self):
         """Test get_connector_by_id with managed connectors"""
         connector = self.connector_manager.get_connector_by_id(
-            1, "amazon-opensearch-service"
+            1, ConnectorManager.AMAZON_OPENSEARCH_SERVICE
         )
         self.assertEqual(connector.id, 1)
         self.assertEqual(connector.name, "Managed Connector")
@@ -165,7 +176,9 @@ class TestConnectorManager(unittest.TestCase):
     def test_get_connector_by_id_invalid_id(self):
         """Test get_connector_by_id with invalid connector ID"""
         with self.assertRaises(ValueError):
-            self.connector_manager.get_connector_by_id(999, "open-source")
+            self.connector_manager.get_connector_by_id(
+                999, ConnectorManager.OPEN_SOURCE
+            )
 
     def test_get_connector_by_id_invalid_service_type(self):
         """Test get_connector_by_id with invalid service type"""
@@ -179,14 +192,14 @@ class TestConnectorManager(unittest.TestCase):
         """Test get_connector_by_name with open-source connectors"""
         # Test getting first connector
         connector = self.connector_manager.get_connector_by_name(
-            "Aleph Alpha", "open-source"
+            "Aleph Alpha", ConnectorManager.OPEN_SOURCE
         )
         self.assertEqual(connector.id, 1)
         self.assertEqual(connector.name, "Aleph Alpha")
 
         # Test getting second connector
         connector = self.connector_manager.get_connector_by_name(
-            "Bedrock", "open-source"
+            "Bedrock", ConnectorManager.OPEN_SOURCE
         )
         self.assertEqual(connector.id, 2)
         self.assertEqual(connector.name, "Bedrock")
@@ -194,7 +207,7 @@ class TestConnectorManager(unittest.TestCase):
     def test_get_connector_by_name_managed(self):
         """Test get_connector_by_name with managed connectors"""
         connector = self.connector_manager.get_connector_by_name(
-            "Managed Connector", "amazon-opensearch-service"
+            "Managed Connector", ConnectorManager.AMAZON_OPENSEARCH_SERVICE
         )
         self.assertEqual(connector.id, 1)
         self.assertEqual(connector.name, "Managed Connector")
@@ -203,7 +216,7 @@ class TestConnectorManager(unittest.TestCase):
         """Test get_connector_by_name with invalid connector name"""
         with self.assertRaises(ValueError):
             self.connector_manager.get_connector_by_name(
-                "Invalid Connector", "open-source"
+                "Invalid Connector", ConnectorManager.OPEN_SOURCE
             )
 
     def test_get_connector_by_name_invalid_service_type(self):
@@ -217,20 +230,22 @@ class TestConnectorManager(unittest.TestCase):
     def test_get_available_models_opensource(self):
         """Test get_available_models for open-source connectors"""
         models = self.connector_manager.get_available_models(
-            "Aleph Alpha", "open-source"
+            "Aleph Alpha", ConnectorManager.OPEN_SOURCE
         )
         self.assertEqual(len(models), 2)
         self.assertEqual(models[0].name, "Luminous-Base embedding model")
         self.assertEqual(models[1].name, "Custom model")
 
-        models = self.connector_manager.get_available_models("Bedrock", "open-source")
+        models = self.connector_manager.get_available_models(
+            "Bedrock", ConnectorManager.OPEN_SOURCE
+        )
         self.assertEqual(len(models), 1)
         self.assertEqual(models[0].name, "Titan embedding model")
 
     def test_get_available_models_managed(self):
         """Test get_available_models for managed connectors"""
         models = self.connector_manager.get_available_models(
-            "Managed Connector", "amazon-opensearch-service"
+            "Managed Connector", ConnectorManager.AMAZON_OPENSEARCH_SERVICE
         )
         self.assertEqual(len(models), 1)
         self.assertEqual(models[0].name, "Managed Model 1")
@@ -238,7 +253,7 @@ class TestConnectorManager(unittest.TestCase):
     def test_get_available_models_nonexistent_connector(self):
         """Test get_available_models with non-existent connector"""
         models = self.connector_manager.get_available_models(
-            "NonExistent Connector", "open-source"
+            "NonExistent Connector", ConnectorManager.OPEN_SOURCE
         )
         self.assertEqual(models, [])
 
@@ -439,10 +454,10 @@ class TestConnectorManager(unittest.TestCase):
         self.connector_manager.load_config.assert_called_once_with("test/setup/path")
         self.connector_manager._check_config.assert_called_once()
         self.connector_manager.print_available_connectors.assert_called_once_with(
-            "open-source"
+            ConnectorManager.OPEN_SOURCE
         )
         self.connector_manager.get_connector_by_id.assert_called_once_with(
-            1, "open-source"
+            1, ConnectorManager.OPEN_SOURCE
         )
         self.connector_manager.get_connector_class.assert_called_once()
         self.connector_manager.create_model_instance.assert_called_once()
