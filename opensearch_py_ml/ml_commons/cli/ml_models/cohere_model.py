@@ -27,7 +27,7 @@ class CohereModel(ModelBase):
         Get the connectory body
         """
         connector_configs = {
-            "amazon-opensearch-service": {
+            self.AMAZON_OPENSEARCH_SERVICE: {
                 "1": {
                     "name": "Cohere Embedding Model Connector",
                     "description": "Connector for Cohere embedding model",
@@ -43,7 +43,7 @@ class CohereModel(ModelBase):
                 },
                 "2": "Custom model",
             },
-            "open-source": {
+            self.OPEN_SOURCE: {
                 "1": {
                     "name": "Cohere Chat model",
                     "description": "The connector to Cohere's public chat API",
@@ -169,7 +169,7 @@ class CohereModel(ModelBase):
         # Get connector body
         connector_body = connector_body or self._get_connector_body(model_type)
 
-        if self.service_type == "amazon-opensearch-service":
+        if self.service_type == self.AMAZON_OPENSEARCH_SERVICE:
             # Create connector role and secret name
             connector_role_name, create_connector_role_name = (
                 self.create_connector_role(connector_role_prefix, "cohere")
@@ -222,22 +222,22 @@ class CohereModel(ModelBase):
                 connector_output,
                 (
                     connector_role_name
-                    if self.service_type == "amazon-opensearch-service"
+                    if self.service_type == self.AMAZON_OPENSEARCH_SERVICE
                     else None
                 ),
                 (
                     connector_role_arn
-                    if self.service_type == "amazon-opensearch-service"
+                    if self.service_type == self.AMAZON_OPENSEARCH_SERVICE
                     else None
                 ),
                 (
                     secret_name
-                    if self.service_type == "amazon-opensearch-service"
+                    if self.service_type == self.AMAZON_OPENSEARCH_SERVICE
                     else None
                 ),
                 (
                     connector_secret_arn
-                    if self.service_type == "amazon-opensearch-service"
+                    if self.service_type == self.AMAZON_OPENSEARCH_SERVICE
                     else None
                 ),
             )

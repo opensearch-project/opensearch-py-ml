@@ -16,7 +16,7 @@ from opensearch_py_ml.ml_commons.cli.ml_models.deepseek_model import DeepSeekMod
 class TestDeepSeekModel(unittest.TestCase):
 
     def setUp(self):
-        self.service_type = "amazon-opensearch-service"
+        self.service_type = DeepSeekModel.AMAZON_OPENSEARCH_SERVICE
         self.mock_helper = Mock()
         self.mock_save_config = Mock()
         self.deepseek_model = DeepSeekModel(service_type=self.service_type)
@@ -57,7 +57,7 @@ class TestDeepSeekModel(unittest.TestCase):
             self.mock_helper, "^https://api\\.deepseek\\.com/.*$"
         )
         mock_get_model_details.assert_called_once_with(
-            "DeepSeek", "amazon-opensearch-service", "DeepSeek Chat model"
+            "DeepSeek", DeepSeekModel.AMAZON_OPENSEARCH_SERVICE, "DeepSeek Chat model"
         )
         self.assertTrue(result)
 
@@ -99,7 +99,7 @@ class TestDeepSeekModel(unittest.TestCase):
             self.mock_helper, "^https://api\\.deepseek\\.com/.*$"
         )
         mock_get_model_details.assert_called_once_with(
-            "DeepSeek", "amazon-opensearch-service", "Custom model"
+            "DeepSeek", DeepSeekModel.AMAZON_OPENSEARCH_SERVICE, "Custom model"
         )
         mock_custom_model.assert_called_once_with(external=True)
         self.assertTrue(result)
@@ -157,7 +157,7 @@ class TestDeepSeekModel(unittest.TestCase):
     def test_create_connector_chat_model_open_source(self, mock_get_model_details):
         """Test creating a DeepSeek connector with Chat model in open-source service"""
         # Create model with open-source service type
-        open_source_model = DeepSeekModel(service_type="open-source")
+        open_source_model = DeepSeekModel(service_type=DeepSeekModel.OPEN_SOURCE)
         mock_get_model_details.return_value = "1"
 
         result = open_source_model.create_connector(
@@ -169,7 +169,7 @@ class TestDeepSeekModel(unittest.TestCase):
         )
         # Verify method call
         mock_get_model_details.assert_called_once_with(
-            "DeepSeek", "open-source", "DeepSeek Chat model"
+            "DeepSeek", DeepSeekModel.OPEN_SOURCE, "DeepSeek Chat model"
         )
         # Verify that create_connector was called instead of create_connector_with_secret
         self.mock_helper.create_connector.assert_called_once()
@@ -186,7 +186,7 @@ class TestDeepSeekModel(unittest.TestCase):
     ):
         """Test creating a DeepSeek connector with custom model in open-source service"""
         # Create model with open-source service type
-        open_source_model = DeepSeekModel(service_type="open-source")
+        open_source_model = DeepSeekModel(service_type=DeepSeekModel.OPEN_SOURCE)
         mock_custom_model.return_value = {
             "name": "Custom Model",
             "description": "Custom description",
@@ -201,7 +201,7 @@ class TestDeepSeekModel(unittest.TestCase):
         )
         # Verify method call
         mock_get_model_details.assert_called_once_with(
-            "DeepSeek", "open-source", "Custom model"
+            "DeepSeek", DeepSeekModel.OPEN_SOURCE, "Custom model"
         )
         # Verify that create_connector was called instead of create_connector_with_secret
         self.mock_helper.create_connector.assert_called_once()
@@ -220,7 +220,7 @@ class TestDeepSeekModel(unittest.TestCase):
     ):
         """Test creating a DeepSeek connector with an invalid model choice in open-source service"""
         # Create model with open-source service type
-        open_source_model = DeepSeekModel(service_type="open-source")
+        open_source_model = DeepSeekModel(service_type=DeepSeekModel.OPEN_SOURCE)
         mock_custom_model.return_value = {
             "name": "Custom Model",
             "description": "Custom description",

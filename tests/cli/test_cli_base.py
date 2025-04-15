@@ -27,7 +27,7 @@ class TestCLIBase(unittest.TestCase):
             "section2": {"key2": "value2"},
         }
         self.valid_config = {
-            "service_type": "amazon-opensearch-service",
+            "service_type": CLIBase.AMAZON_OPENSEARCH_SERVICE,
             "opensearch_config": {
                 "opensearch_domain_endpoint": "https://test-endpoint",
                 "opensearch_domain_region": "us-west-2",
@@ -563,7 +563,7 @@ class TestCLIBase(unittest.TestCase):
     def test_check_config_opensource(self, mock_print):
         """Test _check_config with open-source service successful"""
         # Setup
-        self.valid_config["service_type"] = "open-source"
+        self.valid_config["service_type"] = CLIBase.OPEN_SOURCE
         service_type = self.valid_config["service_type"]
         opensearch_config = self.valid_config["opensearch_config"]
 

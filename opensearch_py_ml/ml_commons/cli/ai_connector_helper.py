@@ -22,7 +22,6 @@ from opensearch_py_ml.ml_commons.cli.opensearch_domain_config import (
     OpenSearchDomainConfig,
 )
 from opensearch_py_ml.ml_commons.iam_role_helper import IAMRoleHelper
-from opensearch_py_ml.ml_commons.ml_common_utils import TIMEOUT
 from opensearch_py_ml.ml_commons.secret_helper import SecretHelper
 
 # Disable warnings when verify_certs=False
@@ -37,6 +36,10 @@ class AIConnectorHelper:
     """
     Helper class for managing AI connectors and models in OpenSearch.
     """
+
+    OPEN_SOURCE = "open-source"
+    AMAZON_OPENSEARCH_SERVICE = "amazon-opensearch-service"
+    AWS_DOMAIN = "amazonaws.com"
 
     def __init__(
         self,
@@ -53,7 +56,7 @@ class AIConnectorHelper:
         self.opensearch_config = opensearch_config
         self.aws_config = aws_config
 
-        if self.service_type == "open-source":
+        if self.service_type == self.OPEN_SOURCE:
             domain_endpoint = self.opensearch_config.opensearch_domain_endpoint
             domain_arn = None
         else:
@@ -70,7 +73,7 @@ class AIConnectorHelper:
         # Parse the OpenSearch domain URL to extract host and port
         parsed_url = urlparse(self.opensearch_config.opensearch_domain_endpoint)
         host = parsed_url.hostname
-        is_aos = "amazonaws.com" in host
+        is_aos = self.AWS_DOMAIN in host
         port = parsed_url.port or (443 if is_aos else 9200)
 
         # Initialize OpenSearch client
@@ -86,7 +89,7 @@ class AIConnectorHelper:
         )
 
         # Initialize helpers for IAM roles and secrets management
-        if self.service_type == "open-source":
+        if self.service_type == self.OPEN_SOURCE:
             self.iam_helper = None
             self.secret_helper = None
         else:
@@ -163,50 +166,6 @@ class AIConnectorHelper:
         )
         return awsauth
 
-    def get_task_info(self, task_id: str, wait_until_task_done: bool = False) -> object:
-        """
-        Returns information about a task running into opensearch cluster
-        Replicating the get_task_info in ml_commons_client.py
-        since ML client APIs will be deprecated
-        """
-        if wait_until_task_done:
-            end = time.time() + TIMEOUT  # timeout seconds
-            task_flag = False
-            while not task_flag and time.time() < end:
-                time.sleep(1)
-                output = self._get_task_info(task_id)
-                if (
-                    output["state"] == "COMPLETED"
-                    or output["state"] == "FAILED"
-                    or output["state"] == "COMPLETED_WITH_ERROR"
-                ):
-                    task_flag = True
-        return self._get_task_info(task_id)
-
-    def _get_task_info(self, task_id: str):
-        """
-        Perform the get request to get the task status
-        Replicating the _get_task_info in ml_commons_client.py
-        since ML client APIs will be deprecated
-        """
-        headers = {"Content-Type": "application/json"}
-        response = self.opensearch_client.transport.perform_request(
-            method="GET", url=f"/_plugins/_ml/tasks/{task_id}", headers=headers
-        )
-        return response
-
-    def get_task(self, task_id, wait_until_task_done=False):
-        """
-        Retrieve the status of a specific task using its ID.
-        """
-        try:
-            response = self.get_task_info(task_id, wait_until_task_done)
-            print("Get Task Response:", json.dumps(response))
-            return response
-        except Exception as e:
-            logger.error(f"Error in get_task: {e}")
-            raise
-
     def register_model(
         self,
         model_name,
@@ -215,7 +174,7 @@ class AIConnectorHelper:
         deploy=True,
     ):
         """
-        Register a new model in OpenSearch and optionally deploy it.
+        Register a remote model in OpenSearch using ML APIs in opensearch-py
         """
         try:
             body = {
@@ -227,20 +186,17 @@ class AIConnectorHelper:
             headers = {"Content-Type": "application/json"}
             deploy_str = str(deploy).lower()
 
-            response = self.opensearch_client.transport.perform_request(
-                method="POST",
-                url="/_plugins/_ml/models/_register",
-                params={"deploy": deploy_str},
+            response = self.opensearch_client.plugins.ml.register_model(
                 body=body,
+                params={"deploy": deploy_str},
                 headers=headers,
             )
+
             if "model_id" in response:
                 return response["model_id"]
             elif "task_id" in response:
-                # Handle asynchronous task by leveraging wait_until_task_done
-                task_response = self.get_task(
+                task_response = self.opensearch_client.plugins.ml.get_task(
                     response["task_id"],
-                    wait_until_task_done=True,
                 )
                 print("Task Response:", json.dumps(task_response))
                 if "model_id" in task_response:
@@ -261,19 +217,8 @@ class AIConnectorHelper:
             )
             raise
 
-    def deploy_model(self, model_id):
-        """
-        Deploy a specified model in OpenSearch.
-        """
-        headers = {"Content-Type": "application/json"}
-        response = self.opensearch_client.transport.perform_request(
-            method="POST",
-            url=f"/_plugins/_ml/models/{model_id}/_deploy",
-            headers=headers,
-        )
-        print(f"Deploy Model Response: {response}")
-        return response
-
+    # TODO: Replace with self.opensearch_client.plugins.ml.predict() once available in opensearch-py
+    # Current workaround uses transport.perform_request directly
     def predict(self, model_id, body):
         """
         Make a prediction using the specified model and input body.
@@ -290,6 +235,8 @@ class AIConnectorHelper:
         print(f"Predict Response: {response_text[:200]}...{response_text[-21:]}")
         return response_text, status
 
+    # TODO: Replace with self.opensearch_client.plugins.ml.get_connector() once available in opensearch-py
+    # Current workaround uses transport.perform_request directly
     def get_connector(self, connector_id):
         """
         Get a connector information from the connector ID.
@@ -315,10 +262,10 @@ class AIConnectorHelper:
         # Parse the OpenSearch domain URL to extract host and port
         parsed_url = urlparse(self.opensearch_config.opensearch_domain_endpoint)
         host = parsed_url.hostname
-        is_aos = "amazonaws.com" in host
+        is_aos = self.AWS_DOMAIN in host
         port = parsed_url.port or (443 if is_aos else 9200)
 
-        if self.service_type == "amazon-opensearch-service":
+        if self.service_type == self.AMAZON_OPENSEARCH_SERVICE:
             # Obtain AWS4Auth credentials and initialize OpenSearch client with the credentials
             temp_awsauth = self.get_ml_auth(create_connector_role_name)
             temp_os_client = OpenSearch(
@@ -343,9 +290,7 @@ class AIConnectorHelper:
 
         # Create connector using the body parameter
         headers = {"Content-Type": "application/json"}
-        response = temp_os_client.transport.perform_request(
-            method="POST",
-            url="/_plugins/_ml/connectors/_create",
+        response = temp_os_client.plugins.ml.create_connector(
             body=body,
             headers=headers,
         )

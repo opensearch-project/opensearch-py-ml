@@ -344,7 +344,7 @@ class TestSetup(unittest.TestCase):
 
         self.setup_instance.setup_configuration()
         config = self.setup_instance.config
-        self.assertEqual(config["service_type"], "amazon-opensearch-service")
+        self.assertEqual(config["service_type"], CLIBase.AMAZON_OPENSEARCH_SERVICE)
         self.assertEqual(
             config["opensearch_config"]["opensearch_domain_region"], "us-west-2"
         )
@@ -388,7 +388,7 @@ class TestSetup(unittest.TestCase):
 
         self.setup_instance.setup_configuration()
         config = self.setup_instance.config
-        self.assertEqual(config["service_type"], "amazon-opensearch-service")
+        self.assertEqual(config["service_type"], CLIBase.AMAZON_OPENSEARCH_SERVICE)
         self.assertEqual(
             config["opensearch_config"]["opensearch_domain_region"], "us-west-2"
         )
@@ -433,7 +433,7 @@ class TestSetup(unittest.TestCase):
 
         self.setup_instance.setup_configuration()
         config = self.setup_instance.config
-        self.assertEqual(config["service_type"], "amazon-opensearch-service")
+        self.assertEqual(config["service_type"], CLIBase.AMAZON_OPENSEARCH_SERVICE)
         self.assertEqual(
             config["opensearch_config"]["opensearch_domain_region"], "us-west-2"
         )
@@ -463,7 +463,7 @@ class TestSetup(unittest.TestCase):
         """Test setup_configuration in open-source service with authorization"""
         self.setup_instance.setup_configuration()
         config = self.setup_instance.config
-        self.assertEqual(config["service_type"], "open-source")
+        self.assertEqual(config["service_type"], CLIBase.OPEN_SOURCE)
         self.assertEqual(
             config["opensearch_config"]["opensearch_domain_username"], "admin"
         )
@@ -476,7 +476,7 @@ class TestSetup(unittest.TestCase):
         """Test setup_configuration in open-source service without authorization"""
         self.setup_instance.setup_configuration()
         config = self.setup_instance.config
-        self.assertEqual(config["service_type"], "open-source")
+        self.assertEqual(config["service_type"], CLIBase.OPEN_SOURCE)
         self.assertEqual(
             config["opensearch_config"]["opensearch_domain_username"], None
         )
@@ -505,7 +505,7 @@ class TestSetup(unittest.TestCase):
         """Test setup_configuration with invalid service type"""
         self.setup_instance.setup_configuration()
         config = self.setup_instance.config
-        self.assertEqual(config["service_type"], "amazon-opensearch-service")
+        self.assertEqual(config["service_type"], CLIBase.AMAZON_OPENSEARCH_SERVICE)
         mock_logger.warning.assert_called_once_with(
             f"\n{Fore.YELLOW}Invalid choice. Defaulting to 'amazon-opensearch-service'.{Style.RESET_ALL}"
         )
@@ -514,7 +514,7 @@ class TestSetup(unittest.TestCase):
     @patch("opensearch_py_ml.ml_commons.cli.ml_setup.OpenSearch")
     def test_initialize_opensearch_client_managed(self, mock_opensearch):
         """Test initialize_opensearch_client in managed service"""
-        self.setup_instance.service_type = "amazon-opensearch-service"
+        self.setup_instance.service_type = CLIBase.AMAZON_OPENSEARCH_SERVICE
         self.setup_instance.opensearch_config.opensearch_domain_endpoint = (
             "https://test-domain:443"
         )
@@ -527,7 +527,7 @@ class TestSetup(unittest.TestCase):
     @patch("opensearch_py_ml.ml_commons.cli.ml_setup.OpenSearch")
     def test_initialize_opensearch_client_open_source_no_auth(self, mock_opensearch):
         """Test initialize_opensearch_client in open-source service without authorization"""
-        self.setup_instance.service_type = "open-source"
+        self.setup_instance.service_type = CLIBase.OPEN_SOURCE
         self.setup_instance.opensearch_config.opensearch_domain_endpoint = (
             "http://localhost:9200"
         )
@@ -540,7 +540,7 @@ class TestSetup(unittest.TestCase):
     @patch("opensearch_py_ml.ml_commons.cli.ml_setup.OpenSearch")
     def test_initialize_opensearch_client_open_source_with_auth(self, mock_opensearch):
         """Test initialize_opensearch_client in open-source service with authorization"""
-        self.setup_instance.service_type = "open-source"
+        self.setup_instance.service_type = CLIBase.OPEN_SOURCE
         self.setup_instance.opensearch_config.opensearch_domain_endpoint = (
             "http://localhost:9200"
         )
@@ -553,7 +553,7 @@ class TestSetup(unittest.TestCase):
     @patch("opensearch_py_ml.ml_commons.cli.ml_setup.logger")
     def test_initialize_opensearch_client_no_endpoint(self, mock_logger):
         """Test initialize_opensearch_client without domain endpoint"""
-        self.setup_instance.service_type = "amazon-opensearch-service"
+        self.setup_instance.service_type = CLIBase.AMAZON_OPENSEARCH_SERVICE
         self.setup_instance.opensearch_domain_username = "admin"
         self.setup_instance.opensearch_domain_password = "pass"
         result = self.setup_instance.initialize_opensearch_client()
@@ -565,7 +565,7 @@ class TestSetup(unittest.TestCase):
     @patch("opensearch_py_ml.ml_commons.cli.ml_setup.logger")
     def test_initialize_opensearch_client_no_username_password(self, mock_logger):
         """Test initialize_opensearch_client without domain username and password"""
-        self.setup_instance.service_type = "amazon-opensearch-service"
+        self.setup_instance.service_type = CLIBase.AMAZON_OPENSEARCH_SERVICE
         self.setup_instance.opensearch_config.opensearch_domain_endpoint = (
             "https://test-domain:443"
         )
@@ -592,7 +592,7 @@ class TestSetup(unittest.TestCase):
     @patch("opensearch_py_ml.ml_commons.cli.ml_setup.OpenSearch")
     def test_initialize_opensearch_client_exception(self, mock_opensearch, mock_logger):
         """Test initialize_opensearch_client exception handling"""
-        self.setup_instance.service_type = "open-source"
+        self.setup_instance.service_type = CLIBase.OPEN_SOURCE
         self.setup_instance.opensearch_config.opensearch_domain_endpoint = (
             "http://localhost:9200"
         )
@@ -606,7 +606,7 @@ class TestSetup(unittest.TestCase):
     def test_update_from_config(self):
         """Test _update_from_config successful"""
         self.setup_instance.config = {
-            "service_type": "amazon-opensearch-service",
+            "service_type": CLIBase.AMAZON_OPENSEARCH_SERVICE,
             "opensearch_config": {
                 "opensearch_domain_region": "us-west-2",
                 "opensearch_domain_endpoint": "https://test-endpoint",
@@ -627,7 +627,9 @@ class TestSetup(unittest.TestCase):
 
         # Verify
         self.assertTrue(result)
-        self.assertEqual(self.setup_instance.service_type, "amazon-opensearch-service")
+        self.assertEqual(
+            self.setup_instance.service_type, CLIBase.AMAZON_OPENSEARCH_SERVICE
+        )
 
         # Verify OpenSearch config
         self.assertEqual(
@@ -675,7 +677,7 @@ class TestSetup(unittest.TestCase):
         config_path = "test_config.yml"
         mock_load_config.return_value = True
         mock_update_config.return_value = True
-        self.setup_instance.service_type = "amazon-opensearch-service"
+        self.setup_instance.service_type = CLIBase.AMAZON_OPENSEARCH_SERVICE
 
         # Execute
         result = self.setup_instance.setup_command(config_path)
@@ -749,7 +751,7 @@ class TestSetup(unittest.TestCase):
         # Setup
         mock_load_config.return_value = True
         mock_update_config.return_value = True
-        self.setup_instance.service_type = "amazon-opensearch-service"
+        self.setup_instance.service_type = CLIBase.AMAZON_OPENSEARCH_SERVICE
 
         # Execute
         result = self.setup_instance.setup_command()
@@ -793,7 +795,7 @@ class TestSetup(unittest.TestCase):
         config_path = "test_config.yml"
         mock_load_config.return_value = True
         mock_update_config.return_value = False
-        self.setup_instance.service_type = "amazon-opensearch-service"
+        self.setup_instance.service_type = CLIBase.AMAZON_OPENSEARCH_SERVICE
 
         # Execute
         self.setup_instance.setup_command(config_path)
@@ -836,7 +838,7 @@ class TestSetup(unittest.TestCase):
         mock_initialize_client.return_value = True
         mock_setup_configuration.return_value = "new_config.yml"
 
-        self.setup_instance.service_type = "open-source"
+        self.setup_instance.service_type = CLIBase.OPEN_SOURCE
         self.setup_instance.setup_command()
 
         # Verify
@@ -856,7 +858,7 @@ class TestSetup(unittest.TestCase):
         mock_initialize_client.return_value = False
         mock_setup_configuration.return_value = "new_config.yml"
 
-        self.setup_instance.service_type = "open-source"
+        self.setup_instance.service_type = CLIBase.OPEN_SOURCE
         self.setup_instance.setup_command()
 
         # Verify

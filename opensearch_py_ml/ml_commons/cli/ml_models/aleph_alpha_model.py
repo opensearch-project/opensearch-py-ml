@@ -91,7 +91,7 @@ class AlephAlphaModel(ModelBase):
         self.set_trusted_endpoint(helper, trusted_endpoint)
 
         # Prompt to choose model
-        model_type = self.get_model_details("Aleph Alpha", "open-source", model_name)
+        model_type = self.get_model_details("Aleph Alpha", self.OPEN_SOURCE, model_name)
 
         # Prompt for API key
         aleph_alpha_api_key = self.set_api_key(api_key, "Aleph Alpha")

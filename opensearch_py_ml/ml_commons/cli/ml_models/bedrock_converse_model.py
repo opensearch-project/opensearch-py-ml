@@ -134,7 +134,7 @@ class BedrockConverseModel(ModelBase):
         # Get connector body
         connector_body = connector_body or self._get_connector_body(model_type, region)
 
-        if self.service_type == "amazon-opensearch-service":
+        if self.service_type == self.AMAZON_OPENSEARCH_SERVICE:
             # Create connector role
             connector_role_name, create_connector_role_name = (
                 self.create_connector_role(connector_role_prefix, "bedrock")
@@ -186,12 +186,12 @@ class BedrockConverseModel(ModelBase):
                 connector_output,
                 (
                     connector_role_name
-                    if self.service_type == "amazon-opensearch-service"
+                    if self.service_type == self.AMAZON_OPENSEARCH_SERVICE
                     else None
                 ),
                 (
                     connector_role_arn
-                    if self.service_type == "amazon-opensearch-service"
+                    if self.service_type == self.AMAZON_OPENSEARCH_SERVICE
                     else None
                 ),
             )

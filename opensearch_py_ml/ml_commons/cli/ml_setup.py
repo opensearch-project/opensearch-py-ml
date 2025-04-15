@@ -231,17 +231,17 @@ class Setup(CLIBase):
         service_choice = input("Enter your choice (1-2): ").strip()
 
         if service_choice == "1":
-            self.service_type = "amazon-opensearch-service"
+            self.service_type = self.AMAZON_OPENSEARCH_SERVICE
         elif service_choice == "2":
-            self.service_type = "open-source"
+            self.service_type = self.OPEN_SOURCE
         else:
             logger.warning(
                 f"\n{Fore.YELLOW}Invalid choice. Defaulting to 'amazon-opensearch-service'.{Style.RESET_ALL}"
             )
-            self.service_type = "amazon-opensearch-service"
+            self.service_type = self.AMAZON_OPENSEARCH_SERVICE
 
         # Based on service type, prompt for different configurations
-        if self.service_type == "amazon-opensearch-service":
+        if self.service_type == self.AMAZON_OPENSEARCH_SERVICE:
             print("\n--- Amazon OpenSearch Service Setup ---")
             self.configure_aws()
 
@@ -287,7 +287,7 @@ class Setup(CLIBase):
             self.opensearch_config.opensearch_domain_password = (
                 self.get_password_with_asterisks("Enter your AWS OpenSearch password: ")
             )
-        elif self.service_type == "open-source":
+        elif self.service_type == self.OPEN_SOURCE:
             # For open-source, skip AWS configurations
             print("\n--- Open-source OpenSearch Setup ---")
             default_endpoint = "https://localhost:9200"
@@ -367,7 +367,7 @@ class Setup(CLIBase):
         is_aos = "amazonaws.com" in host
         port = parsed_url.port or (443 if is_aos else 9200)
         # Determine auth based on service type
-        if self.service_type == "amazon-opensearch-service":
+        if self.service_type == self.AMAZON_OPENSEARCH_SERVICE:
             if (
                 not self.opensearch_config.opensearch_domain_username
                 or not self.opensearch_config.opensearch_domain_password
@@ -380,7 +380,7 @@ class Setup(CLIBase):
                 self.opensearch_config.opensearch_domain_username,
                 self.opensearch_config.opensearch_domain_password,
             )
-        elif self.service_type == "open-source":
+        elif self.service_type == self.OPEN_SOURCE:
             if (
                 self.opensearch_config.opensearch_domain_username
                 and self.opensearch_config.opensearch_domain_password
@@ -457,7 +457,7 @@ class Setup(CLIBase):
         """
         if self.load_config(config_path):
             if self._update_from_config():
-                if self.service_type == "amazon-opensearch-service":
+                if self.service_type == self.AMAZON_OPENSEARCH_SERVICE:
                     self.check_and_configure_aws(config_path)
                 print(
                     f"{Fore.GREEN}\nSetup complete. You are now ready to use the ML features.{Style.RESET_ALL}"

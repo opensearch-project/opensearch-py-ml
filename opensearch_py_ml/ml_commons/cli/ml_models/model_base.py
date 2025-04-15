@@ -19,6 +19,10 @@ from opensearch_py_ml.ml_commons.cli.ml_setup import Setup
 
 
 class ModelBase:
+
+    OPEN_SOURCE = Setup.OPEN_SOURCE
+    AMAZON_OPENSEARCH_SERVICE = Setup.AMAZON_OPENSEARCH_SERVICE
+
     def set_trusted_endpoint(self, helper, trusted_endpoint):
         """
         Sets the trusted endpoint for the model
