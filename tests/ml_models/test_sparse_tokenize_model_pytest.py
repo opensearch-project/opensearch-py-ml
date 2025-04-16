@@ -206,5 +206,64 @@ def test_save_as_pt_with_license():
     clean_test_folder(TEST_FOLDER)
 
 
+def test_default_description():
+    model_id = "opensearch-project/opensearch-neural-sparse-encoding-doc-v3-distill"
+    model_format = "TORCH_SCRIPT"
+    expected_model_description = "This is a neural sparse tokenizer model: It tokenize input sentence into tokens and assign pre-defined weight from IDF to each. It serves only in query."
+
+    clean_test_folder(TEST_FOLDER)
+    test_model7 = SparseTokenizeModel(
+        folder_path=TEST_FOLDER,
+        model_id=model_id,
+    )
+
+    test_model7.save_as_pt(model_id=model_id, sentences=["today is sunny"])
+    model_config_path_torch = test_model7.make_model_config_json(
+        model_format=model_format
+    )
+    try:
+        with open(model_config_path_torch) as json_file:
+            model_config_data_torch = json.load(json_file)
+    except Exception as exec:
+        assert (
+            False
+        ), f"Creating model config file for tracing in {model_format} raised an exception {exec}"
+
+    assert (
+        "description" in model_config_data_torch
+        and model_config_data_torch["description"] == expected_model_description
+    ), "Missing or Wrong model description in model config file when the description is not given."
+
+    clean_test_folder(TEST_FOLDER)
+
+
+def test_process_sparse_encoding():
+    model_id = "opensearch-project/opensearch-neural-sparse-encoding-doc-v3-distill"
+
+    test_model8 = SparseTokenizeModel(
+        folder_path=TEST_FOLDER,
+        model_id=model_id,
+    )
+    encoding_result = test_model8.process_sparse_encoding(["hello world", "hello"])
+    assert encoding_result == [
+        {"hello": 6.937756538391113, "world": 3.4208686351776123},
+        {"hello": 6.937756538391113},
+    ]
+
+
+def test_save():
+    model_id = "opensearch-project/opensearch-neural-sparse-encoding-doc-v3-distill"
+
+    test_model9 = SparseTokenizeModel(
+        folder_path=TEST_FOLDER,
+        model_id=model_id,
+    )
+    clean_test_folder(TEST_FOLDER)
+    test_model9.save(TEST_FOLDER)
+    assert os.path.exists(os.path.join(TEST_FOLDER, "tokenizer.json"))
+    assert os.path.exists(os.path.join(TEST_FOLDER, "idf.json"))
+    clean_test_folder(TEST_FOLDER)
+
+
 clean_test_folder(TEST_FOLDER)
 clean_test_folder(TESTDATA_UNZIP_FOLDER)

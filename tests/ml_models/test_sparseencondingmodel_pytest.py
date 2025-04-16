@@ -270,5 +270,63 @@ def test_save_as_pt_with_license():
     clean_test_folder(TEST_FOLDER)
 
 
+def test_default_description():
+    model_id = "opensearch-project/opensearch-neural-sparse-encoding-doc-v3-distill"
+    model_format = "TORCH_SCRIPT"
+    expected_model_description = "This is a neural sparse encoding model: It transfers text into sparse vector, and then extract nonzero index and value to entry and weights. It serves only in ingestion and customer should use tokenizer model in query."
+
+    clean_test_folder(TEST_FOLDER)
+    test_model7 = SparseEncodingModel(
+        folder_path=TEST_FOLDER,
+        model_id=model_id,
+    )
+
+    test_model7.save_as_pt(model_id=model_id, sentences=["today is sunny"])
+    model_config_path_torch = test_model7.make_model_config_json(
+        model_format=model_format
+    )
+    try:
+        with open(model_config_path_torch) as json_file:
+            model_config_data_torch = json.load(json_file)
+    except Exception as exec:
+        assert (
+            False
+        ), f"Creating model config file for tracing in {model_format} raised an exception {exec}"
+
+    assert (
+        "description" in model_config_data_torch
+        and model_config_data_torch["description"] == expected_model_description
+    ), "Missing or Wrong model description in model config file when the description is not given."
+
+    clean_test_folder(TEST_FOLDER)
+
+
+def test_process_sparse_encoding():
+    model_id = "opensearch-project/opensearch-neural-sparse-encoding-doc-v3-distill"
+
+    test_model8 = SparseEncodingModel(
+        folder_path=TEST_FOLDER,
+        model_id=model_id,
+    )
+
+    encoding_result = test_model8.process_sparse_encoding(["hello world", "hello"])
+    assert len(encoding_result[0]) == 73
+    assert encoding_result[0]["hello"] == 1.3667216300964355
+    assert len(encoding_result[1]) == 46
+    assert encoding_result[1]["hello"] == 1.4557286500930786
+
+    test_model8 = SparseEncodingModel(
+        folder_path=TEST_FOLDER,
+        model_id=model_id,
+        sparse_prune_ratio=0.1,
+        activation="l0",
+    )
+    encoding_result = test_model8.process_sparse_encoding(["hello world", "hello"])
+    assert len(encoding_result[0]) == 33
+    assert encoding_result[0]["hello"] == 0.8615057468414307
+    assert len(encoding_result[1]) == 30
+    assert encoding_result[1]["hello"] == 0.8984234929084778
+
+
 clean_test_folder(TEST_FOLDER)
 clean_test_folder(TESTDATA_UNZIP_FOLDER)
