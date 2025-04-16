@@ -17,9 +17,12 @@ class TestSageMakerModel(unittest.TestCase):
 
     def setUp(self):
         self.region = "us-west-2"
+        self.service_type = SageMakerModel.AMAZON_OPENSEARCH_SERVICE
         self.mock_helper = Mock()
         self.mock_save_config = Mock()
-        self.sagemaker_model = SageMakerModel(opensearch_domain_region=self.region)
+        self.sagemaker_model = SageMakerModel(
+            opensearch_domain_region=self.region, service_type=self.service_type
+        )
         self.connector_role_prefix = "test_role"
         self.connector_endpoint_arn = "test_arn"
         self.connector_endpoint_url = "test_url"

@@ -119,6 +119,9 @@ class ComprehendModel(ModelBase):
         model_name=None,
         model_arn=None,
         connector_body=None,
+        aws_access_key=None,
+        aws_secret_access_key=None,
+        aws_session_token=None,
     ):
         """
         Create Comprehend connector.
@@ -166,17 +169,15 @@ class ComprehendModel(ModelBase):
         else:
             # Prompt for AWS credentials
             setup = Setup()
-            print("\nPlease enter your AWS credentials:")
             connector_body["credential"] = {
-                "access_key": setup.get_password_with_asterisks(
-                    "Enter your AWS Access Key ID: "
-                ),
-                "secret_key": setup.get_password_with_asterisks(
+                "access_key": aws_access_key
+                or setup.get_password_with_asterisks("Enter your AWS Access Key ID: "),
+                "secret_key": aws_secret_access_key
+                or setup.get_password_with_asterisks(
                     "Enter your AWS Secret Access Key: "
                 ),
-                "session_token": setup.get_password_with_asterisks(
-                    "Enter your AWS Session Token: "
-                ),
+                "session_token": aws_session_token
+                or setup.get_password_with_asterisks("Enter your AWS Session Token: "),
             }
 
             # Create connector

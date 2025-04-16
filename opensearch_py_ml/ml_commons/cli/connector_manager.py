@@ -205,6 +205,7 @@ class ConnectorManager(CLIBase):
             connector_name = model_name = connector_role_prefix = None
             region = model_arn = connector_body = None
             api_key = secret_name = endpoint_arn = endpoint_url = None
+            aws_access_key = aws_secret_access_key = aws_session_token = None
 
             # Retrieve the connector information if the connector config path is given in the command
             if connector_config_path:
@@ -218,6 +219,9 @@ class ConnectorManager(CLIBase):
                 secret_name = connector_config.get("connector_secret_name")
                 endpoint_arn = connector_config.get("inference_endpoint_arn")
                 endpoint_url = connector_config.get("inference_endpoint_url")
+                aws_access_key = connector_config.get("aws_access_key")
+                aws_secret_access_key = connector_config.get("aws_secret_access_key")
+                aws_session_token = connector_config.get("aws_session_token")
 
                 try:
                     connector_info = self.get_connector_by_name(
@@ -258,6 +262,9 @@ class ConnectorManager(CLIBase):
                 "secret_name": secret_name,
                 "endpoint_arn": endpoint_arn,
                 "endpoint_url": endpoint_url,
+                "aws_access_key": aws_access_key,
+                "aws_secret_access_key": aws_secret_access_key,
+                "aws_session_token": aws_session_token,
             }
 
             # Create connector instance
