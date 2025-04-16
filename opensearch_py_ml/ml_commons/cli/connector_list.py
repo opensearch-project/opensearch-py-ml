@@ -63,6 +63,9 @@ class ConnectorList:
                     "model_name",
                     "model_arn",
                     "connector_body",
+                    "aws_access_key",
+                    "aws_secret_access_key",
+                    "aws_session_token",
                 ],
                 available_models=[
                     ModelInfo(id="1", name="AI21 Labs Jurassic-2 Mid"),
@@ -88,6 +91,9 @@ class ConnectorList:
                     "model_name",
                     "model_arn",
                     "connector_body",
+                    "aws_access_key",
+                    "aws_secret_access_key",
+                    "aws_session_token",
                 ],
                 available_models=[
                     ModelInfo(id="1", name="Anthropic Claude 3 Sonnet"),
@@ -106,6 +112,9 @@ class ConnectorList:
                     "model_name",
                     "model_arn",
                     "connector_body",
+                    "aws_access_key",
+                    "aws_secret_access_key",
+                    "aws_session_token",
                 ],
                 available_models=[
                     ModelInfo(id="1", name="Metadata embedding model"),
@@ -134,6 +143,28 @@ class ConnectorList:
             ),
             ConnectorInfo(
                 id=6,
+                name="Amazon SageMaker",
+                file_name="sagemaker_model",
+                connector_class="SageMakerModel",
+                init_params=["opensearch_domain_region", "service_type"],
+                connector_params=[
+                    "connector_role_prefix",
+                    "region",
+                    "model_name",
+                    "endpoint_arn",
+                    "endpoint_url",
+                    "connector_body",
+                    "aws_access_key",
+                    "aws_secret_access_key",
+                    "aws_session_token",
+                ],
+                available_models=[
+                    ModelInfo(id="1", name="Embedding model"),
+                    ModelInfo(id="2", name="Custom model"),
+                ],
+            ),
+            ConnectorInfo(
+                id=7,
                 name="Cohere",
                 file_name="cohere_model",
                 connector_class="CohereModel",
@@ -153,7 +184,7 @@ class ConnectorList:
                 ],
             ),
             ConnectorInfo(
-                id=7,
+                id=8,
                 name="DeepSeek",
                 file_name="deepseek_model",
                 connector_class="DeepSeekModel",
@@ -171,7 +202,7 @@ class ConnectorList:
                 ],
             ),
             ConnectorInfo(
-                id=8,
+                id=9,
                 name="OpenAI",
                 file_name="openai_model",
                 connector_class="OpenAIModel",
@@ -204,6 +235,9 @@ class ConnectorList:
                     "model_name",
                     "model_arn",
                     "connector_body",
+                    "aws_access_key",
+                    "aws_secret_access_key",
+                    "aws_session_token",
                 ],
                 available_models=[
                     ModelInfo(id="1", name="AI21 Labs Jurassic-2 Mid"),
@@ -229,6 +263,9 @@ class ConnectorList:
                     "model_name",
                     "model_arn",
                     "connector_body",
+                    "aws_access_key",
+                    "aws_secret_access_key",
+                    "aws_session_token",
                 ],
                 available_models=[
                     ModelInfo(id="1", name="Anthropic Claude 3 Sonnet"),
@@ -247,6 +284,9 @@ class ConnectorList:
                     "model_name",
                     "model_arn",
                     "connector_body",
+                    "aws_access_key",
+                    "aws_secret_access_key",
+                    "aws_session_token",
                 ],
                 available_models=[
                     ModelInfo(id="1", name="Metadata embedding model"),
@@ -258,7 +298,7 @@ class ConnectorList:
                 name="Amazon SageMaker",
                 file_name="sagemaker_model",
                 connector_class="SageMakerModel",
-                init_params=["opensearch_domain_region"],
+                init_params=["opensearch_domain_region", "service_type"],
                 connector_params=[
                     "connector_role_prefix",
                     "region",
@@ -266,6 +306,9 @@ class ConnectorList:
                     "endpoint_arn",
                     "endpoint_url",
                     "connector_body",
+                    "aws_access_key",
+                    "aws_secret_access_key",
+                    "aws_session_token",
                 ],
                 available_models=[
                     ModelInfo(id="1", name="DeepSeek R1 model"),

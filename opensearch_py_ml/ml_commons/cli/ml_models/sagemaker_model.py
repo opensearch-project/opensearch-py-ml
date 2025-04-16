@@ -8,58 +8,76 @@
 from colorama import Fore, Style
 
 from opensearch_py_ml.ml_commons.cli.ml_models.model_base import ModelBase
+from opensearch_py_ml.ml_commons.cli.ml_setup import Setup
 
 
 class SageMakerModel(ModelBase):
     def __init__(
         self,
         opensearch_domain_region,
+        service_type,
     ):
         """
-        Initializes the SageMaker model with necessary configurations.
+        Initializes the SageMaker model with necessary configurations
         """
         self.opensearch_domain_region = opensearch_domain_region
+        self.service_type = service_type
 
     def _get_connector_body(self, model_type, region, endpoint_url):
         """
         Get the connectory body
         """
         connector_configs = {
-            "1": {
-                "name": "Amazon SageMaker: DeepSeek R1 model",
-                "description": "The connector to SageMaker for DeepSeek R1 model",
-                "request_body": '{ "inputs": "${parameters.inputs}", "parameters": {"do_sample": ${parameters.do_sample}, "top_p": ${parameters.top_p}, "temperature": ${parameters.temperature}, "max_new_tokens": ${parameters.max_new_tokens}} }',
-                "post_process_function": "\n      if (params.result == null || params.result.length == 0) {\n        throw new Exception('No response available');\n      }\n      \n      def completion = params.result[0].generated_text;\n      return '{' +\n               '\"name\": \"response\",'+\n               '\"dataAsMap\": {' +\n                  '\"completion\":\"' + escape(completion) + '\"}' +\n             '}';\n    ",
-                "parameters": {
-                    "do_sample": "true",
-                    "top_p": 0.9,
-                    "temperature": 0.7,
-                    "max_new_tokens": 512,
+            self.AMAZON_OPENSEARCH_SERVICE: {
+                "1": {
+                    "name": "Amazon SageMaker: DeepSeek R1 model",
+                    "description": "The connector to SageMaker for DeepSeek R1 model",
+                    "request_body": '{ "inputs": "${parameters.inputs}", "parameters": {"do_sample": ${parameters.do_sample}, "top_p": ${parameters.top_p}, "temperature": ${parameters.temperature}, "max_new_tokens": ${parameters.max_new_tokens}} }',
+                    "post_process_function": "\n      if (params.result == null || params.result.length == 0) {\n        throw new Exception('No response available');\n      }\n      \n      def completion = params.result[0].generated_text;\n      return '{' +\n               '\"name\": \"response\",'+\n               '\"dataAsMap\": {' +\n                  '\"completion\":\"' + escape(completion) + '\"}' +\n             '}';\n    ",
+                    "parameters": {
+                        "do_sample": "true",
+                        "top_p": 0.9,
+                        "temperature": 0.7,
+                        "max_new_tokens": 512,
+                    },
                 },
+                "2": {
+                    "name": "Amazon SageMaker: Embedding model",
+                    "description": "The connector to SageMaker for embedding model",
+                    "request_body": "${parameters.input}",
+                    "pre_process_function": "connector.pre_process.default.embedding",
+                    "post_process_function": "connector.post_process.default.embedding",
+                    "parameters": {},
+                },
+                "3": "Custom model",
             },
-            "2": {
-                "name": "Amazon SageMaker: Embedding model",
-                "description": "The connector to SageMaker for embedding model",
-                "request_body": "${parameters.input}",
-                "pre_process_function": "connector.pre_process.default.embedding",
-                "post_process_function": "connector.post_process.default.embedding",
-                "parameters": {},
+            self.OPEN_SOURCE: {
+                "1": {
+                    "name": "Amazon SageMaker: Embedding model",
+                    "description": "The connector to SageMaker for embedding model",
+                    "request_body": "${parameters.input}",
+                    "pre_process_function": "connector.pre_process.default.embedding",
+                    "post_process_function": "connector.post_process.default.embedding",
+                    "parameters": {},
+                },
+                "2": "Custom model",
             },
-            "3": "Custom model",
         }
+
+        service_configs = connector_configs.get(self.service_type)
 
         # Handle custom model or invalid choice
         if (
-            model_type not in connector_configs
-            or connector_configs[model_type] == "Custom model"
+            model_type not in service_configs
+            or service_configs[model_type] == "Custom model"
         ):
-            if model_type not in connector_configs:
+            if model_type not in service_configs:
                 print(
                     f"\n{Fore.YELLOW}Invalid choice. Defaulting to 'Custom model'.{Style.RESET_ALL}"
                 )
             return self.input_custom_model_details()
 
-        config = connector_configs[model_type]
+        config = service_configs[model_type]
 
         # Base parameters that all connectors need
         base_parameters = {
@@ -108,6 +126,9 @@ class SageMakerModel(ModelBase):
         endpoint_arn=None,
         endpoint_url=None,
         connector_body=None,
+        aws_access_key=None,
+        aws_secret_access_key=None,
+        aws_session_token=None,
     ):
         """
         Create SageMaker connector.
@@ -120,58 +141,76 @@ class SageMakerModel(ModelBase):
 
         # Prompt to choose model
         model_type = self.get_model_details(
-            "Amazon SageMaker", self.AMAZON_OPENSEARCH_SERVICE, model_name
+            "Amazon SageMaker", self.service_type, model_name
         )
 
-        if not endpoint_arn:
-            endpoint_arn = input(
-                "Enter your SageMaker inference endpoint ARN: "
+        endpoint_arn = (
+            endpoint_arn
+            or input("Enter your SageMaker inference endpoint ARN: ").strip()
+        )
+        region = (
+            region
+            or input(
+                f"Enter your SageMaker region [{self.opensearch_domain_region}]: "
             ).strip()
-
-        # Create connector role
-        connector_role_name, create_connector_role_name = self.create_connector_role(
-            connector_role_prefix, "sagemaker"
+            or self.opensearch_domain_region
         )
-
-        connector_role_inline_policy = {
-            "Version": "2012-10-17",
-            "Statement": [
-                {
-                    "Action": ["sagemaker:InvokeEndpoint"],
-                    "Effect": "Allow",
-                    "Resource": endpoint_arn,
-                }
-            ],
-        }
-
-        # Prompt for endpoint URL and region for non-custom model
-        if model_type == "1" or model_type == "2":
-            region = (
-                region
-                or input(
-                    f"Enter your SageMaker region [{self.opensearch_domain_region}]: "
-                ).strip()
-                or self.opensearch_domain_region
-            )
-            endpoint_url = (
-                endpoint_url
-                or input("Enter your SageMaker inference endpoint URL: ").strip()
-            )
+        endpoint_url = (
+            endpoint_url
+            or input("Enter your SageMaker inference endpoint URL: ").strip()
+        )
 
         # Get connector body
         connector_body = connector_body or self._get_connector_body(
             model_type, region, endpoint_url
         )
 
-        # Create connector
-        print("\nCreating SageMaker connector...")
-        connector_id, connector_role_arn, _ = helper.create_connector_with_role(
-            connector_role_inline_policy,
-            connector_role_name,
-            create_connector_role_name,
-            connector_body,
-            sleep_time_in_seconds=10,
-        )
+        if self.service_type == self.AMAZON_OPENSEARCH_SERVICE:
+            # Create connector role
+            connector_role_name, create_connector_role_name = (
+                self.create_connector_role(connector_role_prefix, "sagemaker")
+            )
+
+            connector_role_inline_policy = {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Action": ["sagemaker:InvokeEndpoint"],
+                        "Effect": "Allow",
+                        "Resource": endpoint_arn,
+                    }
+                ],
+            }
+
+            # Create connector
+            print("\nCreating SageMaker connector...")
+            connector_id, connector_role_arn, _ = helper.create_connector_with_role(
+                connector_role_inline_policy,
+                connector_role_name,
+                create_connector_role_name,
+                connector_body,
+                sleep_time_in_seconds=10,
+            )
+        else:
+            # Prompt for AWS credentials
+            setup = Setup()
+            connector_body["credential"] = {
+                "access_key": aws_access_key
+                or setup.get_password_with_asterisks("Enter your AWS Access Key ID: "),
+                "secret_key": aws_secret_access_key
+                or setup.get_password_with_asterisks(
+                    "Enter your AWS Secret Access Key: "
+                ),
+                "session_token": aws_session_token
+                or setup.get_password_with_asterisks("Enter your AWS Session Token: "),
+            }
+
+            # Create connector
+            print("\nCreating SageMaker connector...")
+            connector_id = helper.create_connector(
+                create_connector_role_name=None,
+                body=connector_body,
+            )
 
         if connector_id:
             print(
@@ -181,8 +220,16 @@ class SageMakerModel(ModelBase):
             save_config_method(
                 connector_id,
                 connector_output,
-                connector_role_name,
-                connector_role_arn,
+                (
+                    connector_role_name
+                    if self.service_type == self.AMAZON_OPENSEARCH_SERVICE
+                    else None
+                ),
+                (
+                    connector_role_arn
+                    if self.service_type == self.AMAZON_OPENSEARCH_SERVICE
+                    else None
+                ),
             )
             return True
         else:
