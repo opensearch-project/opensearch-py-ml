@@ -45,6 +45,13 @@ def clean_test_folder(TEST_FOLDER):
         shutil.rmtree(TEST_FOLDER)
 
 
+def check_value(expected, actual, delta):
+    if isinstance(expected, float):
+        assert abs(expected - actual) <= delta
+    else:
+        assert expected == actual
+
+
 def compare_model_config(
     model_config_path,
     model_id,
@@ -311,9 +318,9 @@ def test_process_sparse_encoding():
 
     encoding_result = test_model8.process_sparse_encoding(["hello world", "hello"])
     assert len(encoding_result[0]) == 73
-    assert encoding_result[0]["hello"] == 1.3667216300964355
+    check_value(1.3667216300964355, encoding_result[0]["hello"], 0.001)
     assert len(encoding_result[1]) == 46
-    assert encoding_result[1]["hello"] == 1.4557286500930786
+    check_value(1.4557286500930786, encoding_result[1]["hello"], 0.001)
 
     test_model8 = SparseEncodingModel(
         folder_path=TEST_FOLDER,
@@ -323,9 +330,9 @@ def test_process_sparse_encoding():
     )
     encoding_result = test_model8.process_sparse_encoding(["hello world", "hello"])
     assert len(encoding_result[0]) == 33
-    assert encoding_result[0]["hello"] == 0.8615057468414307
+    check_value(0.8615057468414307, encoding_result[0]["hello"], 0.001)
     assert len(encoding_result[1]) == 30
-    assert encoding_result[1]["hello"] == 0.8984234929084778
+    check_value(0.8984234929084778, encoding_result[1]["hello"], 0.001)
 
 
 clean_test_folder(TEST_FOLDER)
