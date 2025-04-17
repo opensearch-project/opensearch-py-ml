@@ -123,6 +123,26 @@ class ConnectorList:
             ),
             ConnectorInfo(
                 id=5,
+                name="Amazon Textract",
+                file_name="textract_model",
+                connector_class="TextractModel",
+                init_params=["opensearch_domain_region", "service_type"],
+                connector_params=[
+                    "connector_role_prefix",
+                    "region",
+                    "model_name",
+                    "connector_body",
+                    "aws_access_key",
+                    "aws_secret_access_key",
+                    "aws_session_token",
+                ],
+                available_models=[
+                    ModelInfo(id="1", name="Amazon Textract model"),
+                    ModelInfo(id="2", name="Custom model"),
+                ],
+            ),
+            ConnectorInfo(
+                id=6,
                 name="Azure OpenAI",
                 file_name="azure_openai_model",
                 connector_class="AzureOpenAIModel",
@@ -142,7 +162,7 @@ class ConnectorList:
                 ],
             ),
             ConnectorInfo(
-                id=6,
+                id=7,
                 name="Amazon SageMaker",
                 file_name="sagemaker_model",
                 connector_class="SageMakerModel",
@@ -164,7 +184,7 @@ class ConnectorList:
                 ],
             ),
             ConnectorInfo(
-                id=7,
+                id=8,
                 name="Cohere",
                 file_name="cohere_model",
                 connector_class="CohereModel",
@@ -174,7 +194,7 @@ class ConnectorList:
                     "model_name",
                     "api_key",
                     "connector_body",
-                    "secret_name",
+                    "connector_secret_name",
                 ],
                 available_models=[
                     ModelInfo(id="1", name="Chat model"),
@@ -184,7 +204,7 @@ class ConnectorList:
                 ],
             ),
             ConnectorInfo(
-                id=8,
+                id=9,
                 name="DeepSeek",
                 file_name="deepseek_model",
                 connector_class="DeepSeekModel",
@@ -194,7 +214,7 @@ class ConnectorList:
                     "model_name",
                     "api_key",
                     "connector_body",
-                    "secret_name",
+                    "connector_secret_name",
                 ],
                 available_models=[
                     ModelInfo(id="1", name="DeepSeek Chat model"),
@@ -202,7 +222,25 @@ class ConnectorList:
                 ],
             ),
             ConnectorInfo(
-                id=9,
+                id=10,
+                name="Google Cloud Platform",
+                file_name="gcp_model",
+                connector_class="GCPModel",
+                init_params=[],
+                connector_params=[
+                    "model_name",
+                    "project_id",
+                    "model_id",
+                    "access_token",
+                    "connector_body",
+                ],
+                available_models=[
+                    ModelInfo(id="1", name="VertexAI embedding model"),
+                    ModelInfo(id="2", name="Custom model"),
+                ],
+            ),
+            ConnectorInfo(
+                id=11,
                 name="OpenAI",
                 file_name="openai_model",
                 connector_class="OpenAIModel",
@@ -212,7 +250,7 @@ class ConnectorList:
                     "model_name",
                     "api_key",
                     "connector_body",
-                    "secret_name",
+                    "connector_secret_name",
                 ],
                 available_models=[
                     ModelInfo(id="1", name="Chat model"),
@@ -318,6 +356,26 @@ class ConnectorList:
             ),
             ConnectorInfo(
                 id=5,
+                name="Amazon Textract",
+                file_name="textract_model",
+                connector_class="TextractModel",
+                init_params=["opensearch_domain_region", "service_type"],
+                connector_params=[
+                    "connector_role_prefix",
+                    "region",
+                    "model_name",
+                    "connector_body",
+                    "aws_access_key",
+                    "aws_secret_access_key",
+                    "aws_session_token",
+                ],
+                available_models=[
+                    ModelInfo(id="1", name="Amazon Textract model"),
+                    ModelInfo(id="2", name="Custom model"),
+                ],
+            ),
+            ConnectorInfo(
+                id=6,
                 name="Cohere",
                 file_name="cohere_model",
                 connector_class="CohereModel",
@@ -327,7 +385,7 @@ class ConnectorList:
                     "model_name",
                     "api_key",
                     "connector_body",
-                    "secret_name",
+                    "connector_secret_name",
                 ],
                 available_models=[
                     ModelInfo(id="1", name="Embedding model"),
@@ -335,7 +393,7 @@ class ConnectorList:
                 ],
             ),
             ConnectorInfo(
-                id=6,
+                id=7,
                 name="DeepSeek",
                 file_name="deepseek_model",
                 connector_class="DeepSeekModel",
@@ -345,7 +403,7 @@ class ConnectorList:
                     "model_name",
                     "api_key",
                     "connector_body",
-                    "secret_name",
+                    "connector_secret_name",
                 ],
                 available_models=[
                     ModelInfo(id="1", name="DeepSeek Chat model"),
@@ -353,7 +411,7 @@ class ConnectorList:
                 ],
             ),
             ConnectorInfo(
-                id=7,
+                id=8,
                 name="OpenAI",
                 file_name="openai_model",
                 connector_class="OpenAIModel",
@@ -363,7 +421,7 @@ class ConnectorList:
                     "model_name",
                     "api_key",
                     "connector_body",
-                    "secret_name",
+                    "connector_secret_name",
                 ],
                 available_models=[
                     ModelInfo(id="1", name="Embedding model"),

@@ -51,12 +51,7 @@ class CohereModel(ModelBase):
                     "credential": {"cohere_key": "${credential}"},
                     "url": "https://api.cohere.ai/v1/chat",
                     "request_body": '{ "message": "${parameters.message}", "model": "${parameters.model}" }',
-                    "pre_process_function": "connector.pre_process.cohere.embedding",
-                    "post_process_function": "connector.post_process.cohere.embedding",
-                    "parameters": {
-                        "input_type": "search_document",
-                        "truncate": "END",
-                    },
+                    "parameters": {},
                 },
                 "2": {
                     "name": "Cohere Embedding model",
@@ -151,7 +146,7 @@ class CohereModel(ModelBase):
         model_name=None,
         api_key=None,
         connector_body=None,
-        secret_name=None,
+        connector_secret_name=None,
     ):
         """
         Create Cohere connector.
@@ -169,25 +164,25 @@ class CohereModel(ModelBase):
         # Get connector body
         connector_body = connector_body or self._get_connector_body(model_type)
 
+        auth_value = f"Bearer {cohere_api_key}"
+        connector_body = json.loads(
+            json.dumps(connector_body).replace("${auth}", auth_value)
+        )
+
         if self.service_type == self.AMAZON_OPENSEARCH_SERVICE:
             # Create connector role and secret name
             connector_role_name, create_connector_role_name = (
                 self.create_connector_role(connector_role_prefix, "cohere")
             )
-            secret_name, secret_value = self.create_secret_name(
-                secret_name, "cohere", cohere_api_key
-            )
-
-            auth_value = f"Bearer {cohere_api_key}"
-            connector_body = json.loads(
-                json.dumps(connector_body).replace("${auth}", auth_value)
+            connector_secret_name, secret_value = self.create_secret_name(
+                connector_secret_name, "cohere", cohere_api_key
             )
 
             # Create connector
             print("\nCreating Cohere connector...")
             connector_id, connector_role_arn, connector_secret_arn = (
                 helper.create_connector_with_secret(
-                    secret_name,
+                    connector_secret_name,
                     secret_value,
                     connector_role_name,
                     create_connector_role_name,
@@ -196,10 +191,6 @@ class CohereModel(ModelBase):
                 )
             )
         else:
-            auth_value = f"Bearer {cohere_api_key}"
-            connector_body = json.loads(
-                json.dumps(connector_body).replace("${auth}", auth_value)
-            )
             credential_value = cohere_api_key
             connector_body = json.loads(
                 json.dumps(connector_body).replace("${credential}", credential_value)
@@ -231,7 +222,7 @@ class CohereModel(ModelBase):
                     else None
                 ),
                 (
-                    secret_name
+                    connector_secret_name
                     if self.service_type == self.AMAZON_OPENSEARCH_SERVICE
                     else None
                 ),

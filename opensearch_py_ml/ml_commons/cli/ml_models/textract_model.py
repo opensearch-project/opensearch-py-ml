@@ -11,10 +11,10 @@ from colorama import Fore, Style
 from opensearch_py_ml.ml_commons.cli.ml_models.model_base import ModelBase
 
 
-class ComprehendModel(ModelBase):
+class TextractModel(ModelBase):
     def __init__(self, opensearch_domain_region, service_type):
         """
-        Initializes the Comprehend model with necessary configurations
+        Initializes the Textract model with necessary configurations
         """
         self.opensearch_domain_region = opensearch_domain_region
         self.service_type = service_type
@@ -25,13 +25,11 @@ class ComprehendModel(ModelBase):
         """
         connector_configs = {
             "1": {
-                "name": "Amazon Comprehend",
-                "description": "The connector for Amazon Comprehend",
-                "request_body": '{ "Text": "${parameters.Text}"}',
+                "name": "Amazon Textract connector: detect document texts",
+                "description": "The connector to Amazon Textract for detect document text",
+                "request_body": '{  "Document": { "Bytes": "${parameters.bytes}" }  } ',
                 "parameters": {
-                    "api_version": "20171127",
-                    "api_name": "DetectDominantLanguage",
-                    "response_filter": "$",
+                    "api_name": "DetectDocumentText",
                 },
             },
             "2": "Custom model",
@@ -53,8 +51,8 @@ class ComprehendModel(ModelBase):
         # Base parameters that all connectors need
         base_parameters = {
             "region": region,
-            "service_name": "comprehend",
-            "api": "Comprehend_${parameters.api_version}.${parameters.api_name}",
+            "service_name": "textract",
+            "api": "Textract.${parameters.api_name}",
         }
 
         # Merge with model-specific parameters if any
@@ -64,7 +62,7 @@ class ComprehendModel(ModelBase):
         return {
             "name": config["name"],
             "description": config["description"],
-            "version": 1,
+            "version": "1.0",
             "protocol": "aws_sigv4",
             "parameters": parameters,
             "actions": [
@@ -72,40 +70,12 @@ class ComprehendModel(ModelBase):
                     "action_type": "predict",
                     "method": "POST",
                     "headers": {
-                        "X-Amz-Target": "${parameters.api}",
                         "content-type": "application/x-amz-json-1.1",
+                        "X-Amz-Target": "${parameters.api}",
                     },
                     "url": "https://${parameters.service_name}.${parameters.region}.amazonaws.com",
                     "request_body": config["request_body"],
-                    **(
-                        {"pre_process_function": config["pre_process_function"]}
-                        if "pre_process_function" in config
-                        else {}
-                    ),
-                    **(
-                        {"post_process_function": config["post_process_function"]}
-                        if "post_process_function" in config
-                        else {}
-                    ),
                 }
-            ],
-        }
-
-    def _get_connector_role_policy(self, model_type, connector_body):
-        """
-        Get the IAM role policy for the connector
-        """
-        # Get the model arn
-        model_action = (
-            input("Enter the Comprehend actions you need: ").strip()
-            if model_type == "2"
-            else f"comprehend:{connector_body['parameters']['api_name']}"
-        )
-
-        return {
-            "Version": "2012-10-17",
-            "Statement": [
-                {"Action": [model_action], "Effect": "Allow", "Resource": "*"}
             ],
         }
 
@@ -116,22 +86,21 @@ class ComprehendModel(ModelBase):
         connector_role_prefix=None,
         region=None,
         model_name=None,
-        model_arn=None,
         connector_body=None,
         aws_access_key=None,
         aws_secret_access_key=None,
         aws_session_token=None,
     ):
         """
-        Create Comprehend connector.
+        Create Textract connector.
         """
-        # Set trusted connector endpoints for Comprehend
-        trusted_endpoint = "^https://comprehend\\..*[a-z0-9-]\\.amazonaws\\.com$"
+        # Set trusted connector endpoints for Bedrock
+        trusted_endpoint = "^https://textract\\..*[a-z0-9-]\\.amazonaws\\.com$"
         self.set_trusted_endpoint(helper, trusted_endpoint)
 
         # Prompt to choose model
         model_type = self.get_model_details(
-            "Amazon Comprehend", self.service_type, model_name
+            "Amazon Textract", self.service_type, model_name
         )
 
         # Prompt for region
@@ -149,15 +118,24 @@ class ComprehendModel(ModelBase):
         if self.service_type == self.AMAZON_OPENSEARCH_SERVICE:
             # Create connector role
             connector_role_name, create_connector_role_name = (
-                self.create_connector_role(connector_role_prefix, "comprehend")
-            )
-            # Get the connector role inline policy
-            connector_role_inline_policy = self._get_connector_role_policy(
-                model_type, connector_body
+                self.create_connector_role(connector_role_prefix, "textract")
             )
 
+            connector_role_inline_policy = {
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Action": [
+                            f"textract:{connector_body['parameters']['api_name']}"
+                        ],
+                        "Effect": "Allow",
+                        "Resource": "*",
+                    }
+                ],
+            }
+
             # Create connector
-            print("\nCreating Comprehend connector...")
+            print("\nCreating Textract connector...")
             connector_id, connector_role_arn, _ = helper.create_connector_with_role(
                 connector_role_inline_policy,
                 connector_role_name,
@@ -172,7 +150,7 @@ class ComprehendModel(ModelBase):
             )
 
             # Create connector
-            print("\nCreating Comprehend connector...")
+            print("\nCreating Textract connector...")
             connector_id = helper.create_connector(
                 create_connector_role_name=None,
                 body=connector_body,
@@ -180,7 +158,7 @@ class ComprehendModel(ModelBase):
 
         if connector_id:
             print(
-                f"{Fore.GREEN}\nSuccessfully created Comprehend connector with ID: {connector_id}{Style.RESET_ALL}"
+                f"{Fore.GREEN}\nSuccessfully created Textract connector with ID: {connector_id}{Style.RESET_ALL}"
             )
             connector_output = helper.get_connector(connector_id)
             save_config_method(
@@ -199,5 +177,5 @@ class ComprehendModel(ModelBase):
             )
             return True
         else:
-            print(f"{Fore.RED}Failed to create Comprehend connector.{Style.RESET_ALL}")
+            print(f"{Fore.RED}Failed to create Textract connector.{Style.RESET_ALL}")
             return False

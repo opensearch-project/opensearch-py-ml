@@ -22,7 +22,7 @@ class TestOpenAIModel(unittest.TestCase):
         self.openai_model = OpenAIModel(self.service_type)
         self.connector_role_prefix = "test_role"
         self.api_key = "test_api_key"
-        self.secret_name = "test_secret_name"
+        self.connector_secret_name = "test_secret_name"
         self.connector_body = {
             "name": "Custom Model",
             "description": "Custom description",
@@ -53,7 +53,7 @@ class TestOpenAIModel(unittest.TestCase):
             connector_role_prefix=self.connector_role_prefix,
             model_name="Embedding model",
             api_key=self.api_key,
-            secret_name=self.secret_name,
+            connector_secret_name=self.connector_secret_name,
         )
 
         # Verify method calls
@@ -91,7 +91,7 @@ class TestOpenAIModel(unittest.TestCase):
             connector_role_prefix=self.connector_role_prefix,
             model_name="Custom model",
             api_key=self.api_key,
-            secret_name=self.secret_name,
+            connector_secret_name=self.connector_secret_name,
         )
 
         # Verify method calls
@@ -128,7 +128,7 @@ class TestOpenAIModel(unittest.TestCase):
             connector_role_prefix=self.connector_role_prefix,
             model_name="Invalid Model",
             api_key=self.api_key,
-            secret_name=self.secret_name,
+            connector_secret_name=self.connector_secret_name,
         )
         mock_print.assert_any_call(
             f"\n{Fore.YELLOW}Invalid choice. Defaulting to 'Custom model'.{Style.RESET_ALL}"
@@ -144,7 +144,7 @@ class TestOpenAIModel(unittest.TestCase):
             connector_role_prefix=self.connector_role_prefix,
             model_name="Embedding model",
             api_key=self.api_key,
-            secret_name=self.secret_name,
+            connector_secret_name=self.connector_secret_name,
         )
         self.assertFalse(result)
 
@@ -265,7 +265,7 @@ class TestOpenAIModel(unittest.TestCase):
             save_config_method=self.mock_save_config,
             connector_role_prefix=self.connector_role_prefix,
             api_key=self.api_key,
-            secret_name=self.secret_name,
+            connector_secret_name=self.connector_secret_name,
         )
 
         self.mock_helper.create_connector_with_secret.assert_called_once()

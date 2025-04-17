@@ -121,6 +121,31 @@ class ConnectorManager(CLIBase):
                 return connector
         return None
 
+    def _get_connector_config_params(self, connector_config):
+        """Get connector configuration parameters"""
+        param_keys = [
+            "access_token" "api_key",
+            "aws_access_key",
+            "aws_secret_access_key",
+            "aws_session_token",
+            "connector_body",
+            "connector_name",
+            "connector_role_prefix",
+            "connector_secret_name",
+            "endpoint_arn",
+            "endpoint_url",
+            "model_arn",
+            "model_id",
+            "model_name",
+            "project_id",
+            "region",
+        ]
+
+        params = {}
+        for key in param_keys:
+            params[key] = connector_config.get(key)
+        return params
+
     def create_model_instance(
         self, connector_info, connector_class, opensearch_config, config
     ):
@@ -201,27 +226,10 @@ class ConnectorManager(CLIBase):
             # Set the initial value of the connector creation result to False
             result = False
 
-            # Initialize variables with None
-            connector_name = model_name = connector_role_prefix = None
-            region = model_arn = connector_body = None
-            api_key = secret_name = endpoint_arn = endpoint_url = None
-            aws_access_key = aws_secret_access_key = aws_session_token = None
-
             # Retrieve the connector information if the connector config path is given in the command
             if connector_config_path:
-                connector_name = connector_config.get("connector_name")
-                model_name = connector_config.get("model_name")
-                connector_role_prefix = connector_config.get("connector_role_prefix")
-                region = connector_config.get("region")
-                model_arn = connector_config.get("model_arn")
-                connector_body = connector_config.get("connector_body")
-                api_key = connector_config.get("api_key")
-                secret_name = connector_config.get("connector_secret_name")
-                endpoint_arn = connector_config.get("inference_endpoint_arn")
-                endpoint_url = connector_config.get("inference_endpoint_url")
-                aws_access_key = connector_config.get("aws_access_key")
-                aws_secret_access_key = connector_config.get("aws_secret_access_key")
-                aws_session_token = connector_config.get("aws_session_token")
+                params = self._get_connector_config_params(connector_config)
+                connector_name = params.pop("connector_name")
 
                 try:
                     connector_info = self.get_connector_by_name(
@@ -251,26 +259,10 @@ class ConnectorManager(CLIBase):
                 connector_info, connector_class, opensearch_config, config
             )
 
-            # Create a mapping of connector parameters from config
-            connector_config_params = {
-                "model_name": model_name,
-                "connector_role_prefix": connector_role_prefix,
-                "region": region,
-                "model_arn": model_arn,
-                "connector_body": connector_body,
-                "api_key": api_key,
-                "secret_name": secret_name,
-                "endpoint_arn": endpoint_arn,
-                "endpoint_url": endpoint_url,
-                "aws_access_key": aws_access_key,
-                "aws_secret_access_key": aws_secret_access_key,
-                "aws_session_token": aws_session_token,
-            }
-
             # Create connector instance
             result = self.create_connector_instance(
                 connector_config_path,
-                connector_config_params,
+                params if connector_config_path else None,
                 connector_info,
                 opensearch_config,
                 config,

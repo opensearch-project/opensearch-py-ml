@@ -217,7 +217,7 @@ class TestBedrockModel(unittest.TestCase):
             self.mock_helper.create_connector_with_role.call_args[0][0]
         )
         self.assertEqual(
-            connector_role_inline_policy["Statement"][0]["Resource"], "test_model_arn"
+            connector_role_inline_policy["Statement"][0]["Resource"], ["test_model_arn"]
         )
 
     @patch(
