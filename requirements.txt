@@ -10,5 +10,5 @@ onnx>=1.15.0
 accelerate>=0.27
 sentence_transformers>=2.5.0,<2.6
 tqdm>4.66.0,<5
-transformers>=4.47.0,<5
+transformers>=4.47.0,<4.50.0
 deprecated>=1.2.14,<2

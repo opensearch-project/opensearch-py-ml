@@ -24,17 +24,14 @@ on:
         - "BOTH"
         - "TORCH_SCRIPT"
         - "ONNX"
-      upload_prefix:
-        description: "Specifies the model prefix for uploading. For example, transforming the default path from '.../sentence-transformers/msmarco-distilbert-base-tas-b' to '.../{prefix}/msmarco-distilbert-base-tas-b'."
-        required: false
-        type: string
       model_type:
-        description: "Model type for auto-tracing (SentenceTransformer/Sparse)"
+        description: "Model type for auto-tracing (SentenceTransformer/Sparse/SparseTokenizer)"
         required: true
         type: choice
         options:
           - "SentenceTransformer"
           - "Sparse"
+          - "SparseTokenizer"
         default: "SentenceTransformer"
       embedding_dimension:
         description: "(Optional) Embedding Dimension (Specify here if it does not exist in original config.json file, or you want to overwrite it.)"
@@ -61,6 +58,24 @@ on:
         options:
         - "NO"
         - "YES"
+      custom_params:
+        description: |
+          (Optional) custom parameters in JSON format. Supported fields:
+          {
+            "upload_prefix": (Optional) String. Specifies the model prefix for uploading. Example: transforms "sentence-transformers/model" to "{prefix}/model",
+            "sparse_prune_ratio": (Optional) Float. Specifies the model-side prune ratio based on max values. Sparse model only.
+            "activation": (Optional) String. Specifies the activation function for the sparse model. Sparse model only.
+            "model_name": (Optional) String. Specifies the model name for uploading. Example: transforms "sentence-transformers/model" to "sentence-transformers/{model_name}",
+          }
+          
+          Example:
+          {
+            "upload_prefix": "custom-prefix",
+            "sparse_prune_ratio": 0.1
+          }
+        required: false
+        type: string
+        default: "{}"
         
 
 jobs:
@@ -73,6 +88,36 @@ jobs:
       run: |
          echo "This workflow should only be triggered on 'main' branch"
          exit 1
+    - name: Parse custom params from json string
+      # Handles dynamic parameter configuration with three-level fallback:
+      # 1. Default values initialized at script start
+      # 2. Automatic model_name derivation from model_id (when not explicitly provided)
+      # 3. Custom parameter override system with null safety checks
+      id: parse_custom_params
+      run: |
+        custom_params='${{ github.event.inputs.custom_params }}'
+        model_id='${{ github.event.inputs.model_id }}'
+        upload_prefix=""
+        sparse_prune_ratio=0
+        activation=""
+        model_name="${model_id##*/}"
+
+        if [ "$custom_params" != "{}" ] && [ -n "$custom_params" ]; then
+          tmp_up=$(echo "$custom_params" | jq -r '.upload_prefix | select(.!=null)')
+          tmp_spr=$(echo "$custom_params" | jq -r '.sparse_prune_ratio | select(.!=null)')
+          tmp_act=$(echo "$custom_params" | jq -r '.activation | select(.!=null)')
+          tmp_mn=$(echo "$custom_params" | jq -r '.model_name | select(.!=null)')
+
+          [ -n "$tmp_up" ] && upload_prefix="$tmp_up"
+          [ -n "$tmp_spr" ] && sparse_prune_ratio="$tmp_spr"
+          [ -n "$tmp_act" ] && activation="$tmp_act"
+          [ -n "$tmp_mn" ] && model_name="$tmp_mn"
+        fi
+
+        echo "upload_prefix=$upload_prefix" >> $GITHUB_OUTPUT
+        echo "sparse_prune_ratio=$sparse_prune_ratio" >> $GITHUB_OUTPUT
+        echo "activation=$activation" >> $GITHUB_OUTPUT
+        echo "model_name=$model_name" >> $GITHUB_OUTPUT
     - name: Initiate folders
       # This scripts init the folders path variables.
       # 1. Retrieves the input model_id.
@@ -83,16 +128,16 @@ jobs:
       #    Example:
       #    - Given model_id: "opensearch-project/opensearch-neural-sparse-encoding-v1"
       #    - model_prefix: "ml-models/{model_source}/opensearch-project"
-      # 4. Constructs model_folder and model_prefix_folder.
+      # 4. Constructs model_folder and model_prefix_folder
       id: init_folders
       run: |
         model_id=${{ github.event.inputs.model_id }}
-        if [[ -n "${{ github.event.inputs.upload_prefix }}" ]]; then
-          model_prefix="ml-models/${{ github.event.inputs.model_source }}/${{ github.event.inputs.upload_prefix }}"
+        if [[ -n "${{ steps.parse_custom_params.outputs.upload_prefix }}" ]]; then
+          model_prefix="ml-models/${{ github.event.inputs.model_source }}/${{ steps.parse_custom_params.outputs.upload_prefix }}"
         else
           model_prefix="ml-models/${{ github.event.inputs.model_source }}/${model_id%%/*}"
         fi
-        echo "model_folder=$model_prefix/${model_id##*/}" >> $GITHUB_OUTPUT
+        echo "model_folder=$model_prefix/${{ steps.parse_custom_params.outputs.model_name }}" >> $GITHUB_OUTPUT
         echo "model_prefix_folder=$model_prefix" >> $GITHUB_OUTPUT
     - name: Initiate workflow_info
       id: init_workflow_info
@@ -106,9 +151,10 @@ jobs:
         - Workflow Name: ${{ github.workflow }}
         - Workflow Run ID: ${{ github.run_id }}
         - Workflow Initiator: @${{ github.actor }}
-        - Aloow Overwrite:  ${{ github.event.inputs.allow_overwrite }}
+        - Allow Overwrite:  ${{ github.event.inputs.allow_overwrite }}
           
         ========= Workflow Input Information =========
+        - Model Source: ${{ github.event.inputs.model_source }}
         - Model ID: ${{ github.event.inputs.model_id }}
         - Model Version: ${{ github.event.inputs.model_version }}
         - Model Type: ${{ github.event.inputs.model_type }}
@@ -116,6 +162,10 @@ jobs:
         - Embedding Dimension: ${embedding_dimension:-N/A}
         - Pooling Mode: ${pooling_mode:-N/A}
         - Model Description: ${model_description:-N/A}
+        - Model Folder: ${{ steps.init_folders.outputs.model_folder }}
+        - Model Prefix Folder: ${{ steps.init_folders.outputs.model_prefix_folder }}
+        - Sparse Prune Ratio: ${{ steps.parse_custom_params.outputs.sparse_prune_ratio || 'N/A' }}
+        - Activation: ${{ steps.parse_custom_params.outputs.activation || 'N/A' }}
         
         ======== Workflow Output Information =========
         - Embedding Verification: Passed"
@@ -135,6 +185,10 @@ jobs:
       workflow_info: ${{ steps.init_workflow_info.outputs.workflow_info }}
       verified_license_line: ${{ steps.init_license_line.outputs.verified }}
       unverified_license_line: ${{ steps.init_license_line.outputs.unverified }}
+      upload_prefix: ${{ steps.parse_custom_params.outputs.upload_prefix }}
+      sparse_prune_ratio: ${{ steps.parse_custom_params.outputs.sparse_prune_ratio }}
+      activation: ${{ steps.parse_custom_params.outputs.activation }}
+      model_name: ${{ steps.parse_custom_params.outputs.model_name }}
 
   # Step 3: Check if the model already exists in the model hub
   checking-out-model-hub:
@@ -162,7 +216,7 @@ jobs:
         run: |
           TORCH_FILE_PATH=$(python utils/model_uploader/save_model_file_path_to_env.py \
               ${{ needs.init-workflow-var.outputs.model_prefix_folder }} ${{ github.event.inputs.model_id }} \
-              ${{ github.event.inputs.model_version }} TORCH_SCRIPT)
+              ${{ github.event.inputs.model_version }} TORCH_SCRIPT '${{ github.event.inputs.custom_params }}')
           aws s3api head-object --bucket ${{ secrets.MODEL_BUCKET }} --key $TORCH_FILE_PATH > /dev/null 2>&1 || TORCH_MODEL_NOT_EXIST=true
           if [[ -z $TORCH_MODEL_NOT_EXIST ]]
           then
@@ -174,7 +228,7 @@ jobs:
         run: |
           ONNX_FILE_PATH=$(python utils/model_uploader/save_model_file_path_to_env.py \
             ${{ needs.init-workflow-var.outputs.model_prefix_folder }} ${{ github.event.inputs.model_id }} \
-            ${{ github.event.inputs.model_version }} ONNX)
+            ${{ github.event.inputs.model_version }} ONNX '${{ github.event.inputs.custom_params }}')
           aws s3api head-object --bucket ${{ secrets.MODEL_BUCKET }} --key $ONNX_FILE_PATH > /dev/null 2>&1 || ONNX_MODEL_NOT_EXIST=true
           if [[ -z $ONNX_MODEL_NOT_EXIST ]]
           then
@@ -207,8 +261,11 @@ jobs:
           echo "TRACING_FORMAT=${{ github.event.inputs.tracing_format }}" >> $GITHUB_ENV
           echo "EMBEDDING_DIMENSION=${{ github.event.inputs.embedding_dimension }}" >> $GITHUB_ENV
           echo "POOLING_MODE=${{ github.event.inputs.pooling_mode }}" >> $GITHUB_ENV    
-          echo "UPLOAD_PREFIX=${{ github.event.inputs.upload_prefix }}" >> $GITHUB_ENV    
-          echo "MODEL_DESCRIPTION=${{ github.event.inputs.model_description }}" >> $GITHUB_ENV     
+          echo "MODEL_DESCRIPTION=${{ github.event.inputs.model_description }}" >> $GITHUB_ENV
+          echo "UPLOAD_PREFIX=${{ needs.init-workflow-var.outputs.upload_prefix }}" >> $GITHUB_ENV
+          echo "MODEL_NAME=${{ needs.init-workflow-var.outputs.model_name }}" >> $GITHUB_ENV
+          echo "SPARSE_PRUNE_RATIO=${{ needs.init-workflow-var.outputs.sparse_prune_ratio }}" >> $GITHUB_ENV
+          echo "ACTIVATION=${{ needs.init-workflow-var.outputs.activation }}" >> $GITHUB_ENV
       - name: Autotracing ${{ matrix.cluster }} secured=${{ matrix.secured }} version=${{matrix.entry.opensearch_version}}
         run: "./.ci/run-tests ${{ matrix.cluster }} ${{ matrix.secured }} ${{ matrix.entry.opensearch_version }} ${{github.event.inputs.model_type}}Trace"
       - name: Limit Model Size to 2GB
@@ -317,7 +374,7 @@ jobs:
     environment: opensearch-py-ml-cicd-env
     steps:
       - name: Download Artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: upload
           path: ./upload/
