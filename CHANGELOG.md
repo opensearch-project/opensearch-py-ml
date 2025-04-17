@@ -16,6 +16,8 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - adding cross encoder models in the pre-trained traced list ([#378](https://github.com/opensearch-project/opensearch-py-ml/pull/378))
 - Add workflows and scripts for sparse encoding model tracing and uploading process by @conggguan in ([#394](https://github.com/opensearch-project/opensearch-py-ml/pull/394))
 - Implemented `predict` method and added unit tests by @yerzhaisang([425](https://github.com/opensearch-project/opensearch-py-ml/pull/425))
+- Added Connector CLI into `opensearch-py-ml` by @nathaliellenaa in ([#461](https://github.com/opensearch-project/opensearch-py-ml/pull/461))
+
 
 ### Changed
 - Add a parameter for customize the upload folder prefix ([#398](https://github.com/opensearch-project/opensearch-py-ml/pull/398))

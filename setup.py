@@ -88,10 +88,29 @@ setup(
         "matplotlib>=3.6.0,<4",
         "numpy>=1.24.0,<2",
         "deprecated>=1.2.14,<2",
+        "boto3>=1.26.0",
+        "botocore>=1.29.0",
+        "requests>=2.28.0",
+        "requests-aws4auth>=1.1.0",
+        "colorama>=0.4.6",
+        "rich>=13.5.2",
+        "pyyaml>=6.0.2",
     ],
     python_requires=">=3.8",
-    package_data={"opensearch_py_ml": ["py.typed"]},
+    package_data={
+        "opensearch_py_ml": [
+            "py.typed",
+            "ml_commons/cli/ml_models/*.py",
+            "ml_commons/cli/ml_models/__init__.py",
+        ]
+    },
     include_package_data=True,
     zip_safe=False,
     extras_require=extras,
+    # Entry points for console scripts
+    entry_points={
+        "console_scripts": [
+            "opensearch-ml=opensearch_py_ml.ml_commons.cli.ml_cli:main",
+        ],
+    },
 )
