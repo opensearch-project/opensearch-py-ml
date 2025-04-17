@@ -10,21 +10,18 @@ from unittest.mock import Mock, patch
 
 from colorama import Fore, Style
 
-from opensearch_py_ml.ml_commons.cli.ml_models.azure_openai_model import (
-    AzureOpenAIModel,
-)
+from opensearch_py_ml.ml_commons.cli.ml_models.gcp_model import GCPModel
 
 
-class TestAzureOpenAIModel(unittest.TestCase):
+class TestGCPModel(unittest.TestCase):
 
     def setUp(self):
         self.mock_helper = Mock()
         self.mock_save_config = Mock()
-        self.azure_openai_model = AzureOpenAIModel()
-        self.api_key = "test_api_key"
-        self.resource_name = "test_resource_name"
-        self.deployment_name = "test_deployment_name"
-        self.api_version = "test_api_version"
+        self.gcp_model = GCPModel()
+        self.project_id = "test_project_id"
+        self.model_id = "test_model_id"
+        self.access_token = "test_access_token"
 
     @patch(
         "opensearch_py_ml.ml_commons.cli.ml_models.model_base.ModelBase.set_trusted_endpoint"
@@ -32,33 +29,29 @@ class TestAzureOpenAIModel(unittest.TestCase):
     @patch(
         "opensearch_py_ml.ml_commons.cli.ml_models.model_base.ModelBase.get_model_details"
     )
-    @patch("opensearch_py_ml.ml_commons.cli.ml_models.model_base.ModelBase.set_api_key")
-    def test_create_connector_embedding(
-        self, mock_set_api_key, mock_get_model_details, mock_set_trusted_endpoint
+    def test_create_connector_vertexai_embedding(
+        self, mock_get_model_details, mock_set_trusted_endpoint
     ):
-        """Test creating an Azure OpenAI connector with Embedding model"""
+        """Test creating a GCP connector with VertexAI embedding model"""
         # Set mock return values
         mock_get_model_details.return_value = "1"
-        mock_set_api_key.return_value = self.api_key
 
-        result = self.azure_openai_model.create_connector(
+        result = self.gcp_model.create_connector(
             helper=self.mock_helper,
             save_config_method=self.mock_save_config,
-            model_name="Embedding model",
-            api_key=self.api_key,
-            resource_name=self.resource_name,
-            deployment_name=self.deployment_name,
-            api_version=self.api_version,
+            model_name="VertexAI embedding model",
+            project_id=self.project_id,
+            model_id=self.model_id,
+            access_token=self.access_token,
         )
 
         # Verify method calls
         mock_set_trusted_endpoint.assert_called_once_with(
-            self.mock_helper, "^https://.*\\.openai\\.azure\\.com/.*$"
+            self.mock_helper, "^https://.*-aiplatform\\.googleapis\\.com/.*$"
         )
         mock_get_model_details.assert_called_once_with(
-            "Azure OpenAI", AzureOpenAIModel.OPEN_SOURCE, "Embedding model"
+            "Google Cloud Platform", GCPModel.OPEN_SOURCE, "VertexAI embedding model"
         )
-        mock_set_api_key.assert_called_once_with(self.api_key, "OpenAI")
         self.assertTrue(result)
 
     @patch(
@@ -70,54 +63,44 @@ class TestAzureOpenAIModel(unittest.TestCase):
     @patch(
         "opensearch_py_ml.ml_commons.cli.ml_models.model_base.ModelBase.get_model_details"
     )
-    @patch("opensearch_py_ml.ml_commons.cli.ml_models.model_base.ModelBase.set_api_key")
     def test_create_connector_custom_model(
         self,
-        mock_set_api_key,
         mock_get_model_details,
         mock_set_trusted_endpoint,
         mock_custom_model,
     ):
-        """Test creating an Azure OpenAI connector with custom model"""
-        result = self.azure_openai_model.create_connector(
+        """Test creating an GCP connector with custom model"""
+        result = self.gcp_model.create_connector(
             helper=self.mock_helper,
             save_config_method=self.mock_save_config,
             model_name="Custom model",
-            api_key=self.api_key,
-            resource_name=self.resource_name,
-            deployment_name=self.deployment_name,
-            api_version=self.api_version,
+            project_id=self.project_id,
+            model_id=self.model_id,
+            access_token=self.access_token,
         )
 
         # Verify method calls
         mock_set_trusted_endpoint.assert_called_once_with(
-            self.mock_helper, "^https://.*\\.openai\\.azure\\.com/.*$"
+            self.mock_helper, "^https://.*-aiplatform\\.googleapis\\.com/.*$"
         )
         mock_get_model_details.assert_called_once_with(
-            "Azure OpenAI", AzureOpenAIModel.OPEN_SOURCE, "Custom model"
+            "Google Cloud Platform", GCPModel.OPEN_SOURCE, "Custom model"
         )
-        mock_set_api_key.assert_called_once_with("test_api_key", "OpenAI")
         mock_custom_model.assert_called_once()
         self.assertTrue(result)
 
     @patch(
-        "opensearch_py_ml.ml_commons.cli.ml_setup.Setup.get_password_with_asterisks",
-        return_value="test_api_key",
-    )
-    @patch(
         "builtins.input",
         side_effect=[
             "1",
-            "test_resource_name",
-            "test_deployment_name",
-            "test_api_version",
+            "test_project_id",
+            "test_model_id",
+            "test_access_token",
         ],
     )
-    def test_create_connector_select_model_interactive(
-        self, mock_input, mock_get_password
-    ):
+    def test_create_connector_select_model_interactive(self, mock_input):
         """Test create_connector for selecting the model through the prompt"""
-        result = self.azure_openai_model.create_connector(
+        result = self.gcp_model.create_connector(
             helper=self.mock_helper, save_config_method=self.mock_save_config
         )
         self.mock_helper.create_connector.assert_called_once()
@@ -133,15 +116,14 @@ class TestAzureOpenAIModel(unittest.TestCase):
     def test_create_connector_invalid_choice(
         self, mock_print, mock_get_model_details, mock_custom_model
     ):
-        """Test creating an Azure OpenAI connector with invalid model choice"""
-        self.azure_openai_model.create_connector(
+        """Test creating an GCP connector with invalid model choice"""
+        self.gcp_model.create_connector(
             helper=self.mock_helper,
             save_config_method=self.mock_save_config,
             model_name="Invalid Model",
-            api_key=self.api_key,
-            resource_name=self.resource_name,
-            deployment_name=self.deployment_name,
-            api_version=self.api_version,
+            project_id=self.project_id,
+            model_id=self.model_id,
+            access_token=self.access_token,
         )
         mock_print.assert_any_call(
             f"\n{Fore.YELLOW}Invalid choice. Defaulting to 'Custom model'.{Style.RESET_ALL}"
@@ -149,16 +131,15 @@ class TestAzureOpenAIModel(unittest.TestCase):
         mock_custom_model.assert_called_once()
 
     def test_create_connector_failure(self):
-        """Test creating an Azure OpenAI connector in failure scenario"""
+        """Test creating an GCP connector in failure scenario"""
         self.mock_helper.create_connector.return_value = None
-        result = self.azure_openai_model.create_connector(
+        result = self.gcp_model.create_connector(
             helper=self.mock_helper,
             save_config_method=self.mock_save_config,
-            model_name="Embedding model",
-            api_key=self.api_key,
-            resource_name=self.resource_name,
-            deployment_name=self.deployment_name,
-            api_version=self.api_version,
+            model_name="VertexAI embedding model",
+            project_id=self.project_id,
+            model_id=self.model_id,
+            access_token=self.access_token,
         )
         self.assertFalse(result)
 

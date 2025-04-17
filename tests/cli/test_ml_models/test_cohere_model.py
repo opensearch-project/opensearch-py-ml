@@ -22,7 +22,7 @@ class TestCohereModel(unittest.TestCase):
         self.cohere_model = CohereModel(service_type=self.service_type)
         self.connector_role_prefix = "test_role"
         self.api_key = "test_api_key"
-        self.secret_name = "test_secret_name"
+        self.connector_secret_name = "test_secret_name"
 
     @patch(
         "opensearch_py_ml.ml_commons.cli.ml_models.model_base.ModelBase.set_trusted_endpoint"
@@ -48,7 +48,7 @@ class TestCohereModel(unittest.TestCase):
             connector_role_prefix=self.connector_role_prefix,
             model_name="Embedding model",
             api_key=self.api_key,
-            secret_name=self.secret_name,
+            connector_secret_name=self.connector_secret_name,
         )
 
         # Verify method calls
@@ -112,7 +112,7 @@ class TestCohereModel(unittest.TestCase):
             connector_role_prefix=self.connector_role_prefix,
             model_name="Custom model",
             api_key=self.api_key,
-            secret_name=self.secret_name,
+            connector_secret_name=self.connector_secret_name,
         )
 
         # Verify method calls
@@ -139,7 +139,7 @@ class TestCohereModel(unittest.TestCase):
             save_config_method=self.mock_save_config,
             connector_role_prefix=self.connector_role_prefix,
             api_key=self.api_key,
-            secret_name=self.secret_name,
+            connector_secret_name=self.connector_secret_name,
         )
 
         self.mock_helper.create_connector_with_secret.assert_called_once()
@@ -172,7 +172,7 @@ class TestCohereModel(unittest.TestCase):
             connector_role_prefix=self.connector_role_prefix,
             model_name="Invalid Model",
             api_key=self.api_key,
-            secret_name=self.secret_name,
+            connector_secret_name=self.connector_secret_name,
         )
         mock_print.assert_any_call(
             f"\n{Fore.YELLOW}Invalid choice. Defaulting to 'Custom model'.{Style.RESET_ALL}"
@@ -188,7 +188,7 @@ class TestCohereModel(unittest.TestCase):
             connector_role_prefix=self.connector_role_prefix,
             model_name="Embedding model",
             api_key=self.api_key,
-            secret_name=self.secret_name,
+            connector_secret_name=self.connector_secret_name,
         )
         self.assertFalse(result)
 

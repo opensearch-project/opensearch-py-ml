@@ -105,6 +105,22 @@ class ModelBase:
                 return choice
             print("Invalid choice. Please enter a valid number.")
 
+    def get_aws_credentials(
+        self, connector_body, aws_access_key, aws_secret_access_key, aws_session_token
+    ):
+        """
+        Get AWS credentials from user input
+        """
+        setup = Setup()
+        connector_body["credential"] = {
+            "access_key": aws_access_key
+            or setup.get_password_with_asterisks("Enter your AWS Access Key ID: "),
+            "secret_key": aws_secret_access_key
+            or setup.get_password_with_asterisks("Enter your AWS Secret Access Key: "),
+            "session_token": aws_session_token
+            or setup.get_password_with_asterisks("Enter your AWS Session Token: "),
+        }
+
     def input_custom_model_details(self, external=False):
         """
         Prompts the user to input custom model details for the connector creation.

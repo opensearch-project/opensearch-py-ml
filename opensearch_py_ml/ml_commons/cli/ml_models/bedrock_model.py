@@ -9,7 +9,6 @@
 from colorama import Fore, Style
 
 from opensearch_py_ml.ml_commons.cli.ml_models.model_base import ModelBase
-from opensearch_py_ml.ml_commons.cli.ml_setup import Setup
 
 
 class BedrockModel(ModelBase):
@@ -111,7 +110,7 @@ class BedrockModel(ModelBase):
                 print(
                     f"\n{Fore.YELLOW}Invalid choice. Defaulting to 'Custom model'.{Style.RESET_ALL}"
                 )
-            return self.input_custom_model_details(region)
+            return self.input_custom_model_details()
 
         config = connector_configs[model_type]
 
@@ -157,12 +156,22 @@ class BedrockModel(ModelBase):
         """
         Get the IAM role policy for the connector
         """
-        # Get the model arn
-        model_arn = (
-            input("Enter your custom model ARN: ").strip()
-            if model_type == "9"
-            else f"arn:aws:bedrock:*::foundation-model/{connector_body['parameters']['model']}"
-        )
+        model_name = connector_body["parameters"]["model"]
+
+        # Handle inference profile
+        if model_name.startswith("us."):
+            model_arn = [
+                f"arn:aws:bedrock:*::foundation-model/{model_name[3:]}",
+                f"arn:aws:bedrock:*:*:inference-profile/{model_name}",
+            ]
+        else:
+            model_arn = [
+                (
+                    input("Enter your custom model ARN: ").strip()
+                    if model_type == "9"
+                    else f"arn:aws:bedrock:*::foundation-model/{model_name}"
+                )
+            ]
 
         return {
             "Version": "2012-10-17",
@@ -235,17 +244,9 @@ class BedrockModel(ModelBase):
             )
         else:
             # Prompt for AWS credentials
-            setup = Setup()
-            connector_body["credential"] = {
-                "access_key": aws_access_key
-                or setup.get_password_with_asterisks("Enter your AWS Access Key ID: "),
-                "secret_key": aws_secret_access_key
-                or setup.get_password_with_asterisks(
-                    "Enter your AWS Secret Access Key: "
-                ),
-                "session_token": aws_session_token
-                or setup.get_password_with_asterisks("Enter your AWS Session Token: "),
-            }
+            self.get_aws_credentials(
+                connector_body, aws_access_key, aws_secret_access_key, aws_session_token
+            )
 
             # Create connector
             print("\nCreating Bedrock connector...")
