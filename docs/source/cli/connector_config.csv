@@ -1,0 +1,17 @@
+Field,Description,Required For
+setup_config_path,Path to setup configuration YAML file,All models
+connector_name,Name of the connector (must match supported list),All models
+model_name,Name of the model (must match supported list),All models
+connector_role_prefix,Connector role prefix,AOS only
+connector_body,Connector request body (JSON format),Custom models
+aws_access_key,AWS access key,"Bedrock, Bedrock Converse, Comprehend, SageMaker, Textract (open-source only)"
+aws_secret_access_key,AWS secret access key,"Bedrock, Bedrock Converse, Comprehend, SageMaker, Textract (open-source only)"
+aws_session_token,AWS session token,"Bedrock, Bedrock Converse, Comprehend, SageMaker, Textract (open-source only)"
+region,AWS region,"Bedrock, Bedrock Converse, Comprehend, SageMaker, Textract"
+api_key,API key for the specified model,"Aleph Alpha, Azure OpenAI, Cohere, DeepSeek, OpenAI"
+connector_secret_name,Connector secret name,"Cohere, DeepSeek, OpenAI"
+endpoint_arn,Inference endpoint ARN,SageMaker
+endpoint_url,Inference endpoint URL,SageMaker
+model_id,Model ID,GCP
+project_id,Project ID,GCP
+access_token,Access token for the model,GCP
