@@ -8,6 +8,8 @@
 import json
 import os
 import shutil
+import time
+from functools import wraps
 from zipfile import ZipFile
 
 import pytest
@@ -23,6 +25,35 @@ TESTDATA_FILENAME = os.path.join(
 TESTDATA_UNZIP_FOLDER = os.path.join(
     os.path.dirname(os.path.abspath("__file__")), "tests", "sample_zip"
 )
+
+
+def retry(n_retries=3, delay_sec=10, exceptions=(Exception,)):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            for attempt in range(1, n_retries + 1):
+                try:
+                    return func(*args, **kwargs)
+                except exceptions as e:
+                    if attempt == n_retries:
+                        raise
+                    print(
+                        f"Attempt {attempt} failed: {e}. Retrying in {delay_sec}sec..."
+                    )
+                    time.sleep(delay_sec)
+            return None
+
+        return wrapper
+
+    return decorator
+
+
+@retry(n_retries=5, delay_sec=60, exceptions=(ConnectionError,))
+def init_model():
+    return SparseEncodingModel(
+        folder_path=TEST_FOLDER,
+        model_id="opensearch-project/opensearch-neural-sparse-encoding-doc-v2-distill",
+    )
 
 
 def clean_test_folder(TEST_FOLDER):
@@ -104,8 +135,8 @@ def compare_model_zip_file(zip_file_path, expected_filenames, model_format):
 
 
 clean_test_folder(TEST_FOLDER)
-# test model with a default model id opensearch-project/opensearch-neural-sparse-encoding-v1
-test_model = SparseEncodingModel(folder_path=TEST_FOLDER)
+# test model with model id "opensearch-project/opensearch-neural-sparse-encoding-doc-v2-distill"
+test_model = init_model()
 
 
 def test_check_attribute():
@@ -117,13 +148,16 @@ def test_check_attribute():
 
     assert test_model.folder_path == TEST_FOLDER
     assert (
-        test_model.model_id == "opensearch-project/opensearch-neural-sparse-encoding-v1"
+        test_model.model_id
+        == "opensearch-project/opensearch-neural-sparse-encoding-doc-v2-distill"
     )
 
     default_folder = os.path.join(os.getcwd(), "opensearch_neural_sparse_model_files")
 
     clean_test_folder(default_folder)
-    test_model0 = SparseEncodingModel()
+    test_model0 = SparseEncodingModel(
+        model_id="opensearch-project/opensearch-neural-sparse-encoding-doc-v2-distill"
+    )
     assert test_model0.folder_path == default_folder
     clean_test_folder(default_folder)
 
@@ -139,7 +173,11 @@ def test_folder_path():
         test_non_empty_path = os.path.join(
             os.path.dirname(os.path.abspath("__file__")), "tests"
         )
-        SparseEncodingModel(folder_path=test_non_empty_path, overwrite=False)
+        SparseEncodingModel(
+            model_id="opensearch-project/opensearch-neural-sparse-encoding-doc-v2-distill",
+            folder_path=test_non_empty_path,
+            overwrite=False,
+        )
     assert exc_info.type is Exception
     assert "The default folder path already exists" in exc_info.value.args[0]
 
@@ -161,12 +199,13 @@ def test_save_as_pt():
 
 def test_make_model_config_json_for_torch_script():
     model_format = "TORCH_SCRIPT"
-    expected_model_description = (
-        "This is a sparse encoding model for opensearch-neural-sparse-encoding-v1."
-    )
-    model_id = "opensearch-project/opensearch-neural-sparse-encoding-v1"
+    expected_model_description = "This is a sparse encoding model for opensearch-neural-sparse-encoding-doc-v2-distill."
+    model_id = "opensearch-project/opensearch-neural-sparse-encoding-doc-v2-distill"
     clean_test_folder(TEST_FOLDER)
-    test_model3 = SparseEncodingModel(folder_path=TEST_FOLDER)
+    test_model3 = SparseEncodingModel(
+        model_id="opensearch-project/opensearch-neural-sparse-encoding-doc-v2-distill",
+        folder_path=TEST_FOLDER,
+    )
     test_model3.save_as_pt(model_id=model_id, sentences=["today is sunny"])
     model_config_path_torch = test_model3.make_model_config_json(
         model_format="TORCH_SCRIPT", description=expected_model_description
@@ -214,7 +253,7 @@ def test_overwrite_description():
 
 
 def test_long_description():
-    model_id = "opensearch-project/opensearch-neural-sparse-encoding-v1"
+    model_id = "opensearch-project/opensearch-neural-sparse-encoding-doc-v2-distill"
     model_format = "TORCH_SCRIPT"
     expected_model_description = (
         "This is a sparce encoding model: It generate lots of tokens with different weight "
@@ -249,13 +288,13 @@ def test_long_description():
 
 
 def test_save_as_pt_with_license():
-    model_id = "opensearch-project/opensearch-neural-sparse-encoding-v1"
+    model_id = "opensearch-project/opensearch-neural-sparse-encoding-doc-v2-distill"
     model_format = "TORCH_SCRIPT"
     torch_script_zip_file_path = os.path.join(
-        TEST_FOLDER, "opensearch-neural-sparse-encoding-v1.zip"
+        TEST_FOLDER, "opensearch-neural-sparse-encoding-doc-v2-distill.zip"
     )
     torch_script_expected_filenames = {
-        "opensearch-neural-sparse-encoding-v1.pt",
+        "opensearch-neural-sparse-encoding-doc-v2-distill.pt",
         "tokenizer.json",
         "LICENSE",
     }
