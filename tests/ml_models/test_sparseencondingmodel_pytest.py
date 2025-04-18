@@ -278,7 +278,7 @@ def test_save_as_pt_with_license():
 
 
 def test_default_description():
-    model_id = "opensearch-project/opensearch-neural-sparse-encoding-doc-v3-distill"
+    model_id = "opensearch-project/opensearch-neural-sparse-encoding-doc-v2-distill"
     model_format = "TORCH_SCRIPT"
     expected_model_description = "This is a neural sparse encoding model: It transfers text into sparse vector, and then extract nonzero index and value to entry and weights. It serves only in ingestion and customer should use tokenizer model in query."
 
@@ -309,7 +309,7 @@ def test_default_description():
 
 
 def test_process_sparse_encoding():
-    model_id = "opensearch-project/opensearch-neural-sparse-encoding-doc-v3-distill"
+    model_id = "opensearch-project/opensearch-neural-sparse-encoding-doc-v2-distill"
 
     test_model8 = SparseEncodingModel(
         folder_path=TEST_FOLDER,
@@ -317,10 +317,10 @@ def test_process_sparse_encoding():
     )
 
     encoding_result = test_model8.process_sparse_encoding(["hello world", "hello"])
-    assert len(encoding_result[0]) == 73
-    check_value(1.3667216300964355, encoding_result[0]["hello"], 0.001)
-    assert len(encoding_result[1]) == 46
-    check_value(1.4557286500930786, encoding_result[1]["hello"], 0.001)
+    assert len(encoding_result[0]) == 298
+    check_value(1.6551653146743774, encoding_result[0]["hello"], 0.001)
+    assert len(encoding_result[1]) == 260
+    check_value(1.9172965288162231, encoding_result[1]["hello"], 0.001)
 
     test_model8 = SparseEncodingModel(
         folder_path=TEST_FOLDER,
@@ -329,10 +329,10 @@ def test_process_sparse_encoding():
         activation="l0",
     )
     encoding_result = test_model8.process_sparse_encoding(["hello world", "hello"])
-    assert len(encoding_result[0]) == 33
-    check_value(0.8615057468414307, encoding_result[0]["hello"], 0.001)
-    assert len(encoding_result[1]) == 30
-    check_value(0.8984234929084778, encoding_result[1]["hello"], 0.001)
+    assert len(encoding_result[0]) == 77
+    check_value(0.9765068888664246, encoding_result[0]["hello"], 0.001)
+    assert len(encoding_result[1]) == 64
+    check_value(1.0706572532653809, encoding_result[1]["hello"], 0.001)
 
 
 clean_test_folder(TEST_FOLDER)
