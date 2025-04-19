@@ -539,6 +539,34 @@ class MLCommonClient:
             body=API_BODY,
         )
 
+    def predict(self, model_id: str, algo_name: str, input_json):
+
+        API_URL = f"{ML_BASE_URI}/_predict/{algo_name}/{model_id}"
+
+        if isinstance(input_json, str):
+            try:
+                json_obj = json.loads(input_json)
+                if not isinstance(json_obj, dict):
+                    return "Invalid JSON object passed as argument."
+                API_BODY = json.dumps(json_obj)
+            except json.JSONDecodeError:
+                return "Invalid JSON string passed as argument."
+        elif isinstance(input_json, dict):
+            API_BODY = json.dumps(input_json)
+        else:
+            return "Invalid JSON object passed as argument."
+
+        return self._client.transport.perform_request(
+            method="POST",
+            url=API_URL,
+            body=API_BODY,
+        )
+
+
+
+
+
+
     @deprecated(
         reason="Since OpenSearch 2.7.0, you can use undeploy_model instead",
         version="2.7.0",
