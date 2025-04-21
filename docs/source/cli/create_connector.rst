@@ -1,7 +1,7 @@
 .. _cli.create_connector:
 
 ===============
-Crete Connector
+Create Connector
 ===============
 
 Description
@@ -22,16 +22,126 @@ Usage Examples
 ~~~~~~~~~~~~~~
 
 * Interactive connector creation:
+
+    Command:
+
     ``opensearch-ml connector create``
+
+    Sample response:
+
+    .. code-block:: JSON
+
+        Starting connector creation...
+
+        Enter the path to your existing setup configuration file: /Documents/cli/setup_config.yml
+
+        Setup configuration loaded successfully from /Documents/cli/setup_config.yml
+
+        Please select a supported connector to create:
+        1. Amazon Bedrock
+        2. Amazon Bedrock Converse
+        3. Amazon Comprehend
+        4. Amazon SageMaker
+        5. Amazon Textract
+        6. Cohere
+        7. DeepSeek
+        8. OpenAI
+        Enter your choice (1-8): 8
+
+        Please select a model for the connector creation: 
+        1. Embedding model
+        2. Custom model
+        Enter your choice (1-2): 1
+        Enter your OpenAI API key: ********
+        Enter your connector role prefix: test-role    
+        Enter a name for the AWS Secrets Manager secret: test-secret
+
+        Creating OpenAI connector...
+        Step 1: Create Secret
+        test secret exists, skipping creation.
+        ----------
+        Step 2: Create IAM role configured in connector
+        Role 'test-role-openai-connector-03ae00' does not exist.
+        ----------
+        Step 3: Configure IAM role in OpenSearch
+        Step 3.1: Create IAM role for Signing create connector request
+        Role 'test-role-openai-connector-create-03ae00' does not exist.
+        ----------
+        Step 3.2: Map IAM role test-role-openai-connector-create-03ae00 to OpenSearch permission role
+        ----------
+        Step 4: Create connector in OpenSearch
+        Waiting for resources to be ready...
+        Time remaining: 1 seconds....
+        Wait completed, creating connector...
+        Connector role arn: test-connector-role-arn
+        ----------
+
+        Successfully created OpenAI connector with ID: connector123
+
+        Enter the path to save the output information, or press Enter to save it in the current directory [/Documents/cli/output.yml]:
+
+        Output information saved successfully to /Documents/cli/output.yml
+
 * Create connector using a configuration file:
-    ``opensearch-ml connector create --path Documents/cli/connector_config.yml``
+
+    Command:
+
+    ``opensearch-ml connector create --path /Documents/cli/connector_config.yml``
+
+    Assume user has connector_config.yml file with this content:
+
+    .. code-block:: yaml
+
+        setup_config_path: /Documents/cli/setup_config.yml
+        connector_name: OpenAI
+        model_name: Embedding model
+        api_key: test-api-key
+        connector_role_prefix: test-role
+        connector_secret_name: test-secret
+
+
+    Sample response:
+
+    .. code-block:: JSON
+
+        Starting connector creation...
+
+        Connector configuration loaded successfully from /Documents/cli/connector_config.yml
+
+        Setup configuration loaded successfully from /Documents/cli/setup_config.yml
+
+        Creating OpenAI connector...
+        Step 1: Create Secret
+        test secret exists, skipping creation.
+        ----------
+        Step 2: Create IAM role configured in connector
+        Role 'test-role-openai-connector-03ae00' does not exist.
+        ----------
+        Step 3: Configure IAM role in OpenSearch
+        Step 3.1: Create IAM role for Signing create connector request
+        Role 'test-role-openai-connector-create-03ae00' does not exist.
+        ----------
+        Step 3.2: Map IAM role test-role-openai-connector-create-03ae00 to OpenSearch permission role
+        ----------
+        Step 4: Create connector in OpenSearch
+        Waiting for resources to be ready...
+        Time remaining: 1 seconds....
+        Wait completed, creating connector...
+        Connector role arn: test-connector-role-arn
+        ----------
+
+        Successfully created OpenAI connector with ID: connector123
+
+        Enter the path to save the output information, or press Enter to save it in the current directory [/Documents/cli/output.yml]:
+
+        Output information saved successfully to /Documents/cli/output.yml
 
 Setup Configuration YAML file
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **Template**
 
-.. code-block:: JSON
+.. code-block:: yaml
 
     setup_config_path:
     connector_name:
@@ -60,6 +170,20 @@ Note: The order of the fields does not matter. This template will only be used w
    :widths: 20, 50, 30
    :header-rows: 1
 
+Output YAML file
+~~~~~~~~~~~~~~~~
+
+After successfully creating a connector, the CLI saves important information about the connector in an output YAML file. This file contains details that may be needed for future operations or reference. Here's an example of what the output YAML file might look like:
+
+.. code-block:: yaml
+
+    connector_create:
+    - connector_id: connector123
+      connector_name: OpenAI embedding model connector
+      connector_role_arn: test-connector-role-arn
+      connector_role_name: test-role-openai-connector-03ae00
+      connector_secret_arn: test-connector-secret-arn
+      connector_secret_name: test-secret
 
 Supported Connectors and Models
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -6,12 +6,17 @@ Command Line Interface (CLI)
 
 Opensearch-py-ml supports a Command Line Interface (CLI) feature designed to streamline and simplify ML operations within the OpenSearch environment. This CLI provides an efficient and user-friendly way to manage various ML tasks, including the creation of connectors, registration of remote models, and execution of predictions.
 
+Version Information
+~~~~~~~~~~~~~~~~~~~
+
+The CLI feature is available from opensearch-py-ml version X.X.X and later.
+
 Installation
 ~~~~~~~~~~~~
 
 To install the CLI feature:
 
-``pip install opensearch-py-ml``
+``pip install opensearch-py-ml==X.X.X``
 
 Verifying Installation
 ~~~~~~~~~~~~~~~~~~~~~~
