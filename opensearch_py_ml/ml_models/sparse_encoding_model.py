@@ -54,7 +54,9 @@ class SparseEncodingModel(SparseModel):
 
         super().__init__(model_id, folder_path, overwrite)
         self.tokenizer = AutoTokenizer.from_pretrained(model_id)
-        self.backbone_model = AutoModelForMaskedLM.from_pretrained(model_id)
+        self.backbone_model = AutoModelForMaskedLM.from_pretrained(
+            model_id, _attn_implementation="eager"
+        )
         default_folder_path = os.path.join(
             os.getcwd(), "opensearch_neural_sparse_model_files"
         )
@@ -247,7 +249,10 @@ class SparseEncodingModel(SparseModel):
         if self.backbone_model is not None:
             return self.backbone_model
         else:
-            return AutoModelForMaskedLM.from_pretrained(self.model_id)
+            # spda attention is not supported by OpenSearch djl version
+            return AutoModelForMaskedLM.from_pretrained(
+                self.model_id, _attn_implementation="eager"
+            )
 
     def get_model(self):
         return NeuralSparseModel(

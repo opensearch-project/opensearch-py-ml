@@ -112,6 +112,7 @@ def undeploy_model(
 
     """
     try:
+        ml_model_status = {}
         ml_client.undeploy_model(model_id)
         ml_model_status = ml_client.get_model_info(model_id)
         assert ml_model_status.get("model_state") == "UNDEPLOYED"
@@ -139,6 +140,7 @@ def delete_model(
 
     """
     try:
+        delete_model_obj = {}
         delete_model_obj = ml_client.delete_model(model_id)
         assert delete_model_obj.get("result") == "deleted"
     except Exception as e:
