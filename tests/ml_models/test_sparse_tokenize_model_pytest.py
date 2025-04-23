@@ -56,11 +56,11 @@ def test_check_attribute():
     clean_test_folder(TEST_FOLDER)
     test_model1 = SparseTokenizeModel(
         folder_path=TEST_FOLDER,
-        model_id="opensearch-project/opensearch-neural-sparse-encoding-doc-v3-distill",
+        model_id="opensearch-project/opensearch-neural-sparse-encoding-doc-v2-distill",
     )
     assert (
         test_model1.model_id
-        == "opensearch-project/opensearch-neural-sparse-encoding-doc-v3-distill"
+        == "opensearch-project/opensearch-neural-sparse-encoding-doc-v2-distill"
     )
 
 
@@ -92,7 +92,7 @@ def test_save_as_pt():
 def test_make_model_config_json_for_torch_script():
     model_format = "TORCH_SCRIPT"
     expected_model_description = "This is a sparse encoding model for opensearch-neural-sparse-encoding-doc-v3-distill."
-    model_id = "opensearch-project/opensearch-neural-sparse-encoding-doc-v3-distill"
+    model_id = "opensearch-project/opensearch-neural-sparse-encoding-doc-v2-distill"
     clean_test_folder(TEST_FOLDER)
     test_model3 = SparseTokenizeModel(model_id=model_id, folder_path=TEST_FOLDER)
     test_model3.save_as_pt(model_id=model_id, sentences=["today is sunny"])
@@ -112,7 +112,7 @@ def test_make_model_config_json_for_torch_script():
 
 
 def test_overwrite_description():
-    model_id = "opensearch-project/opensearch-neural-sparse-encoding-doc-v3-distill"
+    model_id = "opensearch-project/opensearch-neural-sparse-encoding-doc-v2-distill"
     model_format = "TORCH_SCRIPT"
     expected_model_description = "Expected Description"
 
@@ -143,7 +143,7 @@ def test_overwrite_description():
 
 
 def test_long_description():
-    model_id = "opensearch-project/opensearch-neural-sparse-encoding-doc-v3-distill"
+    model_id = "opensearch-project/opensearch-neural-sparse-encoding-doc-v2-distill"
     model_format = "TORCH_SCRIPT"
     expected_model_description = (
         "This is a sparce encoding model: It generate lots of tokens with different weight "
@@ -178,10 +178,10 @@ def test_long_description():
 
 
 def test_save_as_pt_with_license():
-    model_id = "opensearch-project/opensearch-neural-sparse-encoding-doc-v3-distill"
+    model_id = "opensearch-project/opensearch-neural-sparse-encoding-doc-v2-distill"
     model_format = "TORCH_SCRIPT"
     torch_script_zip_file_path = os.path.join(
-        TEST_FOLDER, "opensearch-neural-sparse-encoding-doc-v3-distill.zip"
+        TEST_FOLDER, "opensearch-neural-sparse-encoding-doc-v2-distill.zip"
     )
     torch_script_expected_filenames = {
         "idf.json",
@@ -207,7 +207,7 @@ def test_save_as_pt_with_license():
 
 
 def test_default_description():
-    model_id = "opensearch-project/opensearch-neural-sparse-encoding-doc-v3-distill"
+    model_id = "opensearch-project/opensearch-neural-sparse-encoding-doc-v2-distill"
     model_format = "TORCH_SCRIPT"
     expected_model_description = "This is a neural sparse tokenizer model: It tokenize input sentence into tokens and assign pre-defined weight from IDF to each. It serves only in query."
 
@@ -238,7 +238,7 @@ def test_default_description():
 
 
 def test_process_sparse_encoding():
-    model_id = "opensearch-project/opensearch-neural-sparse-encoding-doc-v3-distill"
+    model_id = "opensearch-project/opensearch-neural-sparse-encoding-doc-v2-distill"
 
     test_model8 = SparseTokenizeModel(
         folder_path=TEST_FOLDER,
@@ -252,7 +252,7 @@ def test_process_sparse_encoding():
 
 
 def test_save():
-    model_id = "opensearch-project/opensearch-neural-sparse-encoding-doc-v3-distill"
+    model_id = "opensearch-project/opensearch-neural-sparse-encoding-doc-v2-distill"
 
     test_model9 = SparseTokenizeModel(
         folder_path=TEST_FOLDER,
