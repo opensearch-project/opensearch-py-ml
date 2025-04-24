@@ -5,16 +5,21 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
+from typing import Any, Callable, Dict, Optional
+
 from colorama import Fore, Style
 
+from opensearch_py_ml.ml_commons.cli.ai_connector_helper import AIConnectorHelper
 from opensearch_py_ml.ml_commons.cli.ml_models.model_base import ModelBase
 
 
 class GCPModel(ModelBase):
 
-    def _get_connector_body(self, model_type, project_id, model_id, access_token):
+    def _get_connector_body(
+        self, model_type: str, project_id: str, model_id: str, access_token: str
+    ) -> Dict[str, Any]:
         """
-        Get the connectory body
+        Get the connectory body.
         """
         connector_configs = {
             "1": {
@@ -59,16 +64,28 @@ class GCPModel(ModelBase):
 
     def create_connector(
         self,
-        helper,
-        save_config_method,
-        model_name=None,
-        project_id=None,
-        model_id=None,
-        access_token=None,
-        connector_body=None,
-    ):
+        helper: AIConnectorHelper,
+        save_config_method: Callable[[str, Dict[str, Any]], None],
+        model_name: Optional[str] = None,
+        project_id: Optional[str] = None,
+        model_id: Optional[str] = None,
+        access_token: Optional[str] = None,
+        connector_body: Optional[Dict[str, Any]] = None,
+    ) -> bool:
         """
         Create Google Cloud Platform connector.
+
+        Args:
+            helper: Helper instance for OpenSearch connector operations.
+            save_config_method: Method to save connector configuration after creation.
+            model_name (optional): Specific GCP model name.
+            project_id (optional): GCP project ID.
+            model_id (optional): GCP model ID.
+            access_token (optional): GCP access token.
+            connector_body (optional): The connector request body.
+
+        Returns:
+            bool: True if connector creation successful, False otherwise.
         """
         # Set trusted connector endpoints for GCP
         trusted_endpoint = "^https://.*-aiplatform\\.googleapis\\.com/.*$"

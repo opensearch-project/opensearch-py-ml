@@ -7,6 +7,7 @@
 
 import json
 import logging
+from typing import Any, Dict, Optional
 
 import boto3
 from botocore.exceptions import ClientError
@@ -31,7 +32,9 @@ class SecretHelper:
     ):
         """
         Initialize the SecretHelper with the specified AWS region.
-        :param region: AWS region where the Secrets Manager is located.
+
+        Args:
+            region: AWS region where the Secrets Manager is located.
         """
         self.opensearch_config = opensearch_config
         self.aws_config = aws_config
@@ -48,8 +51,12 @@ class SecretHelper:
     def secret_exists(self, secret_name: str) -> bool:
         """
         Check if a secret with the given name exists in AWS Secrets Manager.
-        :param secret_name: Name of the secret to check.
-        :return: True if the secret exists, False otherwise.
+
+        Args:
+            secret_name: Name of the secret to check.
+
+        Returns:
+            bool: True if the secret exists, False otherwise.
         """
         try:
             # Attempt to retrieve the secret value
@@ -64,11 +71,17 @@ class SecretHelper:
                 logger.error(f"An error occurred: {e}")
                 return False
 
-    def get_secret_arn(self, secret_name: str) -> str:
+    def get_secret_arn(self, secret_name: str) -> Optional[str]:
         """
         Retrieve the ARN of a secret from AWS Secrets Manager.
-        : param secret_name: Name of the secret to retrieve the ARN for.
-        : return: ARN of the secret if found, None otherwise.
+
+        Args:
+            secret_name: Name of the secret to retrieve the ARN for.
+
+        Returns:
+            Optional[str]:
+                - str: ARN of the secret if found.
+                - None: ARN of the secret not found.
         """
         try:
             response = self.secretsmanager.describe_secret(SecretId=secret_name)
@@ -80,14 +93,19 @@ class SecretHelper:
             logger.error(f"An error occurred: {e}")
             return None
 
-    def get_secret_details(self, secret_name: str, fetch_value: bool = False) -> dict:
+    def get_secret_details(
+        self, secret_name: str, fetch_value: bool = False
+    ) -> Dict[str, Any]:
         """
         Retrieve details of a secret from AWS Secrets Manager.
         Optionally fetch the secret value as well.
-        :param secret_name: Name of the secret.
-        :param fetch_value: Whether to also fetch the secret value (default is False).
-        :return: A dictionary with secret details (ARN and optionally the secret value)
-                 or an error dictionary if something went wrong.
+
+        Args:
+            secret_name: Name of the secret.
+            fetch_value (optional): Whether to also fetch the secret value (default is False).
+
+        Returns:
+            Dict[str, Any]: A dictionary with secret details (ARN and optionally the secret value) or an error dictionary if something went wrong.
         """
         try:
             # Describe the secret to get its ARN and metadata
@@ -120,12 +138,20 @@ class SecretHelper:
             # Return a dictionary with error details
             return {"error": str(e), "error_code": error_code}
 
-    def create_secret(self, secret_name: str, secret_value: dict) -> str:
+    def create_secret(
+        self, secret_name: str, secret_value: Dict[str, Any]
+    ) -> Optional[str]:
         """
         Create a new secret in AWS Secrets Manager.
-        :param secret_name: Name of the secret to create.
-        :param secret_value: Dictionary containing the secret data.
-        :return: ARN of the created secret if successful, None otherwise.
+
+        Args:
+            secret_name: Name of the secret to create.
+            secret_value: Dictionary containing the secret data.
+
+        Returns:
+            Optional[str]:
+                - str: ARN of created secret if successful
+                - None: If creation fails
         """
         try:
             # Create the secret with the provided name and value

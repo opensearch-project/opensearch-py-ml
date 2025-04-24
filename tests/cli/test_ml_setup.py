@@ -8,6 +8,7 @@
 
 import os
 import unittest
+from io import StringIO
 from unittest.mock import MagicMock, call, patch
 
 from botocore.exceptions import ClientError
@@ -318,6 +319,79 @@ class TestSetup(unittest.TestCase):
             mock_configure.assert_not_called()  # configure_aws should not be called
             mock_update_config.assert_not_called()  # update_config should not be called
             mock_input.assert_called_once_with("Do you want to reconfigure? (yes/no): ")
+
+    @patch("sys.stdin")
+    @patch("sys.stdout", new_callable=StringIO)
+    def test_get_password_with_asterisks_unix(self, mock_stdout, mock_stdin):
+        """Test get_password_with_asterisks for Unix password input"""
+        # Setup
+        mock_stdin.fileno.return_value = 0
+        mock_stdin.read.side_effect = ["a", "b", "c", "\r"]
+
+        # Execute
+        result = self.setup_instance.get_password_with_asterisks()
+
+        # Assert
+        self.assertEqual(result, "abc")
+        self.assertEqual(mock_stdout.getvalue().count("*"), 3)
+
+    @patch("sys.stdin")
+    @patch("sys.stdout", new_callable=StringIO)
+    def test_get_password_with_asterisks_backspace(self, mock_stdout, mock_stdin):
+        """Test get_password_with_asterisks for backspace handling"""
+        # Setup
+        mock_stdin.fileno.return_value = 0
+        mock_stdin.read.side_effect = ["a", "b", "\x7f", "c", "\r"]
+
+        # Execute
+        result = self.setup_instance.get_password_with_asterisks()
+
+        # Assert
+        self.assertEqual(result, "ac")
+        self.assertIn("\b \b", mock_stdout.getvalue())
+
+    @patch("sys.stdin")
+    @patch("sys.stdout", new_callable=StringIO)
+    def test_get_password_with_asterisks_ctrl_c(self, mock_stdout, mock_stdin):
+        """Test get_password_with_asterisks for Ctrl+C handling on linux"""
+        # Setup
+        mock_stdin.fileno.return_value = 0
+        mock_stdin.read.side_effect = ["a", "\x03"]  # 'a' then Ctrl+C
+
+        # Execute
+        result = self.setup_instance.get_password_with_asterisks()
+
+        # Assert
+        self.assertEqual(result, None)
+
+    @patch("sys.stdin")
+    @patch("sys.stdout", new_callable=StringIO)
+    def test_get_password_with_asterisks_custom_prompt(self, mock_stdout, mock_stdin):
+        """Test get_password_with_asterisks for custom prompt text"""
+        # Setup
+        custom_prompt = "Enter secret: "
+        mock_stdin.fileno.return_value = 0
+        mock_stdin.read.side_effect = ["a", "\r"]
+        mock_stdin.isatty.return_value = True
+
+        # Execute
+        self.setup_instance.get_password_with_asterisks(prompt=custom_prompt)
+
+        # Assert
+        self.assertIn(custom_prompt, mock_stdout.getvalue())
+
+    @patch("termios.tcgetattr")
+    @patch("sys.stdout", new_callable=StringIO)
+    def test_get_password_with_asterisks_error(self, mock_stdout, mock_tcgetattr):
+        """Test error handling in password input"""
+        # Setup
+        mock_tcgetattr.side_effect = Exception("Test error")
+
+        # Execute
+        result = self.setup_instance.get_password_with_asterisks()
+
+        # Assert
+        self.assertEqual(result, None)
 
     @patch(
         "builtins.input",

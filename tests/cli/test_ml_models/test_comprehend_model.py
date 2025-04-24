@@ -56,7 +56,6 @@ class TestComprehendModel(unittest.TestCase):
             connector_role_prefix=self.connector_role_prefix,
             region=self.region,
             model_name="Metadata embedding model",
-            model_arn=self.model_arn,
         )
 
         # Verify method calls
@@ -97,7 +96,6 @@ class TestComprehendModel(unittest.TestCase):
             connector_role_prefix=self.connector_role_prefix,
             region=self.region,
             model_name="Custom model",
-            model_arn=self.model_arn,
         )
 
         # Verify method calls
@@ -132,7 +130,6 @@ class TestComprehendModel(unittest.TestCase):
             connector_role_prefix=self.connector_role_prefix,
             region=self.region,
             model_name="Invalid Model",
-            model_arn=self.model_arn,
         )
         mock_print.assert_any_call(
             f"\n{Fore.YELLOW}Invalid choice. Defaulting to 'Custom model'.{Style.RESET_ALL}"
@@ -148,7 +145,6 @@ class TestComprehendModel(unittest.TestCase):
             region=self.region,
             connector_role_prefix=self.connector_role_prefix,
             model_name="Metadata embedding model",
-            model_arn=self.model_arn,
         )
         self.assertFalse(result)
 
@@ -167,7 +163,6 @@ class TestComprehendModel(unittest.TestCase):
             save_config_method=self.mock_save_config,
             connector_role_prefix=self.connector_role_prefix,
             region=self.region,
-            model_arn=self.model_arn,
         )
 
         self.mock_helper.create_connector_with_role.assert_called_once()

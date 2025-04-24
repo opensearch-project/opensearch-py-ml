@@ -19,7 +19,7 @@ from opensearch_py_ml.ml_commons.cli.aws_config import AWSConfig
 from opensearch_py_ml.ml_commons.cli.opensearch_domain_config import (
     OpenSearchDomainConfig,
 )
-from opensearch_py_ml.ml_commons.secret_helper import SecretHelper
+from opensearch_py_ml.ml_commons.cli.secret_helper import SecretHelper
 
 
 class TestSecretHelper(unittest.TestCase):
@@ -46,7 +46,7 @@ class TestSecretHelper(unittest.TestCase):
         # Suppress logging below ERROR level during tests
         logging.basicConfig(level=logging.ERROR)
 
-    @patch("opensearch_py_ml.ml_commons.secret_helper.boto3.client")
+    @patch("opensearch_py_ml.ml_commons.cli.secret_helper.boto3.client")
     def test_create_secret_error_logging(self, mock_boto_client):
         """Test create_secret error loggig"""
         mock_secretsmanager = MagicMock()
@@ -77,14 +77,14 @@ class TestSecretHelper(unittest.TestCase):
 
         # Capture logs with a context manager
         with self.assertLogs(
-            "opensearch_py_ml.ml_commons.secret_helper", level="ERROR"
+            "opensearch_py_ml.ml_commons.cli.secret_helper", level="ERROR"
         ) as cm:
             result = secret_helper.create_secret("new-secret", {"key": "value"})
             self.assertIsNone(result)
         # Confirm the error message was logged
         self.assertIn("Error creating secret 'new-secret'", cm.output[0])
 
-    @patch("opensearch_py_ml.ml_commons.secret_helper.boto3.client")
+    @patch("opensearch_py_ml.ml_commons.cli.secret_helper.boto3.client")
     def test_create_secret_success(self, mock_boto_client):
         """Test create_secret successful"""
         mock_secretsmanager = MagicMock()
@@ -115,7 +115,7 @@ class TestSecretHelper(unittest.TestCase):
             Name="new-secret", SecretString=json.dumps({"key": "value"})
         )
 
-    @patch("opensearch_py_ml.ml_commons.secret_helper.boto3.client")
+    @patch("opensearch_py_ml.ml_commons.cli.secret_helper.boto3.client")
     def test_secret_exists_true(self, mock_boto_client):
         """Test that secret_exists returns True if secret is found."""
         mock_secretsmanager = MagicMock()
@@ -145,7 +145,7 @@ class TestSecretHelper(unittest.TestCase):
             SecretId="my-existing-secret"
         )
 
-    @patch("opensearch_py_ml.ml_commons.secret_helper.boto3.client")
+    @patch("opensearch_py_ml.ml_commons.cli.secret_helper.boto3.client")
     def test_secret_exists_false(self, mock_boto_client):
         """Test that secret_exists returns False if secret is not found."""
         mock_secretsmanager = MagicMock()
@@ -177,7 +177,7 @@ class TestSecretHelper(unittest.TestCase):
         exists = secret_helper.secret_exists("nonexistent-secret")
         self.assertFalse(exists)
 
-    @patch("opensearch_py_ml.ml_commons.secret_helper.boto3.client")
+    @patch("opensearch_py_ml.ml_commons.cli.secret_helper.boto3.client")
     def test_secret_exists_other_error(self, mock_boto_client):
         """Test that secret_exists returns False on unexpected ClientError."""
         mock_secretsmanager = MagicMock()
@@ -209,7 +209,7 @@ class TestSecretHelper(unittest.TestCase):
         exists = secret_helper.secret_exists("problem-secret")
         self.assertFalse(exists)
 
-    @patch("opensearch_py_ml.ml_commons.secret_helper.boto3.client")
+    @patch("opensearch_py_ml.ml_commons.cli.secret_helper.boto3.client")
     def test_get_secret_arn_success(self, mock_boto_client):
         """Test successful retrieval of secret ARN."""
         mock_secretsmanager = MagicMock()
@@ -238,7 +238,7 @@ class TestSecretHelper(unittest.TestCase):
         )
         mock_secretsmanager.describe_secret.assert_called_with(SecretId="my-secret")
 
-    @patch("opensearch_py_ml.ml_commons.secret_helper.boto3.client")
+    @patch("opensearch_py_ml.ml_commons.cli.secret_helper.boto3.client")
     def test_get_secret_arn_not_found(self, mock_boto_client):
         """Test get_secret_arn returns None when secret is not found."""
         mock_secretsmanager = MagicMock()
@@ -274,8 +274,8 @@ class TestSecretHelper(unittest.TestCase):
             SecretId="non-existent-secret"
         )
 
-    @patch("opensearch_py_ml.ml_commons.secret_helper.boto3.client")
-    @patch("opensearch_py_ml.ml_commons.secret_helper.logger")
+    @patch("opensearch_py_ml.ml_commons.cli.secret_helper.boto3.client")
+    @patch("opensearch_py_ml.ml_commons.cli.secret_helper.logger")
     def test_get_secret_arn_exception(self, mock_logger, mock_boto_client):
         """Test get_secret_arn for exception handling and print output."""
         mock_secretsmanager = MagicMock()
@@ -302,7 +302,7 @@ class TestSecretHelper(unittest.TestCase):
         self.assertIsNone(arn)
         mock_logger.error.assert_called_once_with("An error occurred: Test error")
 
-    @patch("opensearch_py_ml.ml_commons.secret_helper.boto3.client")
+    @patch("opensearch_py_ml.ml_commons.cli.secret_helper.boto3.client")
     def test_get_secret_details_arn_only_success(self, mock_boto_client):
         """Test get_secret_details returns ARN if fetch_value=False."""
         mock_secretsmanager = MagicMock()
@@ -334,7 +334,7 @@ class TestSecretHelper(unittest.TestCase):
         self.assertNotIn("SecretValue", details)
         mock_secretsmanager.describe_secret.assert_called_with(SecretId="my-secret")
 
-    @patch("opensearch_py_ml.ml_commons.secret_helper.boto3.client")
+    @patch("opensearch_py_ml.ml_commons.cli.secret_helper.boto3.client")
     def test_get_secret_details_with_value_success(self, mock_boto_client):
         """Test get_secret_details returns ARN and SecretValue if fetch_value=True."""
         mock_secretsmanager = MagicMock()
@@ -367,7 +367,7 @@ class TestSecretHelper(unittest.TestCase):
         mock_secretsmanager.describe_secret.assert_called_with(SecretId="my-secret")
         mock_secretsmanager.get_secret_value.assert_called_with(SecretId="my-secret")
 
-    @patch("opensearch_py_ml.ml_commons.secret_helper.boto3.client")
+    @patch("opensearch_py_ml.ml_commons.cli.secret_helper.boto3.client")
     def test_get_secret_details_not_found(self, mock_boto_client):
         """Test get_secret_details returns an error dict if secret is not found."""
         mock_secretsmanager = MagicMock()
@@ -405,8 +405,8 @@ class TestSecretHelper(unittest.TestCase):
             SecretId="nonexistent-secret"
         )
 
-    @patch("opensearch_py_ml.ml_commons.secret_helper.boto3.client")
-    @patch("opensearch_py_ml.ml_commons.secret_helper.logger")
+    @patch("opensearch_py_ml.ml_commons.cli.secret_helper.boto3.client")
+    @patch("opensearch_py_ml.ml_commons.cli.secret_helper.logger")
     def test_get_secret_details_client_error(self, mock_logger, mock_boto_client):
         """Test get_secret_details when ClientError occurs."""
         mock_secrets_client = MagicMock()

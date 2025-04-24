@@ -5,18 +5,26 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
+from typing import Any, Callable, Dict, Optional
+
 from colorama import Fore, Style
 
+from opensearch_py_ml.ml_commons.cli.ai_connector_helper import AIConnectorHelper
 from opensearch_py_ml.ml_commons.cli.ml_models.model_base import ModelBase
 
 
 class AzureOpenAIModel(ModelBase):
 
     def _get_connector_body(
-        self, model_type, resource_name, deployment_name, api_version, openai_api_key
-    ):
+        self,
+        model_type: str,
+        resource_name: str,
+        deployment_name: str,
+        api_version: str,
+        openai_api_key: str,
+    ) -> Dict[str, Any]:
         """
-        Get the connectory body
+        Get the connectory body.
         """
         connector_configs = {
             "1": {
@@ -94,17 +102,30 @@ class AzureOpenAIModel(ModelBase):
 
     def create_connector(
         self,
-        helper,
-        save_config_method,
-        model_name=None,
-        api_key=None,
-        resource_name=None,
-        deployment_name=None,
-        api_version=None,
-        connector_body=None,
-    ):
+        helper: AIConnectorHelper,
+        save_config_method: Callable[[str, Dict[str, Any]], None],
+        model_name: Optional[str] = None,
+        api_key: Optional[str] = None,
+        resource_name: Optional[str] = None,
+        deployment_name: Optional[str] = None,
+        api_version: Optional[str] = None,
+        connector_body: Optional[Dict[str, Any]] = None,
+    ) -> bool:
         """
         Create Azure OpenAI connector.
+
+        Args:
+            helper: Helper instance for OpenSearch connector operations.
+            save_config_method: Method to save connector configuration after creation.
+            model_name (optional): Specific Azure OpenAI model name.
+            api_key (optional): OpenAI API key.
+            resource_name (optional): Azure OpenAI resource name.
+            deployment_name (optional): Azure OpenAI deployment name.
+            api_version (optional): Azure OpenAI API version.
+            connector_body (optional): The connector request body.
+
+        Returns:
+            bool: True if connector creation successful, False otherwise.
         """
         # Set trusted connector endpoints for Azure OpenAI
         trusted_endpoint = "^https://.*\\.openai\\.azure\\.com/.*$"

@@ -7,6 +7,7 @@
 
 import json
 import logging
+from typing import Any, Dict, Optional
 
 from colorama import Fore, Style, init
 from rich.console import Console
@@ -35,9 +36,22 @@ class ModelManager(CLIBase):
         super().__init__()
         self.config = {}
 
-    def initialize_predict_model(self, config_path, model_id=None, body=None):
+    def initialize_predict_model(
+        self,
+        config_path: str,
+        model_id: Optional[str] = None,
+        body: Optional[Dict[str, Any]] = None,
+    ) -> bool:
         """
         Orchestrates the entire model prediction process.
+
+        Args:
+            config_path: Path to the setup configuration file.
+            model_id (optional): The model ID to use for prediction.
+            body (optional): Prediction request body.
+
+        Returns:
+            bool: True if prediction successful, False otherwise
         """
         try:
             # Load and check configuration
@@ -84,10 +98,23 @@ class ModelManager(CLIBase):
             return False
 
     def initialize_register_model(
-        self, config_path, connector_id=None, model_name=None, model_description=None
-    ):
+        self,
+        config_path: str,
+        connector_id: Optional[str] = None,
+        model_name: Optional[str] = None,
+        model_description: Optional[str] = None,
+    ) -> bool:
         """
         Orchestrates the entire model registration process.
+
+        Args:
+            config_path: Path to the setup configuration file.
+            connector_id (optional): The connector ID to register the model with.
+            model_name (optional): Name of the model.
+            model_description (optional): Description of the model.
+
+        Returns:
+            bool: True if registration successful, False otherwise
         """
         try:
             # Load and check configuration

@@ -201,6 +201,7 @@ class TestCLIBase(unittest.TestCase):
         self.assertIsNone(save_result)
         mock_overwrite.assert_called_once()
 
+    @patch("os.access", return_value=True)
     @patch("os.path.abspath", return_value="/default/path/output.yml")
     @patch("os.path.exists", return_value=True)
     @patch("os.makedirs")
@@ -217,6 +218,7 @@ class TestCLIBase(unittest.TestCase):
         mock_makedirs,
         mock_exists,
         mock_abspath,
+        mock_access,
     ):
         """Test save_yaml_file for saving output information to a YAML file"""
         # Setup
@@ -257,7 +259,7 @@ class TestCLIBase(unittest.TestCase):
             self.assertIsNone(result)
             self.assertFalse(os.path.exists(CLIBase.CONFIG_FILE))
             mock_logger.error.assert_called_once_with(
-                f"{Fore.RED}Error: Permission denied. Unable to write to {CLIBase.CONFIG_FILE}{Style.RESET_ALL}"
+                f"{Fore.RED}Permission denied: Permission denied{Style.RESET_ALL}"
             )
 
     @patch("opensearch_py_ml.ml_commons.cli.cli_base.logger")

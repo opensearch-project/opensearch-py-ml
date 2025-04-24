@@ -6,22 +6,25 @@
 # GitHub history for details.
 
 
+from typing import Any, Callable, Dict, Optional
+
 from colorama import Fore, Style
 
+from opensearch_py_ml.ml_commons.cli.ai_connector_helper import AIConnectorHelper
 from opensearch_py_ml.ml_commons.cli.ml_models.model_base import ModelBase
 
 
 class ComprehendModel(ModelBase):
     def __init__(self, opensearch_domain_region, service_type):
         """
-        Initializes the Comprehend model with necessary configurations
+        Initializes the Comprehend model with necessary configurations.
         """
         self.opensearch_domain_region = opensearch_domain_region
         self.service_type = service_type
 
-    def _get_connector_body(self, model_type, region):
+    def _get_connector_body(self, model_type: str, region: str) -> Dict[str, Any]:
         """
-        Get the connectory body
+        Get the connectory body.
         """
         connector_configs = {
             "1": {
@@ -91,9 +94,11 @@ class ComprehendModel(ModelBase):
             ],
         }
 
-    def _get_connector_role_policy(self, model_type, connector_body):
+    def _get_connector_role_policy(
+        self, model_type: str, connector_body: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """
-        Get the IAM role policy for the connector
+        Get the IAM role policy for the connector.
         """
         # Get the model arn
         model_action = (
@@ -111,19 +116,32 @@ class ComprehendModel(ModelBase):
 
     def create_connector(
         self,
-        helper,
-        save_config_method,
-        connector_role_prefix=None,
-        region=None,
-        model_name=None,
-        model_arn=None,
-        connector_body=None,
-        aws_access_key=None,
-        aws_secret_access_key=None,
-        aws_session_token=None,
-    ):
+        helper: AIConnectorHelper,
+        save_config_method: Callable[[str, Dict[str, Any]], None],
+        connector_role_prefix: Optional[str] = None,
+        region: Optional[str] = None,
+        model_name: Optional[str] = None,
+        connector_body: Optional[str] = None,
+        aws_access_key: Optional[str] = None,
+        aws_secret_access_key: Optional[str] = None,
+        aws_session_token: Optional[str] = None,
+    ) -> bool:
         """
         Create Comprehend connector.
+
+        Args:
+            helper: Helper instance for OpenSearch connector operations.
+            save_config_method: Method to save connector configuration after creation.
+            connector_role_prefix (optional): Prefix for role names.
+            region (optional): AWS region.
+            model_name (optional): Specific Comprehend model name.
+            connector_body (optional): The connector request body.
+            aws_access_key (optional): AWS access key ID.
+            aws_secret_access_key (optional): AWS secet access key.
+            aws_session_token (optional): AWS session token.
+
+        Returns:
+            bool: True if connector creation successful, False otherwise.
         """
         # Set trusted connector endpoints for Comprehend
         trusted_endpoint = "^https://comprehend\\..*[a-z0-9-]\\.amazonaws\\.com$"

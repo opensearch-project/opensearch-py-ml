@@ -9,6 +9,7 @@ import json
 import logging
 import uuid
 from datetime import datetime
+from typing import Any, Dict, Optional, Union
 
 import boto3
 import requests
@@ -59,7 +60,7 @@ class IAMRoleHelper:
 
     def _handle_client_error(self, error, resource_name, resource_type="Role") -> bool:
         """
-        Handle ClientError exception
+        Handle ClientError exception.
         """
         if error.response["Error"]["Code"].lower() == self.NO_SUCH_ENTITY:
             logger.warning(f"{resource_type} '{resource_name}' does not exist.")
@@ -67,11 +68,15 @@ class IAMRoleHelper:
             logger.error(f"An error occurred: {error}")
         return False
 
-    def role_exists(self, role_name):
+    def role_exists(self, role_name: str) -> bool:
         """
         Check if an IAM role exists.
-        :param role_name: Name of the IAM role.
-        :return: True if the role exists, False otherwise.
+
+        Args:
+            role_name: Name of the IAM role.
+
+        Returns:
+            bool: True if the role exists, False otherwise.
         """
         try:
             self.iam_client.get_role(RoleName=role_name)
@@ -79,10 +84,12 @@ class IAMRoleHelper:
         except ClientError as e:
             return self._handle_client_error(e, role_name)
 
-    def delete_role(self, role_name):
+    def delete_role(self, role_name: str) -> None:
         """
         Delete an IAM role along with its attached policies.
-        :param role_name: Name of the IAM role to delete.
+
+        Args:
+            role_name: Name of the IAM role to delete.
         """
         try:
             # Detach any managed policies from the role
@@ -114,18 +121,24 @@ class IAMRoleHelper:
 
     def create_iam_role(
         self,
-        role_name,
-        trust_policy_json,
-        inline_policy_json,
-        policy_name=None,
-    ):
+        role_name: str,
+        trust_policy_json: Dict[str, Any],
+        inline_policy_json: Dict[str, Any],
+        policy_name: Optional[str] = None,
+    ) -> Optional[str]:
         """
         Create a new IAM role with specified trust and inline policies.
-        :param role_name: Name of the IAM role to create.
-        :param trust_policy_json: Trust policy document in JSON format.
-        :param inline_policy_json: Inline policy document in JSON format.
-        :param policy_name: Optional. If not provided, a unique one will be generated.
-        :return: ARN of the created role or None if creation failed.
+
+        Args:
+            role_name: Name of the IAM role to create.
+            trust_policy_json: Trust policy document in JSON format.
+            inline_policy_json: Inline policy document in JSON format.
+            policy_name (optional): Name for the inline policy. If not provided, a unique one will be generated.
+
+        Returns:
+            Optional[str]:
+                - str: ARN of created role if successful
+                - None: If role creation fails
         """
         try:
             # Create the role with the provided trust policy
@@ -157,13 +170,21 @@ class IAMRoleHelper:
             logger.error(f"Error creating the role: {e}")
             return None
 
-    def get_role_info(self, role_name, include_details=False):
+    def get_role_info(
+        self, role_name: str, include_details: bool = False
+    ) -> Optional[Union[str, Dict[str, Any]]]:
         """
         Retrieve information about an IAM role.
-        :param role_name: Name of the IAM role.
-        :param include_details: If False, returns only the role's ARN.
-                               If True, returns a dictionary with full role details.
-        :return: ARN or dict of role details. Returns None if not found.
+
+        Args:
+            role_name: Name of the IAM role.
+            include_details (optional): If False, returns only the role's ARN. If True, returns a dictionary with full role details.
+
+        Returns:
+            Optional[Union[str, Dict[str, Any]]]:
+                - str: Role ARN if include_details=False
+                - Dict: Complete role details if include_details=True
+                - None: If role not found or error occurs
         """
         if not role_name:
             return None
@@ -203,11 +224,17 @@ class IAMRoleHelper:
         except ClientError as e:
             return self._handle_client_error(e, role_name)
 
-    def get_role_arn(self, role_name):
+    def get_role_arn(self, role_name: str) -> Optional[str]:
         """
         Retrieve the ARN of an IAM role.
-        :param username: Name of the IAM role.
-        :return: ARN of the role or None if not found.
+
+        Args:
+            role_name: Name of the IAM role.
+
+        Returns:
+            Optional[str]:
+                - str: Role ARN if found.
+                - None: If role doesn't exist or error occurs.
         """
         if not role_name:
             return None
@@ -218,11 +245,17 @@ class IAMRoleHelper:
         except ClientError as e:
             return self._handle_client_error(e, role_name)
 
-    def get_user_arn(self, username):
+    def get_user_arn(self, username: str) -> Optional[str]:
         """
         Retrieve the ARN of an IAM user.
-        :param username: Name of the IAM user.
-        :return: ARN of the user or None if not found.
+
+        Args:
+            username: Name of the IAM user.
+
+        Returns:
+            Optional[str]:
+                - str: User's ARN if found
+                - None: If username is empty or user not found
         """
         if not username:
             return None
@@ -232,12 +265,15 @@ class IAMRoleHelper:
         except ClientError as e:
             return self._handle_client_error(e, username, "User")
 
-    def map_iam_role_to_backend_role(self, role_arn, os_security_role="ml_full_access"):
+    def map_iam_role_to_backend_role(
+        self, role_arn: str, os_security_role: str = "ml_full_access"
+    ) -> None:
         """
         Maps an IAM role to an OpenSearch security backend role.
-        :param role_arn: ARN of the IAM role to be mapped.
-        :param: os_security_role: The OpenSearch security role name.
-        :return: None
+
+        Args:
+            role_arn: ARN of the IAM role to be mapped.
+            os_security_role (optional): The OpenSearch security role name.
         """
         url = f"{self.opensearch_config.opensearch_domain_endpoint}/_plugins/_security/api/rolesmapping/{os_security_role}"
         r = requests.get(
@@ -285,13 +321,22 @@ class IAMRoleHelper:
             )
             logger.info(response.text)
 
-    def assume_role(self, role_arn, role_session_name=None, session=None):
+    def assume_role(
+        self,
+        role_arn: str,
+        role_session_name: Optional[str] = None,
+        session: Optional[boto3.Session] = None,
+    ) -> Optional[Dict[str, Any]]:
         """
         Assume an IAM role and obtain temporary security credentials.
-        :param role_arn: ARN of the IAM role to assume.
-        :param role_session_name: Identifier for the assumed role session.
-        :param session: Optional boto3 session object. Defaults to the class-level sts_client.
-        :return: Dictionary with temporary security credentials and metadata, or None on failure.
+
+        Args:
+            role_arn: ARN of the IAM role to assume.
+            role_session_name (optional): Identifier for the assumed role session.
+            session (optional): Optional boto3 session object. Defaults to the class-level sts_client.
+
+        Returns:
+            Optional[Dict[str, Any]]: Dictionary with temporary security credentials and metadata, or None on failure.
         """
         if not role_arn:
             logger.error("Role ARN is required.")
@@ -329,11 +374,17 @@ class IAMRoleHelper:
             logger.error(f"Error assuming role {role_arn}: {error_code} - {e}")
             return None
 
-    def get_iam_user_name_from_arn(self, iam_principal_arn):
+    def get_iam_user_name_from_arn(self, iam_principal_arn: str) -> Optional[str]:
         """
         Extract the IAM user name from an IAM principal ARN.
-        :param iam_principal_arn: ARN of the IAM principal. Expected format: arn:aws:iam::<account-id>:user/<user-name>
-        :return: IAM user name if extraction is successful, None otherwise.
+
+        Args:
+            iam_principal_arn: ARN of the IAM principal. Expected format: arn:aws:iam::<account-id>:user/<user-name>
+
+        Returns:
+            Optional[str]:
+                - str: Extracted user name if successful
+                - None: If ARN is invalid, empty, or extraction fails
         """
         try:
             if (

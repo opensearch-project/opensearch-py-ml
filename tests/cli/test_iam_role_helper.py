@@ -14,10 +14,10 @@ from botocore.exceptions import ClientError
 from requests.auth import HTTPBasicAuth
 
 from opensearch_py_ml.ml_commons.cli.aws_config import AWSConfig
+from opensearch_py_ml.ml_commons.cli.iam_role_helper import IAMRoleHelper
 from opensearch_py_ml.ml_commons.cli.opensearch_domain_config import (
     OpenSearchDomainConfig,
 )
-from opensearch_py_ml.ml_commons.iam_role_helper import IAMRoleHelper
 
 
 class TestIAMRoleHelper(unittest.TestCase):
@@ -69,7 +69,7 @@ class TestIAMRoleHelper(unittest.TestCase):
     def tearDown(self):
         self.patcher_boto3.stop()
 
-    @patch("opensearch_py_ml.ml_commons.iam_role_helper.logger")
+    @patch("opensearch_py_ml.ml_commons.cli.iam_role_helper.logger")
     def test_handle_client_error_no_such_entity(self, mock_logger):
         """Test _handle_client_error when error code is NO_SUCH_ENTITY"""
         error_response = {
@@ -83,7 +83,7 @@ class TestIAMRoleHelper(unittest.TestCase):
             f"Role '{resource_name}' does not exist."
         )
 
-    @patch("opensearch_py_ml.ml_commons.iam_role_helper.logger")
+    @patch("opensearch_py_ml.ml_commons.cli.iam_role_helper.logger")
     def test_handle_client_error_other_error(self, mock_logger):
         """Test _handle_client_error when error code is not NO_SUCH_ENTITY"""
         error_response = {"Error": {"Code": "ValidationError", "Message": "Test error"}}
@@ -503,7 +503,7 @@ class TestIAMRoleHelper(unittest.TestCase):
         username = self.helper.get_iam_user_name_from_arn(None)
         self.assertIsNone(username)
 
-    @patch("opensearch_py_ml.ml_commons.iam_role_helper.logger")
+    @patch("opensearch_py_ml.ml_commons.cli.iam_role_helper.logger")
     def test_get_iam_user_name_from_arn_exception(self, mock_logger):
         """Test get_iam_user_name_from_arn for exception handling and print output."""
         result = self.helper.get_iam_user_name_from_arn(123)

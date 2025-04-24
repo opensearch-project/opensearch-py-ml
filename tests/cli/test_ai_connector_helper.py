@@ -323,13 +323,9 @@ class TestAIConnectorHelper(unittest.TestCase):
 
         # Mock create_connector response
         mock_response = {"connector_id": "test-connector-id"}
-
-        # Create a mock for temp_os_client
-        mock_temp_client = MagicMock()
-        mock_temp_client.plugins.ml.create_connector.return_value = mock_response
-
-        # Set the mock_opensearch to return mock_temp_client
-        self.mock_opensearch.return_value = mock_temp_client
+        self.mock_opensearch_client.plugins.ml.create_connector.return_value = (
+            mock_response
+        )
 
         # Instantiate helper
         with patch.object(AIConnectorHelper, "__init__", return_value=None):
@@ -339,13 +335,14 @@ class TestAIConnectorHelper(unittest.TestCase):
             helper.opensearch_config = self.opensearch_config
             helper.iam_helper = mock_iam_helper
             helper.get_ml_auth = mock_get_ml_auth
+            helper.opensearch_client = self.mock_opensearch_client
 
             # Call the method
             body = {"key": "value"}
             connector_id = helper.create_connector(create_connector_role_name, body)
 
             # Assert correct call to create_connector
-            mock_temp_client.plugins.ml.create_connector.assert_called_once_with(
+            self.mock_opensearch_client.plugins.ml.create_connector.assert_called_once_with(
                 body={"key": "value"},
                 headers={"Content-Type": "application/json"},
             )
@@ -358,13 +355,9 @@ class TestAIConnectorHelper(unittest.TestCase):
         """Test create_connector in open-source service"""
         # Mock create_connector response
         mock_response = {"connector_id": "test-connector-id"}
-
-        # Create a mock for temp_os_client
-        mock_temp_client = MagicMock()
-        mock_temp_client.plugins.ml.create_connector.return_value = mock_response
-
-        # Set the mock_opensearch to return mock_temp_client
-        self.mock_opensearch.return_value = mock_temp_client
+        self.mock_opensearch_client.plugins.ml.create_connector.return_value = (
+            mock_response
+        )
 
         # Instantiate helper
         with patch.object(AIConnectorHelper, "__init__", return_value=None):
@@ -375,13 +368,14 @@ class TestAIConnectorHelper(unittest.TestCase):
             helper.opensearch_config.opensearch_domain_endpoint = (
                 "https://localhost:9200"
             )
+            helper.opensearch_client = self.mock_opensearch_client
 
             # Call the method
             body = {"key": "value"}
             connector_id = helper.create_connector(None, body)
 
             # Assert correct call to create_connector
-            mock_temp_client.plugins.ml.create_connector.assert_called_once_with(
+            self.mock_opensearch_client.plugins.ml.create_connector.assert_called_once_with(
                 body={"key": "value"},
                 headers={"Content-Type": "application/json"},
             )

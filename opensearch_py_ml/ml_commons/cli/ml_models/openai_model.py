@@ -6,9 +6,11 @@
 # GitHub history for details.
 
 import json
+from typing import Any, Callable, Dict, Optional
 
 from colorama import Fore, Style
 
+from opensearch_py_ml.ml_commons.cli.ai_connector_helper import AIConnectorHelper
 from opensearch_py_ml.ml_commons.cli.ml_models.model_base import ModelBase
 
 
@@ -22,9 +24,9 @@ class OpenAIModel(ModelBase):
         """
         self.service_type = service_type
 
-    def _get_connector_body(self, model_type):
+    def _get_connector_body(self, model_type: str) -> Dict[str, Any]:
         """
-        Get the connectory body
+        Get the connectory body.
         """
         connector_configs = {
             self.AMAZON_OPENSEARCH_SERVICE: {
@@ -51,6 +53,18 @@ class OpenAIModel(ModelBase):
                     "parameters": {},
                 },
                 "2": {
+                    "name": "OpenAI completion model connector",
+                    "description": "The connector to the OpenAI completion model",
+                    "model": "gpt-3.5-turbo-instruct",
+                    "credential": {"openAI_key": "${credential}"},
+                    "url": "https://api.openai.com/v1/completions",
+                    "request_body": '{ "model": "${parameters.model}", "prompt": "${parameters.prompt}", "max_tokens": ${parameters.max_tokens}, "temperature": ${parameters.temperature} }',
+                    "parameters": {
+                        "max_tokens": 7,
+                        "temperature": 0,
+                    },
+                },
+                "3": {
                     "name": "OpenAI embedding model connector",
                     "description": "Connector for OpenAI embedding model",
                     "model": "text-embedding-ada-002",
@@ -61,7 +75,7 @@ class OpenAIModel(ModelBase):
                     "post_process_function": "connector.post_process.openai.embedding",
                     "parameters": {},
                 },
-                "3": "Custom model",
+                "4": "Custom model",
             },
         }
 
@@ -119,16 +133,28 @@ class OpenAIModel(ModelBase):
 
     def create_connector(
         self,
-        helper,
-        save_config_method,
-        connector_role_prefix=None,
-        model_name=None,
-        api_key=None,
-        connector_body=None,
-        connector_secret_name=None,
-    ):
+        helper: AIConnectorHelper,
+        save_config_method: Callable[[str, Dict[str, Any]], None],
+        connector_role_prefix: Optional[str] = None,
+        model_name: Optional[str] = None,
+        api_key: Optional[str] = None,
+        connector_body: Optional[Dict[str, Any]] = None,
+        connector_secret_name: Optional[str] = None,
+    ) -> bool:
         """
         Create OpenAI connector.
+
+        Args:
+            helper: Helper instance for OpenSearch connector operations.
+            save_config_method: Method to save connector configuration after creation.
+            connector_role_prefix (optional): Prefix for role names.
+            model_name (optional): Specific OpenAI model name.
+            api_key (optional): OpenAI key.
+            connector_body (optional): The connector request body.
+            connector_secret_name (optional): The connector secret name.
+
+        Returns:
+            bool: True if connector creation successful, False otherwise.
         """
         # Set trusted connector endpoints for OpenAI
         trusted_endpoint = "^https://api\\.openai\\.com/.*$"

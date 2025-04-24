@@ -94,7 +94,6 @@ class TestBedrockModel(unittest.TestCase):
             connector_role_prefix=self.connector_role_prefix,
             region=self.region,
             model_name="Custom model",
-            model_arn="test-model-arn",
         )
 
         # Verify method calls
@@ -198,27 +197,6 @@ class TestBedrockModel(unittest.TestCase):
         self.assertEqual(len(create_connector_calls), 1)
         _, _, _, connector_body = create_connector_calls[0][0]
         self.assertEqual(connector_body["parameters"]["region"], "us-east-1")
-
-    @patch("builtins.input", side_effect=["9", "", "test_prefix", "test_model_arn"])
-    def test_enter_custom_model_arn(self, mock_input):
-        """Test creating a Bedrock connector with a custom model ARN"""
-        self.mock_helper.create_connector_with_role.return_value = (
-            "mock_connector_id",
-            "mock_role_arn",
-            "",
-        )
-        self.bedrock_model.create_connector(
-            helper=self.mock_helper,
-            save_config_method=self.mock_save_config,
-            connector_body=self.connector_body,
-        )
-        mock_input.assert_any_call("Enter your custom model ARN: ")
-        connector_role_inline_policy = (
-            self.mock_helper.create_connector_with_role.call_args[0][0]
-        )
-        self.assertEqual(
-            connector_role_inline_policy["Statement"][0]["Resource"], ["test_model_arn"]
-        )
 
     @patch(
         "opensearch_py_ml.ml_commons.cli.ml_models.model_base.ModelBase.input_custom_model_details"

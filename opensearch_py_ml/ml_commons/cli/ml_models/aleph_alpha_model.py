@@ -5,16 +5,21 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
+from typing import Any, Callable, Dict, Optional
+
 from colorama import Fore, Style
 
+from opensearch_py_ml.ml_commons.cli.ai_connector_helper import AIConnectorHelper
 from opensearch_py_ml.ml_commons.cli.ml_models.model_base import ModelBase
 
 
 class AlephAlphaModel(ModelBase):
 
-    def _get_connector_body(self, model_type, aleph_alpha_api_key):
+    def _get_connector_body(
+        self, model_type: str, aleph_alpha_api_key: str
+    ) -> Dict[str, Any]:
         """
-        Get the connectory body
+        Get the connectory body.
         """
         connector_configs = {
             "1": {
@@ -77,14 +82,24 @@ class AlephAlphaModel(ModelBase):
 
     def create_connector(
         self,
-        helper,
-        save_config_method,
-        model_name=None,
-        api_key=None,
-        connector_body=None,
-    ):
+        helper: AIConnectorHelper,
+        save_config_method: Callable[[str, Dict[str, Any]], None],
+        model_name: Optional[str] = None,
+        api_key: Optional[str] = None,
+        connector_body: Optional[Dict[str, Any]] = None,
+    ) -> bool:
         """
         Create Aleph Alpha connector.
+
+        Args:
+            helper: Helper instance for OpenSearch connector operations.
+            save_config_method: Method to save connector configuration after creation.
+            model_name (optional): Specific Aleph Alpha model name.
+            api_key (optional): Aleph Alpha API key.
+            connector_body (optional): The connector request body.
+
+        Returns:
+            bool: True if connector creation successful, False otherwise.
         """
         # Set trusted connector endpoints for Aleph Alpha
         trusted_endpoint = "^https://api\\.aleph-alpha\\.com/.*$"

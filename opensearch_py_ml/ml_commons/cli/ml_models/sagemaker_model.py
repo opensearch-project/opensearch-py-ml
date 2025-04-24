@@ -5,8 +5,11 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
+from typing import Any, Callable, Dict, Optional
+
 from colorama import Fore, Style
 
+from opensearch_py_ml.ml_commons.cli.ai_connector_helper import AIConnectorHelper
 from opensearch_py_ml.ml_commons.cli.ml_models.model_base import ModelBase
 
 
@@ -22,9 +25,11 @@ class SageMakerModel(ModelBase):
         self.opensearch_domain_region = opensearch_domain_region
         self.service_type = service_type
 
-    def _get_connector_body(self, model_type, region, endpoint_url):
+    def _get_connector_body(
+        self, model_type: str, region: str, endpoint_url: str
+    ) -> Dict[str, Any]:
         """
-        Get the connectory body
+        Get the connectory body.
         """
         connector_configs = {
             self.AMAZON_OPENSEARCH_SERVICE: {
@@ -117,20 +122,36 @@ class SageMakerModel(ModelBase):
 
     def create_connector(
         self,
-        helper,
-        save_config_method,
-        connector_role_prefix=None,
-        region=None,
-        model_name=None,
-        endpoint_arn=None,
-        endpoint_url=None,
-        connector_body=None,
-        aws_access_key=None,
-        aws_secret_access_key=None,
-        aws_session_token=None,
-    ):
+        helper: AIConnectorHelper,
+        save_config_method: Callable[[str, Dict[str, Any]], None],
+        connector_role_prefix: Optional[str] = None,
+        region: Optional[str] = None,
+        model_name: Optional[str] = None,
+        endpoint_arn: Optional[str] = None,
+        endpoint_url: Optional[str] = None,
+        connector_body: Optional[str] = None,
+        aws_access_key: Optional[str] = None,
+        aws_secret_access_key: Optional[str] = None,
+        aws_session_token: Optional[str] = None,
+    ) -> bool:
         """
         Create SageMaker connector.
+
+        Args:
+            helper: Helper instance for OpenSearch connector operations.
+            save_config_method: Method to save connector configuration after creation.
+            connector_role_prefix (optional): Prefix for role names.
+            region (optional): AWS region.
+            model_name (optional): Specific SageMaker model name.
+            endpoint_arn (optional): SageMaker endpoint ARN.
+            endpoint_url (optional): SageMaker endpoint URL.
+            connector_body (optional): The connector request body.
+            aws_access_key (optional): AWS access key ID.
+            aws_secret_access_key (optional): AWS secet access key.
+            aws_session_token (optional): AWS session token.
+
+        Returns:
+            bool: True if connector creation successful, False otherwise.
         """
         # Set trusted connector endpoints for SageMaker
         trusted_endpoint = (

@@ -10,6 +10,7 @@ import logging
 import sys
 import termios
 import tty
+from typing import Optional
 from urllib.parse import urlparse
 
 import boto3
@@ -28,6 +29,12 @@ init(autoreset=True)
 
 # Configure the logger for this module
 logger = logging.getLogger(__name__)
+
+
+class PasswordInputError(Exception):
+    """Exception for password input errors."""
+
+    pass
 
 
 class Setup(CLIBase):
@@ -62,10 +69,23 @@ class Setup(CLIBase):
         )
 
     def check_credentials_validity(
-        self, access_key=None, secret_key=None, session_token=None, use_config=False
-    ):
+        self,
+        access_key: Optional[str] = None,
+        secret_key: Optional[str] = None,
+        session_token: Optional[str] = None,
+        use_config: bool = False,
+    ) -> bool:
         """
         Check if the provided AWS credentials are valid.
+
+        Args:
+            access_key (optional): AWS access key ID. Defaults to None.
+            secret_key (optional): Aws secret access key. Defaults to None.
+            session_token (optional): AWS session token. Defaults to None.
+            use_config (optional): Whether to use credentials from config file instead of providede parameters. Defaults to False.
+
+        Returns:
+            bool: True if credentials are valid, False otherwise
         """
         try:
             if use_config:
@@ -91,9 +111,19 @@ class Setup(CLIBase):
         except ClientError:
             return False
 
-    def update_aws_credentials(self, access_key, secret_key, session_token):
+    def update_aws_credentials(
+        self, access_key: str, secret_key: str, session_token: str
+    ) -> None:
         """
         Update AWS credentials in the config file.
+
+        Args:
+            access_key: AWS access key ID to store.
+            secret_key: AWS secret access key to store.
+            session_token: AWS session token to store.
+
+        Raises:
+            Exception: If updating credentials fails, with error details in log
         """
         try:
             if "aws_credentials" not in self.config:
@@ -108,9 +138,12 @@ class Setup(CLIBase):
             )
             raise
 
-    def check_and_configure_aws(self, config_path):
+    def check_and_configure_aws(self, config_path: str) -> None:
         """
         Check if AWS credentials are configured and offer to reconfigure if needed.
+
+        Args:
+            config_path: Path to the configuration file to update.
         """
         if not self.check_credentials_validity(use_config=True):
             logger.warning(
@@ -135,11 +168,11 @@ class Setup(CLIBase):
             if reconfigure == "yes":
                 self.configure_aws()
 
-    def configure_aws(self):
+    def configure_aws(self) -> None:
         """
         Configure AWS credentials by prompting the user for input.
         """
-        print("Let's configure your AWS credentials.")
+        print("\nLet's configure your AWS credentials.")
         self.aws_config.aws_access_key = self.get_password_with_asterisks(
             "Enter your AWS Access Key ID: "
         )
@@ -168,61 +201,101 @@ class Setup(CLIBase):
                 f"{Fore.RED}The provided credentials are invalid or expired.{Style.RESET_ALL}"
             )
 
-    def get_password_with_asterisks(self, prompt="Enter password: ") -> str:
+    def get_password_with_asterisks(
+        self, prompt: str = "Enter password: "
+    ) -> Optional[str]:
         """
         Get password input from user, masking it with asterisks.
-        """
-        if sys.platform == "win32":
-            import msvcrt
 
-            print(prompt, end="", flush=True)
-            password = ""
-            while True:
-                key = msvcrt.getch()
-                if key == b"\r":  # Enter key
-                    sys.stdout.write("\n")
-                    return password
-                elif key == b"\x08":  # Backspace key
-                    if len(password) > 0:
-                        password = password[:-1]
-                        sys.stdout.write("\b \b")  # Erase the last asterisk
-                        sys.stdout.flush()
-                else:
-                    try:
-                        char = key.decode("utf-8")
-                        password += char
-                        sys.stdout.write("*")  # Mask input with '*'
-                        sys.stdout.flush()
-                    except UnicodeDecodeError:
-                        continue
-        else:
-            fd = sys.stdin.fileno()
-            old_settings = termios.tcgetattr(fd)
+        Args:
+            prompt (optional): The prompt text to display before password input. Defaults to "Enter password: ".
+
+        Returns:
+            Optional[str]:
+                - str: The entered password if input successful
+                - None: If interrupted or error occurs
+        """
+
+        def _get_windows_password() -> str:
             try:
+                import msvcrt
+
+                password = ""
+                while True:
+                    key = msvcrt.getch()
+                    if key == b"\r":  # Enter
+                        sys.stdout.write("\n")
+                        return password
+                    elif key == b"\x08":  # Backspace
+                        if password:
+                            password = password[:-1]
+                            sys.stdout.write("\b \b")
+                            sys.stdout.flush()
+                    elif key == b"\x03":  # Ctrl+C
+                        raise KeyboardInterrupt
+                    else:
+                        try:
+                            char = key.decode("utf-8")
+                            password += char
+                            sys.stdout.write("*")
+                            sys.stdout.flush()
+                        except UnicodeDecodeError:
+                            continue
+            except Exception as e:
+                raise PasswordInputError(
+                    f"Error reading Windows password input: {str(e)}"
+                )
+
+        def _get_unix_password() -> str:
+            fd = sys.stdin.fileno()
+            old_settings = None
+            try:
+                old_settings = termios.tcgetattr(fd)
                 tty.setraw(fd)
                 sys.stdout.write(prompt)
                 sys.stdout.flush()
+
                 password = ""
                 while True:
                     ch = sys.stdin.read(1)
-                    if ch in ("\r", "\n"):  # Enter key
+                    if ch in ("\r", "\n"):  # Enter
                         sys.stdout.write("\r\n")
                         return password
-                    elif ch == "\x7f":  # Backspace key
-                        if len(password) > 0:
+                    elif ch == "\x7f":  # Backspace
+                        if password:
                             password = password[:-1]
-                            sys.stdout.write("\b \b")  # Erase the last asterisk
+                            sys.stdout.write("\b \b")
                             sys.stdout.flush()
+                    elif ch == "\x03":  # Ctrl+C
+                        raise KeyboardInterrupt
                     else:
                         password += ch
-                        sys.stdout.write("*")  # Mask input with '*'
+                        sys.stdout.write("*")
                         sys.stdout.flush()
-            finally:
-                termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
 
-    def setup_configuration(self):
+            except Exception as e:
+                raise PasswordInputError(f"Error reading Unix password input: {str(e)}")
+            finally:
+                if old_settings is not None:
+                    termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+
+        try:
+            if sys.platform == "win32":
+                return _get_windows_password()
+            return _get_unix_password()
+        except KeyboardInterrupt:
+            print("\nPassword input interrupted")
+            return None
+        except PasswordInputError as e:
+            print(f"\nError: {str(e)}")
+            return None
+
+    def setup_configuration(self) -> str:
         """
         Set up the configuration by prompting the user for various settings.
+
+        Returns:
+            str: Path to the created configuration file.
         """
         # Prompt for service type
         print("\nChoose OpenSearch service type:")
@@ -274,7 +347,7 @@ class Setup(CLIBase):
             default_region = "us-west-2"
             self.opensearch_config.opensearch_domain_region = (
                 input(
-                    f"\nEnter your AWS OpenSearch region, or press Enter for default [{default_region}]: "
+                    f"Enter your AWS OpenSearch region, or press Enter for default [{default_region}]: "
                 ).strip()
                 or default_region
             )
@@ -355,6 +428,9 @@ class Setup(CLIBase):
     def initialize_opensearch_client(self) -> bool:
         """
         Initialize the OpenSearch client based on the service type and configuration.
+
+        Returns:
+            bool: True if client initialization successful, False otherwise.
         """
         if not self.opensearch_config.opensearch_domain_endpoint:
             logger.warning(
@@ -417,9 +493,9 @@ class Setup(CLIBase):
             )
             return False
 
-    def _update_from_config(self):
+    def _update_from_config(self) -> bool:
         """
-        Update instance variables from loaded config dictionary
+        Update instance variables from loaded config dictionary.
         """
         if not self.config:
             return False
@@ -451,9 +527,9 @@ class Setup(CLIBase):
         self.aws_config.aws_session_token = aws_credentials.get("aws_session_token", "")
         return True
 
-    def _process_config(self, config_path):
+    def _process_config(self, config_path: str) -> Optional[str]:
         """
-        Process the configuration file
+        Process the configuration file.
         """
         if self.load_config(config_path):
             if self._update_from_config():
@@ -473,9 +549,17 @@ class Setup(CLIBase):
             )
             config_path = self.setup_configuration()
 
-    def setup_command(self, config_path=None):
+    def setup_command(self, config_path: Optional[str] = None) -> Optional[str]:
         """
         Main setup command that orchestrates the entire setup process.
+
+        Args:
+            config_path (optional): Path to existing configuration file. Defaults to None.
+
+        Returns:
+            Optional[str]:
+                - str: Path to the configuration file if setup successful.
+                - None: If setup failed.
         """
         # Check if setup config file path is given in the command
         if not config_path:

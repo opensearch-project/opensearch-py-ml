@@ -6,9 +6,11 @@
 # GitHub history for details.
 
 import json
+from typing import Any, Callable, Dict, Optional
 
 from colorama import Fore, Style
 
+from opensearch_py_ml.ml_commons.cli.ai_connector_helper import AIConnectorHelper
 from opensearch_py_ml.ml_commons.cli.ml_models.model_base import ModelBase
 
 
@@ -22,9 +24,9 @@ class CohereModel(ModelBase):
         """
         self.service_type = service_type
 
-    def _get_connector_body(self, model_type):
+    def _get_connector_body(self, model_type: str) -> Dict[str, Any]:
         """
-        Get the connectory body
+        Get the connectory body.
         """
         connector_configs = {
             self.AMAZON_OPENSEARCH_SERVICE: {
@@ -140,16 +142,28 @@ class CohereModel(ModelBase):
 
     def create_connector(
         self,
-        helper,
-        save_config_method,
-        connector_role_prefix=None,
-        model_name=None,
-        api_key=None,
-        connector_body=None,
-        connector_secret_name=None,
-    ):
+        helper: AIConnectorHelper,
+        save_config_method: Callable[[str, Dict[str, Any]], None],
+        connector_role_prefix: Optional[str] = None,
+        model_name: Optional[str] = None,
+        api_key: Optional[str] = None,
+        connector_body: Optional[Dict[str, Any]] = None,
+        connector_secret_name: Optional[str] = None,
+    ) -> bool:
         """
         Create Cohere connector.
+
+        Args:
+            helper: Helper instance for OpenSearch connector operations.
+            save_config_method: Method to save connector configuration after creation.
+            connector_role_prefix (optional): Prefix for role names.
+            model_name (optional): Specific Cohere model name.
+            api_key (optional): Cohere key.
+            connector_body (optional): The connector request body.
+            connector_secret_name (optional): The connector secret name.
+
+        Returns:
+            bool: True if connector creation successful, False otherwise.
         """
         # Set trusted connector endpoints for Cohere
         trusted_endpoint = "^https://api\\.cohere\\.ai/.*$"
