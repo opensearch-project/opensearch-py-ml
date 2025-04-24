@@ -326,6 +326,8 @@ class TestSetup(unittest.TestCase):
         """Test get_password_with_asterisks for Unix password input"""
         # Setup
         mock_stdin.fileno.return_value = 0
+        mock_stdin.isatty.return_value = False
+        mock_stdin.readline.return_value = "abc\n"
         mock_stdin.read.side_effect = ["a", "b", "c", "\r"]
 
         # Execute
@@ -341,6 +343,8 @@ class TestSetup(unittest.TestCase):
         """Test get_password_with_asterisks for backspace handling"""
         # Setup
         mock_stdin.fileno.return_value = 0
+        mock_stdin.isatty.return_value = False
+        mock_stdin.readline.return_value = "ac\n"
         mock_stdin.read.side_effect = ["a", "b", "\x7f", "c", "\r"]
 
         # Execute
@@ -372,7 +376,7 @@ class TestSetup(unittest.TestCase):
         custom_prompt = "Enter secret: "
         mock_stdin.fileno.return_value = 0
         mock_stdin.read.side_effect = ["a", "\r"]
-        mock_stdin.isatty.return_value = True
+        mock_stdin.isatty.return_value = False
 
         # Execute
         self.setup_instance.get_password_with_asterisks(prompt=custom_prompt)
@@ -380,12 +384,16 @@ class TestSetup(unittest.TestCase):
         # Assert
         self.assertIn(custom_prompt, mock_stdout.getvalue())
 
-    @patch("termios.tcgetattr")
+    @patch("sys.stdin")
     @patch("sys.stdout", new_callable=StringIO)
-    def test_get_password_with_asterisks_error(self, mock_stdout, mock_tcgetattr):
+    @patch("termios.tcgetattr")
+    def test_get_password_with_asterisks_error(
+        self, mock_tcgetattr, mock_stdout, mock_stdin
+    ):
         """Test error handling in password input"""
         # Setup
         mock_tcgetattr.side_effect = Exception("Test error")
+        mock_stdin.isatty.return_value = False
 
         # Execute
         result = self.setup_instance.get_password_with_asterisks()
