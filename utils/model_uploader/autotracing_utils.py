@@ -112,7 +112,6 @@ def undeploy_model(
 
     """
     try:
-        ml_model_status = {}
         ml_client.undeploy_model(model_id)
         ml_model_status = ml_client.get_model_info(model_id)
         assert ml_model_status.get("model_state") == "UNDEPLOYED"
@@ -120,9 +119,7 @@ def undeploy_model(
         if throw_exception:
             assert False, f"Raised Exception in {model_format} model undeployment: {e}"
         else:
-            print(
-                f"Failed to undeploy model. model status: {ml_model_status.get('model_state')}"
-            )
+            print(f"Raised Exception in {model_format} model undeployment: {e}")
 
 
 def delete_model(
@@ -140,16 +137,13 @@ def delete_model(
 
     """
     try:
-        delete_model_obj = {}
         delete_model_obj = ml_client.delete_model(model_id)
         assert delete_model_obj.get("result") == "deleted"
     except Exception as e:
         if throw_exception:
             assert False, f"Raised Exception in deleting {model_format} model: {e}"
         else:
-            print(
-                f"Failed to delete model. model status: {delete_model_obj.get('result')}"
-            )
+            print(f"Raised Exception in deleting {model_format} model: {e}")
 
 
 def autotracing_warning_filters():

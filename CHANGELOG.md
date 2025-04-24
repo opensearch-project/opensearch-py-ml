@@ -71,6 +71,7 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - refactor: replace 'payload' with 'body' in `create_standalone_connector` by @yerzhaisang ([#424](https://github.com/opensearch-project/opensearch-py-ml/pull/424))
 - Fix CVE vulnerability by @nathaliellenaa in ([#447](https://github.com/opensearch-project/opensearch-py-ml/pull/447))
 - Use one model id for sparse model integ test to reduce flaky error caused by throttling ([#475](https://github.com/opensearch-project/opensearch-py-ml/pull/475))
+- Fix sparse upload workflow caused by SDPA exception ([#478](https://github.com/opensearch-project/opensearch-py-ml/pull/478))
 
 ## [1.1.0]
 
