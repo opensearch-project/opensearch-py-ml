@@ -26,6 +26,7 @@ class BedrockModel(ModelBase):
         """
         Get the connectory body.
         """
+        region_prefix = region.split('-')[0].lower()
         connector_configs = {
             "1": {
                 "name": "Amazon Bedrock: AI21 Labs Jurassic-2 Mid",
@@ -57,7 +58,7 @@ class BedrockModel(ModelBase):
             "4": {
                 "name": "Amazon Bedrock: Anthropic Claude v3.7",
                 "description": "The connector to Bedrock for Claude V3.7 model",
-                "model": "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
+                "model": f"{region_prefix}.anthropic.claude-3-7-sonnet-20250219-v1:0",
                 "request_body": '{ "anthropic_version": "${parameters.anthropic_version}", "max_tokens": ${parameters.max_tokens}, "temperature": ${parameters.temperature}, "messages": ${parameters.messages} }',
                 "parameters": {
                     "max_tokens": 8000,
@@ -164,7 +165,7 @@ class BedrockModel(ModelBase):
         model_name = connector_body["parameters"]["model"]
 
         # Handle inference profile
-        if model_name.startswith("us."):
+        if model_name.startswith(("us.", "eu.")):
             model_arn = [
                 f"arn:aws:bedrock:*::foundation-model/{model_name[3:]}",
                 f"arn:aws:bedrock:*:*:inference-profile/{model_name}",
