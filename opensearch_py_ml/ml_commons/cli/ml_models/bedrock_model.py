@@ -26,7 +26,7 @@ class BedrockModel(ModelBase):
         """
         Get the connectory body.
         """
-        region_prefix = region.split('-')[0].lower()
+        region_prefix = region.split("-")[0].lower()
         connector_configs = {
             "1": {
                 "name": "Amazon Bedrock: AI21 Labs Jurassic-2 Mid",
