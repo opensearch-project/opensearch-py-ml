@@ -68,5 +68,15 @@
         "Embedding Dimension": "N/A",
         "Pooling Mode": "N/A",
         "Workflow Run ID": "10357363209"
+    },
+    {
+        "Model Uploader": "@dhrubo-os",
+        "Upload Time": "2025-04-25 18:20:57",
+        "Model ID": "opensearch-project/opensearch-neural-sparse-encoding-multilingual-v1",
+        "Model Version": "1.0.0",
+        "Model Format": "TORCH_SCRIPT",
+        "Embedding Dimension": "N/A",
+        "Pooling Mode": "N/A",
+        "Workflow Run ID": "14676058951"
     }
 ]
