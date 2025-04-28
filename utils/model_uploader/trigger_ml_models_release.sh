@@ -10,9 +10,57 @@
 # & model_listing_uploader.yml) to trigger ml-models-release 
 # Jenkins workflow.
 
-JENKINS_TRIGGER_TOKEN=$1
-JENKINS_PARAMS=$2
+
 JENKINS_URL="https://build.ci.opensearch.org"
+JENKINS_TRIGGER_TOKEN=""
+JENKINS_PARAMS=""
+GITHUB_USER=""
+GITHUB_TOKEN=""
+
+while getopts "u:d:t:p:" opt; do
+  case $opt in
+    t)
+      JENKINS_TRIGGER_TOKEN="$OPTARG"
+      ;;
+    d)
+      JENKINS_PARAMS="$OPTARG"
+      ;;  
+    u)
+      GITHUB_USER="$OPTARG"
+      ;;
+    p)
+      GITHUB_TOKEN="$OPTARG"
+      ;;
+    \?)
+      echo "Invalid option: -$OPTARG" >&2
+      exit 1
+      ;;
+    :)
+      echo "Option -$OPTARG requires an argument." >&2
+      exit 1
+      ;;
+  esac
+done
+
+if [ -z "$JENKINS_TRIGGER_TOKEN" ]; then
+  echo "Error: TRIGGER_TOKEN is required. Use -t option to provide it."
+  exit 1
+fi
+
+if [ -z "$JENKINS_PARAMS" ]; then
+  echo "Error: JENKINS_PARAMS is required. Use -d option to provide it."
+  exit 1
+fi
+
+if [ -z "$GITHUB_USER" ]; then
+  echo "Error: GITHUB_USER is required. Use -u option to provide it."
+  exit 1
+fi
+
+if [ -z "$GITHUB_TOKEN" ]; then
+  echo "Error: GITHUB_TOKEN is required. Use -p option to provide it."
+  exit 1
+fi
 
 TIMEPASS=0
 TIMEOUT=3600
