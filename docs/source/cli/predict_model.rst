@@ -16,8 +16,8 @@ Command Syntax
 
 **Options:**
 
-* ``--modelId '<value>'``: The model ID to use for prediction
-* ``--body '<value>'``: The prediction request body in JSON format
+* ``--modelId '<value>'``: (Optional) The model ID to use for prediction
+* ``--body '<value>'``: (Optional) The prediction request body in JSON format
 
 Usage Examples
 ~~~~~~~~~~~~~~

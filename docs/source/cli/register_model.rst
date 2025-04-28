@@ -16,9 +16,9 @@ Command Syntax
 
 **Options:**
 
-* ``--connectorId '<value>'``: The connector ID to associate the model with
-* ``--name '<value>'``: The name of the model
-* ``--description '<value>'``: A brief description of the model
+* ``--connectorId '<value>'``: (Optional) The connector ID to associate the model with
+* ``--name '<value>'``: (Optional) The name of the model
+* ``--description '<value>'``: (Optional) A brief description of the model
 
 Usage Examples
 ~~~~~~~~~~~~~~

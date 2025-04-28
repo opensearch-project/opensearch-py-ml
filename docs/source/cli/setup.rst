@@ -26,7 +26,7 @@ Command Syntax
 
 **Option:**
 
-* ``--path <value>``: Path to an existing setup configuration YAML file
+* ``--path <value>``: (Optional) Path to an existing setup configuration YAML file
 
 Usage Examples
 ~~~~~~~~~~~~~~

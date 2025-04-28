@@ -1,13 +1,37 @@
 .. _cli.create_connector:
 
-===============
+================
 Create Connector
-===============
+================
 
 Description
 ~~~~~~~~~~~
 
-The create connector command allows users to create a connector, including configuring IAM roles, mapping backend roles, and creating secrets automatically. Users can create a connector either interactively or by using a configuration file. Connectors can be created by simply selecting from a list of supported connectors and their associated models. The CLI then guides them through providing only the essential model-specific information, such as AWS region for Amazon services.
+The create connector command allows users to create a connector in both self-managed OpenSearch and Amazon OpenSearch Service (AOS). Users can create a connector either interactively or by using a configuration file.
+
+For self-managed OpenSearch:
+
+* Select from supported connectors and their associated models
+* Provide necessary configuration parameters (e.g., API key)
+
+For Amazon OpenSearch Service:
+
+* Automatically handles AWS-specific setup including:
+
+  * IAM role creation and configuration
+  * Backend role mapping
+  * Secret creation
+
+* Select from supported connectors and their associated models
+* Provide AWS-specific parameters (e.g., AWS region)
+
+The CLI guides users through providing only the essential model-specific information needed for their chosen environment.
+
+Prerequisites
+~~~~~~~~~~~~~
+
+Before creating a connector, ensure users have completed the setup process or have a setup configuration file. 
+See :ref:`setup guide <cli.setup>` for instructions on doing the setup process.
 
 Command Syntax
 ~~~~~~~~~~~~~~
@@ -16,7 +40,7 @@ Command Syntax
 
 **Option:**
 
-* ``--path <value>``: Path to an existing connector configuration YAML file
+* ``--path <value>``: (Optional) Path to an existing connector configuration YAML file
 
 Usage Examples
 ~~~~~~~~~~~~~~

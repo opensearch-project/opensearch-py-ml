@@ -20,4 +20,5 @@ Cohere,Multi-modal embedding model
 DeepSeek,DeepSeek Chat model
 Google Cloud Platform,VertexAI embedding model
 OpenAI,Chat model
+OpenAI,Completion model
 OpenAI,Embedding model
