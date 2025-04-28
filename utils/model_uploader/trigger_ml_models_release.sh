@@ -34,7 +34,7 @@ echo "Wait for jenkins to start workflow" && sleep 15
 
 echo "Check if queue exist in Jenkins after triggering"
 if [ -z "$QUEUE_URL" ] || [ "$QUEUE_URL" != "null" ]; then
-    WORKFLOW_URL=$(curl -s -XGET ${JENKINS_URL}/${QUEUE_URL}api/json | jq --raw-output .executable.url)
+    WORKFLOW_URL=$(curl -s -XGET ${JENKINS_URL}/${QUEUE_URL}api/json --user ${GITHUB_USER}:${GITHUB_TOKEN} | jq --raw-output .executable.url)
     echo "WORKFLOW_URL: $WORKFLOW_URL"
     echo "Use queue information to find build number in Jenkins if available"
     if [ -z "$WORKFLOW_URL" ] || [ "$WORKFLOW_URL" != "null" ]; then
@@ -43,9 +43,9 @@ if [ -z "$QUEUE_URL" ] || [ "$QUEUE_URL" != "null" ]; then
         while [ "$RUNNING" = "true" ] && [ "$TIMEPASS" -le "$TIMEOUT" ]; do
             echo "Still running, wait for another 5 seconds before checking again, max timeout $TIMEOUT"
             echo "Jenkins Workflow URL: $WORKFLOW_URL"
-            TIMEPASS=$(( TIMEPASS + 5 )) && echo time pass: $TIMEPASS
+            TIMEPASS=$(( TIMEPASS + 5 )) && echo time passed: $TIMEPASS
             sleep 5
-            RUNNING=$(curl -s -XGET ${WORKFLOW_URL}api/json | jq --raw-output .building)
+            RUNNING=$(curl -s -XGET ${WORKFLOW_URL}api/json --user ${GITHUB_USER}:${GITHUB_TOKEN} | jq --raw-output .building)
         done
 
         if [ "$RUNNING" = "true" ]; then
@@ -53,7 +53,7 @@ if [ -z "$QUEUE_URL" ] || [ "$QUEUE_URL" != "null" ]; then
             RESULT="TIMEOUT"
         else
             echo "Completed the run, checking the results now......"
-            RESULT=$(curl -s -XGET ${WORKFLOW_URL}api/json | jq --raw-output .result)
+            RESULT=$(curl -s -XGET ${WORKFLOW_URL}api/json --user ${GITHUB_USER}:${GITHUB_TOKEN} | jq --raw-output .result)
         fi
     fi
 fi
