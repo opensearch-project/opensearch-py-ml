@@ -53,6 +53,7 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Upgrade GitHub Actions workflows to use `@v4` to prevent deprecation issues with `@v3` by @yerzhaisang ([#428](https://github.com/opensearch-project/opensearch-py-ml/pull/428))
 - Bump pandas from 1.5.3 to the latest stable version by @yerzhaisang ([#422](https://github.com/opensearch-project/opensearch-py-ml/pull/422))
 - Upgrade mypy, sphinx, sphinx-rtd-theme, and multiple GitHub Actions (setup-python, backport, codecov-action, create-pull-request, get-pr-commits) by @yerzhaisang([#437](https://github.com/opensearch-project/opensearch-py-ml/pull/437))
+- Update model upload history -  opensearch-project/opensearch-neural-sparse-encoding-multilingual-v1 (v.1.0.0)(TORCH_SCRIPT) by @dhrubo-os ([#496](https://github.com/opensearch-project/opensearch-py-ml/pull/496))
 
 ### Fixed
 - Fix the wrong final zip file name in model_uploader workflow, now will name it by the upload_prefix alse.([#413](https://github.com/opensearch-project/opensearch-py-ml/pull/413/files))
