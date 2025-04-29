@@ -237,6 +237,64 @@ def test_DEPRECATED_integration_pretrained_model_upload_unload_delete():
         else:
             assert delete_model_obj.get("result") == "deleted"
 
+def test_predict():
+    input_json = {
+        {
+            "input_query": {
+                "_source": ["petal_length_in_cm", "petal_width_in_cm"],
+                "size": 10000
+            },
+            "input_index": [
+                "iris_data"
+            ]
+        }
+    }
+
+    raised = False
+    model_id = ml_client.register_pretrained_model(
+        model_name=PRETRAINED_MODEL_NAME,
+        model_version=PRETRAINED_MODEL_VERSION,
+        model_format=PRETRAINED_MODEL_FORMAT,
+        deploy_model=True,
+        wait_until_deployed=True,
+    )
+
+    try:
+        predict_obj = ml_client.predict(
+            model_id=model_id, algo_name="kmeans",input_json=input_json
+        )
+        assert predict_obj["status"] == "COMPLETED"
+    except:  # noqa: E722
+        raised = True
+    assert raised == False, "Raised Exception in training and predicting task"
+
+    raised = False
+    try:
+        predict_obj = ml_client.predict(
+            model_id=model_id, algo_name="something else",input_json=input_json
+        )
+        assert predict_obj == "Invalid algorithm name passed as argument."
+    except:  # noqa: E722
+        raised = True
+    assert raised == False, "Raised Exception in training and predicting task"
+
+    try:
+        predict_obj = ml_client.predict(
+            model_id=model_id, algo_name="something else",input_json="15"
+        )
+        assert predict_obj == "Invalid JSON object passed as argument."
+    except:  # noqa: E722
+        raised = True
+    assert raised == False, "Raised Exception in training and predicting task"
+
+    try:
+        predict_obj = ml_client.predict(
+            model_id=model_id, algo_name="something else",input_json=15
+        )
+        assert predict_obj == "Invalid JSON object passed as argument."
+    except:  # noqa: E722
+        raised = True
+    assert raised == False, "Raised Exception in training and predicting task"
 
 def test_integration_pretrained_model_register_undeploy_delete():
     try:
