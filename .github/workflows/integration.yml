@@ -14,10 +14,10 @@ jobs:
       fail-fast: false
       matrix:
         cluster: ["opensearch"]
-        secured: ["false"]
+        secured: ["true"]
         entry:
           - { opensearch_version: 2.7.0 }
-          - { opensearch_version: 3.0.0-beta1 }
+          - { opensearch_version: 2.11.0 }
 
     steps:
       - name: Checkout

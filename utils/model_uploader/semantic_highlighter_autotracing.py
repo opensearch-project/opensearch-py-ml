@@ -119,6 +119,7 @@ def generate_tracing_dataset():
             "id": ["test"],
         }
     )
+    # the bert-base-uncased model is the base model for the semantic highlighter, we use the tokenizer from it
     base_model_id = "bert-base-uncased"
     tokenizer = AutoTokenizer.from_pretrained(base_model_id)
     preprocess_fn = partial(prepare_train_features, tokenizer)

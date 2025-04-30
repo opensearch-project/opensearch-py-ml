@@ -33,9 +33,7 @@ class TraceableBertTaggerForSentenceExtractionWithBackoff(BertPreTrainedModel):
         super().__init__(config)
         self.num_labels = config.num_labels
 
-        self.bert = BertModel(config).from_pretrained(
-            "bert-base-uncased", torchscript=True
-        )
+        self.bert = BertModel(config)
         self.dropout = nn.Dropout(config.hidden_dropout_prob)
         self.classifier = nn.Linear(config.hidden_size, self.num_labels)
         self.init_weights()
@@ -218,18 +216,13 @@ class SemanticHighlighterModel(BaseUploadModel):
             model_id
         )
         tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
-        device = torch.device("cpu")
-        model = model.to(device)
+        model = model.to("cpu")
 
         # Save tokenizer files
         tokenizer_path = os.path.join(self.folder_path, "tokenizer")
         os.makedirs(tokenizer_path, exist_ok=True)
         tokenizer.save_pretrained(tokenizer_path)
         print(f"Tokenizer files saved to {tokenizer_path}")
-
-        # Move inputs to CPU
-        for k, v in example_inputs.items():
-            example_inputs[k] = v.to(device)
 
         # Trace the model
         traced_model = torch.jit.trace(
