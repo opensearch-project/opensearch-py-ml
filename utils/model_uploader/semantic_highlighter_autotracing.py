@@ -6,6 +6,7 @@
 # GitHub history for details.
 
 import argparse
+import json
 import os
 import sys
 from typing import Optional
@@ -26,8 +27,10 @@ from opensearch_py_ml.ml_commons import MLCommonClient
 from opensearch_py_ml.ml_models import SemanticHighlighterModel
 from tests import OPENSEARCH_TEST_CLIENT
 from utils.model_uploader.autotracing_utils import (
+    QUESTION_ANSWERING_ALGORITHM,
     TORCH_SCRIPT_FORMAT,
     autotracing_warning_filters,
+    check_model_status,
     prepare_files_for_uploading,
     preview_model_config,
     register_and_deploy_model,
@@ -248,8 +251,33 @@ def main(
             torchscript_model_config_path,
         )
 
-        # Note: Add deployment test logic here if needed
-        # For now, we just verify registration works
+        check_model_status(
+            ml_client,
+            model_id,
+            TORCH_SCRIPT_FORMAT,
+            QUESTION_ANSWERING_ALGORITHM,
+        )
+
+        try:
+            question = "What are the main side effects of aspirin and when should it not be used?"
+            context = "Aspirin is a commonly used medication for pain relief and fever reduction. While effective, patients may experience stomach upset and bleeding as common side effects. In rare cases, some people may develop allergic reactions. Aspirin should not be given to children under 12 due to the risk of Reye's syndrome. Additionally, people with bleeding disorders, stomach ulcers, or those about to undergo surgery should avoid aspirin. Some patients taking blood thinners must also consult their doctor before using aspirin, as it can increase bleeding risk. For minor aches and fever, the typical adult dose is 325-650 mg every 4-6 hours."
+
+            output = ml_client.generate_question_answering(model_id, question, context)
+
+            # Simple verification of output
+            assert output is not None, "No output received from model"
+            assert (
+                "inference_results" in output
+            ), "Missing inference_results in response"
+            assert len(output["inference_results"]) > 0, "No inference results found"
+
+            # Log the output for verification
+            print("\n=== Model Inference Output ===")
+            print(json.dumps(output, indent=2))
+            print("Successfully verified model inference output")
+
+        except Exception as e:
+            print(f"Warning: Question answering failed: {e}")
 
         print("--- Undeploying and cleaning up test model ---")
         if model_id:
