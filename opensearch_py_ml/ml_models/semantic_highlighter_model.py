@@ -24,12 +24,22 @@ DEFAULT_MODEL_ID = "opensearch-project/opensearch-semantic-highlighter-v1"
 
 class TraceableBertTaggerForSentenceExtractionWithBackoff(BertPreTrainedModel):
     """
-    A torch.jit-compatible version of the sentence highlighter model.
-    For inference only. Classification logic includes backoff rule
-    with minimum confidence alpha=0.05.
+    A torch.jit-compatible version of the sentence highlighter model for inference.
+
+    This model extends BERT to perform sentence-level tagging with a backoff mechanism
+    that ensures at least one sentence is selected when confidence exceeds a minimum
+    threshold (alpha=0.05).
     """
 
     def __init__(self, config):
+        """
+        Initialize the model with BERT base and a classification head.
+
+        Parameters
+        ----------
+        config : BertConfig
+            Configuration object containing model hyperparameters
+        """
         super().__init__(config)
         self.num_labels = config.num_labels
 
@@ -45,17 +55,53 @@ class TraceableBertTaggerForSentenceExtractionWithBackoff(BertPreTrainedModel):
         token_type_ids=None,
         sentence_ids=None,
     ):
+        """
+        Forward pass of the model for sentence highlighting.
+
+        Parameters
+        ----------
+        input_ids : torch.Tensor
+            Token IDs of input sequences
+        attention_mask : torch.Tensor
+            Mask to avoid attention on padding tokens
+        token_type_ids : torch.Tensor
+            Segment token indices for input portions
+        sentence_ids : torch.Tensor
+            IDs assigning tokens to sentences
+
+        Returns
+        -------
+        tuple
+            Indices of sentences to highlight for each item
+        """
+        # Pass inputs through the BERT model
         outputs = self.bert(
             input_ids,
             attention_mask=attention_mask,
             token_type_ids=token_type_ids,
         )
 
+        # Get token-level embeddings and apply dropout
         sequence_output = outputs[0]
         sequence_output = self.dropout(sequence_output)
 
         @torch.jit.script_if_tracing
         def _get_agg_output(ids, sequence_output):
+            """
+            Aggregates token-level embeddings into sentence-level embeddings.
+
+            Parameters
+            ----------
+            ids : torch.Tensor
+                Tensor containing sentence IDs for each token
+            sequence_output : torch.Tensor
+                Token-level embeddings from the BERT model
+
+            Returns
+            -------
+            tuple
+                Contains aggregated sentence embeddings, offsets, and sentence counts
+            """
             max_sentences = torch.max(ids) + 1
             d_model = sequence_output.shape[-1]
 
@@ -85,6 +131,7 @@ class TraceableBertTaggerForSentenceExtractionWithBackoff(BertPreTrainedModel):
             agg_output = torch.stack(agg_output)
             return (agg_output, global_offset_per_item, num_sentences_per_item)
 
+        # Aggregate token embeddings into sentence embeddings
         agg_output, global_offset_per_item, num_sentences_per_item = _get_agg_output(
             sentence_ids, sequence_output
         )
@@ -100,14 +147,38 @@ class TraceableBertTaggerForSentenceExtractionWithBackoff(BertPreTrainedModel):
             threshold: float = 0.5,
             alpha: float = 0.05,
         ):
+            """
+            Converts sentence probabilities into predictions with backoff logic.
+
+            Parameters
+            ----------
+            pos_probs : torch.Tensor
+                Positive class probabilities for each sentence
+            global_offset_per_item : List[torch.Tensor]
+                Minimum sentence ID for each batch item
+            num_sentences_per_item : List[torch.Tensor]
+                Number of sentences for each batch item
+            threshold : float, default=0.5
+                Probability threshold for sentence selection
+            alpha : float, default=0.05
+                Minimum confidence threshold for backoff selection
+
+            Returns
+            -------
+            List[torch.Tensor]
+                List of selected sentence indices
+            """
             sentences_preds = []
             for pprob, offset, num_sentences in zip(
                 pos_probs, global_offset_per_item, num_sentences_per_item
             ):
+                # Get probabilities only for valid sentences
                 relevant_probs = pprob[:num_sentences]
+                # Apply threshold to determine relevant sentences
                 relevant_preds = (relevant_probs >= threshold).int()
 
-                if relevant_preds.sum() == 0:  # backoff logic
+                # Backoff logic: if no sentence exceeds threshold
+                if relevant_preds.sum() == 0:
                     max_prob_idx = relevant_probs.argmax()
                     max_prob = relevant_probs[max_prob_idx].item()
                     if max_prob >= alpha:
@@ -128,8 +199,10 @@ class TraceableBertTaggerForSentenceExtractionWithBackoff(BertPreTrainedModel):
 
 class SemanticHighlighterModel(BaseUploadModel):
     """
-    A model class for the OpenSearch semantic highlighter that identifies relevant sentences in a document
-    given a query.
+    Model class for preparing and packaging the OpenSearch semantic highlighter.
+
+    This class handles model conversion to TorchScript, packaging model with tokenizer,
+    and generating configuration for OpenSearch ML Commons deployment.
     """
 
     def __init__(
@@ -144,11 +217,11 @@ class SemanticHighlighterModel(BaseUploadModel):
         Parameters
         ----------
         model_id : str, optional
-            The model ID to use, by default "opensearch-project/opensearch-semantic-highlighter-v1"
+            The Hugging Face model ID to use
         folder_path : str, optional
-            Path to save model files, by default None
+            Directory path to save model files and configuration
         overwrite : bool, optional
-            Whether to overwrite existing files, by default False
+            Whether to overwrite existing files
         """
         if folder_path is None:
             folder_path = "semantic-highlighter/"
@@ -156,6 +229,7 @@ class SemanticHighlighterModel(BaseUploadModel):
         super().__init__(
             model_id=model_id, folder_path=folder_path, overwrite=overwrite
         )
+        # Path to the generated zip file, populated after calling save_as_pt
         self.torch_script_zip_file_path = None
 
     def save_as_pt(
@@ -169,30 +243,31 @@ class SemanticHighlighterModel(BaseUploadModel):
         add_apache_license: bool = True,
     ) -> str:
         """
-        Convert the semantic highlighter model to TorchScript format and prepare it for upload.
+        Convert model to TorchScript format and prepare it for upload.
 
         Parameters
         ----------
         example_inputs : dict
-            Example inputs for tracing with keys: input_ids, attention_mask, token_type_ids, sentence_ids
+            Example inputs for tracing (input_ids, attention_mask, token_type_ids, sentence_ids)
         model_id : str, optional
-            Model ID to use, by default DEFAULT_MODEL_ID
+            Model ID to use from Hugging Face
         model_name : str, optional
-            Name for the traced model file, by default None
+            Name for the traced model file
         save_json_folder_path : str, optional
-            Path to save config files, by default None
+            Path to save config files
         model_output_path : str, optional
-            Path to save the traced model, by default None
+            Path to save the traced model
         zip_file_name : str, optional
-            Name for the zip file, by default None
+            Name for the zip file
         add_apache_license : bool, optional
-            Whether to add Apache license, by default True
+            Whether to add Apache license to the zip file
 
         Returns
         -------
         str
             Path to the created zip file
         """
+        # Generate default model name if not provided
         if model_name is None:
             model_name = str(model_id.split("/")[-1] + ".pt")
 
@@ -211,7 +286,7 @@ class SemanticHighlighterModel(BaseUploadModel):
 
         zip_file_path = os.path.join(model_output_path, zip_file_name)
 
-        # Initialize and trace the model
+        # Download and initialize model
         model = TraceableBertTaggerForSentenceExtractionWithBackoff.from_pretrained(
             model_id
         )
@@ -224,7 +299,7 @@ class SemanticHighlighterModel(BaseUploadModel):
         tokenizer.save_pretrained(tokenizer_path)
         print(f"Tokenizer files saved to {tokenizer_path}")
 
-        # Trace the model
+        # Trace the model with example inputs
         traced_model = torch.jit.trace(
             model,
             (
@@ -239,12 +314,10 @@ class SemanticHighlighterModel(BaseUploadModel):
         torch.jit.save(traced_model, model_path)
         print(f"Model file saved to {model_path}")
 
-        # Create zip file with model, tokenizer, and config
+        # Create zip file with model and tokenizer
         with ZipFile(str(zip_file_path), "w") as zipObj:
-            # Add model file
             zipObj.write(model_path, arcname=str(model_name))
 
-            # Add tokenizer files directly to root
             for file in os.listdir(tokenizer_path):
                 file_path = os.path.join(tokenizer_path, file)
                 zipObj.write(file_path, arcname=file)
@@ -288,26 +361,27 @@ class SemanticHighlighterModel(BaseUploadModel):
         model_zip_file_path: str = None,
     ) -> str:
         """
-        Create the model configuration file for OpenSearch.
+        Create the model configuration file for OpenSearch ML Commons.
 
         Parameters
         ----------
         model_name : str, optional
-            Name of the model, by default None
+            Name of the model for OpenSearch
         version_number : str, optional
-            Version of the model, by default "1.0.0"
+            Version of the model
         model_format : str, optional
-            Format of the model, by default "TORCH_SCRIPT"
+            Format of the model
         description : str, optional
-            Model description, by default None
+            Model description
         model_zip_file_path : str, optional
-            Path to the model zip file, by default None
+            Path to the model zip file
 
         Returns
         -------
         str
             Path to the created config file
         """
+        # Use model_id as the model name if none provided
         if model_name is None:
             model_name = self.model_id
 

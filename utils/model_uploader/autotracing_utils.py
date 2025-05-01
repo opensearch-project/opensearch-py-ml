@@ -314,13 +314,8 @@ def prepare_files_for_uploading(
 
     # Delete model folder downloaded from HuggingFace during model tracing
     try:
-        if os.path.exists(folder_to_delete):
-            shutil.rmtree(folder_to_delete)
-            print(f"Successfully deleted temporary folder: {folder_to_delete}")
-        else:
-            print(f"Temporary folder not found, skipping deletion: {folder_to_delete}")
+        shutil.rmtree(folder_to_delete)
     except Exception as e:
-        # Changed from AssertionError to a warning
         print(f"Warning: Raised Exception while deleting {folder_to_delete}: {e}")
 
     return dst_model_path, dst_model_config_path

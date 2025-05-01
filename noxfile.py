@@ -193,7 +193,8 @@ def semantic_highlighter_trace(session):
         "--timeout",
         "1500",
     )
-    # Download necessary NLTK data
+    # NLTK's punkt_tab tokenizer is required for sentence tokenization in the semantic highlighter model.
+    # The semantic highlighter uses sentence tokenization to split text into sentences and identify relevant
     session.log("Downloading NLTK data (punkt_tab)")
     session.run("python", "-c", "import nltk; nltk.download('punkt_tab');", silent=True)
     session.log("NLTK data download complete.")
