@@ -24,7 +24,6 @@
 
 import os
 
-import opensearchpy
 import pandas as pd
 from opensearchpy import OpenSearch
 
@@ -34,29 +33,33 @@ ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Define test files and indices
 
-OPENSEARCH_HOST = "https://instance:9200"
-OPENSEARCH_ADMIN_USER, OPENSEARCH_ADMIN_PASSWORD = "admin", "admin"
+# Read host URL from environment variable set by CI, default if not set
+OPENSEARCH_HOST = os.environ.get("OPENSEARCH_URL", "https://localhost:9200")
+
+# Extract user/password from http_auth if present in OPENSEARCH_URL or use defaults
+# (Basic implementation, might need refinement based on exact URL format)
+if "@" in OPENSEARCH_HOST and ":" in OPENSEARCH_HOST.split("@")[0]:
+    creds_part = OPENSEARCH_HOST.split("//")[1].split("@")[0]
+    OPENSEARCH_ADMIN_USER, OPENSEARCH_ADMIN_PASSWORD = creds_part.split(":")
+    # Remove credentials from host URL for client connection
+    OPENSEARCH_HOST = OPENSEARCH_HOST.replace(f"{creds_part}@", "")
+else:
+    OPENSEARCH_ADMIN_USER, OPENSEARCH_ADMIN_PASSWORD = "admin", "admin"
+
+# Determine scheme for use_ssl
+use_ssl = OPENSEARCH_HOST.startswith("https://")
 
 # Define client to use in tests
 OPENSEARCH_TEST_CLIENT = OpenSearch(
     hosts=[OPENSEARCH_HOST],
     http_auth=(OPENSEARCH_ADMIN_USER, OPENSEARCH_ADMIN_PASSWORD),
-    verify_certs=False,
+    use_ssl=use_ssl,
+    verify_certs=False,  # Keep verify_certs False for CI demo certs
+    ssl_show_warn=use_ssl,  # Only show SSL warnings if using SSL
 )
-# in github integration test, host url is: https://instance:9200
-# in development, usually host url is: https://localhost:9200
-# it's hard to remember changing the host url. So applied a try catch so that we don't have to keep change this config
-try:
-    OS_VERSION = os_version(OPENSEARCH_TEST_CLIENT)
-except opensearchpy.exceptions.ConnectionError:
-    OPENSEARCH_HOST = "https://localhost:9200"
-    # Define client to use in tests
-    OPENSEARCH_TEST_CLIENT = OpenSearch(
-        hosts=[OPENSEARCH_HOST],
-        http_auth=(OPENSEARCH_ADMIN_USER, OPENSEARCH_ADMIN_PASSWORD),
-        verify_certs=False,
-    )
-    OS_VERSION = os_version(OPENSEARCH_TEST_CLIENT)
+
+# Remove the complex try/except for localhost fallback, rely on env var
+OS_VERSION = os_version(OPENSEARCH_TEST_CLIENT)
 
 FLIGHTS_INDEX_NAME = "flights"
 FLIGHTS_MAPPING = {

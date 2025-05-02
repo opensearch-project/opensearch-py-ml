@@ -18,6 +18,7 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Implemented `predict` method and added unit tests by @yerzhaisang([425](https://github.com/opensearch-project/opensearch-py-ml/pull/425))
 - Add workflows and scripts for sparse tokenizer model tracing and uploading process; enhance sparse encoding tracing with custom params by @zhichao-aws in ([#459](https://github.com/opensearch-project/opensearch-py-ml/pull/459))
 - Added Connector CLI into `opensearch-py-ml` by @nathaliellenaa in ([#461](https://github.com/opensearch-project/opensearch-py-ml/pull/461))
+- Add semantic highlighter model auto tracing support ([#486](https://github.com/opensearch-project/opensearch-py-ml/pull/486))
 
 
 ### Changed

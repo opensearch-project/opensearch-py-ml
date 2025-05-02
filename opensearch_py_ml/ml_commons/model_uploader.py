@@ -197,8 +197,9 @@ class ModelUploader:
                 model_config = model_meta.get(MODEL_CONFIG_FIELD)
                 if not model_config.get(MODEL_TYPE):
                     raise ValueError(f"{MODEL_TYPE} can not be empty")
-                if not model_config.get(EMBEDDING_DIMENSION):
-                    raise ValueError(f"{EMBEDDING_DIMENSION} can not be empty")
+                if model_config.get(MODEL_TYPE) != "sentence_highlighting":
+                    if not model_config.get(EMBEDDING_DIMENSION):
+                        raise ValueError(f"{EMBEDDING_DIMENSION} can not be empty")
                 if not model_config.get(FRAMEWORK_TYPE):
                     raise ValueError(f"{FRAMEWORK_TYPE} can not be empty")
             return True
