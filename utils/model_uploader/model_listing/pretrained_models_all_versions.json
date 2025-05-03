@@ -204,5 +204,16 @@
         "description": "This is a neural sparse encoding model: It transfers text into sparse vector, and then extract nonzero index and value to entry and weights. It serves in both ingestion and search."
       }
     }
+  },
+  {
+    "name": "amazon/sentence-highlighting/opensearch-semantic-highlighter-v1",
+    "versions": {
+      "1.0.0": {
+        "format": [
+          "torch_script"
+        ],
+        "description": "A semantic highlighter model that identifies relevant sentences in a document given a query."
+      }
+    }
   }
 ]
