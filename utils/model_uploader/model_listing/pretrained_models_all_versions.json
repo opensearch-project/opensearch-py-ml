@@ -212,7 +212,7 @@
         "format": [
           "torch_script"
         ],
-        "description": "A semantic highlighter model that identifies relevant sentences in a document given a query."
+        "description": "A semantic highlighter model that identifies and highlights relevant sentences in a document given a query."
       }
     }
   }
