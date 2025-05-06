@@ -89,10 +89,6 @@ class TestAIConnectorHelper(unittest.TestCase):
 
         # Parse the URL
         parsed_url = urlparse(self.opensearch_config.opensearch_domain_endpoint)
-        expected_host = parsed_url.hostname
-        is_aos = "amazonaws.com" in expected_host
-        expected_port = parsed_url.port or (443 if is_aos else 9200)
-        expected_use_ssl = parsed_url.scheme == "https"
 
         # Instantiate AIConnectorHelper
         helper = AIConnectorHelper(
@@ -112,12 +108,12 @@ class TestAIConnectorHelper(unittest.TestCase):
 
         # Assert OpenSearch client initialization
         self.mock_opensearch.assert_called_once_with(
-            hosts=[{"host": expected_host, "port": expected_port}],
+            hosts=[self.opensearch_config.opensearch_domain_endpoint],
             http_auth=(
                 self.opensearch_config.opensearch_domain_username,
                 self.opensearch_config.opensearch_domain_password,
             ),
-            use_ssl=expected_use_ssl,
+            use_ssl=(parsed_url.scheme == "https"),
             verify_certs=self.ssl_check_enabled,
             connection_class=RequestsHttpConnection,
         )
