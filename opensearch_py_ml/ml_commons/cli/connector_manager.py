@@ -74,7 +74,10 @@ class ConnectorManager(CLIBase):
             logger.warning(f"\nNo connectors available for {service_type}")
             return
 
-        print("\nPlease select a supported connector to create:")
+        service_name = "Amazon OpenSearch Service"
+        if service_type == self.OPEN_SOURCE:
+            service_name = "open source service"
+        print(f"\nPlease select a supported connector to create in {service_name}:")
         for connector in connectors:
             print(f"{connector.id}. {connector.name}")
         max_choice = len(connectors)
