@@ -39,7 +39,7 @@ Usage Examples
 
     Sample response:
 
-    .. code-block:: JSON
+    .. code-block:: plaintext
 
         Starting connector setup...
 
@@ -102,7 +102,7 @@ Usage Examples
 
     Sample response:
 
-    .. code-block:: JSON
+    .. code-block:: plaintext
 
         Starting connector setup...
 

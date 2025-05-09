@@ -3,15 +3,18 @@ setup_config_path,Path to setup configuration YAML file,All models
 connector_name,Name of the connector (must match supported list),All models
 model_name,Name of the model (must match supported list),All models
 connector_role_prefix,Connector role prefix,AOS only
-connector_body,Connector request body (JSON format),Custom models
+connector_body,Connector request body (JSON format),"Custom models, custom connector in custom model service"
 aws_access_key,AWS access key,"Bedrock, Bedrock Converse, Comprehend, SageMaker, Textract (open-source only)"
 aws_secret_access_key,AWS secret access key,"Bedrock, Bedrock Converse, Comprehend, SageMaker, Textract (open-source only)"
 aws_session_token,AWS session token,"Bedrock, Bedrock Converse, Comprehend, SageMaker, Textract (open-source only)"
 region,AWS region,"Bedrock, Bedrock Converse, Comprehend, SageMaker, Textract"
-api_key,API key for the specified model,"Aleph Alpha, Azure OpenAI, Cohere, DeepSeek, OpenAI"
-connector_secret_name,Connector secret name,"Cohere, DeepSeek, OpenAI"
+api_key,API key for the specified model,"Aleph Alpha, Azure OpenAI, Cohere, DeepSeek, OpenAI, when required_secret=true"
+connector_secret_name,Connector secret name,"Cohere, DeepSeek, OpenAI, when required_secret=true"
 endpoint_arn,Inference endpoint ARN,SageMaker
 endpoint_url,Inference endpoint URL,SageMaker
-model_id,Model ID,GCP
-project_id,Project ID,GCP
-access_token,Access token for the model,GCP
+model_id,Model ID,Google Cloud Platform
+project_id,Project ID,Google Cloud Platform
+access_token,Access token for the model,Google Cloud Platform
+required_policy,"Set to 'true' to enable IAM inline policy configuration, 'false' to disable",Custom connector in custom model service (AOS only)
+required_secret,"Set to 'true' to enable AWS Secrets Manager configuration, 'false' to disable",Custom connector in custom model service (AOS only)
+connector_role_inline_policy,IAM inline policy configuration (JSON format),When required_policy=true

@@ -30,7 +30,7 @@ Usage Examples
 
     Sample response:
 
-    .. code-block:: JSON
+    .. code-block:: plaintext
 
         Starting model prediction...
 
@@ -63,7 +63,7 @@ Usage Examples
 
     Sample response:
     
-    .. code-block:: JSON
+    .. code-block:: plaintext
 
         Starting model prediction...
 

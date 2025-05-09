@@ -53,7 +53,7 @@ Usage Examples
 
     Sample response:
 
-    .. code-block:: JSON
+    .. code-block:: plaintext
 
         Starting connector creation...
 
@@ -61,7 +61,7 @@ Usage Examples
 
         Setup configuration loaded successfully from /Documents/cli/setup_config.yml
 
-        Please select a supported connector to create:
+        Please select a supported connector to create in Amazon OpenSearch Service:
         1. Amazon Bedrock
         2. Amazon Bedrock Converse
         3. Amazon Comprehend
@@ -126,7 +126,7 @@ Usage Examples
 
     Sample response:
 
-    .. code-block:: JSON
+    .. code-block:: plaintext
 
         Starting connector creation...
 
@@ -176,6 +176,7 @@ Setup Configuration YAML file
     aws_secret_access_key:
     aws_session_token:
     connector_body:
+    connector_role_inline_policy:
     connector_role_prefix:
     connector_secret_name:
     endpoint_arn:
@@ -183,6 +184,8 @@ Setup Configuration YAML file
     model_id:
     project_id:
     region:
+    required_policy:
+    required_secret:
 
 Note: The order of the fields does not matter. This template will only be used when users choose to create a connector with a configuration file.
 
@@ -226,4 +229,4 @@ Supported Connectors and Models
    :widths: 40 60
    :header-rows: 1
 
-Note: Custom models are supported for all connectors both in AOS and open-source.
+Note: Custom connectors and models are supported for all connector types in both AOS and open-source.

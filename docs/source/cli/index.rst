@@ -9,14 +9,14 @@ Opensearch-py-ml supports a Command Line Interface (CLI) feature designed to str
 Version Information
 ~~~~~~~~~~~~~~~~~~~
 
-The CLI feature is available from opensearch-py-ml version X.X.X and later.
+The CLI feature is available from opensearch-py-ml version 1.2.0 and later.
 
 Installation
 ~~~~~~~~~~~~
 
 To install the CLI feature:
 
-``pip install opensearch-py-ml==X.X.X``
+``pip install opensearch-py-ml``
 
 Verifying Installation
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -27,7 +27,7 @@ To verify that the CLI has been installed correctly, run:
 
 Users should see the following output:
 
-.. code-block:: JSON
+.. code-block:: plaintext
 
     usage: opensearch-ml [-h] command ...
 
@@ -40,7 +40,7 @@ Users should see the following output:
     command
         setup     Initialize and configure OpenSearch setup and AWS credentials
         connector
-                Manage ML connectors
+                  Manage ML connectors
         model     Manage ML models
     ...
 
