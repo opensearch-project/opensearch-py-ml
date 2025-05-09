@@ -6,7 +6,6 @@
 # GitHub history for details.
 
 import json
-
 from typing import Any, Callable, Dict, Optional
 
 from colorama import Fore, Style
@@ -31,8 +30,8 @@ class CustomConnector(ModelBase):
         connector_role_inline_policy: Optional[Dict[str, Any]] = None,
         model_name: Optional[str] = None,
         api_key: Optional[str] = None,
-        required_policy: Optional[str] = None,
-        required_secret: Optional[str] = None,
+        required_policy: Optional[bool] = None,
+        required_secret: Optional[bool] = None,
         connector_body: Optional[Dict[str, Any]] = None,
     ) -> bool:
         """
@@ -46,12 +45,16 @@ class CustomConnector(ModelBase):
             connector_role_inline_policy (optional): The connector inline policy.
             model_name (optional): Model name.
             api_key (optional): Model API key.
+            required_policy (optional): Whether to configure IAM inline policy.
+            required_secret (optional): Whether to configure AWS Secrets Manager.
             connector_body (optional): The connector request body.
         Returns:
             bool: True if connector creation successful, False otherwise.
         """
         # Prompt for connector body
-        connector_body = connector_body or self.input_custom_model_details(external=True)
+        connector_body = connector_body or self.input_custom_model_details(
+            external=True
+        )
 
         if self.service_type == self.AMAZON_OPENSEARCH_SERVICE:
             # Prompt for model name
@@ -62,10 +65,18 @@ class CustomConnector(ModelBase):
                 self.create_connector_role(connector_role_prefix, model_name)
             )
 
-            # Get the connector role inline policy
-            required_policy = required_policy or input("Do you want to set the connector role inline policy? (yes/no): ").strip().lower()
-            if required_policy.lower() == "yes":
-                print("Enter your connector role inline policy as a JSON object (press Enter twice when done): ")
+            # Handle the connector role inline policy
+            required_policy = (
+                input("Do you want to set the connector role inline policy? (yes/no): ")
+                .strip()
+                .lower()
+                if required_policy is None
+                else required_policy
+            )
+            if required_policy == "yes" and not connector_role_inline_policy:
+                print(
+                    "Enter your connector role inline policy as a JSON object (press Enter twice when done): "
+                )
                 json_input = ""
                 lines = []
                 while True:
@@ -77,11 +88,18 @@ class CustomConnector(ModelBase):
                 json_input = "\n".join(lines)
                 connector_role_inline_policy = json.loads(json_input)
 
-            # Get the secret name
-            required_secret = required_secret or input("Do you want to set the connector secret? (yes/no): ").strip().lower()
-            if required_secret.lower() == "yes":
+            # Handle secret configuration
+            required_secret = (
+                input("Do you want to set the connector secret? (yes/no): ")
+                .strip()
+                .lower()
+                if required_secret is None
+                else required_secret
+            )
+
+            if required_secret == "yes" or required_secret == True:
                 api_key = self.set_api_key(api_key, model_name)
-                
+
                 connector_secret_name, secret_value = self.create_secret_name(
                     connector_secret_name, model_name, api_key
                 )
