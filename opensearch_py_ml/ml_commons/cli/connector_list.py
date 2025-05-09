@@ -270,7 +270,7 @@ class ConnectorList:
                     "api_key",
                     "required_policy",
                     "required_secret",
-                    "connector_body"
+                    "connector_body",
                 ],
                 available_models=[],
             ),
@@ -455,7 +455,7 @@ class ConnectorList:
                     "api_key",
                     "required_policy",
                     "required_secret",
-                    "connector_body"
+                    "connector_body",
                 ],
                 available_models=[],
             ),

@@ -205,6 +205,7 @@ class ConnectorManager(CLIBase):
             "aws_session_token",
             "connector_body",
             "connector_name",
+            "connector_role_inline_policy",
             "connector_role_prefix",
             "connector_secret_name",
             "endpoint_arn",
@@ -213,6 +214,8 @@ class ConnectorManager(CLIBase):
             "model_name",
             "project_id",
             "region",
+            "required_policy",
+            "required_secret",
         ]
 
         params = {}
