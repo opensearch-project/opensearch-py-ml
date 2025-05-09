@@ -256,6 +256,24 @@ class ConnectorList:
                     ModelInfo(id="4", name="Custom model"),
                 ],
             ),
+            ConnectorInfo(
+                id=12,
+                name="Custom connector",
+                file_name="custom_connector",
+                connector_class="CustomConnector",
+                init_params=["service_type"],
+                connector_params=[
+                    "connector_role_prefix",
+                    "connector_secret_name",
+                    "connector_role_inline_policy",
+                    "model_name",
+                    "api_key",
+                    "required_policy",
+                    "required_secret",
+                    "connector_body"
+                ],
+                available_models=[],
+            ),
         ]
         # List of supported connectors in managed service (AOS)
         self._managed_connectors: List[ConnectorInfo] = [
@@ -422,5 +440,23 @@ class ConnectorList:
                     ModelInfo(id="1", name="Embedding model"),
                     ModelInfo(id="2", name="Custom model"),
                 ],
+            ),
+            ConnectorInfo(
+                id=9,
+                name="Custom connector",
+                file_name="custom_connector",
+                connector_class="CustomConnector",
+                init_params=["service_type"],
+                connector_params=[
+                    "connector_role_prefix",
+                    "connector_secret_name",
+                    "connector_role_inline_policy",
+                    "model_name",
+                    "api_key",
+                    "required_policy",
+                    "required_secret",
+                    "connector_body"
+                ],
+                available_models=[],
             ),
         ]
