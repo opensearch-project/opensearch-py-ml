@@ -21,6 +21,7 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Add semantic highlighter model auto tracing support ([#486](https://github.com/opensearch-project/opensearch-py-ml/pull/486))
 - Add semantic highlighter model to pre-trained model list ([#504](https://github.com/opensearch-project/opensearch-py-ml/pull/504))
 - Fix jenkins token in model_listing_uploader.yml CI ([#505](https://github.com/opensearch-project/opensearch-py-ml/pull/505))
+- Add documentation for CLI feature by @nathaliellenaa in ([#476](https://github.com/opensearch-project/opensearch-py-ml/pull/476))
 
 ### Changed
 - Add a parameter for customize the upload folder prefix ([#398](https://github.com/opensearch-project/opensearch-py-ml/pull/398))
