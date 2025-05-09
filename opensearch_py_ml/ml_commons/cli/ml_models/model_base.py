@@ -204,7 +204,7 @@ class ModelBase:
         """
         if external:
             print(
-                f"{Fore.YELLOW}\nIMPORTANT: When customizing the connector configuration, ensure you include the following in the 'headers' section:"
+                f"{Fore.YELLOW}\nIMPORTANT: When customizing the connector configuration for external models, ensure you include the following in the 'headers' section:"
             )
             print(f'{Fore.YELLOW}{Style.BRIGHT}"Authorization": "${{auth}}"')
             print(
