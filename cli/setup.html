@@ -1,0 +1,327 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Setup &mdash; Opensearch-py-ml 1.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=fc837d61"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Create Connector" href="create_connector.html" />
+    <link rel="prev" title="Command Line Interface (CLI)" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Opensearch-py-ml
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Command Line Interface (CLI)</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html#version-information">Version Information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#verifying-installation">Verifying Installation</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#command-reference">Command Reference</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Setup</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#description">Description</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#command-syntax">Command Syntax</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#usage-examples">Usage Examples</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#setup-configuration-yaml-file">Setup Configuration YAML file</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#notes">Notes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="create_connector.html">Create Connector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="register_model.html">Register Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="predict_model.html">Predict Model</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/pre_trained_models.html">Pre-trained models</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Opensearch-py-ml</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Command Line Interface (CLI)</a></li>
+      <li class="breadcrumb-item active">Setup</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/cli/setup.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="setup">
+<span id="cli-setup"></span><h1>Setup<a class="headerlink" href="#setup" title="Link to this heading"></a></h1>
+<section id="description">
+<h2>Description<a class="headerlink" href="#description" title="Link to this heading"></a></h2>
+<p>The setup command is essential for configuring OpenSearch and AWS credentials (if required) before running any ML operations. This CLI supports two types of services:</p>
+<ol class="arabic simple">
+<li><p>Amazon OpenSearch Service (AOS)</p></li>
+<li><p>Open-source service (self-managed OpenSearch)</p></li>
+</ol>
+<p>The setup can be initiated in two ways:</p>
+<ol class="arabic simple">
+<li><p>Interactive prompt (for first-time setup)</p></li>
+<li><p>Using a configuration file (for checking configurations or renewing AWS credentials)</p></li>
+</ol>
+<p>After running the setup command, a configuration YAML file will be generated. This file is crucial for subsequent operations, including connector creation.</p>
+</section>
+<section id="command-syntax">
+<h2>Command Syntax<a class="headerlink" href="#command-syntax" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">opensearch-ml</span> <span class="pre">setup</span> <span class="pre">[--path</span> <span class="pre">&lt;value&gt;]</span></code></p>
+<p><strong>Option:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--path</span> <span class="pre">&lt;value&gt;</span></code>: (Optional) Path to an existing setup configuration YAML file</p></li>
+</ul>
+</section>
+<section id="usage-examples">
+<h2>Usage Examples<a class="headerlink" href="#usage-examples" title="Link to this heading"></a></h2>
+<ul>
+<li><p>First-time setup (interactive):</p>
+<blockquote>
+<div><p>Command:</p>
+<p><code class="docutils literal notranslate"><span class="pre">opensearch-ml</span> <span class="pre">setup</span></code></p>
+<p>Sample response:</p>
+<div class="highlight-plaintext notranslate"><div class="highlight"><pre><span></span>Starting connector setup...
+
+Do you already have a configuration file? (yes/no): no
+Let&#39;s create a new configuration file.
+
+Choose OpenSearch service type:
+1. Amazon OpenSearch Service
+2. Open-source
+Enter your choice (1-2): 1
+
+--- Amazon OpenSearch Service Setup ---
+Let&#39;s configure your AWS credentials.
+Enter your AWS Access Key ID: ****
+Enter your AWS Secret Access Key: ****
+Enter your AWS Session Token: ****
+New AWS credentials have been successfully configured and verified.
+
+Choose ARN type:
+1. IAM Role ARN
+2. IAM User ARN
+Enter your choice (1-2): 1
+Enter your AWS IAM Role ARN: test-arn
+
+Enter your AWS OpenSearch region, or press Enter for default [us-west-2]:
+Enter your AWS OpenSearch domain endpoint: test-domain
+Enter your AWS OpenSearch username: admin
+Enter your AWS OpenSearch password: ****
+
+Enter the path to save the configuration information, or press Enter to save it in the current directory [/Documents/cli/setup_config.yml]:
+
+Configuration information saved successfully to /Documents/cli/setup_config.yml
+Initialized OpenSearch client with host: test-domain and port: 443
+
+Setup complete. You are now ready to use the ML features.
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>Setup using an existing configuration file:</p>
+<blockquote>
+<div><p>Command:</p>
+<p><code class="docutils literal notranslate"><span class="pre">opensearch-ml</span> <span class="pre">setup</span> <span class="pre">--path</span> <span class="pre">/Documents/cli/setup_config.yml</span></code></p>
+<p>Assume user has setup_config.yml file with this content:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">service_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">amazon-opensearch-service</span>
+<span class="nt">ssl_check_enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="nt">opensearch_config</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">opensearch_domain_region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-west-2</span>
+<span class="w">    </span><span class="nt">opensearch_domain_endpoint</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test-domain</span>
+<span class="w">    </span><span class="nt">opensearch_domain_username</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">admin</span>
+<span class="w">    </span><span class="nt">opensearch_domain_password</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pass</span>
+<span class="nt">aws_credentials</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">aws_role_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test-arn</span>
+<span class="w">    </span><span class="nt">aws_user_name</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;&#39;</span>
+<span class="w">    </span><span class="nt">aws_access_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test-access-key</span>
+<span class="w">    </span><span class="nt">aws_secret_access_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test-secret-access-key</span>
+<span class="w">    </span><span class="nt">aws_session_token</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test-session-token</span>
+</pre></div>
+</div>
+<p>Sample response:</p>
+<div class="highlight-plaintext notranslate"><div class="highlight"><pre><span></span>Starting connector setup...
+
+Setup configuration loaded successfully from /Documents/cli/setup_config.yml
+Your AWS credentials are invalid or have expired.
+Let&#39;s configure your AWS credentials.
+Enter your AWS Access Key ID: ****
+Enter your AWS Secret Access Key: ****
+Enter your AWS Session Token: ****
+New AWS credentials have been successfully configured and verified.
+Configuration saved successfully to /Documents/cli/setup_config.yml
+
+Setup complete. You are now ready to use the ML features.
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+</section>
+<section id="setup-configuration-yaml-file">
+<h2>Setup Configuration YAML file<a class="headerlink" href="#setup-configuration-yaml-file" title="Link to this heading"></a></h2>
+<p><strong>Template</strong></p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">service_type</span><span class="p">:</span>
+<span class="nt">ssl_check_enabled</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">opensearch_config</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">opensearch_domain_region</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">opensearch_domain_endpoint</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">opensearch_domain_username</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">opensearch_domain_password</span><span class="p">:</span>
+<span class="nt">aws_credentials</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">aws_role_name</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">aws_user_name</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">aws_access_key</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">aws_secret_access_key</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">aws_session_token</span><span class="p">:</span>
+</pre></div>
+</div>
+<p><strong>Field Descriptions</strong></p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 25.0%" />
+<col style="width: 50.0%" />
+<col style="width: 25.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Field</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Required</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>service_type</p></td>
+<td><p>Either “amazon-opensearch-service” or “open-source”</p></td>
+<td><p>Yes</p></td>
+</tr>
+<tr class="row-odd"><td><p>ssl_check_enabled</p></td>
+<td><p>Set to “true” by default. Set to “false” to disable SSL check</p></td>
+<td><p>Yes</p></td>
+</tr>
+<tr class="row-even"><td><p>opensearch_domain_endpoint</p></td>
+<td><p>The OpenSearch domain endpoint</p></td>
+<td><p>Yes</p></td>
+</tr>
+<tr class="row-odd"><td><p>opensearch_domain_region</p></td>
+<td><p>The domain region (e.g., us-west-2)</p></td>
+<td><p>Yes (AOS only)</p></td>
+</tr>
+<tr class="row-even"><td><p>opensearch_domain_username</p></td>
+<td><p>The OpenSearch domain username</p></td>
+<td><p>Yes (AOS only)</p></td>
+</tr>
+<tr class="row-odd"><td><p>opensearch_domain_password</p></td>
+<td><p>The OpenSearch domain password</p></td>
+<td><p>Yes (AOS only)</p></td>
+</tr>
+<tr class="row-even"><td><p>aws_role_name</p></td>
+<td><p>User’s IAM Role ARN</p></td>
+<td><p>Yes (AOS only; choose either role or user)</p></td>
+</tr>
+<tr class="row-odd"><td><p>aws_user_name</p></td>
+<td><p>User’s IAM User ARN</p></td>
+<td><p>Yes (AOS only; choose either role or user)</p></td>
+</tr>
+<tr class="row-even"><td><p>aws_access_key</p></td>
+<td><p>AWS access key</p></td>
+<td><p>Yes (AOS only)</p></td>
+</tr>
+<tr class="row-odd"><td><p>aws_secret_access_key</p></td>
+<td><p>AWS secret access key</p></td>
+<td><p>Yes (AOS only)</p></td>
+</tr>
+<tr class="row-even"><td><p>aws_session_token</p></td>
+<td><p>AWS session token</p></td>
+<td><p>Yes (AOS only)</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="notes">
+<h2>Notes<a class="headerlink" href="#notes" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>For Amazon OpenSearch Service, ensure users provide either <code class="docutils literal notranslate"><span class="pre">aws_role_name</span></code> or <code class="docutils literal notranslate"><span class="pre">aws_user_name</span></code>, not both.</p></li>
+<li><p>The generated configuration file is crucial for subsequent CLI operations. Keep it secure and accessible.</p></li>
+<li><p>If users need to update AWS credentials or change configurations, they can edit the YAML file directly or run the setup command with the <code class="docutils literal notranslate"><span class="pre">--path</span></code> option.</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Command Line Interface (CLI)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="create_connector.html" class="btn btn-neutral float-right" title="Create Connector" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Opensearch.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

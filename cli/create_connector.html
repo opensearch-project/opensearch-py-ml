@@ -1,0 +1,563 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create Connector &mdash; Opensearch-py-ml 1.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=fc837d61"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Register Model" href="register_model.html" />
+    <link rel="prev" title="Setup" href="setup.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Opensearch-py-ml
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../reference/index.html">API Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Command Line Interface (CLI)</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="index.html#version-information">Version Information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#verifying-installation">Verifying Installation</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#command-reference">Command Reference</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="setup.html">Setup</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Create Connector</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#description">Description</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#command-syntax">Command Syntax</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#usage-examples">Usage Examples</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#setup-configuration-yaml-file">Setup Configuration YAML file</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#output-yaml-file">Output YAML file</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#supported-connectors-and-models">Supported Connectors and Models</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="register_model.html">Register Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="predict_model.html">Predict Model</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/pre_trained_models.html">Pre-trained models</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Opensearch-py-ml</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Command Line Interface (CLI)</a></li>
+      <li class="breadcrumb-item active">Create Connector</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/cli/create_connector.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="create-connector">
+<span id="cli-create-connector"></span><h1>Create Connector<a class="headerlink" href="#create-connector" title="Link to this heading"></a></h1>
+<section id="description">
+<h2>Description<a class="headerlink" href="#description" title="Link to this heading"></a></h2>
+<p>The create connector command allows users to create a connector in both self-managed OpenSearch and Amazon OpenSearch Service (AOS). Users can create a connector either interactively or by using a configuration file.</p>
+<p>For self-managed OpenSearch:</p>
+<ul class="simple">
+<li><p>Select from supported connectors and their associated models</p></li>
+<li><p>Provide necessary configuration parameters (e.g., API key)</p></li>
+</ul>
+<p>For Amazon OpenSearch Service:</p>
+<ul class="simple">
+<li><p>Automatically handles AWS-specific setup including:</p>
+<ul>
+<li><p>IAM role creation and configuration</p></li>
+<li><p>Backend role mapping</p></li>
+<li><p>Secret creation</p></li>
+</ul>
+</li>
+<li><p>Select from supported connectors and their associated models</p></li>
+<li><p>Provide AWS-specific parameters (e.g., AWS region)</p></li>
+</ul>
+<p>The CLI guides users through providing only the essential model-specific information needed for their chosen environment.</p>
+</section>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
+<p>Before creating a connector, ensure users have completed the setup process or have a setup configuration file.
+See <a class="reference internal" href="setup.html#cli-setup"><span class="std std-ref">setup guide</span></a> for instructions on doing the setup process.</p>
+</section>
+<section id="command-syntax">
+<h2>Command Syntax<a class="headerlink" href="#command-syntax" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">opensearch-ml</span> <span class="pre">connector</span> <span class="pre">create</span> <span class="pre">[--path</span> <span class="pre">&lt;value&gt;]</span></code></p>
+<p><strong>Option:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--path</span> <span class="pre">&lt;value&gt;</span></code>: (Optional) Path to an existing connector configuration YAML file</p></li>
+</ul>
+</section>
+<section id="usage-examples">
+<h2>Usage Examples<a class="headerlink" href="#usage-examples" title="Link to this heading"></a></h2>
+<ul>
+<li><p>Interactive connector creation:</p>
+<blockquote>
+<div><p>Command:</p>
+<p><code class="docutils literal notranslate"><span class="pre">opensearch-ml</span> <span class="pre">connector</span> <span class="pre">create</span></code></p>
+<p>Sample response:</p>
+<div class="highlight-plaintext notranslate"><div class="highlight"><pre><span></span>Starting connector creation...
+
+Enter the path to your existing setup configuration file: /Documents/cli/setup_config.yml
+
+Setup configuration loaded successfully from /Documents/cli/setup_config.yml
+
+Please select a supported connector to create in Amazon OpenSearch Service:
+1. Amazon Bedrock
+2. Amazon Bedrock Converse
+3. Amazon Comprehend
+4. Amazon SageMaker
+5. Amazon Textract
+6. Cohere
+7. DeepSeek
+8. OpenAI
+Enter your choice (1-8): 8
+
+Please select a model for the connector creation:
+1. Embedding model
+2. Custom model
+Enter your choice (1-2): 1
+Enter your OpenAI API key: ********
+Enter your connector role prefix: test-role
+Enter a name for the AWS Secrets Manager secret: test-secret
+
+Creating OpenAI connector...
+Step 1: Create Secret
+test secret exists, skipping creation.
+----------
+Step 2: Create IAM role configured in connector
+Role &#39;test-role-openai-connector-03ae00&#39; does not exist.
+----------
+Step 3: Configure IAM role in OpenSearch
+Step 3.1: Create IAM role for Signing create connector request
+Role &#39;test-role-openai-connector-create-03ae00&#39; does not exist.
+----------
+Step 3.2: Map IAM role test-role-openai-connector-create-03ae00 to OpenSearch permission role
+----------
+Step 4: Create connector in OpenSearch
+Waiting for resources to be ready...
+Time remaining: 1 seconds....
+Wait completed, creating connector...
+Connector role arn: test-connector-role-arn
+----------
+
+Successfully created OpenAI connector with ID: connector123
+
+Enter the path to save the output information, or press Enter to save it in the current directory [/Documents/cli/output.yml]:
+
+Output information saved successfully to /Documents/cli/output.yml
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>Create connector using a configuration file:</p>
+<blockquote>
+<div><p>Command:</p>
+<p><code class="docutils literal notranslate"><span class="pre">opensearch-ml</span> <span class="pre">connector</span> <span class="pre">create</span> <span class="pre">--path</span> <span class="pre">/Documents/cli/connector_config.yml</span></code></p>
+<p>Assume user has connector_config.yml file with this content:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">setup_config_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/Documents/cli/setup_config.yml</span>
+<span class="nt">connector_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OpenAI</span>
+<span class="nt">model_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Embedding model</span>
+<span class="nt">api_key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test-api-key</span>
+<span class="nt">connector_role_prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test-role</span>
+<span class="nt">connector_secret_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test-secret</span>
+</pre></div>
+</div>
+<p>Sample response:</p>
+<div class="highlight-plaintext notranslate"><div class="highlight"><pre><span></span>Starting connector creation...
+
+Connector configuration loaded successfully from /Documents/cli/connector_config.yml
+
+Setup configuration loaded successfully from /Documents/cli/setup_config.yml
+
+Creating OpenAI connector...
+Step 1: Create Secret
+test secret exists, skipping creation.
+----------
+Step 2: Create IAM role configured in connector
+Role &#39;test-role-openai-connector-03ae00&#39; does not exist.
+----------
+Step 3: Configure IAM role in OpenSearch
+Step 3.1: Create IAM role for Signing create connector request
+Role &#39;test-role-openai-connector-create-03ae00&#39; does not exist.
+----------
+Step 3.2: Map IAM role test-role-openai-connector-create-03ae00 to OpenSearch permission role
+----------
+Step 4: Create connector in OpenSearch
+Waiting for resources to be ready...
+Time remaining: 1 seconds....
+Wait completed, creating connector...
+Connector role arn: test-connector-role-arn
+----------
+
+Successfully created OpenAI connector with ID: connector123
+
+Enter the path to save the output information, or press Enter to save it in the current directory [/Documents/cli/output.yml]:
+
+Output information saved successfully to /Documents/cli/output.yml
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+</section>
+<section id="setup-configuration-yaml-file">
+<h2>Setup Configuration YAML file<a class="headerlink" href="#setup-configuration-yaml-file" title="Link to this heading"></a></h2>
+<p><strong>Template</strong></p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">setup_config_path</span><span class="p">:</span>
+<span class="nt">connector_name</span><span class="p">:</span>
+<span class="nt">model_name</span><span class="p">:</span>
+<span class="nt">access_token</span><span class="p">:</span>
+<span class="nt">api_key</span><span class="p">:</span>
+<span class="nt">aws_access_key</span><span class="p">:</span>
+<span class="nt">aws_secret_access_key</span><span class="p">:</span>
+<span class="nt">aws_session_token</span><span class="p">:</span>
+<span class="nt">connector_body</span><span class="p">:</span>
+<span class="nt">connector_role_inline_policy</span><span class="p">:</span>
+<span class="nt">connector_role_prefix</span><span class="p">:</span>
+<span class="nt">connector_secret_name</span><span class="p">:</span>
+<span class="nt">endpoint_arn</span><span class="p">:</span>
+<span class="nt">endpoint_url</span><span class="p">:</span>
+<span class="nt">model_id</span><span class="p">:</span>
+<span class="nt">project_id</span><span class="p">:</span>
+<span class="nt">region</span><span class="p">:</span>
+<span class="nt">required_policy</span><span class="p">:</span>
+<span class="nt">required_secret</span><span class="p">:</span>
+</pre></div>
+</div>
+<p>Note: The order of the fields does not matter. This template will only be used when users choose to create a connector with a configuration file.</p>
+<p><strong>Field Descriptions</strong></p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 20.0%" />
+<col style="width: 50.0%" />
+<col style="width: 30.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Field</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Required For</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>setup_config_path</p></td>
+<td><p>Path to setup configuration YAML file</p></td>
+<td><p>All models</p></td>
+</tr>
+<tr class="row-odd"><td><p>connector_name</p></td>
+<td><p>Name of the connector (must match supported list)</p></td>
+<td><p>All models</p></td>
+</tr>
+<tr class="row-even"><td><p>model_name</p></td>
+<td><p>Name of the model (must match supported list)</p></td>
+<td><p>All models</p></td>
+</tr>
+<tr class="row-odd"><td><p>connector_role_prefix</p></td>
+<td><p>Connector role prefix</p></td>
+<td><p>AOS only</p></td>
+</tr>
+<tr class="row-even"><td><p>connector_body</p></td>
+<td><p>Connector request body (JSON format)</p></td>
+<td><p>Custom models, custom connector in custom model service</p></td>
+</tr>
+<tr class="row-odd"><td><p>aws_access_key</p></td>
+<td><p>AWS access key</p></td>
+<td><p>Bedrock, Bedrock Converse, Comprehend, SageMaker, Textract (open-source only)</p></td>
+</tr>
+<tr class="row-even"><td><p>aws_secret_access_key</p></td>
+<td><p>AWS secret access key</p></td>
+<td><p>Bedrock, Bedrock Converse, Comprehend, SageMaker, Textract (open-source only)</p></td>
+</tr>
+<tr class="row-odd"><td><p>aws_session_token</p></td>
+<td><p>AWS session token</p></td>
+<td><p>Bedrock, Bedrock Converse, Comprehend, SageMaker, Textract (open-source only)</p></td>
+</tr>
+<tr class="row-even"><td><p>region</p></td>
+<td><p>AWS region</p></td>
+<td><p>Bedrock, Bedrock Converse, Comprehend, SageMaker, Textract</p></td>
+</tr>
+<tr class="row-odd"><td><p>api_key</p></td>
+<td><p>API key for the specified model</p></td>
+<td><p>Aleph Alpha, Azure OpenAI, Cohere, DeepSeek, OpenAI, when required_secret=true</p></td>
+</tr>
+<tr class="row-even"><td><p>connector_secret_name</p></td>
+<td><p>Connector secret name</p></td>
+<td><p>Cohere, DeepSeek, OpenAI, when required_secret=true</p></td>
+</tr>
+<tr class="row-odd"><td><p>endpoint_arn</p></td>
+<td><p>Inference endpoint ARN</p></td>
+<td><p>SageMaker</p></td>
+</tr>
+<tr class="row-even"><td><p>endpoint_url</p></td>
+<td><p>Inference endpoint URL</p></td>
+<td><p>SageMaker</p></td>
+</tr>
+<tr class="row-odd"><td><p>model_id</p></td>
+<td><p>Model ID</p></td>
+<td><p>Google Cloud Platform</p></td>
+</tr>
+<tr class="row-even"><td><p>project_id</p></td>
+<td><p>Project ID</p></td>
+<td><p>Google Cloud Platform</p></td>
+</tr>
+<tr class="row-odd"><td><p>access_token</p></td>
+<td><p>Access token for the model</p></td>
+<td><p>Google Cloud Platform</p></td>
+</tr>
+<tr class="row-even"><td><p>required_policy</p></td>
+<td><p>Set to ‘true’ to enable IAM inline policy configuration, ‘false’ to disable</p></td>
+<td><p>Custom connector in custom model service (AOS only)</p></td>
+</tr>
+<tr class="row-odd"><td><p>required_secret</p></td>
+<td><p>Set to ‘true’ to enable AWS Secrets Manager configuration, ‘false’ to disable</p></td>
+<td><p>Custom connector in custom model service (AOS only)</p></td>
+</tr>
+<tr class="row-even"><td><p>connector_role_inline_policy</p></td>
+<td><p>IAM inline policy configuration (JSON format)</p></td>
+<td><p>When required_policy=true</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="output-yaml-file">
+<h2>Output YAML file<a class="headerlink" href="#output-yaml-file" title="Link to this heading"></a></h2>
+<p>After successfully creating a connector, the CLI saves important information about the connector in an output YAML file. This file contains details that may be needed for future operations or reference. Here’s an example of what the output YAML file might look like:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">connector_create</span><span class="p">:</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">connector_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">connector123</span>
+<span class="w">  </span><span class="nt">connector_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OpenAI embedding model connector</span>
+<span class="w">  </span><span class="nt">connector_role_arn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test-connector-role-arn</span>
+<span class="w">  </span><span class="nt">connector_role_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test-role-openai-connector-03ae00</span>
+<span class="w">  </span><span class="nt">connector_secret_arn</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test-connector-secret-arn</span>
+<span class="w">  </span><span class="nt">connector_secret_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">test-secret</span>
+</pre></div>
+</div>
+</section>
+<section id="supported-connectors-and-models">
+<h2>Supported Connectors and Models<a class="headerlink" href="#supported-connectors-and-models" title="Link to this heading"></a></h2>
+<p><strong>Amazon OpenSearch Service (AOS)</strong></p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 40.0%" />
+<col style="width: 60.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Platform</p></th>
+<th class="head"><p>Model</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Amazon Bedrock</p></td>
+<td><p>AI21 Labs Jurassic-2 Mid</p></td>
+</tr>
+<tr class="row-odd"><td><p>Amazon Bedrock</p></td>
+<td><p>Anthropic Claude v2</p></td>
+</tr>
+<tr class="row-even"><td><p>Amazon Bedrock</p></td>
+<td><p>Anthropic Claude v3</p></td>
+</tr>
+<tr class="row-odd"><td><p>Amazon Bedrock</p></td>
+<td><p>Anthropic Claude v3.7</p></td>
+</tr>
+<tr class="row-even"><td><p>Amazon Bedrock</p></td>
+<td><p>Cohere Embed Model v3 - English</p></td>
+</tr>
+<tr class="row-odd"><td><p>Amazon Bedrock</p></td>
+<td><p>Cohere Embed Model v3 - Multilingual</p></td>
+</tr>
+<tr class="row-even"><td><p>Amazon Bedrock</p></td>
+<td><p>Titan Text Embedding</p></td>
+</tr>
+<tr class="row-odd"><td><p>Amazon Bedrock</p></td>
+<td><p>Titan Multimodal Embedding</p></td>
+</tr>
+<tr class="row-even"><td><p>Amazon Bedrock Converse</p></td>
+<td><p>Anthropic Claude 3 Sonnet</p></td>
+</tr>
+<tr class="row-odd"><td><p>Amazon Comprehend</p></td>
+<td><p>Metadata embedding model</p></td>
+</tr>
+<tr class="row-even"><td><p>Amazon SageMaker</p></td>
+<td><p>DeepSeek R1 model</p></td>
+</tr>
+<tr class="row-odd"><td><p>Amazon SageMaker</p></td>
+<td><p>Embedding model</p></td>
+</tr>
+<tr class="row-even"><td><p>Amazon Textract</p></td>
+<td><p>Amazon Textract model</p></td>
+</tr>
+<tr class="row-odd"><td><p>Cohere</p></td>
+<td><p>Embedding model</p></td>
+</tr>
+<tr class="row-even"><td><p>DeepSeek</p></td>
+<td><p>DeepSeek Chat model</p></td>
+</tr>
+<tr class="row-odd"><td><p>OpenAI</p></td>
+<td><p>Embedding model</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Open-source</strong></p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 40.0%" />
+<col style="width: 60.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Platform</p></th>
+<th class="head"><p>Model</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Aleph Alpha</p></td>
+<td><p>Luminous-Base embedding model</p></td>
+</tr>
+<tr class="row-odd"><td><p>Amazon Bedrock</p></td>
+<td><p>AI21 Labs Jurassic-2 Mid</p></td>
+</tr>
+<tr class="row-even"><td><p>Amazon Bedrock</p></td>
+<td><p>Anthropic Claude v2</p></td>
+</tr>
+<tr class="row-odd"><td><p>Amazon Bedrock</p></td>
+<td><p>Anthropic Claude v3</p></td>
+</tr>
+<tr class="row-even"><td><p>Amazon Bedrock</p></td>
+<td><p>Anthropic Claude v3.7</p></td>
+</tr>
+<tr class="row-odd"><td><p>Amazon Bedrock</p></td>
+<td><p>Cohere Embed Model v3 - English</p></td>
+</tr>
+<tr class="row-even"><td><p>Amazon Bedrock</p></td>
+<td><p>Cohere Embed Model v3 - Multilingual</p></td>
+</tr>
+<tr class="row-odd"><td><p>Amazon Bedrock</p></td>
+<td><p>Titan Text Embedding</p></td>
+</tr>
+<tr class="row-even"><td><p>Amazon Bedrock</p></td>
+<td><p>Titan Multimodal Embedding</p></td>
+</tr>
+<tr class="row-odd"><td><p>Amazon Bedrock Converse</p></td>
+<td><p>Anthropic Claude 3 Sonnet</p></td>
+</tr>
+<tr class="row-even"><td><p>Amazon Comprehend</p></td>
+<td><p>Metadata embedding model</p></td>
+</tr>
+<tr class="row-odd"><td><p>Amazon SageMaker</p></td>
+<td><p>Embedding model</p></td>
+</tr>
+<tr class="row-even"><td><p>Amazon Textract</p></td>
+<td><p>Amazon Textract model</p></td>
+</tr>
+<tr class="row-odd"><td><p>Azure OpenAI</p></td>
+<td><p>Chat completion model</p></td>
+</tr>
+<tr class="row-even"><td><p>Azure OpenAI</p></td>
+<td><p>Embedding model</p></td>
+</tr>
+<tr class="row-odd"><td><p>Cohere</p></td>
+<td><p>Chat model</p></td>
+</tr>
+<tr class="row-even"><td><p>Cohere</p></td>
+<td><p>Embedding model</p></td>
+</tr>
+<tr class="row-odd"><td><p>Cohere</p></td>
+<td><p>Multi-modal embedding model</p></td>
+</tr>
+<tr class="row-even"><td><p>DeepSeek</p></td>
+<td><p>DeepSeek Chat model</p></td>
+</tr>
+<tr class="row-odd"><td><p>Google Cloud Platform</p></td>
+<td><p>VertexAI embedding model</p></td>
+</tr>
+<tr class="row-even"><td><p>OpenAI</p></td>
+<td><p>Chat model</p></td>
+</tr>
+<tr class="row-odd"><td><p>OpenAI</p></td>
+<td><p>Completion model</p></td>
+</tr>
+<tr class="row-even"><td><p>OpenAI</p></td>
+<td><p>Embedding model</p></td>
+</tr>
+</tbody>
+</table>
+<p>Note: Custom connectors and models are supported for all connector types in both AOS and open-source.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="setup.html" class="btn btn-neutral float-left" title="Setup" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="register_model.html" class="btn btn-neutral float-right" title="Register Model" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Opensearch.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
