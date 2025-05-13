@@ -43,7 +43,6 @@ If you're new to Opensearch we recommend `reading the documentation <https://ope
 
    reference/index
    examples/index
-   cli/index
    reference/pre_trained_models
 
 * :doc:`reference/index`
@@ -61,12 +60,6 @@ If you're new to Opensearch we recommend `reading the documentation <https://ope
   * :doc:`examples/online_retail_analysis`
   * :doc:`examples/demo_transformer_model_train_save_upload_to_openSearch`
 
-* :doc:`cli/index`
-
-  * :doc:`cli/setup`
-  * :doc:`cli/create_connector`
-  * :doc:`cli/register_model`
-  * :doc:`cli/predict_model`
 
 * `License <https://github.com/opensearch-project/opensearch-py-ml/blob/main/LICENSE>`_
 * `Contributing <https://github.com/opensearch-project/opensearch-py-ml/blob/main/CONTRIBUTING.md>`_
