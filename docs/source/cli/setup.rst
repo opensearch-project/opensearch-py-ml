@@ -1,39 +1,39 @@
 .. _cli.setup:
 
-=====
-Setup
-=====
+==============
+Set up the CLI
+==============
 
 Description
 ~~~~~~~~~~~
 
-The setup command is essential for configuring OpenSearch and AWS credentials (if required) before running any ML operations. This CLI supports two types of services:
+The `setup` command is essential for configuring OpenSearch and AWS credentials (if required) before running any machine learning (ML) operations. The CLI supports the following service types:
 
-1. Amazon OpenSearch Service (AOS)
-2. Open-source service (self-managed OpenSearch)
+- Amazon OpenSearch Service
+- Open-source service (self-managed OpenSearch)
 
-The setup can be initiated in two ways:
+You can initiate the setup in the following ways:
 
-1. Interactive prompt (for first-time setup)
-2. Using a configuration file (for checking configurations or renewing AWS credentials)
+- Using an interactive prompt (for first-time setup)
+- Using a configuration file (for verifying configurations or renewing AWS credentials)
 
-After running the setup command, a configuration YAML file will be generated. This file is crucial for subsequent operations, including connector creation. 
+After running the `setup` command, a configuration YAML file will be generated. This file is crucial for subsequent operations, including connector creation. 
 
-Command Syntax
+Command syntax
 ~~~~~~~~~~~~~~
 
 ``opensearch-ml setup [--path <value>]``
 
 **Option:**
 
-* ``--path <value>``: (Optional) Path to an existing setup configuration YAML file
+* ``--path <value>``: (Optional) The path to an existing setup configuration YAML file
 
-Usage Examples
+Usage examples
 ~~~~~~~~~~~~~~
 
-* First-time setup (interactive):
+**First-time setup (interactive)**
 
-    Command:
+    To set up the CLI interactively, run the following command:
 
     ``opensearch-ml setup``
 
@@ -76,13 +76,13 @@ Usage Examples
 
         Setup complete. You are now ready to use the ML features.
 
-* Setup using an existing configuration file:
+**Setup using an existing configuration file**
 
-    Command:
+    To use an existing configuration file for setup, run the following command:
 
     ``opensearch-ml setup --path /Documents/cli/setup_config.yml``
 
-    Assume user has setup_config.yml file with this content:
+    This example assumes that you have a `setup_config.yml` file at the specified path with the following content:
 
     .. code-block:: yaml
 
@@ -117,10 +117,12 @@ Usage Examples
 
         Setup complete. You are now ready to use the ML features.
 
-Setup Configuration YAML file
+Setup configuration YAML file
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**Template**
+You can use a setup configuration YAML file to specify your OpenSearch service settings and authentication details needed for the CLI.
+
+**Configuration file template**
 
 .. code-block:: yaml
 
@@ -138,8 +140,7 @@ Setup Configuration YAML file
         aws_secret_access_key:
         aws_session_token:
 
-
-**Field Descriptions**
+**Field descriptions**
 
 .. csv-table::
    :file: setup_config.csv
@@ -149,6 +150,6 @@ Setup Configuration YAML file
 Notes
 ~~~~~
 
-* For Amazon OpenSearch Service, ensure users provide either ``aws_role_name`` or ``aws_user_name``, not both.
+* For Amazon OpenSearch Service, ensure that you provide either the ``aws_role_name`` or the ``aws_user_name``, but not both.
 * The generated configuration file is crucial for subsequent CLI operations. Keep it secure and accessible.
-* If users need to update AWS credentials or change configurations, they can edit the YAML file directly or run the setup command with the ``--path`` option.
+* To update AWS credentials or change the configuration, edit the YAML file directly or run the setup command specifying the ``--path`` option.

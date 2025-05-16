@@ -1,15 +1,15 @@
 .. _cli.predict_model:
 
-=============
-Predict Model
-=============
+======================
+Run a model prediction
+======================
 
 Description
 ~~~~~~~~~~~
 
-The predict model command allows users to run predictions using a registered model in OpenSearch. This enables users to leverage ML models for various tasks, such as embedding creation, depending on the model type.
+Use the `model predict` command to run predictions using a machine learning (ML) model registered in OpenSearch. Depending on the model type, you can use ML models for various tasks, such as embedding creation.
 
-Command Syntax
+Command syntax
 ~~~~~~~~~~~~~~
 
 ``opensearch-ml model predict [--modelId '<value>'][--body '<value>']``
@@ -19,12 +19,12 @@ Command Syntax
 * ``--modelId '<value>'``: (Optional) The model ID to use for prediction
 * ``--body '<value>'``: (Optional) The prediction request body in JSON format
 
-Usage Examples
+Usage examples
 ~~~~~~~~~~~~~~
 
-* Interactive model prediction:
+**Running a model prediction interactively**
     
-    Command:
+    Use the following command to run a model prediction interactively:
 
     ``opensearch-ml model predict``
 
@@ -55,9 +55,9 @@ Usage Examples
         Output information saved successfully to /Documents/cli/output.yml
 
 
-* Direct model prediction with all parameters:
+**Making a direct model prediction**
 
-    Command:
+    To make a direct model prediction, provide all parameters to the following command:
 
     ``opensearch-ml model predict --modelId 'model123' --body '{"parameters": {"input": ["hello world", "how are you"]}}'``
 
@@ -80,7 +80,7 @@ Usage Examples
 Output YAML file
 ~~~~~~~~~~~~~~~~
 
-After successfully predict a model, the CLI saves important information about the model prediction in an output YAML file. This file contains details that may be needed for future operations or reference. Here's an example of what the output YAML file might look like:
+After successfully running a model prediction, the CLI saves important information about the prediction in an output YAML file. This file contains details that may be needed for future operations or reference. The output YAML file appears as follows:
 
 .. code-block:: yaml
 
