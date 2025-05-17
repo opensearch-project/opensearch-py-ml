@@ -53,6 +53,20 @@ class SentenceTransformerModel(BaseUploadModel):
     DEFAULT_MODEL_ID = "sentence-transformers/msmarco-distilbert-base-tas-b"
     SYNTHETIC_QUERY_FOLDER = "synthetic_queries"
 
+    MODEL_SPACE_TYPE_MAPPING = {
+        "all-distilroberta-v1": "l2",
+        "all-MiniLM-L6-v2": "l2",
+        "all-MiniLM-L12-v2": "l2",
+        "all-mpnet-base-v2": "l2",
+        "msmarco-distilbert-base-tas-b": "innerproduct",
+        "multi-qa-MiniLM-L6-cos-v1": "l2",
+        "multi-qa-mpnet-base-dot-v1": "innerproduct",
+        "paraphrase-MiniLM-L3-v2": "cosine",
+        "paraphrase-multilingual-MiniLM-L12-v2": "cosine",
+        "paraphrase-mpnet-base-v2": "cosine",
+        "distiluse-base-multilingual-cased-v1": "cosine",
+    }
+
     def __init__(
         self,
         model_id: str = DEFAULT_MODEL_ID,
@@ -1277,6 +1291,7 @@ class SentenceTransformerModel(BaseUploadModel):
         normalize_result: bool = None,
         description: str = None,
         all_config: str = None,
+        additional_config: dict = None,
         model_type: str = None,
         verbose: bool = False,
     ) -> str:
@@ -1314,7 +1329,10 @@ class SentenceTransformerModel(BaseUploadModel):
         :param all_config:
             Optional, the all_config of the model. If None, parse all contents from the config file of pre-trained
             hugging-face model
-        :type all_config: dict
+        :type all_config: str
+        :param additional_config:
+            Optional, the additional_config of the model. If None, set additional_config as an empty dictionary
+        :type additional_config: dict
         :param model_type:
             Optional, the model_type of the model. If None, parse model_type from the config file of pre-trained
             hugging-face model
@@ -1401,6 +1419,15 @@ class SentenceTransformerModel(BaseUploadModel):
                     ". Please check the config.json ",
                     "file in the path.",
                 )
+        if additional_config is None:
+            additional_config = {}
+        if (
+            "space_type" not in additional_config
+            or additional_config.get("space_type") is None
+        ):
+            model_name_suffix = self.model_id.split("/")[-1]
+            space_type = self.MODEL_SPACE_TYPE_MAPPING.get(model_name_suffix, "l2")
+            additional_config["space_type"] = space_type
 
         model_config_content = {
             "name": model_name,
@@ -1415,6 +1442,7 @@ class SentenceTransformerModel(BaseUploadModel):
                 "pooling_mode": pooling_mode,
                 "normalize_result": normalize_result,
                 "all_config": json.dumps(all_config),
+                "additional_config": additional_config,
             },
         }
 
