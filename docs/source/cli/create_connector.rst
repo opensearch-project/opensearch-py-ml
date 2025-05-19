@@ -9,18 +9,18 @@ Description
 
 Use the `connector create` command to add a connector to either a self-managed OpenSearch cluster or Amazon OpenSearch Service. You can create a connector interactively by following prompts or by using a preconfigured YAML file.
 
-To create a connector in self-managed OpenSearch, you need to:
+To create a connector in self-managed OpenSearch, do the following:
 
 * Select from supported connectors and their associated models
 * Provide necessary configuration parameters (for example, API key)
 
-OpenSearch Service automatically handles AWS-specific setup including:
+OpenSearch Service automatically handles AWS-specific setup, including the following components:
 
   * IAM role creation and configuration
   * Backend role mapping
   * Secret creation
 
-To create a connector in OpenSearch Service, you need to:
+To create a connector in OpenSearch Service, do the following:
 
 * Select from supported connectors and their associated models
 * Provide AWS-specific parameters (for example, AWS Region)
