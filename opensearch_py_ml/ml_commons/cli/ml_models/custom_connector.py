@@ -28,7 +28,6 @@ class CustomConnector(ModelBase):
         connector_role_prefix: Optional[str] = None,
         connector_secret_name: Optional[str] = None,
         connector_role_inline_policy: Optional[Dict[str, Any]] = None,
-        model_name: Optional[str] = None,
         api_key: Optional[str] = None,
         required_policy: Optional[bool] = None,
         required_secret: Optional[bool] = None,
@@ -43,7 +42,6 @@ class CustomConnector(ModelBase):
             connector_role_prefix (optional): Prefix for role names.
             connector_secret_name (optional): The connector secret name.
             connector_role_inline_policy (optional): The connector inline policy.
-            model_name (optional): Model name.
             api_key (optional): Model API key.
             required_policy (optional): Whether to configure IAM inline policy.
             required_secret (optional): Whether to configure AWS Secrets Manager.
@@ -57,12 +55,9 @@ class CustomConnector(ModelBase):
         )
 
         if self.service_type == self.AMAZON_OPENSEARCH_SERVICE:
-            # Prompt for model name
-            model_name = model_name or input("Enter your model name: ")
-
             # Create connector role
             connector_role_name, create_connector_role_name = (
-                self.create_connector_role(connector_role_prefix, model_name)
+                self.create_connector_role(connector_role_prefix, "")
             )
 
             # Handle the connector role inline policy
@@ -98,10 +93,10 @@ class CustomConnector(ModelBase):
             )
 
             if required_secret == "yes" or required_secret == True:
-                api_key = self.set_api_key(api_key, model_name)
+                api_key = self.set_api_key(api_key, "model")
 
                 connector_secret_name, secret_value = self.create_secret_name(
-                    connector_secret_name, model_name, api_key
+                    connector_secret_name, "", api_key
                 )
 
                 auth_value = f"Bearer {api_key}"

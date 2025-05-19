@@ -25,7 +25,6 @@ class TestCustomConnector(unittest.TestCase):
                 {"Effect": "Allow", "Action": ["s3:GetObject"], "Resource": ["*"]}
             ],
         }
-        self.model_name = "test_model_name"
         self.api_key = "test_api_key"
         self.connector_body = {
             "name": "Test Model",
@@ -51,7 +50,6 @@ class TestCustomConnector(unittest.TestCase):
             connector_role_inline_policy=self.connector_role_inline_policy,
             required_policy=True,
             required_secret=False,
-            model_name=self.model_name,
             connector_body=self.connector_body,
         )
 
@@ -77,7 +75,6 @@ class TestCustomConnector(unittest.TestCase):
             required_policy=False,
             required_secret=True,
             api_key=self.api_key,
-            model_name=self.model_name,
             connector_body=self.connector_body,
         )
 
@@ -85,9 +82,7 @@ class TestCustomConnector(unittest.TestCase):
         self.mock_helper.create_connector_with_secret.assert_called_once()
         self.assertTrue(result)
 
-    @patch(
-        "builtins.input", side_effect=["test_model", "yes", '{"test": "policy"}', ""]
-    )
+    @patch("builtins.input", side_effect=["yes", '{"test": "policy"}', ""])
     def test_create_connector_with_policy_input(self, mock_input):
         """Test creating custom connector with policy from user input"""
         # Setup
@@ -110,7 +105,7 @@ class TestCustomConnector(unittest.TestCase):
         self.mock_helper.create_connector_with_role.assert_called_once()
         self.assertTrue(result)
 
-    @patch("builtins.input", side_effect=["test_model", "yes", "test-secret"])
+    @patch("builtins.input", side_effect=["yes", "test-secret"])
     def test_create_connector_with_secret_input(self, mock_input):
         """Test creating custom connector with secret configuration from user input"""
         # Setup
@@ -143,7 +138,6 @@ class TestCustomConnector(unittest.TestCase):
         result = open_source_model.create_connector(
             helper=self.mock_helper,
             save_config_method=self.mock_save_config,
-            model_name=self.model_name,
             connector_body=self.connector_body,
         )
 
@@ -161,7 +155,6 @@ class TestCustomConnector(unittest.TestCase):
             required_policy=True,
             required_secret=False,
             connector_role_inline_policy=self.connector_role_inline_policy,
-            model_name=self.model_name,
             connector_body=self.connector_body,
         )
         self.assertFalse(result)
