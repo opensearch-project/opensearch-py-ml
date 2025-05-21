@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Setup &mdash; Opensearch-py-ml 1.1.0 documentation</title>
+  <title>Set up the CLI &mdash; Opensearch-py-ml 1.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
@@ -21,7 +21,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Create Connector" href="create_connector.html" />
+    <link rel="next" title="Create a connector" href="create_connector.html" />
     <link rel="prev" title="Command Line Interface (CLI)" href="index.html" /> 
 </head>
 
@@ -48,21 +48,21 @@
 <li class="toctree-l1"><a class="reference internal" href="../reference/index.html">API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Examples</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Command Line Interface (CLI)</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="index.html#version-information">Version Information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#version-information">Version information</a></li>
 <li class="toctree-l2"><a class="reference internal" href="index.html#installation">Installation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="index.html#verifying-installation">Verifying Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#verifying-installation">Verifying installation</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="index.html#command-reference">Command Reference</a><ul class="current">
-<li class="toctree-l3 current"><a class="current reference internal" href="#">Setup</a><ul>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Set up the CLI</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#description">Description</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#command-syntax">Command Syntax</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#usage-examples">Usage Examples</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#setup-configuration-yaml-file">Setup Configuration YAML file</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#command-syntax">Command syntax</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#usage-examples">Usage examples</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#setup-configuration-yaml-file">Setup configuration YAML file</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#notes">Notes</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="create_connector.html">Create Connector</a></li>
-<li class="toctree-l3"><a class="reference internal" href="register_model.html">Register Model</a></li>
-<li class="toctree-l3"><a class="reference internal" href="predict_model.html">Predict Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="create_connector.html">Create a connector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="register_model.html">Register a model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="predict_model.html">Run a model prediction</a></li>
 </ul>
 </li>
 </ul>
@@ -85,7 +85,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="index.html">Command Line Interface (CLI)</a></li>
-      <li class="breadcrumb-item active">Setup</li>
+      <li class="breadcrumb-item active">Set up the CLI</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/cli/setup.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -95,36 +95,35 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="setup">
-<span id="cli-setup"></span><h1>Setup<a class="headerlink" href="#setup" title="Link to this heading"></a></h1>
+  <section id="set-up-the-cli">
+<span id="cli-setup"></span><h1>Set up the CLI<a class="headerlink" href="#set-up-the-cli" title="Link to this heading"></a></h1>
 <section id="description">
 <h2>Description<a class="headerlink" href="#description" title="Link to this heading"></a></h2>
-<p>The setup command is essential for configuring OpenSearch and AWS credentials (if required) before running any ML operations. This CLI supports two types of services:</p>
-<ol class="arabic simple">
-<li><p>Amazon OpenSearch Service (AOS)</p></li>
+<p>The <cite>setup</cite> command is essential for configuring OpenSearch and AWS credentials (if required) before running any machine learning (ML) operations. The CLI supports the following service types:</p>
+<ul class="simple">
+<li><p>Amazon OpenSearch Service</p></li>
 <li><p>Open-source service (self-managed OpenSearch)</p></li>
-</ol>
-<p>The setup can be initiated in two ways:</p>
-<ol class="arabic simple">
-<li><p>Interactive prompt (for first-time setup)</p></li>
-<li><p>Using a configuration file (for checking configurations or renewing AWS credentials)</p></li>
-</ol>
-<p>After running the setup command, a configuration YAML file will be generated. This file is crucial for subsequent operations, including connector creation.</p>
+</ul>
+<p>You can initiate the setup in the following ways:</p>
+<ul class="simple">
+<li><p>Using an interactive prompt (for first-time setup)</p></li>
+<li><p>Using a configuration file (for verifying configurations or renewing AWS credentials)</p></li>
+</ul>
+<p>After running the <cite>setup</cite> command, a configuration YAML file will be generated. This file is crucial for subsequent operations, including connector creation.</p>
 </section>
 <section id="command-syntax">
-<h2>Command Syntax<a class="headerlink" href="#command-syntax" title="Link to this heading"></a></h2>
+<h2>Command syntax<a class="headerlink" href="#command-syntax" title="Link to this heading"></a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">opensearch-ml</span> <span class="pre">setup</span> <span class="pre">[--path</span> <span class="pre">&lt;value&gt;]</span></code></p>
 <p><strong>Option:</strong></p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">--path</span> <span class="pre">&lt;value&gt;</span></code>: (Optional) Path to an existing setup configuration YAML file</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--path</span> <span class="pre">&lt;value&gt;</span></code>: (Optional) The path to an existing setup configuration YAML file</p></li>
 </ul>
 </section>
 <section id="usage-examples">
-<h2>Usage Examples<a class="headerlink" href="#usage-examples" title="Link to this heading"></a></h2>
-<ul>
-<li><p>First-time setup (interactive):</p>
+<h2>Usage examples<a class="headerlink" href="#usage-examples" title="Link to this heading"></a></h2>
+<p><strong>First-time setup (interactive)</strong></p>
 <blockquote>
-<div><p>Command:</p>
+<div><p>To set up the CLI interactively, run the following command:</p>
 <p><code class="docutils literal notranslate"><span class="pre">opensearch-ml</span> <span class="pre">setup</span></code></p>
 <p>Sample response:</p>
 <div class="highlight-plaintext notranslate"><div class="highlight"><pre><span></span>Starting connector setup...
@@ -164,12 +163,11 @@ Setup complete. You are now ready to use the ML features.
 </pre></div>
 </div>
 </div></blockquote>
-</li>
-<li><p>Setup using an existing configuration file:</p>
+<p><strong>Setup using an existing configuration file</strong></p>
 <blockquote>
-<div><p>Command:</p>
+<div><p>To use an existing configuration file for setup, run the following command:</p>
 <p><code class="docutils literal notranslate"><span class="pre">opensearch-ml</span> <span class="pre">setup</span> <span class="pre">--path</span> <span class="pre">/Documents/cli/setup_config.yml</span></code></p>
-<p>Assume user has setup_config.yml file with this content:</p>
+<p>This example assumes that you have a <cite>setup_config.yml</cite> file at the specified path with the following content:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">service_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">amazon-opensearch-service</span>
 <span class="nt">ssl_check_enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 <span class="nt">opensearch_config</span><span class="p">:</span>
@@ -201,12 +199,11 @@ Setup complete. You are now ready to use the ML features.
 </pre></div>
 </div>
 </div></blockquote>
-</li>
-</ul>
 </section>
 <section id="setup-configuration-yaml-file">
-<h2>Setup Configuration YAML file<a class="headerlink" href="#setup-configuration-yaml-file" title="Link to this heading"></a></h2>
-<p><strong>Template</strong></p>
+<h2>Setup configuration YAML file<a class="headerlink" href="#setup-configuration-yaml-file" title="Link to this heading"></a></h2>
+<p>You can use a setup configuration YAML file to specify your OpenSearch service settings and authentication details needed for the CLI.</p>
+<p><strong>Configuration file template</strong></p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">service_type</span><span class="p">:</span>
 <span class="nt">ssl_check_enabled</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">opensearch_config</span><span class="p">:</span>
@@ -222,7 +219,7 @@ Setup complete. You are now ready to use the ML features.
 <span class="w">    </span><span class="nt">aws_session_token</span><span class="p">:</span>
 </pre></div>
 </div>
-<p><strong>Field Descriptions</strong></p>
+<p><strong>Field descriptions</strong></p>
 <table class="docutils align-default">
 <colgroup>
 <col style="width: 25.0%" />
@@ -286,9 +283,9 @@ Setup complete. You are now ready to use the ML features.
 <section id="notes">
 <h2>Notes<a class="headerlink" href="#notes" title="Link to this heading"></a></h2>
 <ul class="simple">
-<li><p>For Amazon OpenSearch Service, ensure users provide either <code class="docutils literal notranslate"><span class="pre">aws_role_name</span></code> or <code class="docutils literal notranslate"><span class="pre">aws_user_name</span></code>, not both.</p></li>
+<li><p>For Amazon OpenSearch Service, ensure that you provide either the <code class="docutils literal notranslate"><span class="pre">aws_role_name</span></code> or the <code class="docutils literal notranslate"><span class="pre">aws_user_name</span></code>, but not both.</p></li>
 <li><p>The generated configuration file is crucial for subsequent CLI operations. Keep it secure and accessible.</p></li>
-<li><p>If users need to update AWS credentials or change configurations, they can edit the YAML file directly or run the setup command with the <code class="docutils literal notranslate"><span class="pre">--path</span></code> option.</p></li>
+<li><p>To update AWS credentials or change the configuration, edit the YAML file directly or run the setup command specifying the <code class="docutils literal notranslate"><span class="pre">--path</span></code> option.</p></li>
 </ul>
 </section>
 </section>
@@ -298,7 +295,7 @@ Setup complete. You are now ready to use the ML features.
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="index.html" class="btn btn-neutral float-left" title="Command Line Interface (CLI)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="create_connector.html" class="btn btn-neutral float-right" title="Create Connector" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="create_connector.html" class="btn btn-neutral float-right" title="Create a connector" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

@@ -1,15 +1,15 @@
 .. _cli.register_model:
 
-==============
-Register Model
-==============
+================
+Register a model
+================
 
 Description
 ~~~~~~~~~~~
 
-The register model command allows users to register a remote model with OpenSearch. This process associates a model with a specific connector, enabling users to use the model for various ML tasks within the OpenSearch environment.
+Use the `model register` command to register an externally hosted model with OpenSearch. This process associates a model with a specific connector, enabling you to use the model for various machine learning (ML) tasks within the OpenSearch environment.
 
-Command Syntax
+Command syntax
 ~~~~~~~~~~~~~~
 
 ``opensearch-ml model register [--connectorId '<value>'][--name '<value>'][--description '<value>']``
@@ -20,12 +20,12 @@ Command Syntax
 * ``--name '<value>'``: (Optional) The name of the model
 * ``--description '<value>'``: (Optional) A brief description of the model
 
-Usage Examples
+Usage examples
 ~~~~~~~~~~~~~~
 
-* Interactive model registration:
+**Registering a model interactively**
 
-    Command:
+    Use the following command to register a model interactively:
 
     ``opensearch-ml model register``
 
@@ -47,9 +47,9 @@ Usage Examples
 
         Output information saved successfully to /Documents/cli/output.yml
 
-* Direct model registration with all parameters:
+**Registering a model directly**
 
-    Command:
+    To register a model directly, provide all parameters to the following command:
 
     ``opensearch-ml model register --connectorId 'connector123' --name 'Test model' --description 'This is a test model'``
 
@@ -70,7 +70,7 @@ Usage Examples
 Output YAML file
 ~~~~~~~~~~~~~~~~
 
-After successfully register a model, the CLI saves important information about the model in an output YAML file. This file contains details that may be needed for future operations or reference. Here's an example of what the output YAML file might look like:
+After successfully registering a model, the CLI saves important information about the model in an output YAML file. This file contains details that may be needed for future operations or reference. The output YAML file appears as follows:
 
 .. code-block:: yaml
 

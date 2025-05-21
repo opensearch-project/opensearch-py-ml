@@ -1,53 +1,53 @@
 .. _cli.create_connector:
 
-================
-Create Connector
-================
+==================
+Create a connector
+==================
 
 Description
 ~~~~~~~~~~~
 
-The create connector command allows users to create a connector in both self-managed OpenSearch and Amazon OpenSearch Service (AOS). Users can create a connector either interactively or by using a configuration file.
+Use the `connector create` command to add a connector to either a self-managed OpenSearch cluster or Amazon OpenSearch Service. You can create a connector interactively by following prompts or by using a preconfigured YAML file.
 
-For self-managed OpenSearch:
+To create a connector in self-managed OpenSearch, do the following:
 
 * Select from supported connectors and their associated models
-* Provide necessary configuration parameters (e.g., API key)
+* Provide necessary configuration parameters (for example, API key)
 
-For Amazon OpenSearch Service:
-
-* Automatically handles AWS-specific setup including:
+OpenSearch Service automatically handles AWS-specific setup, including the following components:
 
   * IAM role creation and configuration
   * Backend role mapping
   * Secret creation
 
-* Select from supported connectors and their associated models
-* Provide AWS-specific parameters (e.g., AWS region)
+To create a connector in OpenSearch Service, do the following:
 
-The CLI guides users through providing only the essential model-specific information needed for their chosen environment.
+* Select from supported connectors and their associated models
+* Provide AWS-specific parameters (for example, AWS Region)
+
+The CLI guides you through providing only the essential model-specific information needed for your chosen environment.
 
 Prerequisites
 ~~~~~~~~~~~~~
 
-Before creating a connector, ensure users have completed the setup process or have a setup configuration file. 
-See :ref:`setup guide <cli.setup>` for instructions on doing the setup process.
+Before creating a connector, ensure you have completed the setup process or have a setup configuration file. 
+For setup instructions, see :ref:`setup guide <cli.setup>`.
 
-Command Syntax
+Command syntax
 ~~~~~~~~~~~~~~
 
 ``opensearch-ml connector create [--path <value>]``
 
 **Option:**
 
-* ``--path <value>``: (Optional) Path to an existing connector configuration YAML file
+* ``--path <value>``: (Optional) The path to an existing connector configuration YAML file
 
-Usage Examples
+Usage examples
 ~~~~~~~~~~~~~~
 
-* Interactive connector creation:
+**Creating a connector interactively**
 
-    Command:
+    To create a connector interactively, run the following command:
 
     ``opensearch-ml connector create``
 
@@ -106,13 +106,13 @@ Usage Examples
 
         Output information saved successfully to /Documents/cli/output.yml
 
-* Create connector using a configuration file:
+**Creating a connector using a configuration file**
 
-    Command:
+    To create a connector using a configuration file, run the following command:
 
     ``opensearch-ml connector create --path /Documents/cli/connector_config.yml``
 
-    Assume user has connector_config.yml file with this content:
+    This example assumes that you have a `connector_config.yml` file at the specified path with the following content:
 
     .. code-block:: yaml
 
@@ -160,10 +160,12 @@ Usage Examples
 
         Output information saved successfully to /Documents/cli/output.yml
 
-Setup Configuration YAML file
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Connector configuration YAML file
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**Template**
+You can use a connector configuration YAML file to automate the connector creation process. This file contains configuration parameters needed to create and configure the connector through the CLI.
+
+**Configuration file template**
 
 .. code-block:: yaml
 
@@ -187,10 +189,10 @@ Setup Configuration YAML file
     required_policy:
     required_secret:
 
-Note: The order of the fields does not matter. This template will only be used when users choose to create a connector with a configuration file.
+Note: The order of the fields does not matter. This template will only be used when creating a connector using a configuration file.
 
 
-**Field Descriptions**
+**Field descriptions**
 
 .. csv-table::
    :file: connector_config.csv
@@ -200,7 +202,7 @@ Note: The order of the fields does not matter. This template will only be used w
 Output YAML file
 ~~~~~~~~~~~~~~~~
 
-After successfully creating a connector, the CLI saves important information about the connector in an output YAML file. This file contains details that may be needed for future operations or reference. Here's an example of what the output YAML file might look like:
+After successfully creating a connector, the CLI saves important information about the connector in an output YAML file. This file contains details that may be needed for future operations or reference. The output YAML file appears similar to the following:
 
 .. code-block:: yaml
 
@@ -212,21 +214,25 @@ After successfully creating a connector, the CLI saves important information abo
       connector_secret_arn: test-connector-secret-arn
       connector_secret_name: test-secret
 
-Supported Connectors and Models
+Supported connectors and models
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**Amazon OpenSearch Service (AOS)**
+**Amazon OpenSearch Service**
+
+The create connector command supports the following models for OpenSearch Service.
 
 .. csv-table::
    :file: aos_connector.csv
    :widths: 40 60
    :header-rows: 1
 
-**Open-source**
+**Self-managed OpenSearch**
+
+The create connector command supports the following models for self-managed OpenSearch.
 
 .. csv-table::
    :file: opensource_connector.csv
    :widths: 40 60
    :header-rows: 1
 
-Note: Custom connectors and models are supported for all connector types in both AOS and open-source.
+Note: Custom connectors and models are supported for all connector types in both OpenSearch Service and self-managed OpenSearch.

@@ -21,7 +21,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Setup" href="setup.html" />
+    <link rel="next" title="Set up the CLI" href="setup.html" />
     <link rel="prev" title="Demo Notebook for Metrics Correlation Model Testing" href="../examples/demo_metrics_correlation.html" /> 
 </head>
 
@@ -48,14 +48,14 @@
 <li class="toctree-l1"><a class="reference internal" href="../reference/index.html">API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Examples</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Command Line Interface (CLI)</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#version-information">Version Information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-information">Version information</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#verifying-installation">Verifying Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#verifying-installation">Verifying installation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#command-reference">Command Reference</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="setup.html">Setup</a></li>
-<li class="toctree-l3"><a class="reference internal" href="create_connector.html">Create Connector</a></li>
-<li class="toctree-l3"><a class="reference internal" href="register_model.html">Register Model</a></li>
-<li class="toctree-l3"><a class="reference internal" href="predict_model.html">Predict Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="setup.html">Set up the CLI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="create_connector.html">Create a connector</a></li>
+<li class="toctree-l3"><a class="reference internal" href="register_model.html">Register a model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="predict_model.html">Run a model prediction</a></li>
 </ul>
 </li>
 </ul>
@@ -89,21 +89,21 @@
              
   <section id="command-line-interface-cli">
 <span id="cli"></span><h1>Command Line Interface (CLI)<a class="headerlink" href="#command-line-interface-cli" title="Link to this heading"></a></h1>
-<p>Opensearch-py-ml supports a Command Line Interface (CLI) feature designed to streamline and simplify ML operations within the OpenSearch environment. This CLI provides an efficient and user-friendly way to manage various ML tasks, including the creation of connectors, registration of remote models, and execution of predictions.</p>
+<p>The <cite>opensearch-py-ml</cite> client supports a command-line interface (CLI) designed to streamline and simplify ML operations within the OpenSearch environment. This CLI provides an efficient and user-friendly way to manage various ML tasks, including connector creation, remote model registration, and prediciton execution.</p>
 <section id="version-information">
-<h2>Version Information<a class="headerlink" href="#version-information" title="Link to this heading"></a></h2>
-<p>The CLI feature is available from opensearch-py-ml version 1.2.0 and later.</p>
+<h2>Version information<a class="headerlink" href="#version-information" title="Link to this heading"></a></h2>
+<p>CLI is available for <cite>opensearch-py-ml</cite> versions 1.2.0 and later.</p>
 </section>
 <section id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h2>
-<p>To install the CLI feature:</p>
+<p>To install the CLI, run the following command:</p>
 <p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">opensearch-py-ml</span></code></p>
 </section>
 <section id="verifying-installation">
-<h2>Verifying Installation<a class="headerlink" href="#verifying-installation" title="Link to this heading"></a></h2>
-<p>To verify that the CLI has been installed correctly, run:</p>
+<h2>Verifying installation<a class="headerlink" href="#verifying-installation" title="Link to this heading"></a></h2>
+<p>To verify that the CLI has been installed correctly, run the following command:</p>
 <p><code class="docutils literal notranslate"><span class="pre">opensearch-ml</span> <span class="pre">--help</span></code></p>
-<p>Users should see the following output:</p>
+<p>You should see the following output:</p>
 <div class="highlight-plaintext notranslate"><div class="highlight"><pre><span></span>usage: opensearch-ml [-h] command ...
 
 OpenSearch ML CLI
@@ -126,10 +126,10 @@ command
 <p>The OpenSearch ML CLI provides several commands to manage various aspects of the ML workflow:</p>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="setup.html">Setup</a></li>
-<li class="toctree-l1"><a class="reference internal" href="create_connector.html">Create Connector</a></li>
-<li class="toctree-l1"><a class="reference internal" href="register_model.html">Register Model</a></li>
-<li class="toctree-l1"><a class="reference internal" href="predict_model.html">Predict Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="setup.html">Set up the CLI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="create_connector.html">Create a connector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="register_model.html">Register a model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="predict_model.html">Run a model prediction</a></li>
 </ul>
 </div>
 </section>
@@ -140,7 +140,7 @@ command
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="../examples/demo_metrics_correlation.html" class="btn btn-neutral float-left" title="Demo Notebook for Metrics Correlation Model Testing" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="setup.html" class="btn btn-neutral float-right" title="Setup" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="setup.html" class="btn btn-neutral float-right" title="Set up the CLI" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

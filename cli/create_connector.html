@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Create Connector &mdash; Opensearch-py-ml 1.1.0 documentation</title>
+  <title>Create a connector &mdash; Opensearch-py-ml 1.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
@@ -21,8 +21,8 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Register Model" href="register_model.html" />
-    <link rel="prev" title="Setup" href="setup.html" /> 
+    <link rel="next" title="Register a model" href="register_model.html" />
+    <link rel="prev" title="Set up the CLI" href="setup.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -48,23 +48,23 @@
 <li class="toctree-l1"><a class="reference internal" href="../reference/index.html">API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Examples</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Command Line Interface (CLI)</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="index.html#version-information">Version Information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#version-information">Version information</a></li>
 <li class="toctree-l2"><a class="reference internal" href="index.html#installation">Installation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="index.html#verifying-installation">Verifying Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#verifying-installation">Verifying installation</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="index.html#command-reference">Command Reference</a><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="setup.html">Setup</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">Create Connector</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="setup.html">Set up the CLI</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Create a connector</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#description">Description</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#command-syntax">Command Syntax</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#usage-examples">Usage Examples</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#setup-configuration-yaml-file">Setup Configuration YAML file</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#command-syntax">Command syntax</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#usage-examples">Usage examples</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#connector-configuration-yaml-file">Connector configuration YAML file</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#output-yaml-file">Output YAML file</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#supported-connectors-and-models">Supported Connectors and Models</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#supported-connectors-and-models">Supported connectors and models</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="register_model.html">Register Model</a></li>
-<li class="toctree-l3"><a class="reference internal" href="predict_model.html">Predict Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="register_model.html">Register a model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="predict_model.html">Run a model prediction</a></li>
 </ul>
 </li>
 </ul>
@@ -87,7 +87,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="index.html">Command Line Interface (CLI)</a></li>
-      <li class="breadcrumb-item active">Create Connector</li>
+      <li class="breadcrumb-item active">Create a connector</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/cli/create_connector.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -97,49 +97,49 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="create-connector">
-<span id="cli-create-connector"></span><h1>Create Connector<a class="headerlink" href="#create-connector" title="Link to this heading"></a></h1>
+  <section id="create-a-connector">
+<span id="cli-create-connector"></span><h1>Create a connector<a class="headerlink" href="#create-a-connector" title="Link to this heading"></a></h1>
 <section id="description">
 <h2>Description<a class="headerlink" href="#description" title="Link to this heading"></a></h2>
-<p>The create connector command allows users to create a connector in both self-managed OpenSearch and Amazon OpenSearch Service (AOS). Users can create a connector either interactively or by using a configuration file.</p>
-<p>For self-managed OpenSearch:</p>
+<p>Use the <cite>connector create</cite> command to add a connector to either a self-managed OpenSearch cluster or Amazon OpenSearch Service. You can create a connector interactively by following prompts or by using a preconfigured YAML file.</p>
+<p>To create a connector in self-managed OpenSearch, do the following:</p>
 <ul class="simple">
 <li><p>Select from supported connectors and their associated models</p></li>
-<li><p>Provide necessary configuration parameters (e.g., API key)</p></li>
+<li><p>Provide necessary configuration parameters (for example, API key)</p></li>
 </ul>
-<p>For Amazon OpenSearch Service:</p>
-<ul class="simple">
-<li><p>Automatically handles AWS-specific setup including:</p>
-<ul>
+<p>OpenSearch Service automatically handles AWS-specific setup, including the following components:</p>
+<blockquote>
+<div><ul class="simple">
 <li><p>IAM role creation and configuration</p></li>
 <li><p>Backend role mapping</p></li>
 <li><p>Secret creation</p></li>
 </ul>
-</li>
+</div></blockquote>
+<p>To create a connector in OpenSearch Service, do the following:</p>
+<ul class="simple">
 <li><p>Select from supported connectors and their associated models</p></li>
-<li><p>Provide AWS-specific parameters (e.g., AWS region)</p></li>
+<li><p>Provide AWS-specific parameters (for example, AWS Region)</p></li>
 </ul>
-<p>The CLI guides users through providing only the essential model-specific information needed for their chosen environment.</p>
+<p>The CLI guides you through providing only the essential model-specific information needed for your chosen environment.</p>
 </section>
 <section id="prerequisites">
 <h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
-<p>Before creating a connector, ensure users have completed the setup process or have a setup configuration file.
-See <a class="reference internal" href="setup.html#cli-setup"><span class="std std-ref">setup guide</span></a> for instructions on doing the setup process.</p>
+<p>Before creating a connector, ensure you have completed the setup process or have a setup configuration file.
+For setup instructions, see <a class="reference internal" href="setup.html#cli-setup"><span class="std std-ref">setup guide</span></a>.</p>
 </section>
 <section id="command-syntax">
-<h2>Command Syntax<a class="headerlink" href="#command-syntax" title="Link to this heading"></a></h2>
+<h2>Command syntax<a class="headerlink" href="#command-syntax" title="Link to this heading"></a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">opensearch-ml</span> <span class="pre">connector</span> <span class="pre">create</span> <span class="pre">[--path</span> <span class="pre">&lt;value&gt;]</span></code></p>
 <p><strong>Option:</strong></p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">--path</span> <span class="pre">&lt;value&gt;</span></code>: (Optional) Path to an existing connector configuration YAML file</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--path</span> <span class="pre">&lt;value&gt;</span></code>: (Optional) The path to an existing connector configuration YAML file</p></li>
 </ul>
 </section>
 <section id="usage-examples">
-<h2>Usage Examples<a class="headerlink" href="#usage-examples" title="Link to this heading"></a></h2>
-<ul>
-<li><p>Interactive connector creation:</p>
+<h2>Usage examples<a class="headerlink" href="#usage-examples" title="Link to this heading"></a></h2>
+<p><strong>Creating a connector interactively</strong></p>
 <blockquote>
-<div><p>Command:</p>
+<div><p>To create a connector interactively, run the following command:</p>
 <p><code class="docutils literal notranslate"><span class="pre">opensearch-ml</span> <span class="pre">connector</span> <span class="pre">create</span></code></p>
 <p>Sample response:</p>
 <div class="highlight-plaintext notranslate"><div class="highlight"><pre><span></span>Starting connector creation...
@@ -195,12 +195,11 @@ Output information saved successfully to /Documents/cli/output.yml
 </pre></div>
 </div>
 </div></blockquote>
-</li>
-<li><p>Create connector using a configuration file:</p>
+<p><strong>Creating a connector using a configuration file</strong></p>
 <blockquote>
-<div><p>Command:</p>
+<div><p>To create a connector using a configuration file, run the following command:</p>
 <p><code class="docutils literal notranslate"><span class="pre">opensearch-ml</span> <span class="pre">connector</span> <span class="pre">create</span> <span class="pre">--path</span> <span class="pre">/Documents/cli/connector_config.yml</span></code></p>
-<p>Assume user has connector_config.yml file with this content:</p>
+<p>This example assumes that you have a <cite>connector_config.yml</cite> file at the specified path with the following content:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">setup_config_path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/Documents/cli/setup_config.yml</span>
 <span class="nt">connector_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OpenAI</span>
 <span class="nt">model_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Embedding model</span>
@@ -244,12 +243,11 @@ Output information saved successfully to /Documents/cli/output.yml
 </pre></div>
 </div>
 </div></blockquote>
-</li>
-</ul>
 </section>
-<section id="setup-configuration-yaml-file">
-<h2>Setup Configuration YAML file<a class="headerlink" href="#setup-configuration-yaml-file" title="Link to this heading"></a></h2>
-<p><strong>Template</strong></p>
+<section id="connector-configuration-yaml-file">
+<h2>Connector configuration YAML file<a class="headerlink" href="#connector-configuration-yaml-file" title="Link to this heading"></a></h2>
+<p>You can use a connector configuration YAML file to automate the connector creation process. This file contains configuration parameters needed to create and configure the connector through the CLI.</p>
+<p><strong>Configuration file template</strong></p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">setup_config_path</span><span class="p">:</span>
 <span class="nt">connector_name</span><span class="p">:</span>
 <span class="nt">model_name</span><span class="p">:</span>
@@ -271,8 +269,8 @@ Output information saved successfully to /Documents/cli/output.yml
 <span class="nt">required_secret</span><span class="p">:</span>
 </pre></div>
 </div>
-<p>Note: The order of the fields does not matter. This template will only be used when users choose to create a connector with a configuration file.</p>
-<p><strong>Field Descriptions</strong></p>
+<p>Note: The order of the fields does not matter. This template will only be used when creating a connector using a configuration file.</p>
+<p><strong>Field descriptions</strong></p>
 <table class="docutils align-default">
 <colgroup>
 <col style="width: 20.0%" />
@@ -296,7 +294,7 @@ Output information saved successfully to /Documents/cli/output.yml
 </tr>
 <tr class="row-even"><td><p>model_name</p></td>
 <td><p>Name of the model (must match supported list)</p></td>
-<td><p>All models</p></td>
+<td><p>All models except for custom connector in custom model service</p></td>
 </tr>
 <tr class="row-odd"><td><p>connector_role_prefix</p></td>
 <td><p>Connector role prefix</p></td>
@@ -367,7 +365,7 @@ Output information saved successfully to /Documents/cli/output.yml
 </section>
 <section id="output-yaml-file">
 <h2>Output YAML file<a class="headerlink" href="#output-yaml-file" title="Link to this heading"></a></h2>
-<p>After successfully creating a connector, the CLI saves important information about the connector in an output YAML file. This file contains details that may be needed for future operations or reference. Here’s an example of what the output YAML file might look like:</p>
+<p>After successfully creating a connector, the CLI saves important information about the connector in an output YAML file. This file contains details that may be needed for future operations or reference. The output YAML file appears similar to the following:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">connector_create</span><span class="p">:</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">connector_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">connector123</span>
 <span class="w">  </span><span class="nt">connector_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OpenAI embedding model connector</span>
@@ -379,8 +377,9 @@ Output information saved successfully to /Documents/cli/output.yml
 </div>
 </section>
 <section id="supported-connectors-and-models">
-<h2>Supported Connectors and Models<a class="headerlink" href="#supported-connectors-and-models" title="Link to this heading"></a></h2>
-<p><strong>Amazon OpenSearch Service (AOS)</strong></p>
+<h2>Supported connectors and models<a class="headerlink" href="#supported-connectors-and-models" title="Link to this heading"></a></h2>
+<p><strong>Amazon OpenSearch Service</strong></p>
+<p>The create connector command supports the following models for OpenSearch Service.</p>
 <table class="docutils align-default">
 <colgroup>
 <col style="width: 40.0%" />
@@ -442,7 +441,8 @@ Output information saved successfully to /Documents/cli/output.yml
 </tr>
 </tbody>
 </table>
-<p><strong>Open-source</strong></p>
+<p><strong>Self-managed OpenSearch</strong></p>
+<p>The create connector command supports the following models for self-managed OpenSearch.</p>
 <table class="docutils align-default">
 <colgroup>
 <col style="width: 40.0%" />
@@ -525,7 +525,7 @@ Output information saved successfully to /Documents/cli/output.yml
 </tr>
 </tbody>
 </table>
-<p>Note: Custom connectors and models are supported for all connector types in both AOS and open-source.</p>
+<p>Note: Custom connectors and models are supported for all connector types in both OpenSearch Service and self-managed OpenSearch.</p>
 </section>
 </section>
 
@@ -533,8 +533,8 @@ Output information saved successfully to /Documents/cli/output.yml
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="setup.html" class="btn btn-neutral float-left" title="Setup" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="register_model.html" class="btn btn-neutral float-right" title="Register Model" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="setup.html" class="btn btn-neutral float-left" title="Set up the CLI" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="register_model.html" class="btn btn-neutral float-right" title="Register a model" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

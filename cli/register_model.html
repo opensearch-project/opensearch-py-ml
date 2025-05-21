@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Register Model &mdash; Opensearch-py-ml 1.1.0 documentation</title>
+  <title>Register a model &mdash; Opensearch-py-ml 1.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
       <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
@@ -21,8 +21,8 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Predict Model" href="predict_model.html" />
-    <link rel="prev" title="Create Connector" href="create_connector.html" /> 
+    <link rel="next" title="Run a model prediction" href="predict_model.html" />
+    <link rel="prev" title="Create a connector" href="create_connector.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -48,20 +48,20 @@
 <li class="toctree-l1"><a class="reference internal" href="../reference/index.html">API Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Examples</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Command Line Interface (CLI)</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="index.html#version-information">Version Information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#version-information">Version information</a></li>
 <li class="toctree-l2"><a class="reference internal" href="index.html#installation">Installation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="index.html#verifying-installation">Verifying Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#verifying-installation">Verifying installation</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="index.html#command-reference">Command Reference</a><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="setup.html">Setup</a></li>
-<li class="toctree-l3"><a class="reference internal" href="create_connector.html">Create Connector</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">Register Model</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="setup.html">Set up the CLI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="create_connector.html">Create a connector</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Register a model</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#description">Description</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#command-syntax">Command Syntax</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#usage-examples">Usage Examples</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#command-syntax">Command syntax</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#usage-examples">Usage examples</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#output-yaml-file">Output YAML file</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="predict_model.html">Predict Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="predict_model.html">Run a model prediction</a></li>
 </ul>
 </li>
 </ul>
@@ -84,7 +84,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="index.html">Command Line Interface (CLI)</a></li>
-      <li class="breadcrumb-item active">Register Model</li>
+      <li class="breadcrumb-item active">Register a model</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/cli/register_model.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -94,14 +94,14 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="register-model">
-<span id="cli-register-model"></span><h1>Register Model<a class="headerlink" href="#register-model" title="Link to this heading"></a></h1>
+  <section id="register-a-model">
+<span id="cli-register-model"></span><h1>Register a model<a class="headerlink" href="#register-a-model" title="Link to this heading"></a></h1>
 <section id="description">
 <h2>Description<a class="headerlink" href="#description" title="Link to this heading"></a></h2>
-<p>The register model command allows users to register a remote model with OpenSearch. This process associates a model with a specific connector, enabling users to use the model for various ML tasks within the OpenSearch environment.</p>
+<p>Use the <cite>model register</cite> command to register an externally hosted model with OpenSearch. This process associates a model with a specific connector, enabling you to use the model for various machine learning (ML) tasks within the OpenSearch environment.</p>
 </section>
 <section id="command-syntax">
-<h2>Command Syntax<a class="headerlink" href="#command-syntax" title="Link to this heading"></a></h2>
+<h2>Command syntax<a class="headerlink" href="#command-syntax" title="Link to this heading"></a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">opensearch-ml</span> <span class="pre">model</span> <span class="pre">register</span> <span class="pre">[--connectorId</span> <span class="pre">'&lt;value&gt;'][--name</span> <span class="pre">'&lt;value&gt;'][--description</span> <span class="pre">'&lt;value&gt;']</span></code></p>
 <p><strong>Options:</strong></p>
 <ul class="simple">
@@ -111,11 +111,10 @@
 </ul>
 </section>
 <section id="usage-examples">
-<h2>Usage Examples<a class="headerlink" href="#usage-examples" title="Link to this heading"></a></h2>
-<ul>
-<li><p>Interactive model registration:</p>
+<h2>Usage examples<a class="headerlink" href="#usage-examples" title="Link to this heading"></a></h2>
+<p><strong>Registering a model interactively</strong></p>
 <blockquote>
-<div><p>Command:</p>
+<div><p>Use the following command to register a model interactively:</p>
 <p><code class="docutils literal notranslate"><span class="pre">opensearch-ml</span> <span class="pre">model</span> <span class="pre">register</span></code></p>
 <p>Sample response:</p>
 <div class="highlight-plaintext notranslate"><div class="highlight"><pre><span></span>Starting model registration...
@@ -134,10 +133,9 @@ Output information saved successfully to /Documents/cli/output.yml
 </pre></div>
 </div>
 </div></blockquote>
-</li>
-<li><p>Direct model registration with all parameters:</p>
+<p><strong>Registering a model directly</strong></p>
 <blockquote>
-<div><p>Command:</p>
+<div><p>To register a model directly, provide all parameters to the following command:</p>
 <p><code class="docutils literal notranslate"><span class="pre">opensearch-ml</span> <span class="pre">model</span> <span class="pre">register</span> <span class="pre">--connectorId</span> <span class="pre">'connector123'</span> <span class="pre">--name</span> <span class="pre">'Test</span> <span class="pre">model'</span> <span class="pre">--description</span> <span class="pre">'This</span> <span class="pre">is</span> <span class="pre">a</span> <span class="pre">test</span> <span class="pre">model'</span></code></p>
 <p>Sample response:</p>
 <div class="highlight-plaintext notranslate"><div class="highlight"><pre><span></span>Starting model registration...
@@ -152,12 +150,10 @@ Output information saved successfully to /Documents/cli/output.yml
 </pre></div>
 </div>
 </div></blockquote>
-</li>
-</ul>
 </section>
 <section id="output-yaml-file">
 <h2>Output YAML file<a class="headerlink" href="#output-yaml-file" title="Link to this heading"></a></h2>
-<p>After successfully register a model, the CLI saves important information about the model in an output YAML file. This file contains details that may be needed for future operations or reference. Here’s an example of what the output YAML file might look like:</p>
+<p>After successfully registering a model, the CLI saves important information about the model in an output YAML file. This file contains details that may be needed for future operations or reference. The output YAML file appears as follows:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">register_model</span><span class="p">:</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">model_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">model123</span>
 <span class="w">  </span><span class="nt">model_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OpenAI embedding model</span>
@@ -171,8 +167,8 @@ Output information saved successfully to /Documents/cli/output.yml
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="create_connector.html" class="btn btn-neutral float-left" title="Create Connector" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="predict_model.html" class="btn btn-neutral float-right" title="Predict Model" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="create_connector.html" class="btn btn-neutral float-left" title="Create a connector" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="predict_model.html" class="btn btn-neutral float-right" title="Run a model prediction" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
