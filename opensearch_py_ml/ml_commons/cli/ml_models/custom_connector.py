@@ -49,12 +49,12 @@ class CustomConnector(ModelBase):
         Returns:
             bool: True if connector creation successful, False otherwise.
         """
-        # Prompt for connector body
-        connector_body = connector_body or self.input_custom_model_details(
-            external=True
-        )
-
         if self.service_type == self.AMAZON_OPENSEARCH_SERVICE:
+            # Prompt for connector body
+            connector_body = connector_body or self.input_custom_model_details(
+                external=True
+            )
+
             # Create connector role
             connector_role_name, create_connector_role_name = (
                 self.create_connector_role(connector_role_prefix, "")
@@ -127,6 +127,9 @@ class CustomConnector(ModelBase):
                     )
                 )
         else:
+            # Prompt for connector body
+            connector_body = connector_body or self.input_custom_model_details()
+
             # Create connector
             print("\nCreating connector...")
             connector_id = helper.create_connector(
