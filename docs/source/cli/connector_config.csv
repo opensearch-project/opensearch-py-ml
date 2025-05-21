@@ -1,7 +1,7 @@
 Field,Description,Required For
 setup_config_path,Path to setup configuration YAML file,All models
 connector_name,Name of the connector (must match supported list),All models
-model_name,Name of the model (must match supported list),All models
+model_name,Name of the model (must match supported list),All models except for custom connector in custom model service
 connector_role_prefix,Connector role prefix,AOS only
 connector_body,Connector request body (JSON format),"Custom models, custom connector in custom model service"
 aws_access_key,AWS access key,"Bedrock, Bedrock Converse, Comprehend, SageMaker, Textract (open-source only)"
