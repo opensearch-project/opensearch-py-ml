@@ -71,7 +71,7 @@ Usage examples
         7. DeepSeek
         8. OpenAI
         9. Custom connector
-        Enter your choice (1-8): 8
+        Enter your choice (1-9): 8
 
         Please select a model for the connector creation: 
         1. Embedding model
