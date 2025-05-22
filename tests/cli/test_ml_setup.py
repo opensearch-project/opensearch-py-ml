@@ -848,7 +848,7 @@ class TestSetup(unittest.TestCase):
             f"{Fore.YELLOW}Could not load existing configuration. Creating new configuration...{Style.RESET_ALL}"
         )
 
-    @patch("builtins.input", side_effect=["yes", ""])
+    @patch("builtins.input", side_effect=["yes", "new_config.yml"])
     @patch("opensearch_py_ml.ml_commons.cli.ml_setup.logger")
     @patch.object(Setup, "load_config")
     @patch.object(Setup, "setup_configuration")
@@ -867,6 +867,25 @@ class TestSetup(unittest.TestCase):
         mock_load_config.assert_called_once()
         mock_logger.warning.assert_any_call(
             f"{Fore.YELLOW}Could not load existing configuration. Creating new configuration...{Style.RESET_ALL}"
+        )
+
+    @patch("builtins.input", side_effect=["yes", ""])
+    @patch("builtins.print")
+    @patch.object(Setup, "load_config")
+    def test_setup_command_with_empty_config_file_path(
+        self,
+        mock_load_config,
+        mock_print,
+        mock_input,
+    ):
+        """Test setup_command when config file path is empty"""
+        # Execute
+        self.setup_instance.setup_command()
+
+        # Verify
+        mock_load_config.assert_not_called()
+        mock_print.assert_called_with(
+            f"\n{Fore.YELLOW}No configuration file path provided. Exiting.{Style.RESET_ALL}"
         )
 
     @patch("builtins.input", side_effect=["yes", "test_config.yml"])

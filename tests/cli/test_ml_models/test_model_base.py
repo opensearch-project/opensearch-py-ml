@@ -132,10 +132,16 @@ class TestModelBase(unittest.TestCase):
         )
         mock_input.assert_called_once_with("Enter your connector role prefix: ")
 
-    def test_create_secret_name_with_valid_inputs(self):
+    @patch("uuid.uuid1")
+    def test_create_secret_name_with_valid_inputs(self, mock_uuid):
         """Test create_secret_name with all valid inputs provided"""
+        # Mock UUID to return a fixed value
+        mock_uuid_instance = Mock()
+        mock_uuid_instance.configure_mock(__str__=lambda _: "1234")
+        mock_uuid.return_value = mock_uuid_instance
+
         # Test inputs
-        secret_name = "test_secret"
+        secret_name = "test-secret"
         model_name = "test_model"
         api_key = "test_api_key_123"
 
@@ -145,15 +151,21 @@ class TestModelBase(unittest.TestCase):
         )
 
         # Verify
-        expected_secret_name = "test_secret"
+        expected_secret_name = "test-secret-1234"
         expected_secret_value = {"test_model_api_key": "test_api_key_123"}
 
         self.assertEqual(result_secret_name, expected_secret_name)
         self.assertEqual(result_secret_value, expected_secret_value)
 
     @patch("builtins.input", return_value="input_secret")
-    def test_create_secret_name_with_empty_secret_name(self, mock_input):
+    @patch("uuid.uuid1")
+    def test_create_secret_name_with_empty_secret_name(self, mock_uuid, mock_input):
         """Test create_secret_name when secret_name is empty and provided via input"""
+        # Mock UUID to return a fixed value
+        mock_uuid_instance = Mock()
+        mock_uuid_instance.configure_mock(__str__=lambda _: "1234")
+        mock_uuid.return_value = mock_uuid_instance
+
         # Test inputs
         secret_name = ""
         model_name = "test_model"
@@ -165,7 +177,7 @@ class TestModelBase(unittest.TestCase):
         )
 
         # Verify
-        expected_secret_name = "input_secret"
+        expected_secret_name = "input_secret-1234"
         expected_secret_value = {"test_model_api_key": "test_api_key_123"}
 
         self.assertEqual(result_secret_name, expected_secret_name)
@@ -396,7 +408,7 @@ class TestModelBase(unittest.TestCase):
 
         # Verify external-specific messages were printed
         mock_print.assert_any_call(
-            f"{Fore.YELLOW}\nIMPORTANT: When customizing the connector configuration, ensure you include the following in the 'headers' section:"
+            f"{Fore.YELLOW}\nIMPORTANT: When customizing the connector configuration that requires API key authentication, ensure you include the following in the 'headers' section:"
         )
         mock_print.assert_any_call(
             f'{Fore.YELLOW}{Style.BRIGHT}"Authorization": "${{auth}}"'
