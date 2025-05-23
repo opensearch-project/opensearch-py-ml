@@ -1421,13 +1421,15 @@ class SentenceTransformerModel(BaseUploadModel):
                 )
         if additional_config is None:
             additional_config = {}
-        if (
-            "space_type" not in additional_config
-            or additional_config.get("space_type") is None
-        ):
+        if not additional_config.get("space_type"):
             model_name_suffix = self.model_id.split("/")[-1]
-            space_type = self.MODEL_SPACE_TYPE_MAPPING.get(model_name_suffix, "l2")
-            additional_config["space_type"] = space_type
+            if model_name_suffix not in self.MODEL_SPACE_TYPE_MAPPING:
+                print(
+                    f"Default space type cannot be determined for model '{model_name_suffix}'. Consider adding space_type in additional_config."
+                )
+            else:
+                space_type = self.MODEL_SPACE_TYPE_MAPPING[model_name_suffix]
+                additional_config["space_type"] = space_type
 
         model_config_content = {
             "name": model_name,
@@ -1442,9 +1444,12 @@ class SentenceTransformerModel(BaseUploadModel):
                 "pooling_mode": pooling_mode,
                 "normalize_result": normalize_result,
                 "all_config": json.dumps(all_config),
-                "additional_config": additional_config,
             },
         }
+        if additional_config:
+            model_config_content["model_config"][
+                "additional_config"
+            ] = additional_config
 
         if model_zip_file_path is None:
             model_zip_file_path = (
