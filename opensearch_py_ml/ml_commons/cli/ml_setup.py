@@ -569,6 +569,11 @@ class Setup(CLIBase):
                 config_path = input(
                     "Enter the path to your existing configuration file: "
                 ).strip()
+                if config_path == "":
+                    print(
+                        f"\n{Fore.YELLOW}No configuration file path provided. Exiting.{Style.RESET_ALL}"
+                    )
+                    return None
                 return self._process_config(config_path)
             else:
                 print("Let's create a new configuration file.")
