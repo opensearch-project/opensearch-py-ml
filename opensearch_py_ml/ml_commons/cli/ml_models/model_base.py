@@ -103,6 +103,7 @@ class ModelBase:
                 "Enter a name for the AWS Secrets Manager secret: "
             ).strip()
 
+        # Add a unique ID to secret name to prevent permission error
         id = str(uuid.uuid1())[:6]
         secret_name = f"{secret_name}-{id}"
         if model_name:

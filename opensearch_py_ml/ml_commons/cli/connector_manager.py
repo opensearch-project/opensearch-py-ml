@@ -76,7 +76,7 @@ class ConnectorManager(CLIBase):
 
         service_name = "Amazon OpenSearch Service"
         if service_type == self.OPEN_SOURCE:
-            service_name = "open source service"
+            service_name = "OpenSearch"
         print(f"\nPlease select a supported connector to create in {service_name}:")
         for connector in connectors:
             print(f"{connector.id}. {connector.name}")

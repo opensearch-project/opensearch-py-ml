@@ -116,7 +116,7 @@ class TestConnectorManager(unittest.TestCase):
         self.connector_manager.print_available_connectors(ConnectorManager.OPEN_SOURCE)
 
         expected_output = (
-            "\nPlease select a supported connector to create in open source service:\n"
+            "\nPlease select a supported connector to create in OpenSearch:\n"
             "1. Aleph Alpha\n"
             "2. Bedrock\n"
             "Enter your choice (1-2): "
