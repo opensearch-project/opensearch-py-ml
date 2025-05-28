@@ -1,12 +1,10 @@
 import json
 import os
 import logging
-import shutil
 import nltk
 import torch
-import torch.nn.functional as F
-from transformers import AutoTokenizer, AutoModel
-import numpy as np
+import torch.nn.functional
+from transformers import AutoTokenizer
 
 # Configure logging
 logging.basicConfig(
@@ -18,12 +16,11 @@ logger = logging.getLogger(__name__)
 logger.info("inference.py script started")
 
 def ensure_nltk_data():
-    """Ensure NLTK punkt data is available (simple SageMaker version)"""
+    """Ensure NLTK punkt data is available"""
     try:
-        os.makedirs('/root/nltk_data', exist_ok=True)
-        nltk.download('punkt', download_dir='/root/nltk_data', quiet=True)
-        nltk.data.path.append('/root/nltk_data')
-        logger.info("Successfully downloaded NLTK data to /root/nltk_data")
+        nltk.download('punkt')
+        nltk.download('punkt_tab')
+        logger.info("Successfully downloaded NLTK data")
     except Exception as e:
         logger.error(f"Error downloading NLTK data: {str(e)}")
         raise
