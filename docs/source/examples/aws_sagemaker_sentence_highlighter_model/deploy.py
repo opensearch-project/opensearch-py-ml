@@ -7,6 +7,7 @@ import shutil
 import tarfile
 import requests
 import zipfile
+import json
 from datetime import datetime
 from sagemaker.pytorch import PyTorchModel
 from sagemaker.serializers import JSONSerializer
@@ -24,7 +25,7 @@ INSTANCE_TYPE = os.getenv('INSTANCE_TYPE', 'ml.g4dn.xlarge')
 
 def get_endpoint_name():
     """Generate a unique endpoint name with timestamp"""
-    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
     return f"semantic-highlighter-{timestamp}"
 
 def download_and_extract_model(url, extract_dir):
@@ -170,6 +171,44 @@ def create_sagemaker_role():
         logger.error(f"Failed to create SageMaker role: {str(e)}")
         raise
 
+def test_endpoint(endpoint_name):
+    """Test the deployed endpoint with sample data"""
+    try:
+        logger.info("Testing deployed endpoint...")
+        
+        # Create SageMaker runtime client
+        runtime = boto3.client('sagemaker-runtime')
+        
+        # Test data
+        test_data = {
+            "question": "What are the symptoms of heart failure?",
+            "context": "Hypertensive heart disease is the No. 1 cause of death associated with high blood pressure. It refers to a group of disorders that includes heart failure, ischemic heart disease, and left ventricular hypertrophy (excessive thickening of the heart muscle). Heart failure does not mean the heart has stopped working. Rather, it means that the heart's pumping power is weaker than normal or the heart has become less elastic. With heart failure, blood moves through the heart's pumping chambers less effectively, and pressure in the heart increases, making it harder for your heart to deliver oxygen and nutrients to your body. To compensate for reduced pumping power, the heart's chambers respond by stretching to hold more blood. This keeps the blood moving, but over time, the heart muscle walls may weaken and become unable to pump as strongly. As a result, the kidneys often respond by causing the body to retain fluid (water) and sodium. The resulting fluid buildup in the arms, legs, ankles, feet, lungs, or other organs, and is called congestive heart failure. High blood pressure may also bring on heart failure by causing left ventricular hypertrophy, a thickening of the heart muscle that results in less effective muscle relaxation between heart beats. This makes it difficult for the heart to fill with enough blood to supply the body's organs, especially during exercise, leading your body to hold onto fluids and your heart rate to increase. Symptoms of heart failure include: Shortness of breath Swelling in the feet, ankles, or abdomen Difficulty sleeping flat in bed Bloating Irregular pulse Nausea Fatigue Greater need to urinate at night High blood pressure can also cause ischemic heart disease. This means that the heart muscle isn't getting enough blood. Ischemic heart disease is usually the result of atherosclerosis or hardening of the arteries (coronary artery disease), which impedes blood flow to the heart. Symptoms of ischemic heart disease may include: Chest pain which may radiate (travel) to the arms, back, neck, or jaw Chest pain with nausea, sweating, shortness of breath, and dizziness; these associated symptoms may also occur without chest pain Irregular pulse Fatigue and weakness Any of these symptoms of ischemic heart disease warrant immediate medical evaluation. Your doctor will look for certain signs of hypertensive heart disease, including: High blood pressure Enlarged heart and irregular heartbeat Fluid in the lungs or lower extremities Unusual heart sounds Your doctor may perform tests to determine if you have hypertensive heart disease, including an electrocardiogram, echocardiogram, cardiac stress test, chest X-ray, and coronary angiogram. In order to treat hypertensive heart disease, your doctor has to treat the high blood pressure that is causing it. He or she will treat it with a variety of drugs, including diuretics, beta-blockers, ACE inhibitors, calcium channel blockers, angiotensin receptor blockers, and vasodilators. In addition, your doctor may advise you to make changes to your lifestyle, including: Diet: If heart failure is present, you should lower your daily intake of sodium to 1,500 mg or 2 g or less per day, eat foods high in fiber and potassium, limit total daily calories to lose weight if necessary, and limit intake of foods that contain refined sugar, trans fats, and cholesterol. Monitoring your weight: This involves daily recording of weight, increasing your activity level (as recommended by your doctor), resting between activities more often, and planning your activities. Avoiding tobacco products and alcohol Regular medical checkups: During follow-up visits, your doctor will make sure you are staying healthy and that your heart disease is not getting worse."
+        }
+        
+        logger.info("Sending test request to endpoint...")
+        logger.info(f"Test question: {test_data['question']}")
+        
+        # Make prediction
+        response = runtime.invoke_endpoint(
+            EndpointName=endpoint_name,
+            ContentType='application/json',
+            Body=json.dumps(test_data)
+        )
+        
+        # Parse response
+        result = json.loads(response['Body'].read().decode())
+        
+        logger.info("Test successful!")
+        logger.info("Test results:")
+        logger.info(json.dumps(result, indent=2))
+            
+        return True
+        
+    except Exception as e:
+        logger.error(f"Test failed: {str(e)}")
+        logger.error("This indicates there may be an issue with the deployment")
+        return False
+
 def deploy_model():
     try:
         # Prepare model package first
@@ -233,6 +272,19 @@ def deploy_model():
             logger.info(f"Endpoint deployed successfully in {end_time - start_time:.2f} seconds")
             logger.info(f"Endpoint name: {endpoint_name}")
             
+            # Test the deployed endpoint
+            logger.info("=" * 60)
+            logger.info("TESTING DEPLOYED ENDPOINT")
+            logger.info("=" * 60)
+            
+            test_success = test_endpoint(endpoint_name)
+            
+            if test_success:
+                logger.info("Deployment and testing completed successfully!")
+                logger.info(f"Your endpoint '{endpoint_name}' is ready to use.")
+            else:
+                logger.warning("Deployment completed but testing failed. Check CloudWatch logs for details.")
+
             return predictor
         except Exception as e:
             logger.error(f"Deployment failed with error: {str(e)}")

@@ -1,10 +1,11 @@
 import json
 import os
 import logging
+import shutil
 import nltk
 import torch
 import torch.nn.functional as F
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
+from transformers import AutoTokenizer, AutoModel
 import numpy as np
 
 # Configure logging
@@ -14,156 +15,186 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+logger.info("inference.py script started")
+
 def ensure_nltk_data():
-    """Ensure NLTK data (punkt) is available for sentence tokenization."""
+    """Ensure NLTK punkt data is available (simple SageMaker version)"""
     try:
-        nltk.data.find('tokenizers/punkt')
-        logger.info("NLTK punkt tokenizer data found.")
-    except LookupError:
-        logger.info("NLTK punkt data not found. Downloading...")
-        # When running on SageMaker, /tmp/ is a writable directory.
-        nltk_data_path = '/tmp/nltk_data'
-        if not os.path.exists(nltk_data_path):
-            os.makedirs(nltk_data_path)
-        nltk.download('punkt', download_dir=nltk_data_path, quiet=True)
-        nltk.data.path.append(nltk_data_path)
-        logger.info(f"NLTK punkt data downloaded and added to path: {nltk_data_path}")
+        os.makedirs('/root/nltk_data', exist_ok=True)
+        nltk.download('punkt', download_dir='/root/nltk_data', quiet=True)
+        nltk.data.path.append('/root/nltk_data')
+        logger.info("Successfully downloaded NLTK data to /root/nltk_data")
+    except Exception as e:
+        logger.error(f"Error downloading NLTK data: {str(e)}")
+        raise
+
+# Ensure NLTK data is available at startup
+ensure_nltk_data()
 
 def model_fn(model_dir):
-    """
-    Load the model for inference.
-    
-    Args:
-        model_dir: Directory containing model artifacts
-    """
-    logger.info("Loading model...")
-    
-    # Load model and tokenizer
-    model_path = os.path.join(model_dir, "model")
-    tokenizer = AutoTokenizer.from_pretrained(model_path)
-    model = AutoModelForSequenceClassification.from_pretrained(model_path)
-    
-    # Move model to GPU if available
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = model.to(device)
-    
-    return {"model": model, "tokenizer": tokenizer}
+    """Load the model for inference"""
+    try:
+        # Log environment information
+        logger.info("Environment Information:")
+        logger.info(f"PyTorch Version: {torch.__version__}")
+        logger.info(f"CUDA Available: {torch.cuda.is_available()}")
+        if torch.cuda.is_available():
+            logger.info(f"CUDA Version: {torch.version.cuda}")
+            logger.info(f"Current CUDA Device: {torch.cuda.current_device()}")
+            logger.info(f"CUDA Device Name: {torch.cuda.get_device_name()}")
+        
+        # Load model file
+        model_path = os.path.join(model_dir, "opensearch-semantic-highlighter-v1.pt")
+        logger.info(f"Loading model from: {model_path}")
+        if not os.path.exists(model_path):
+            raise FileNotFoundError(f"Model file not found at {model_path}")
+        
+        # Load the model
+        model = torch.jit.load(model_path)
+        logger.info("Model loaded successfully")
+        model.eval()
+        
+        return model
+        
+    except Exception as e:
+        logger.error(f"Error loading model: {str(e)}")
+        raise
 
 def input_fn(request_body, request_content_type):
-    """
-    Deserialize and prepare the prediction input.
-    
-    Args:
-        request_body: The request body
-        request_content_type: The content type of the request
-    """
-    if request_content_type == "application/json":
-        input_data = json.loads(request_body)
-        return input_data
-    else:
+    """Deserialize and prepare the prediction input"""
+    try:
+        if request_content_type == 'application/json':
+            input_data = json.loads(request_body)
+            return input_data
         raise ValueError(f"Unsupported content type: {request_content_type}")
+    except Exception as e:
+        logger.error(f"Error processing input: {str(e)}", exc_info=True)
+        raise
 
-def predict_fn(input_data, model_dict):
-    """
-    Apply model to the input data.
-    
-    Args:
-        input_data: The input data
-        model_dict: Dictionary containing model and tokenizer
-    """
-    model = model_dict["model"]
-    tokenizer = model_dict["tokenizer"]
-    
-    # Prepare inputs
-    text = input_data["text"]
-    question = input_data.get("question", "")
-    
-    # Tokenize
-    inputs = tokenizer(
-        text,
-        question,
-        return_tensors="pt",
-        truncation=True,
-        max_length=512,
-        padding=True
-    )
-    
-    # Move inputs to same device as model
-    device = next(model.parameters()).device
-    inputs = {k: v.to(device) for k, v in inputs.items()}
-    
-    # Get predictions
-    with torch.no_grad():
-        outputs = model(**inputs)
-        scores = torch.sigmoid(outputs.logits)
-    
-    # Convert to list for JSON serialization
-    scores = scores.cpu().numpy().tolist()
-    
-    return {"scores": scores}
+def predict_fn(input_data, model):
+    """Apply model to the input data"""
+    try:
+        # Get input data
+        question = input_data['question']
+        context = input_data['context']
+        
+        # Step 1: Split context into sentences and assign sentence IDs
+        sent_list = nltk.sent_tokenize(context)
+        
+        # Store original sentence positions
+        sentence_positions = []
+        current_pos = 0
+        for sent in sent_list:
+            start_pos = context.find(sent, current_pos)
+            if start_pos == -1:  # If not found, use current position
+                start_pos = current_pos
+            end_pos = start_pos + len(sent)
+            sentence_positions.append((start_pos, end_pos))
+            current_pos = end_pos
+        
+        word_level_sentence_ids = []
+        for i, sent in enumerate(sent_list):
+            sent_words = sent.split(' ')
+            word_level_sentence_ids.extend([i] * len(sent_words))
+        
+        # Step 2: Tokenize question and context
+        tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
+        question_words = question.split(' ')
+        context_words = context.split(' ')
+        
+        tokenized_examples = tokenizer(
+            question_words,
+            context_words,
+            truncation="only_second",
+            max_length=512,
+            stride=128,
+            return_overflowing_tokens=True,
+            padding=False,
+            is_split_into_words=True,
+        )
+        
+        # Step 3: Map word-level sentence IDs to token-level sentence IDs
+        sample_mapping = tokenized_examples.pop("overflow_to_sample_mapping")
+        n_chunks = len(sample_mapping)
+        sentence_ids = []
+        
+        for i in range(n_chunks):
+            logger.info(f"Processing chunk {i+1}/{n_chunks}")
+            # Find where the context starts
+            sequence_ids = tokenized_examples.sequence_ids(i)
+            token_start_index = 0
+            while sequence_ids[token_start_index] != 1:
+                token_start_index += 1
+            chunk_sentences_ids = [-100] * token_start_index
+            
+            # Map word-level IDs to token-level IDs
+            word_ids = tokenized_examples.word_ids(i)
+            for word_idx in word_ids[token_start_index:]:
+                if word_idx is not None:
+                    chunk_sentences_ids.append(word_level_sentence_ids[word_idx])
+                else:
+                    chunk_sentences_ids.append(-100)
+            
+            sentence_ids += [chunk_sentences_ids]
+        
+        tokenized_examples['sentence_ids'] = sentence_ids
+        
+        # Step 4: Run through model and get output
+        highlight_sentences = []
+        for i in range(n_chunks):
+            input_ids = torch.LongTensor([tokenized_examples['input_ids'][i]])
+            attention_mask = torch.LongTensor([tokenized_examples['attention_mask'][i]])
+            token_type_ids = torch.LongTensor([tokenized_examples['token_type_ids'][i]])
+            sentence_ids = torch.LongTensor([tokenized_examples['sentence_ids'][i]])
+            
+            with torch.no_grad():
+                output = model(input_ids, attention_mask, token_type_ids, sentence_ids)
+            
+            for x in output:
+                highlight_sentences.extend(x.tolist())
+        
+        
+        # Step 5: Format output with positions
+        highlighted_sentences = []
+        for h in highlight_sentences:
+            highlight_words = [c for c, s in zip(context_words, word_level_sentence_ids) if s == h]
+            sentence = ' '.join(highlight_words)
+            start_pos, end_pos = sentence_positions[h]
+            highlighted_sentences.append({
+                'text': sentence,
+                'start': start_pos,
+                'end': end_pos,
+                'position': h
+            })
+
+        return highlighted_sentences
+        
+    except Exception as e:
+        logger.error(f"Error in prediction: {str(e)}", exc_info=True)
+        raise
 
 def output_fn(prediction_output, response_content_type):
-    """
-    Serialize and prepare the prediction output.
-    
-    Args:
-        prediction_output: The prediction output
-        response_content_type: The content type of the response
-    """
-    if response_content_type == "application/json":
-        return json.dumps(prediction_output)
-    else:
-        raise ValueError(f"Unsupported content type: {response_content_type}")
-
-# Example for local testing (not used by SageMaker directly but helpful for dev)
-if __name__ == '__main__':
-    # Create a dummy model_dir with a dummy model for local testing structure
-    if not os.path.exists("dummy_model_dir/code"):
-        os.makedirs("dummy_model_dir/code")
-    # Create a minimal dummy TorchScript model if one doesn't exist
-    dummy_model_file = "dummy_model_dir/opensearch-semantic-highlighter-v1.pt"
-    if not os.path.exists(dummy_model_file):
-        class DummyModel(torch.nn.Module):
-            def __init__(self):
-                super(DummyModel, self).__init__()
-                self.linear = torch.nn.Linear(10, 1) # Dummy layer
-            def forward(self, input_ids, attention_mask, token_type_ids, sentence_ids):
-                # This dummy model needs to return something plausible, e.g., an empty list or a fixed index
-                # For testing, let's say it highlights the first sentence index found (0)
-                # This is highly dependent on what your actual model returns
-                # and how `sentence_ids` is structured and used.
-                logger.info("DummyModel forward called")
-                return torch.tensor([0]) # Example: highlight sentence 0
-        scripted_model = torch.jit.script(DummyModel())
-        torch.jit.save(scripted_model, dummy_model_file)
-        logger.info(f"Created dummy TorchScript model at {dummy_model_file}")
-
+    """Serialize and prepare the prediction output"""
     try:
-        logger.info("--- Local Test: Loading Model ---")
-        model_artifacts_local = model_fn("dummy_model_dir")
-        logger.info("Model loaded locally.")
-
-        logger.info("--- Local Test: Input Processing ---")
-        sample_request_body = json.dumps({
-            "question": "What is OpenSearch?",
-            "context": "OpenSearch is a community-driven, open source search and analytics suite. It consists of a search engine daemon, OpenSearch, and a visualization and user interface, OpenSearch Dashboards."
-        })
-        input_data_local = input_fn(sample_request_body, 'application/json')
-        logger.info(f"Input processed locally: {input_data_local}")
-
-        logger.info("--- Local Test: Prediction ---")
-        prediction_local = predict_fn(input_data_local, model_artifacts_local)
-        logger.info(f"Prediction result locally: {prediction_local}")
-
-        logger.info("--- Local Test: Output Formatting ---")
-        output_json_local = output_fn(prediction_local, 'application/json')
-        logger.info(f"Formatted output locally: {output_json_local}")
-        print("\nFinal Local Test Output JSON:\n", output_json_local)
-
+        if response_content_type == 'application/json':
+            # Format the output in the desired structure
+            formatted_output = {
+                "highlights": []
+            }
+            
+            # Add each highlighted sentence to the output
+            for sentence in prediction_output:
+                highlight = {
+                    "start": sentence['start'],
+                    "end": sentence['end'],
+                    "text": sentence['text'],
+                    "position": sentence['position']
+                }
+                formatted_output["highlights"].append(highlight)
+            
+            response = json.dumps(formatted_output)
+            return response
+        raise ValueError(f"Unsupported content type: {response_content_type}")
     except Exception as e:
-        logger.error(f"Local test failed: {e}", exc_info=True)
-    finally:
-        # Clean up dummy model directory
-        if os.path.exists("dummy_model_dir"):
-            shutil.rmtree("dummy_model_dir")
-            logger.info("Cleaned up dummy_model_dir.")
+        logger.error(f"Error preparing output: {str(e)}", exc_info=True)
+        raise
