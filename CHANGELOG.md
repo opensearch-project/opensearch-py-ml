@@ -58,6 +58,7 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Bump pandas from 1.5.3 to the latest stable version by @yerzhaisang ([#422](https://github.com/opensearch-project/opensearch-py-ml/pull/422))
 - Upgrade mypy, sphinx, sphinx-rtd-theme, and multiple GitHub Actions (setup-python, backport, codecov-action, create-pull-request, get-pr-commits) by @yerzhaisang([#437](https://github.com/opensearch-project/opensearch-py-ml/pull/437))
 - Increment version to 1.2.0 and update maintainer list in _version.py by @nathaliellenaa([#516](https://github.com/opensearch-project/opensearch-py-ml/pull/516))
+- Update pretrained_models_all_versions.json (2025-05-29 15:51:56) by @dhrubo-os ([#520](https://github.com/opensearch-project/opensearch-py-ml/pull/520))
 
 ### Fixed
 - Fix the wrong final zip file name in model_uploader workflow, now will name it by the upload_prefix alse.([#413](https://github.com/opensearch-project/opensearch-py-ml/pull/413/files))
