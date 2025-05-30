@@ -23,3 +23,5 @@ The following table shows sentence transformer model upload history.
 |2023-10-18 18:06:15|@dhrubo-os|`sentence-transformers/paraphrase-mpnet-base-v2`|1.0.0|TORCH_SCRIPT|N/A|N/A|6568285400|
 |2024-08-12 11:07:09|@dhrubo-os|`opensearch-project/opensearch-neural-sparse-encoding-doc-v2-mini`|1.0.0|TORCH_SCRIPT|N/A|N/A|10355999630|
 |2024-08-12 11:41:58|@dhrubo-os|`opensearch-project/opensearch-neural-sparse-encoding-v2-distill`|1.0.0|TORCH_SCRIPT|N/A|N/A|10357363209|
+|2025-05-30 09:59:03|@nathaliellenaa|`sentence-transformers/all-MiniLM-L6-v2`|1.0.2|ONNX|384|N/A|15351603020|
+|2025-05-30 09:59:03|@nathaliellenaa|`sentence-transformers/all-MiniLM-L6-v2`|1.0.2|TORCH_SCRIPT|384|N/A|15351603020|
