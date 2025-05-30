@@ -25,5 +25,7 @@ The following table shows sentence transformer model upload history.
 |2024-08-12 11:41:58|@dhrubo-os|`opensearch-project/opensearch-neural-sparse-encoding-v2-distill`|1.0.0|TORCH_SCRIPT|N/A|N/A|10357363209|
 |2025-05-30 09:59:03|@nathaliellenaa|`sentence-transformers/all-MiniLM-L6-v2`|1.0.2|ONNX|384|N/A|15351603020|
 |2025-05-30 09:59:03|@nathaliellenaa|`sentence-transformers/all-MiniLM-L6-v2`|1.0.2|TORCH_SCRIPT|384|N/A|15351603020|
+|2025-05-30 15:25:54|@nathaliellenaa|`sentence-transformers/all-MiniLM-L12-v2`|1.0.2|ONNX|384|N/A|15356713966|
+|2025-05-30 15:25:54|@nathaliellenaa|`sentence-transformers/all-MiniLM-L12-v2`|1.0.2|TORCH_SCRIPT|384|N/A|15356713966|
 |2025-05-30 15:55:55|@nathaliellenaa|`sentence-transformers/multi-qa-MiniLM-L6-cos-v1`|1.0.2|ONNX|384|N/A|15357100839|
 |2025-05-30 15:55:55|@nathaliellenaa|`sentence-transformers/multi-qa-MiniLM-L6-cos-v1`|1.0.2|TORCH_SCRIPT|384|N/A|15357100839|
