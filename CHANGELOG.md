@@ -60,6 +60,7 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Increment version to 1.2.0 and update maintainer list in _version.py by @nathaliellenaa([#516](https://github.com/opensearch-project/opensearch-py-ml/pull/516))
 - Update model upload history -  sentence-transformers/all-MiniLM-L6-v2 (v.1.0.2)(BOTH) by @nathaliellenaa ([#523](https://github.com/opensearch-project/opensearch-py-ml/pull/523))
 - Update model upload history -  sentence-transformers/all-MiniLM-L12-v2 (v.1.0.2)(BOTH) by @nathaliellenaa ([#526](https://github.com/opensearch-project/opensearch-py-ml/pull/526))
+- Update model upload history -  sentence-transformers/multi-qa-MiniLM-L6-cos-v1 (v.1.0.2)(BOTH) by @nathaliellenaa ([#528](https://github.com/opensearch-project/opensearch-py-ml/pull/528))
 
 ### Fixed
 - Fix the wrong final zip file name in model_uploader workflow, now will name it by the upload_prefix alse.([#413](https://github.com/opensearch-project/opensearch-py-ml/pull/413/files))
