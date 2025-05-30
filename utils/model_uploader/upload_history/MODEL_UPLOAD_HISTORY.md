@@ -29,3 +29,5 @@ The following table shows sentence transformer model upload history.
 |2025-05-30 15:25:54|@nathaliellenaa|`sentence-transformers/all-MiniLM-L12-v2`|1.0.2|TORCH_SCRIPT|384|N/A|15356713966|
 |2025-05-30 15:55:55|@nathaliellenaa|`sentence-transformers/multi-qa-MiniLM-L6-cos-v1`|1.0.2|ONNX|384|N/A|15357100839|
 |2025-05-30 15:55:55|@nathaliellenaa|`sentence-transformers/multi-qa-MiniLM-L6-cos-v1`|1.0.2|TORCH_SCRIPT|384|N/A|15357100839|
+|2025-05-30 16:53:08|@nathaliellenaa|`sentence-transformers/paraphrase-MiniLM-L3-v2`|1.0.2|ONNX|384|N/A|15357388760|
+|2025-05-30 16:53:08|@nathaliellenaa|`sentence-transformers/paraphrase-MiniLM-L3-v2`|1.0.2|TORCH_SCRIPT|384|N/A|15357388760|
