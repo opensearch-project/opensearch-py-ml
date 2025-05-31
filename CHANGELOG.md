@@ -23,6 +23,7 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Fix jenkins token in model_listing_uploader.yml CI ([#505](https://github.com/opensearch-project/opensearch-py-ml/pull/505))
 - Add documentation for CLI feature by @nathaliellenaa in ([#476](https://github.com/opensearch-project/opensearch-py-ml/pull/476))
 - Add space type mapping for sentence transformer models by @nathaliellenaa in ([#512](https://github.com/opensearch-project/opensearch-py-ml/pull/512))
+- Add example script for deploying semantic highlighter model on aws sagemaker. ([#513](https://github.com/opensearch-project/opensearch-py-ml/pull/513))
 
 ### Changed
 - Add a parameter for customize the upload folder prefix ([#398](https://github.com/opensearch-project/opensearch-py-ml/pull/398))
