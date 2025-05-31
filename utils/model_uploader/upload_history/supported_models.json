@@ -168,5 +168,25 @@
         "Embedding Dimension": "768",
         "Pooling Mode": "N/A",
         "Workflow Run ID": "15357013638"
+    },
+    {
+        "Model Uploader": "@nathaliellenaa",
+        "Upload Time": "2025-05-30 20:14:13",
+        "Model ID": "sentence-transformers/all-distilroberta-v1",
+        "Model Version": "1.0.2",
+        "Model Format": "ONNX",
+        "Embedding Dimension": "768",
+        "Pooling Mode": "N/A",
+        "Workflow Run ID": "15359494756"
+    },
+    {
+        "Model Uploader": "@nathaliellenaa",
+        "Upload Time": "2025-05-30 20:14:13",
+        "Model ID": "sentence-transformers/all-distilroberta-v1",
+        "Model Version": "1.0.2",
+        "Model Format": "TORCH_SCRIPT",
+        "Embedding Dimension": "768",
+        "Pooling Mode": "N/A",
+        "Workflow Run ID": "15359494756"
     }
 ]
