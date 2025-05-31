@@ -33,3 +33,5 @@ The following table shows sentence transformer model upload history.
 |2025-05-30 16:53:08|@nathaliellenaa|`sentence-transformers/paraphrase-MiniLM-L3-v2`|1.0.2|TORCH_SCRIPT|384|N/A|15357388760|
 |2025-05-30 17:01:04|@nathaliellenaa|`sentence-transformers/msmarco-distilbert-base-tas-b`|1.0.3|ONNX|768|N/A|15357013638|
 |2025-05-30 17:01:04|@nathaliellenaa|`sentence-transformers/msmarco-distilbert-base-tas-b`|1.0.3|TORCH_SCRIPT|768|N/A|15357013638|
+|2025-05-30 20:14:13|@nathaliellenaa|`sentence-transformers/all-distilroberta-v1`|1.0.2|ONNX|768|N/A|15359494756|
+|2025-05-30 20:14:13|@nathaliellenaa|`sentence-transformers/all-distilroberta-v1`|1.0.2|TORCH_SCRIPT|768|N/A|15359494756|
