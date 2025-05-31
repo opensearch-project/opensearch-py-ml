@@ -148,5 +148,25 @@
         "Embedding Dimension": "384",
         "Pooling Mode": "N/A",
         "Workflow Run ID": "15357388760"
+    },
+    {
+        "Model Uploader": "@nathaliellenaa",
+        "Upload Time": "2025-05-30 17:01:04",
+        "Model ID": "sentence-transformers/msmarco-distilbert-base-tas-b",
+        "Model Version": "1.0.3",
+        "Model Format": "ONNX",
+        "Embedding Dimension": "768",
+        "Pooling Mode": "N/A",
+        "Workflow Run ID": "15357013638"
+    },
+    {
+        "Model Uploader": "@nathaliellenaa",
+        "Upload Time": "2025-05-30 17:01:04",
+        "Model ID": "sentence-transformers/msmarco-distilbert-base-tas-b",
+        "Model Version": "1.0.3",
+        "Model Format": "TORCH_SCRIPT",
+        "Embedding Dimension": "768",
+        "Pooling Mode": "N/A",
+        "Workflow Run ID": "15357013638"
     }
 ]
