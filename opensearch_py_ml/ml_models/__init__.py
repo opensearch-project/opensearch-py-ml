@@ -6,6 +6,7 @@
 # GitHub history for details.
 
 from .metrics_correlation.mcorr import MCorr
+from .semantic_highlighter_model import SemanticHighlighterModel
 from .sentencetransformermodel import SentenceTransformerModel
 from .sparse_encoding_model import SparseEncodingModel
 from .sparse_tokenize_model import SparseTokenizeModel
@@ -15,4 +16,5 @@ __all__ = [
     "MCorr",
     "SparseEncodingModel",
     "SparseTokenizeModel",
+    "SemanticHighlighterModel",
 ]

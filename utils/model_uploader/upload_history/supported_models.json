@@ -51,6 +51,16 @@
     },
     {
         "Model Uploader": "@dhrubo-os",
+        "Upload Time": "2024-08-09 17:51:39",
+        "Model ID": "opensearch-project/opensearch-neural-sparse-encoding-doc-v2-distill",
+        "Model Version": "1.0.0",
+        "Model Format": "TORCH_SCRIPT",
+        "Embedding Dimension": "N/A",
+        "Pooling Mode": "N/A",
+        "Workflow Run ID": "10327490564"
+    },
+    {
+        "Model Uploader": "@dhrubo-os",
         "Upload Time": "2024-08-12 11:07:09",
         "Model ID": "opensearch-project/opensearch-neural-sparse-encoding-doc-v2-mini",
         "Model Version": "1.0.0",
@@ -71,6 +81,16 @@
     },
     {
         "Model Uploader": "@dhrubo-os",
+        "Upload Time": "2025-04-25 18:19:08",
+        "Model ID": "opensearch-project/opensearch-neural-sparse-encoding-doc-v3-distill",
+        "Model Version": "1.0.0",
+        "Model Format": "TORCH_SCRIPT",
+        "Embedding Dimension": "N/A",
+        "Pooling Mode": "N/A",
+        "Workflow Run ID": "14676042870"
+    },
+    {
+        "Model Uploader": "@dhrubo-os",
         "Upload Time": "2025-04-25 18:20:57",
         "Model ID": "opensearch-project/opensearch-neural-sparse-encoding-multilingual-v1",
         "Model Version": "1.0.0",
@@ -78,5 +98,215 @@
         "Embedding Dimension": "N/A",
         "Pooling Mode": "N/A",
         "Workflow Run ID": "14676058951"
+    },
+    {
+        "Model Uploader": "@nathaliellenaa",
+        "Upload Time": "2025-05-30 09:59:03",
+        "Model ID": "sentence-transformers/all-MiniLM-L6-v2",
+        "Model Version": "1.0.2",
+        "Model Format": "ONNX",
+        "Embedding Dimension": "384",
+        "Pooling Mode": "N/A",
+        "Workflow Run ID": "15351603020"
+    },
+    {
+        "Model Uploader": "@nathaliellenaa",
+        "Upload Time": "2025-05-30 09:59:03",
+        "Model ID": "sentence-transformers/all-MiniLM-L6-v2",
+        "Model Version": "1.0.2",
+        "Model Format": "TORCH_SCRIPT",
+        "Embedding Dimension": "384",
+        "Pooling Mode": "N/A",
+        "Workflow Run ID": "15351603020"
+    },
+    {
+        "Model Uploader": "@nathaliellenaa",
+        "Upload Time": "2025-05-30 15:25:54",
+        "Model ID": "sentence-transformers/all-MiniLM-L12-v2",
+        "Model Version": "1.0.2",
+        "Model Format": "ONNX",
+        "Embedding Dimension": "384",
+        "Pooling Mode": "N/A",
+        "Workflow Run ID": "15356713966"
+    },
+    {
+        "Model Uploader": "@nathaliellenaa",
+        "Upload Time": "2025-05-30 15:25:54",
+        "Model ID": "sentence-transformers/all-MiniLM-L12-v2",
+        "Model Version": "1.0.2",
+        "Model Format": "TORCH_SCRIPT",
+        "Embedding Dimension": "384",
+        "Pooling Mode": "N/A",
+        "Workflow Run ID": "15356713966"
+    },
+    {
+        "Model Uploader": "@nathaliellenaa",
+        "Upload Time": "2025-05-30 15:55:55",
+        "Model ID": "sentence-transformers/multi-qa-MiniLM-L6-cos-v1",
+        "Model Version": "1.0.2",
+        "Model Format": "ONNX",
+        "Embedding Dimension": "384",
+        "Pooling Mode": "N/A",
+        "Workflow Run ID": "15357100839"
+    },
+    {
+        "Model Uploader": "@nathaliellenaa",
+        "Upload Time": "2025-05-30 15:55:55",
+        "Model ID": "sentence-transformers/multi-qa-MiniLM-L6-cos-v1",
+        "Model Version": "1.0.2",
+        "Model Format": "TORCH_SCRIPT",
+        "Embedding Dimension": "384",
+        "Pooling Mode": "N/A",
+        "Workflow Run ID": "15357100839"
+    },
+    {
+        "Model Uploader": "@nathaliellenaa",
+        "Upload Time": "2025-05-30 16:53:08",
+        "Model ID": "sentence-transformers/paraphrase-MiniLM-L3-v2",
+        "Model Version": "1.0.2",
+        "Model Format": "ONNX",
+        "Embedding Dimension": "384",
+        "Pooling Mode": "N/A",
+        "Workflow Run ID": "15357388760"
+    },
+    {
+        "Model Uploader": "@nathaliellenaa",
+        "Upload Time": "2025-05-30 16:53:08",
+        "Model ID": "sentence-transformers/paraphrase-MiniLM-L3-v2",
+        "Model Version": "1.0.2",
+        "Model Format": "TORCH_SCRIPT",
+        "Embedding Dimension": "384",
+        "Pooling Mode": "N/A",
+        "Workflow Run ID": "15357388760"
+    },
+    {
+        "Model Uploader": "@nathaliellenaa",
+        "Upload Time": "2025-05-30 17:01:04",
+        "Model ID": "sentence-transformers/msmarco-distilbert-base-tas-b",
+        "Model Version": "1.0.3",
+        "Model Format": "ONNX",
+        "Embedding Dimension": "768",
+        "Pooling Mode": "N/A",
+        "Workflow Run ID": "15357013638"
+    },
+    {
+        "Model Uploader": "@nathaliellenaa",
+        "Upload Time": "2025-05-30 17:01:04",
+        "Model ID": "sentence-transformers/msmarco-distilbert-base-tas-b",
+        "Model Version": "1.0.3",
+        "Model Format": "TORCH_SCRIPT",
+        "Embedding Dimension": "768",
+        "Pooling Mode": "N/A",
+        "Workflow Run ID": "15357013638"
+    },
+    {
+        "Model Uploader": "@nathaliellenaa",
+        "Upload Time": "2025-05-30 20:14:13",
+        "Model ID": "sentence-transformers/all-distilroberta-v1",
+        "Model Version": "1.0.2",
+        "Model Format": "ONNX",
+        "Embedding Dimension": "768",
+        "Pooling Mode": "N/A",
+        "Workflow Run ID": "15359494756"
+    },
+    {
+        "Model Uploader": "@nathaliellenaa",
+        "Upload Time": "2025-05-30 20:14:13",
+        "Model ID": "sentence-transformers/all-distilroberta-v1",
+        "Model Version": "1.0.2",
+        "Model Format": "TORCH_SCRIPT",
+        "Embedding Dimension": "768",
+        "Pooling Mode": "N/A",
+        "Workflow Run ID": "15359494756"
+    },
+    {
+        "Model Uploader": "@nathaliellenaa",
+        "Upload Time": "2025-06-02 10:36:11",
+        "Model ID": "sentence-transformers/all-mpnet-base-v2",
+        "Model Version": "1.0.2",
+        "Model Format": "ONNX",
+        "Embedding Dimension": "768",
+        "Pooling Mode": "N/A",
+        "Workflow Run ID": "15398728362"
+    },
+    {
+        "Model Uploader": "@nathaliellenaa",
+        "Upload Time": "2025-06-02 10:36:11",
+        "Model ID": "sentence-transformers/all-mpnet-base-v2",
+        "Model Version": "1.0.2",
+        "Model Format": "TORCH_SCRIPT",
+        "Embedding Dimension": "768",
+        "Pooling Mode": "N/A",
+        "Workflow Run ID": "15398728362"
+    },
+    {
+        "Model Uploader": "@nathaliellenaa",
+        "Upload Time": "2025-06-02 11:14:39",
+        "Model ID": "sentence-transformers/multi-qa-mpnet-base-dot-v1",
+        "Model Version": "1.0.2",
+        "Model Format": "ONNX",
+        "Embedding Dimension": "768",
+        "Pooling Mode": "N/A",
+        "Workflow Run ID": "15399027789"
+    },
+    {
+        "Model Uploader": "@nathaliellenaa",
+        "Upload Time": "2025-06-02 11:14:39",
+        "Model ID": "sentence-transformers/multi-qa-mpnet-base-dot-v1",
+        "Model Version": "1.0.2",
+        "Model Format": "TORCH_SCRIPT",
+        "Embedding Dimension": "768",
+        "Pooling Mode": "N/A",
+        "Workflow Run ID": "15399027789"
+    },
+    {
+        "Model Uploader": "@nathaliellenaa",
+        "Upload Time": "2025-06-02 11:37:09",
+        "Model ID": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+        "Model Version": "1.0.2",
+        "Model Format": "ONNX",
+        "Embedding Dimension": "384",
+        "Pooling Mode": "N/A",
+        "Workflow Run ID": "15399888661"
+    },
+    {
+        "Model Uploader": "@nathaliellenaa",
+        "Upload Time": "2025-06-02 11:37:09",
+        "Model ID": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+        "Model Version": "1.0.2",
+        "Model Format": "TORCH_SCRIPT",
+        "Embedding Dimension": "384",
+        "Pooling Mode": "N/A",
+        "Workflow Run ID": "15399888661"
+    },
+    {
+        "Model Uploader": "@nathaliellenaa",
+        "Upload Time": "2025-06-02 11:52:31",
+        "Model ID": "sentence-transformers/paraphrase-mpnet-base-v2",
+        "Model Version": "1.0.1",
+        "Model Format": "ONNX",
+        "Embedding Dimension": "768",
+        "Pooling Mode": "N/A",
+        "Workflow Run ID": "15400188136"
+    },
+    {
+        "Model Uploader": "@nathaliellenaa",
+        "Upload Time": "2025-06-02 11:52:31",
+        "Model ID": "sentence-transformers/paraphrase-mpnet-base-v2",
+        "Model Version": "1.0.1",
+        "Model Format": "TORCH_SCRIPT",
+        "Embedding Dimension": "768",
+        "Pooling Mode": "N/A",
+        "Workflow Run ID": "15400188136"
+    },
+    {
+        "Model Uploader": "@nathaliellenaa",
+        "Upload Time": "2025-06-02 12:11:44",
+        "Model ID": "sentence-transformers/distiluse-base-multilingual-cased-v1",
+        "Model Version": "1.0.2",
+        "Model Format": "TORCH_SCRIPT",
+        "Embedding Dimension": "512",
+        "Pooling Mode": "N/A",
+        "Workflow Run ID": "15400467060"
     }
 ]

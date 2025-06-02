@@ -539,6 +539,29 @@ class MLCommonClient:
             body=API_BODY,
         )
 
+    def generate_question_answering(
+        self, model_id: str, question: str, context: str
+    ) -> object:
+        """
+        This method return answer for given question and context (using ml commons _predict api)
+
+        :param model_id: unique id of the question answering model
+        :type model_id: string
+        :param question: question
+        :type question: string
+        :param context: context
+        :type context: string
+        :return: returns a json object `inference_results` which is a list of answer results of given question and context
+        :rtype: object
+        """
+        API_URL = f"{ML_BASE_URI}/_predict/question_answering/{model_id}"
+        API_BODY = {"question": question, "context": context}
+        return self._client.transport.perform_request(
+            method="POST",
+            url=API_URL,
+            body=API_BODY,
+        )
+
     @deprecated(
         reason="Since OpenSearch 2.7.0, you can use undeploy_model instead",
         version="2.7.0",

@@ -74,7 +74,10 @@ class ConnectorManager(CLIBase):
             logger.warning(f"\nNo connectors available for {service_type}")
             return
 
-        print("\nPlease select a supported connector to create:")
+        service_name = "Amazon OpenSearch Service"
+        if service_type == self.OPEN_SOURCE:
+            service_name = "OpenSearch"
+        print(f"\nPlease select a supported connector to create in {service_name}:")
         for connector in connectors:
             print(f"{connector.id}. {connector.name}")
         max_choice = len(connectors)
@@ -205,6 +208,7 @@ class ConnectorManager(CLIBase):
             "aws_session_token",
             "connector_body",
             "connector_name",
+            "connector_role_inline_policy",
             "connector_role_prefix",
             "connector_secret_name",
             "endpoint_arn",
@@ -213,6 +217,8 @@ class ConnectorManager(CLIBase):
             "model_name",
             "project_id",
             "region",
+            "required_policy",
+            "required_secret",
         ]
 
         params = {}
