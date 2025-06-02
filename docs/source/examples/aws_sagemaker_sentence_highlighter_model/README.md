@@ -57,6 +57,78 @@ The script will:
 4. Upload the model to the default SageMaker S3 bucket
 5. Deploy the model to a SageMaker endpoint
 
+## API Usage
+
+Once deployed, the model endpoint accepts POST requests with the following format:
+
+### Input Format
+
+```json
+{
+    "question": "What is the main topic discussed?",
+    "context": "This is a long text document containing multiple sentences. The model will identify which sentences are most relevant to answering the question. It processes the entire context and returns the sentences that best help answer the provided question."
+}
+```
+
+**Required fields:**
+- `question` (string): The question you want to find relevant sentences for
+- `context` (string): The text document containing multiple sentences to search through
+
+### Output Format
+
+```json
+{
+    "highlights": [
+        {
+            "start": 45,
+            "end": 123,
+            "text": "This sentence is relevant to the question.",
+            "position": 2
+        },
+        {
+            "start": 200,
+            "end": 285,
+            "text": "Another relevant sentence that helps answer the question.",
+            "position": 5
+        }
+    ]
+}
+```
+
+**Response fields:**
+- `highlights` (array): List of highlighted sentences
+  - `start` (integer): Character position where the sentence starts in the original context
+  - `end` (integer): Character position where the sentence ends in the original context
+  - `text` (string): The actual text of the highlighted sentence
+  - `position` (integer): The sentence number in the original context (0-indexed)
+
+### Example Usage
+
+```python
+import boto3
+import json
+
+# Initialize SageMaker runtime client
+runtime = boto3.client('sagemaker-runtime', region_name='us-west-2')
+
+# Prepare the input
+payload = {
+    "question": "What are the benefits of machine learning?",
+    "context": "Machine learning is a powerful technology. It can help automate many tasks. The benefits include improved efficiency and accuracy. However, it requires good data quality. Machine learning models can make predictions on new data."
+}
+
+# Make the prediction
+response = runtime.invoke_endpoint(
+    EndpointName='your-endpoint-name',
+    ContentType='application/json',
+    Body=json.dumps(payload)
+)
+
+# Parse the response
+result = json.loads(response['Body'].read().decode())
+print(result)
+```
+
 ## Environment Variables
 
 You can customize the deployment using these environment variables:

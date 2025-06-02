@@ -40,14 +40,22 @@ def model_fn(model_dir):
             logger.info(f"Current CUDA Device: {torch.cuda.current_device()}")
             logger.info(f"CUDA Device Name: {torch.cuda.get_device_name()}")
         
+        # Determine device for model loading
+        if torch.cuda.is_available():
+            device = torch.device("cuda")
+            logger.info("Using GPU for inference")
+        else:
+            device = torch.device("cpu")
+            logger.info("Using CPU for inference")
+        
         # Load model file
         model_path = os.path.join(model_dir, "opensearch-semantic-highlighter-v1.pt")
         logger.info(f"Loading model from: {model_path}")
         if not os.path.exists(model_path):
             raise FileNotFoundError(f"Model file not found at {model_path}")
         
-        # Load the model
-        model = torch.jit.load(model_path)
+        # Load the model with explicit device mapping
+        model = torch.jit.load(model_path, map_location=device)
         logger.info("Model loaded successfully")
         model.eval()
         
@@ -58,10 +66,35 @@ def model_fn(model_dir):
         raise
 
 def input_fn(request_body, request_content_type):
-    """Deserialize and prepare the prediction input"""
+    """
+    Deserialize and prepare the prediction input
+    
+    Expected input format (JSON):
+    {
+        "question": "What is the main topic discussed?",
+        "context": "This is a long text document containing multiple sentences. The model will identify which sentences are most relevant to answering the question."
+    }
+    
+    Args:
+        request_body: The request body as bytes
+        request_content_type: Content type of the request (should be 'application/json')
+    
+    Returns:
+        dict: Parsed input data containing 'question' and 'context' fields
+    
+    Raises:
+        ValueError: If content type is not supported or required fields are missing
+    """
     try:
         if request_content_type == 'application/json':
             input_data = json.loads(request_body)
+            
+            # Validate required fields
+            if 'question' not in input_data:
+                raise ValueError("Missing required field: 'question'")
+            if 'context' not in input_data:
+                raise ValueError("Missing required field: 'context'")
+            
             return input_data
         raise ValueError(f"Unsupported content type: {request_content_type}")
     except Exception as e:
@@ -74,6 +107,9 @@ def predict_fn(input_data, model):
         # Get input data
         question = input_data['question']
         context = input_data['context']
+        
+        # Determine device for tensor operations
+        device = next(model.parameters()).device
         
         # Step 1: Split context into sentences and assign sentence IDs
         sent_list = nltk.sent_tokenize(context)
@@ -139,10 +175,10 @@ def predict_fn(input_data, model):
         # Step 4: Run through model and get output
         highlight_sentences = []
         for i in range(n_chunks):
-            input_ids = torch.LongTensor([tokenized_examples['input_ids'][i]])
-            attention_mask = torch.LongTensor([tokenized_examples['attention_mask'][i]])
-            token_type_ids = torch.LongTensor([tokenized_examples['token_type_ids'][i]])
-            sentence_ids = torch.LongTensor([tokenized_examples['sentence_ids'][i]])
+            input_ids = torch.LongTensor([tokenized_examples['input_ids'][i]]).to(device)
+            attention_mask = torch.LongTensor([tokenized_examples['attention_mask'][i]]).to(device)
+            token_type_ids = torch.LongTensor([tokenized_examples['token_type_ids'][i]]).to(device)
+            sentence_ids = torch.LongTensor([tokenized_examples['sentence_ids'][i]]).to(device)
             
             with torch.no_grad():
                 output = model(input_ids, attention_mask, token_type_ids, sentence_ids)
@@ -171,7 +207,32 @@ def predict_fn(input_data, model):
         raise
 
 def output_fn(prediction_output, response_content_type):
-    """Serialize and prepare the prediction output"""
+    """
+    Serialize and prepare the prediction output
+    
+    Output format (JSON):
+    {
+        "highlights": [
+            {
+                "start": 45,
+                "end": 123,
+                "text": "This sentence is relevant to the question.",
+                "position": 2
+            },
+            ...
+        ]
+    }
+    
+    Args:
+        prediction_output: List of highlighted sentences with metadata
+        response_content_type: Content type for the response (should be 'application/json')
+    
+    Returns:
+        str: JSON-formatted response
+    
+    Raises:
+        ValueError: If content type is not supported
+    """
     try:
         if response_content_type == 'application/json':
             # Format the output in the desired structure
