@@ -21,6 +21,7 @@ The following table shows sentence transformer model upload history.
 |2023-09-13 18:03:32|@dhrubo-os|`sentence-transformers/distiluse-base-multilingual-cased-v1`|1.0.1|TORCH_SCRIPT|N/A|N/A|6178024517|
 |2023-10-18 18:06:15|@dhrubo-os|`sentence-transformers/paraphrase-mpnet-base-v2`|1.0.0|ONNX|N/A|N/A|6568285400|
 |2023-10-18 18:06:15|@dhrubo-os|`sentence-transformers/paraphrase-mpnet-base-v2`|1.0.0|TORCH_SCRIPT|N/A|N/A|6568285400|
+|2024-08-09 17:51:39|@dhrubo-os|`opensearch-project/opensearch-neural-sparse-encoding-doc-v2-distill`|1.0.0|TORCH_SCRIPT|N/A|N/A|10327490564|
 |2024-08-12 11:07:09|@dhrubo-os|`opensearch-project/opensearch-neural-sparse-encoding-doc-v2-mini`|1.0.0|TORCH_SCRIPT|N/A|N/A|10355999630|
 |2024-08-12 11:41:58|@dhrubo-os|`opensearch-project/opensearch-neural-sparse-encoding-v2-distill`|1.0.0|TORCH_SCRIPT|N/A|N/A|10357363209|
 |2025-05-30 09:59:03|@nathaliellenaa|`sentence-transformers/all-MiniLM-L6-v2`|1.0.2|ONNX|384|N/A|15351603020|
