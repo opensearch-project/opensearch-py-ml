@@ -25,6 +25,8 @@ ONNX_FORMAT = "ONNX"
 
 DENSE_MODEL_ALGORITHM = "TEXT_EMBEDDING"
 SPARSE_ALGORITHM = "SPARSE_ENCODING"
+SPARSE_TOKENIZER_ALGORITHM = "SPARSE_TOKENIZE"
+QUESTION_ANSWERING_ALGORITHM = "QUESTION_ANSWERING"
 TEMP_MODEL_PATH = "temp_model_path"
 TORCHSCRIPT_FOLDER_PATH = "model-torchscript/"
 ONNX_FOLDER_PATH = "model-onnx/"
@@ -96,7 +98,9 @@ def check_model_status(
         assert False, f"Raised Exception in getting {model_format} model info: {e}"
 
 
-def undeploy_model(ml_client: "MLCommonClient", model_id: str, model_format: str):
+def undeploy_model(
+    ml_client: "MLCommonClient", model_id: str, model_format: str, throw_exception=True
+):
     """
     Undeploy the model from OpenSearch cluster.
 
@@ -113,10 +117,15 @@ def undeploy_model(ml_client: "MLCommonClient", model_id: str, model_format: str
         ml_model_status = ml_client.get_model_info(model_id)
         assert ml_model_status.get("model_state") == "UNDEPLOYED"
     except Exception as e:
-        assert False, f"Raised Exception in {model_format} model undeployment: {e}"
+        if throw_exception:
+            assert False, f"Raised Exception in {model_format} model undeployment: {e}"
+        else:
+            print(f"Raised Exception in {model_format} model undeployment: {e}")
 
 
-def delete_model(ml_client: "MLCommonClient", model_id: str, model_format: str):
+def delete_model(
+    ml_client: "MLCommonClient", model_id: str, model_format: str, throw_exception=True
+):
     """
     Delete the model from OpenSearch cluster.
 
@@ -132,7 +141,10 @@ def delete_model(ml_client: "MLCommonClient", model_id: str, model_format: str):
         delete_model_obj = ml_client.delete_model(model_id)
         assert delete_model_obj.get("result") == "deleted"
     except Exception as e:
-        assert False, f"Raised Exception in deleting {model_format} model: {e}"
+        if throw_exception:
+            assert False, f"Raised Exception in deleting {model_format} model: {e}"
+        else:
+            print(f"Raised Exception in deleting {model_format} model: {e}")
 
 
 def autotracing_warning_filters():
@@ -217,15 +229,19 @@ class ModelTraceError(Exception):
 T = TypeVar("T")
 
 
-def init_sparse_model(model_class: Type[T], model_id, model_format, folder_path) -> T:
+def init_sparse_model(
+    model_class: Type[T], model_id, folder_path, sparse_prune_ratio=0, activation=None
+) -> T:
     try:
         pre_trained_model = model_class(
-            model_id=model_id, folder_path=folder_path, overwrite=True
+            model_id=model_id,
+            folder_path=folder_path,
+            overwrite=True,
+            sparse_prune_ratio=sparse_prune_ratio,
+            activation=activation,
         )
     except Exception as e:
-        raise ModelTraceError(
-            "initiating a sparse encoding model class object", model_format, e
-        )
+        raise ModelTraceError("initiating a sparse encoding model class object", e)
     return pre_trained_model
 
 
@@ -236,6 +252,7 @@ def prepare_files_for_uploading(
     src_model_path: str,
     src_model_config_path: str,
     upload_prefix: str = None,
+    model_name: str = None,
 ) -> tuple[str, str]:
     """
     Prepare files for uploading by storing them in UPLOAD_FOLDER_PATH
@@ -250,15 +267,20 @@ def prepare_files_for_uploading(
     :type src_model_path: string
     :param src_model_config_path: Path to model config files for uploading
     :type src_model_config_path: string
+    :param upload_prefix: Model customize path prefix for upload
+    :type upload_prefix: string
+    :param model_name: Model customize name for upload
+    :type model_name: string
     :return: Tuple of dst_model_path (path to model zip file) and dst_model_config_path
     (path to model config json file) in the UPLOAD_FOLDER_PATH
     :rtype: Tuple[str, str]
     """
-    model_type, model_name = (
-        model_id.split("/")
-        if upload_prefix is None
-        else (upload_prefix, model_id.split("/")[-1])
-    )
+    if upload_prefix is not None:
+        model_type = upload_prefix
+    else:
+        model_type = model_id.split("/")[0]
+    if model_name is None:
+        model_name = model_id.split("/")[-1]
     model_format = model_format.lower()
     folder_to_delete = (
         TORCHSCRIPT_FOLDER_PATH if model_format == "torch_script" else ONNX_FOLDER_PATH
@@ -294,7 +316,7 @@ def prepare_files_for_uploading(
     try:
         shutil.rmtree(folder_to_delete)
     except Exception as e:
-        assert False, f"Raised Exception while deleting {folder_to_delete}: {e}"
+        print(f"Warning: Raised Exception while deleting {folder_to_delete}: {e}")
 
     return dst_model_path, dst_model_config_path
 

@@ -22,7 +22,7 @@ jobs:
          echo "This workflow should only be triggered on 'main' branch"
          exit 1
     - name: Checkout Main Branch
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v2
       with:
@@ -52,7 +52,7 @@ jobs:
         done
         echo $(ls config_folder)
     - name: Set Up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
         python-version: '3.x'
     - name: Update pretrained_models_all_versions.json
@@ -79,7 +79,7 @@ jobs:
         echo "EOF" >> $GITHUB_OUTPUT
         echo "${pr_body@E}"
     - name: Create a Branch & Raise a PR
-      uses: peter-evans/create-pull-request@v5
+      uses: peter-evans/create-pull-request@v7
       id: create_pr
       with:
         committer: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
@@ -94,7 +94,7 @@ jobs:
     - name: Checkout PR Branch
       id: checkout_pr_branch
       continue-on-error: true
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         ref: model-listing-uploader/${{ github.run_id }}
     - name: Create a line for updating CHANGELOG.md

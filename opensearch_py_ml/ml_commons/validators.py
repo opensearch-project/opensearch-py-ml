@@ -5,7 +5,7 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
-""" Module for validating model access control parameters """
+"""Module for validating model access control parameters"""
 
 from typing import List, Optional
 

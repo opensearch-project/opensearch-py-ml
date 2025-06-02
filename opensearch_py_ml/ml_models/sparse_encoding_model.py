@@ -17,6 +17,9 @@ from opensearch_py_ml.ml_commons.ml_common_utils import (
 )
 from opensearch_py_ml.ml_models.base_models import SparseModel
 
+# l0 activation. apply the log(1+relu(x)) operator twice in activation process.
+ACTIVATION_L0 = "l0"
+
 
 def _generate_default_model_description() -> str:
     """
@@ -29,7 +32,7 @@ def _generate_default_model_description() -> str:
         "Using default description (You can overwrite this by specifying description parameter in "
         "make_model_config_json function"
     )
-    description = "This is a neural sparse model: It maps sentences & paragraphs to sparse vector space."
+    description = "This is a neural sparse encoding model: It transfers text into sparse vector, and then extract nonzero index and value to entry and weights. It serves only in ingestion and customer should use tokenizer model in query."
     return description
 
 
@@ -45,11 +48,15 @@ class SparseEncodingModel(SparseModel):
         model_id: str = DEFAULT_MODEL_ID,
         folder_path: str = None,
         overwrite: bool = False,
+        sparse_prune_ratio: float = 0,
+        activation: str = None,
     ) -> None:
 
         super().__init__(model_id, folder_path, overwrite)
         self.tokenizer = AutoTokenizer.from_pretrained(model_id)
-        self.backbone_model = AutoModelForMaskedLM.from_pretrained(model_id)
+        self.backbone_model = AutoModelForMaskedLM.from_pretrained(
+            model_id, _attn_implementation="eager"
+        )
         default_folder_path = os.path.join(
             os.getcwd(), "opensearch_neural_sparse_model_files"
         )
@@ -69,6 +76,8 @@ class SparseEncodingModel(SparseModel):
         self.model_id = model_id
         self.torch_script_zip_file_path = None
         self.onnx_zip_file_path = None
+        self.sparse_prune_ratio = sparse_prune_ratio
+        self.activation = activation
 
     def save_as_pt(
         self,
@@ -110,7 +119,6 @@ class SparseEncodingModel(SparseModel):
         :param add_apache_license:
             Optional, whether to add Apache-2.0 license file to model zip file
         :type add_apache_license: string
-
         :return: model zip file path. The file path where the zip file is being saved
         :rtype: string
         """
@@ -129,7 +137,12 @@ class SparseEncodingModel(SparseModel):
             zip_file_name = str(model_id.split("/")[-1] + ".zip")
         zip_file_path = os.path.join(model_output_path, zip_file_name)
 
-        model = NeuralSparseModel(self.backbone_model, self.tokenizer)
+        model = NeuralSparseModel(
+            self.backbone_model,
+            self.tokenizer,
+            self.sparse_prune_ratio,
+            self.activation,
+        )
 
         # save tokenizer.json in save_json_folder_name
         self.tokenizer.save_pretrained(save_json_folder_path)
@@ -216,8 +229,10 @@ class SparseEncodingModel(SparseModel):
                 model_config_content["model_content_hash_value"] = (
                     _generate_model_content_hash_value(model_zip_file_path)
                 )
-        if description is not None:
+        if description is not None and description.strip() != "":
             model_config_content["description"] = description
+        else:
+            model_config_content["description"] = _generate_default_model_description()
 
         model_config_file_path = os.path.join(
             folder_path, "ml-commons_model_config.json"
@@ -234,10 +249,18 @@ class SparseEncodingModel(SparseModel):
         if self.backbone_model is not None:
             return self.backbone_model
         else:
-            return AutoModelForMaskedLM.from_pretrained(self.model_id)
+            # spda attention is not supported by OpenSearch djl version
+            return AutoModelForMaskedLM.from_pretrained(
+                self.model_id, _attn_implementation="eager"
+            )
 
     def get_model(self):
-        return NeuralSparseModel(self.get_backbone_model(), self.get_tokenizer())
+        return NeuralSparseModel(
+            self.get_backbone_model(),
+            self.get_tokenizer(),
+            self.sparse_prune_ratio,
+            self.activation,
+        )
 
     def save(self, path):
         backbone_model = self.get_backbone_model()
@@ -278,9 +301,12 @@ class NeuralSparseModel(torch.nn.Module):
     which are easier to handle in sparse data scenarios such as information retrieval.
     """
 
-    def __init__(self, backbone_model, tokenizer=None):
+    def __init__(
+        self, backbone_model, tokenizer=None, sparse_prune_ratio=0, activation=None
+    ):
         super().__init__()
         self.backbone_model = backbone_model
+        self.sparse_prune_ratio = sparse_prune_ratio
         if tokenizer is not None:
             self.tokenizer = tokenizer
             self.special_token_ids = [
@@ -290,14 +316,27 @@ class NeuralSparseModel(torch.nn.Module):
             self.id_to_token = ["" for _ in range(len(tokenizer.vocab))]
             for token, idx in tokenizer.vocab.items():
                 self.id_to_token[idx] = token
+        if activation is None:
+            self.activation = lambda values: torch.log(1 + torch.relu(values))
+        elif activation == ACTIVATION_L0:
+            self.activation = lambda values: torch.log(
+                1 + torch.log(1 + torch.relu(values))
+            )
+        else:
+            raise NotImplementedError("Not supported activation function.")
 
     def forward(self, input: dict[str, torch.Tensor]) -> dict[str, torch.Tensor]:
         result = self.backbone_model(
             input_ids=input[INPUT_ID_KEY], attention_mask=input[ATTENTION_MASK_KEY]
         )[0]
         values, _ = torch.max(result * input[ATTENTION_MASK_KEY].unsqueeze(-1), dim=1)
-        values = torch.log(1 + torch.relu(values))
+        values = self.activation(values)
         values[:, self.special_token_ids] = 0
+        # max values prune
+        # we first find the max values for each sample in batch, then multiply the max value with the sparse_prune_ratio
+        # then we only keep those larger than the threshold
+        max_values = values.max(dim=-1)[0].unsqueeze(1) * self.sparse_prune_ratio
+        values = values * (values > max_values)
         return {OUTPUT_KEY: values}
 
     def get_sparse_vector(self, feature):

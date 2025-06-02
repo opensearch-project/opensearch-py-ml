@@ -539,6 +539,29 @@ class MLCommonClient:
             body=API_BODY,
         )
 
+    def generate_question_answering(
+        self, model_id: str, question: str, context: str
+    ) -> object:
+        """
+        This method return answer for given question and context (using ml commons _predict api)
+
+        :param model_id: unique id of the question answering model
+        :type model_id: string
+        :param question: question
+        :type question: string
+        :param context: context
+        :type context: string
+        :return: returns a json object `inference_results` which is a list of answer results of given question and context
+        :rtype: object
+        """
+        API_URL = f"{ML_BASE_URI}/_predict/question_answering/{model_id}"
+        API_BODY = {"question": question, "context": context}
+        return self._client.transport.perform_request(
+            method="POST",
+            url=API_URL,
+            body=API_BODY,
+        )
+
     @deprecated(
         reason="Since OpenSearch 2.7.0, you can use undeploy_model instead",
         version="2.7.0",
@@ -567,6 +590,26 @@ class MLCommonClient:
             url=API_URL,
             body=API_BODY,
         )
+
+    def predict(
+        self, model_id: str, predict_object: dict, algorithm_name: str = None
+    ) -> dict:
+        """
+        Generalized predict method to make predictions using different ML algorithms.
+
+        :param algorithm_name: The name of the algorithm, e.g., 'kmeans', 'text_embedding'
+        :type algorithm_name: str
+        :param model_id: Unique identifier of the deployed model
+        :type model_id: str
+        :param predict_object: JSON object containing the input data and parameters for prediction
+        :type predict_object: dict
+        :return: Prediction response from the ML model
+        :rtype: dict
+        """
+        # Make the POST request to the prediction API
+        response = self.generate_model_inference(model_id, predict_object)
+
+        return response
 
     def undeploy_model(self, model_id: str, node_ids: List[str] = []) -> object:
         """

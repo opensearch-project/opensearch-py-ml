@@ -45,6 +45,7 @@ from opensearch_py_ml.field_mappings import FieldMappings
 from opensearch_py_ml.filter import BooleanFilter, QueryFilter
 from opensearch_py_ml.index import Index
 from opensearch_py_ml.operations import Operations
+from opensearch_py_ml.utils import MEAN_ABSOLUTE_DEVIATION, STANDARD_DEVIATION, VARIANCE
 
 if TYPE_CHECKING:
     from opensearchpy import OpenSearch
@@ -587,17 +588,17 @@ class QueryCompiler:
 
     def var(self, numeric_only: Optional[bool] = None) -> pd.Series:
         return self._operations._metric_agg_series(
-            self, ["var"], numeric_only=numeric_only
+            self, [VARIANCE], numeric_only=numeric_only
         )
 
     def std(self, numeric_only: Optional[bool] = None) -> pd.Series:
         return self._operations._metric_agg_series(
-            self, ["std"], numeric_only=numeric_only
+            self, [STANDARD_DEVIATION], numeric_only=numeric_only
         )
 
     def mad(self, numeric_only: Optional[bool] = None) -> pd.Series:
         return self._operations._metric_agg_series(
-            self, ["mad"], numeric_only=numeric_only
+            self, [MEAN_ABSOLUTE_DEVIATION], numeric_only=numeric_only
         )
 
     def median(self, numeric_only: Optional[bool] = None) -> pd.Series:
