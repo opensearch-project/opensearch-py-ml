@@ -26,6 +26,7 @@ ONNX_FORMAT = "ONNX"
 DENSE_MODEL_ALGORITHM = "TEXT_EMBEDDING"
 SPARSE_ALGORITHM = "SPARSE_ENCODING"
 SPARSE_TOKENIZER_ALGORITHM = "SPARSE_TOKENIZE"
+QUESTION_ANSWERING_ALGORITHM = "QUESTION_ANSWERING"
 TEMP_MODEL_PATH = "temp_model_path"
 TORCHSCRIPT_FOLDER_PATH = "model-torchscript/"
 ONNX_FOLDER_PATH = "model-onnx/"
@@ -315,7 +316,7 @@ def prepare_files_for_uploading(
     try:
         shutil.rmtree(folder_to_delete)
     except Exception as e:
-        assert False, f"Raised Exception while deleting {folder_to_delete}: {e}"
+        print(f"Warning: Raised Exception while deleting {folder_to_delete}: {e}")
 
     return dst_model_path, dst_model_config_path
 

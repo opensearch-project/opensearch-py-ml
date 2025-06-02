@@ -129,7 +129,7 @@ class SageMakerModel(ModelBase):
         model_name: Optional[str] = None,
         endpoint_arn: Optional[str] = None,
         endpoint_url: Optional[str] = None,
-        connector_body: Optional[str] = None,
+        connector_body: Optional[Dict[str, Any]] = None,
         aws_access_key: Optional[str] = None,
         aws_secret_access_key: Optional[str] = None,
         aws_session_token: Optional[str] = None,
