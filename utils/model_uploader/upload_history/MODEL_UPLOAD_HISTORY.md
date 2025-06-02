@@ -39,3 +39,5 @@ The following table shows sentence transformer model upload history.
 |2025-06-02 10:36:11|@nathaliellenaa|`sentence-transformers/all-mpnet-base-v2`|1.0.2|TORCH_SCRIPT|768|N/A|15398728362|
 |2025-06-02 11:14:39|@nathaliellenaa|`sentence-transformers/multi-qa-mpnet-base-dot-v1`|1.0.2|ONNX|768|N/A|15399027789|
 |2025-06-02 11:14:39|@nathaliellenaa|`sentence-transformers/multi-qa-mpnet-base-dot-v1`|1.0.2|TORCH_SCRIPT|768|N/A|15399027789|
+|2025-06-02 11:37:09|@nathaliellenaa|`sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`|1.0.2|ONNX|384|N/A|15399888661|
+|2025-06-02 11:37:09|@nathaliellenaa|`sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`|1.0.2|TORCH_SCRIPT|384|N/A|15399888661|
