@@ -66,6 +66,7 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Update model upload history -  sentence-transformers/all-distilroberta-v1 (v.1.0.2)(BOTH) by @nathaliellenaa ([#535](https://github.com/opensearch-project/opensearch-py-ml/pull/535))
 - Update model upload history -  sentence-transformers/all-mpnet-base-v2 (v.1.0.2)(BOTH) by @nathaliellenaa ([#537](https://github.com/opensearch-project/opensearch-py-ml/pull/537))
 - Update model upload history -  sentence-transformers/multi-qa-mpnet-base-dot-v1 (v.1.0.2)(BOTH) by @nathaliellenaa ([#539](https://github.com/opensearch-project/opensearch-py-ml/pull/539))
+- Update model upload history -  sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2 (v.1.0.2)(BOTH) by @nathaliellenaa ([#541](https://github.com/opensearch-project/opensearch-py-ml/pull/541))
 
 ### Fixed
 - Fix the wrong final zip file name in model_uploader workflow, now will name it by the upload_prefix alse.([#413](https://github.com/opensearch-project/opensearch-py-ml/pull/413/files))
