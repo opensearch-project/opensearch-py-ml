@@ -100,6 +100,16 @@
         "Workflow Run ID": "14676058951"
     },
     {
+        "Model Uploader": "@dhrubo-os",
+        "Upload Time": "2025-04-28 13:47:19",
+        "Model ID": "opensearch-project/opensearch-neural-sparse-encoding-doc-v3-distill",
+        "Model Version": "1.0.0",
+        "Model Format": "TORCH_SCRIPT",
+        "Embedding Dimension": "N/A",
+        "Pooling Mode": "N/A",
+        "Workflow Run ID": "14717220025"
+    },
+    {
         "Model Uploader": "@nathaliellenaa",
         "Upload Time": "2025-05-30 09:59:03",
         "Model ID": "sentence-transformers/all-MiniLM-L6-v2",
