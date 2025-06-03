@@ -150,6 +150,16 @@
         "Workflow Run ID": "14800941154"
     },
     {
+        "Model Uploader": "@b4sjoo",
+        "Upload Time": "2025-05-02 17:04:42",
+        "Model ID": "opensearch-project/opensearch-semantic-highlighter-v1",
+        "Model Version": "1.0.0",
+        "Model Format": "TORCH_SCRIPT",
+        "Embedding Dimension": "N/A",
+        "Pooling Mode": "N/A",
+        "Workflow Run ID": "14805266405"
+    },
+    {
         "Model Uploader": "@nathaliellenaa",
         "Upload Time": "2025-05-30 09:59:03",
         "Model ID": "sentence-transformers/all-MiniLM-L6-v2",
