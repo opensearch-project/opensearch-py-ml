@@ -134,8 +134,8 @@ print(result)
 You can customize the deployment using these environment variables:
 
 ### Optional Variables:
-- `INSTANCE_TYPE`: SageMaker instance type (default: "ml.g4dn.xlarge")
-  - Example: `export INSTANCE_TYPE="ml.g4dn.xlarge"`
+- `INSTANCE_TYPE`: SageMaker instance type (default: "ml.m5.xlarge")
+  - Example: `export INSTANCE_TYPE="ml.m5.xlarge"`
 
 - `AWS_PROFILE`: AWS credentials profile (default: "default")
   - Example: `export AWS_PROFILE="my-profile"`
@@ -147,7 +147,7 @@ Example configuration:
 ```bash
 # Optional: Set custom instance type and region
 export AWS_REGION="us-west-2"
-export INSTANCE_TYPE="ml.g4dn.xlarge"
+export INSTANCE_TYPE="ml.m5.xlarge"
 
 # Then run the deployment script
 python deploy.py

@@ -21,7 +21,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Get configuration from environment variables
-INSTANCE_TYPE = os.getenv('INSTANCE_TYPE', 'ml.g4dn.xlarge')
+INSTANCE_TYPE = os.getenv('INSTANCE_TYPE', 'ml.m5.xlarge')
 
 def get_endpoint_name():
     """Generate a unique endpoint name with timestamp"""
