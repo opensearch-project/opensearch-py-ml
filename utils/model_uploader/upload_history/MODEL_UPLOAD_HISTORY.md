@@ -30,6 +30,7 @@ The following table shows sentence transformer model upload history.
 |2025-04-29 08:01:40|@dhrubo-os|`opensearch-project/opensearch-neural-sparse-encoding-doc-v3-distill`|1.0.0|TORCH_SCRIPT|N/A|N/A|14731866286|
 |2025-04-29 09:17:57|@dhrubo-os|`opensearch-project/opensearch-neural-sparse-encoding-multilingual-v1`|1.0.0|TORCH_SCRIPT|N/A|N/A|14735281093|
 |2025-04-29 09:47:57|@dhrubo-os|`opensearch-project/opensearch-neural-sparse-encoding-multilingual-v1`|1.0.0|TORCH_SCRIPT|N/A|N/A|14736463349|
+|2025-05-02 11:32:28|@greaa-aws|`opensearch-project/opensearch-semantic-highlighter-v1`|1.0.0|TORCH_SCRIPT|N/A|N/A|14800941154|
 |2025-05-30 09:59:03|@nathaliellenaa|`sentence-transformers/all-MiniLM-L6-v2`|1.0.2|ONNX|384|N/A|15351603020|
 |2025-05-30 09:59:03|@nathaliellenaa|`sentence-transformers/all-MiniLM-L6-v2`|1.0.2|TORCH_SCRIPT|384|N/A|15351603020|
 |2025-05-30 15:25:54|@nathaliellenaa|`sentence-transformers/all-MiniLM-L12-v2`|1.0.2|ONNX|384|N/A|15356713966|
