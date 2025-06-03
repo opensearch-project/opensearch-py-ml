@@ -70,10 +70,16 @@ class ModelBase:
 
         # Add a unique ID to prevent permission error
         id = str(uuid.uuid1())[:6]
-        connector_role_name = f"{connector_role_prefix}-{model_name}-connector-{id}"
-        create_connector_role_name = (
-            f"{connector_role_prefix}-{model_name}-connector-create-{id}"
-        )
+        if model_name:
+            connector_role_name = f"{connector_role_prefix}-{model_name}-connector-{id}"
+            create_connector_role_name = (
+                f"{connector_role_prefix}-{model_name}-connector-create-{id}"
+            )
+        else:
+            connector_role_name = f"{connector_role_prefix}-connector-{id}"
+            create_connector_role_name = (
+                f"{connector_role_prefix}-connector-create-{id}"
+            )
         return connector_role_name, create_connector_role_name
 
     def create_secret_name(
@@ -97,7 +103,13 @@ class ModelBase:
                 "Enter a name for the AWS Secrets Manager secret: "
             ).strip()
 
-        secret_key = f"{model_name}_api_key"
+        # Add a unique ID to secret name to prevent permission error
+        id = str(uuid.uuid1())[:6]
+        secret_name = f"{secret_name}-{id}"
+        if model_name:
+            secret_key = f"{model_name}_api_key"
+        else:
+            secret_key = "api_key"
         secret_value = {secret_key: api_key}
         return secret_name, secret_value
 
@@ -204,7 +216,7 @@ class ModelBase:
         """
         if external:
             print(
-                f"{Fore.YELLOW}\nIMPORTANT: When customizing the connector configuration, ensure you include the following in the 'headers' section:"
+                f"{Fore.YELLOW}\nIMPORTANT: When customizing the connector configuration that requires API key authentication, ensure you include the following in the 'headers' section:"
             )
             print(f'{Fore.YELLOW}{Style.BRIGHT}"Authorization": "${{auth}}"')
             print(

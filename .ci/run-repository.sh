@@ -65,7 +65,7 @@ elif [[ "$TASK_TYPE" == "doc" ]]; then
   
   docker cp opensearch-py-ml-doc-runner:/code/opensearch-py-ml/docs/build/ ./docs/
   docker rm opensearch-py-ml-doc-runner
-elif [[ "$TASK_TYPE" == "SentenceTransformerTrace" || "$TASK_TYPE" == "SparseTrace" || "$TASK_TYPE" == "SparseTokenizerTrace" ]]; then
+elif [[ "$TASK_TYPE" == "SentenceTransformerTrace" || "$TASK_TYPE" == "SparseTrace" || "$TASK_TYPE" == "SparseTokenizerTrace" || "$TASK_TYPE" == "SemanticHighlighterTrace" ]]; then
   # Set up OpenSearch cluster & Run model autotracing (Invoked by model_uploader.yml workflow)
   echo -e "\033[34;1mINFO:\033[0m MODEL_ID: ${MODEL_ID}\033[0m"
   echo -e "\033[34;1mINFO:\033[0m MODEL_VERSION: ${MODEL_VERSION}\033[0m"
@@ -88,6 +88,9 @@ elif [[ "$TASK_TYPE" == "SentenceTransformerTrace" || "$TASK_TYPE" == "SparseTra
       NOX_TRACE_TYPE="sparsetrace"
       # use extra args to trigger the tokenizer tracing logics
       EXTRA_ARGS="-t"
+  elif [[ "$TASK_TYPE" == "SemanticHighlighterTrace" ]]; then
+      NOX_TRACE_TYPE="semantic_highlighter_trace"
+      EXTRA_ARGS=""
   else
       echo "Unknown TASK_TYPE: $TASK_TYPE"
       exit 1
@@ -123,6 +126,7 @@ elif [[ "$TASK_TYPE" == "SentenceTransformerTrace" || "$TASK_TYPE" == "SparseTra
   # trace_output should include description and license file.
   docker cp opensearch-py-ml-trace-runner:/code/opensearch-py-ml/upload/ ./upload/
   docker cp opensearch-py-ml-trace-runner:/code/opensearch-py-ml/trace_output/ ./trace_output/
+
   # Delete the docker image
   docker rm opensearch-py-ml-trace-runner
 fi
