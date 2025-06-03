@@ -191,7 +191,7 @@ class BedrockModel(ModelBase):
         connector_role_prefix: Optional[str] = None,
         region: Optional[str] = None,
         model_name: Optional[str] = None,
-        connector_body: Optional[str] = None,
+        connector_body: Optional[Dict[str, Any]] = None,
         aws_access_key: Optional[str] = None,
         aws_secret_access_key: Optional[str] = None,
         aws_session_token: Optional[str] = None,
