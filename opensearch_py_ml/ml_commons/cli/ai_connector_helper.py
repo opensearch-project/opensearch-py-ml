@@ -40,7 +40,6 @@ class AIConnectorHelper:
 
     OPEN_SOURCE = "open-source"
     AMAZON_OPENSEARCH_SERVICE = "amazon-opensearch-service"
-    AWS_DOMAIN = "amazonaws.com"
 
     def __init__(
         self,
@@ -77,15 +76,12 @@ class AIConnectorHelper:
             )
         self.opensearch_domain_arn = domain_arn
 
-        # Parse the OpenSearch domain URL to extract host and port
+        # Parse the OpenSearch domain URL
         parsed_url = urlparse(self.opensearch_config.opensearch_domain_endpoint)
-        host = parsed_url.hostname
-        is_aos = self.AWS_DOMAIN in host
-        port = parsed_url.port or (443 if is_aos else 9200)
 
         # Initialize OpenSearch client
         self.opensearch_client = OpenSearch(
-            hosts=[{"host": host, "port": port}],
+            hosts=[self.opensearch_config.opensearch_domain_endpoint],
             http_auth=(
                 self.opensearch_config.opensearch_domain_username,
                 self.opensearch_config.opensearch_domain_password,

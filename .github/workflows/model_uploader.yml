@@ -25,13 +25,14 @@ on:
         - "TORCH_SCRIPT"
         - "ONNX"
       model_type:
-        description: "Model type for auto-tracing (SentenceTransformer/Sparse/SparseTokenizer)"
+        description: "Model type for auto-tracing (SentenceTransformer/Sparse/SparseTokenizer/SemanticHighlighter)"
         required: true
         type: choice
         options:
           - "SentenceTransformer"
           - "Sparse"
           - "SparseTokenizer"
+          - "SemanticHighlighter"
         default: "SentenceTransformer"
       embedding_dimension:
         description: "(Optional) Embedding Dimension (Specify here if it does not exist in original config.json file, or you want to overwrite it.)"
@@ -248,9 +249,9 @@ jobs:
     strategy:
       matrix:
         cluster: ["opensearch"]
-        secured: ["true"]
+        secured: ["false"]
         entry:
-          - { opensearch_version: 2.11.0 }
+          - { opensearch_version: 3.0.0-beta1 }
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -268,6 +269,8 @@ jobs:
           echo "ACTIVATION=${{ needs.init-workflow-var.outputs.activation }}" >> $GITHUB_ENV
       - name: Autotracing ${{ matrix.cluster }} secured=${{ matrix.secured }} version=${{matrix.entry.opensearch_version}}
         run: "./.ci/run-tests ${{ matrix.cluster }} ${{ matrix.secured }} ${{ matrix.entry.opensearch_version }} ${{github.event.inputs.model_type}}Trace"
+        shell: bash
+
       - name: Limit Model Size to 2GB
         run: |
           upload_size_in_binary_bytes=$(ls -lR ./upload/ | awk '{ SUM += $5} END {print SUM}')

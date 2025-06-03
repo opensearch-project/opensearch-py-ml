@@ -439,9 +439,7 @@ class Setup(CLIBase):
             return False
 
         parsed_url = urlparse(self.opensearch_config.opensearch_domain_endpoint)
-        host = parsed_url.hostname
-        is_aos = "amazonaws.com" in host
-        port = parsed_url.port or (443 if is_aos else 9200)
+
         # Determine auth based on service type
         if self.service_type == self.AMAZON_OPENSEARCH_SERVICE:
             if (
@@ -471,20 +469,18 @@ class Setup(CLIBase):
             logger.warning("Invalid service type. Please check your configuration.")
             return False
 
-        use_ssl = parsed_url.scheme == "https"
-
         try:
             self.opensearch_client = OpenSearch(
-                hosts=[{"host": host, "port": port}],
+                hosts=[self.opensearch_config.opensearch_domain_endpoint],
                 http_auth=auth,
-                use_ssl=use_ssl,
+                use_ssl=(parsed_url.scheme == "https"),
                 verify_certs=self.ssl_check_enabled,
                 ssl_show_warn=False,
                 connection_class=RequestsHttpConnection,
                 pool_maxsize=20,
             )
             print(
-                f"{Fore.GREEN}Initialized OpenSearch client with host: {host} and port: {port}{Style.RESET_ALL}\n"
+                f"{Fore.GREEN}Initialized OpenSearch client with endpoint: {self.opensearch_config.opensearch_domain_endpoint}{Style.RESET_ALL}\n"
             )
             return True
         except Exception as e:
@@ -573,6 +569,11 @@ class Setup(CLIBase):
                 config_path = input(
                     "Enter the path to your existing configuration file: "
                 ).strip()
+                if config_path == "":
+                    print(
+                        f"\n{Fore.YELLOW}No configuration file path provided. Exiting.{Style.RESET_ALL}"
+                    )
+                    return None
                 return self._process_config(config_path)
             else:
                 print("Let's create a new configuration file.")
