@@ -116,7 +116,7 @@ class TestConnectorManager(unittest.TestCase):
         self.connector_manager.print_available_connectors(ConnectorManager.OPEN_SOURCE)
 
         expected_output = (
-            "\nPlease select a supported connector to create:\n"
+            "\nPlease select a supported connector to create in OpenSearch:\n"
             "1. Aleph Alpha\n"
             "2. Bedrock\n"
             "Enter your choice (1-2): "
@@ -131,7 +131,7 @@ class TestConnectorManager(unittest.TestCase):
         )
 
         expected_output = (
-            "\nPlease select a supported connector to create:\n"
+            "\nPlease select a supported connector to create in Amazon OpenSearch Service:\n"
             "1. Managed Connector\n"
             "Enter your choice (1-1): "
         )
