@@ -39,23 +39,15 @@ def model_fn(model_dir):
             logger.info(f"CUDA Version: {torch.version.cuda}")
             logger.info(f"Current CUDA Device: {torch.cuda.current_device()}")
             logger.info(f"CUDA Device Name: {torch.cuda.get_device_name()}")
-        
-        # Determine device for model loading
-        if torch.cuda.is_available():
-            device = torch.device("cuda")
-            logger.info("Using GPU for inference")
-        else:
-            device = torch.device("cpu")
-            logger.info("Using CPU for inference")
-        
+
         # Load model file
         model_path = os.path.join(model_dir, "opensearch-semantic-highlighter-v1.pt")
         logger.info(f"Loading model from: {model_path}")
         if not os.path.exists(model_path):
             raise FileNotFoundError(f"Model file not found at {model_path}")
-        
-        # Load the model with explicit device mapping
-        model = torch.jit.load(model_path, map_location=device)
+
+        # Load the model
+        model = torch.jit.load(model_path)
         logger.info("Model loaded successfully")
         model.eval()
         
