@@ -56,6 +56,7 @@ OPENSEARCH_TEST_CLIENT = OpenSearch(
     use_ssl=use_ssl,
     verify_certs=False,  # Keep verify_certs False for CI demo certs
     ssl_show_warn=use_ssl,  # Only show SSL warnings if using SSL
+    timeout=60,  # Increase timeout to avoid ReadTimeoutError
 )
 
 # Remove the complex try/except for localhost fallback, rely on env var
