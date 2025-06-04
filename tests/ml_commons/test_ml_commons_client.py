@@ -45,7 +45,7 @@ MODEL_CONFIG_FILE_PATH = os.path.join(TEST_FOLDER, MODEL_CONFIG_FILE_NAME)
 test_model = SentenceTransformerModel(folder_path=TEST_FOLDER, overwrite=True)
 
 PRETRAINED_MODEL_NAME = "huggingface/sentence-transformers/all-MiniLM-L12-v2"
-PRETRAINED_MODEL_VERSION = "1.0.1"
+PRETRAINED_MODEL_VERSION = "1.0.2"
 PRETRAINED_MODEL_FORMAT = "TORCH_SCRIPT"
 
 
