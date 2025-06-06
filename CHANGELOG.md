@@ -1,6 +1,38 @@
 # CHANGELOG
 Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
+## [1.3.0]
+
+### Added
+- Add space type mapping for sentence transformer models by @nathaliellenaa in ([#512](https://github.com/opensearch-project/opensearch-py-ml/pull/512))
+
+### Changed
+- Update model upload history -  opensearch-project/opensearch-neural-sparse-encoding-doc-v2-distill (v.1.0.0)(TORCH_SCRIPT) by @dhrubo-os ([#415](https://github.com/opensearch-project/opensearch-py-ml/pull/415))
+- Update model upload history -  opensearch-project/opensearch-neural-sparse-encoding-doc-v3-distill (v.1.0.0)(TORCH_SCRIPT) by @dhrubo-os ([#483](https://github.com/opensearch-project/opensearch-py-ml/pull/483))
+- Update model upload history -  opensearch-project/opensearch-neural-sparse-encoding-multilingual-v1 (v.1.0.0)(TORCH_SCRIPT) by @dhrubo-os ([#485](https://github.com/opensearch-project/opensearch-py-ml/pull/485))
+- Update model upload history -  opensearch-project/opensearch-neural-sparse-encoding-doc-v3-distill (v.1.0.0)(TORCH_SCRIPT) by @dhrubo-os ([#489](https://github.com/opensearch-project/opensearch-py-ml/pull/489))
+- Update model upload history -  opensearch-project/opensearch-neural-sparse-encoding-doc-v3-distill (v.1.0.0)(TORCH_SCRIPT) by @dhrubo-os ([#492](https://github.com/opensearch-project/opensearch-py-ml/pull/492))
+- Update model upload history -  opensearch-project/opensearch-neural-sparse-encoding-multilingual-v1 (v.1.0.0)(TORCH_SCRIPT) by @dhrubo-os ([#494](https://github.com/opensearch-project/opensearch-py-ml/pull/494))
+- Update model upload history -  opensearch-project/opensearch-neural-sparse-encoding-multilingual-v1 (v.1.0.0)(TORCH_SCRIPT) by @dhrubo-os ([#496](https://github.com/opensearch-project/opensearch-py-ml/pull/496))
+- Update model upload history -  opensearch-project/opensearch-semantic-highlighter-v1 (v.1.0.0)(TORCH_SCRIPT) by @greaa-aws ([#499](https://github.com/opensearch-project/opensearch-py-ml/pull/499))
+- Update model upload history -  opensearch-project/opensearch-semantic-highlighter-v1 (v.1.0.0)(TORCH_SCRIPT) by @b4sjoo ([#503](https://github.com/opensearch-project/opensearch-py-ml/pull/503))
+- Update model upload history -  sentence-transformers/all-MiniLM-L6-v2 (v.1.0.2)(BOTH) by @nathaliellenaa ([#523](https://github.com/opensearch-project/opensearch-py-ml/pull/523))
+- Update model upload history -  sentence-transformers/all-MiniLM-L12-v2 (v.1.0.2)(BOTH) by @nathaliellenaa ([#526](https://github.com/opensearch-project/opensearch-py-ml/pull/526))
+- Update model upload history -  sentence-transformers/multi-qa-MiniLM-L6-cos-v1 (v.1.0.2)(BOTH) by @nathaliellenaa ([#528](https://github.com/opensearch-project/opensearch-py-ml/pull/528))
+- Update model upload history -  sentence-transformers/paraphrase-MiniLM-L3-v2 (v.1.0.2)(BOTH) by @nathaliellenaa ([#530](https://github.com/opensearch-project/opensearch-py-ml/pull/530))
+- Update model upload history -  sentence-transformers/msmarco-distilbert-base-tas-b (v.1.0.3)(BOTH) by @nathaliellenaa ([#532](https://github.com/opensearch-project/opensearch-py-ml/pull/532))
+- Update model upload history -  sentence-transformers/all-distilroberta-v1 (v.1.0.2)(BOTH) by @nathaliellenaa ([#535](https://github.com/opensearch-project/opensearch-py-ml/pull/535))
+- Update model upload history -  sentence-transformers/all-mpnet-base-v2 (v.1.0.2)(BOTH) by @nathaliellenaa ([#537](https://github.com/opensearch-project/opensearch-py-ml/pull/537))
+- Update model upload history -  sentence-transformers/multi-qa-mpnet-base-dot-v1 (v.1.0.2)(BOTH) by @nathaliellenaa ([#539](https://github.com/opensearch-project/opensearch-py-ml/pull/539))
+- Update model upload history -  sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2 (v.1.0.2)(BOTH) by @nathaliellenaa ([#541](https://github.com/opensearch-project/opensearch-py-ml/pull/541))
+- Update model upload history -  sentence-transformers/paraphrase-mpnet-base-v2 (v.1.0.1)(BOTH) by @nathaliellenaa ([#543](https://github.com/opensearch-project/opensearch-py-ml/pull/543))
+- Update model upload history -  sentence-transformers/distiluse-base-multilingual-cased-v1 (v.1.0.2)(TORCH_SCRIPT) by @nathaliellenaa ([#545](https://github.com/opensearch-project/opensearch-py-ml/pull/545))
+- Update pretrained_models_all_versions.json (2025-06-02 17:57:40) by @nathaliellenaa ([#547](https://github.com/opensearch-project/opensearch-py-ml/pull/547))
+- Update pretrained_models_all_versions.json by @nathaliellenaa ([#548](https://github.com/opensearch-project/opensearch-py-ml/pull/548))
+
+### Fixed
+
+
 ## [1.2.0]
 
 ### Added
@@ -22,7 +54,6 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Add semantic highlighter model to pre-trained model list ([#504](https://github.com/opensearch-project/opensearch-py-ml/pull/504))
 - Fix jenkins token in model_listing_uploader.yml CI ([#505](https://github.com/opensearch-project/opensearch-py-ml/pull/505))
 - Add documentation for CLI feature by @nathaliellenaa in ([#476](https://github.com/opensearch-project/opensearch-py-ml/pull/476))
-- Add space type mapping for sentence transformer models by @nathaliellenaa in ([#512](https://github.com/opensearch-project/opensearch-py-ml/pull/512))
 
 ### Changed
 - Add a parameter for customize the upload folder prefix ([#398](https://github.com/opensearch-project/opensearch-py-ml/pull/398))
@@ -52,34 +83,12 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Update model upload history -  opensearch-project/opensearch-neural-sparse-encoding-doc-v2-distill (v.1.0.0)(TORCH_SCRIPT) by @dhrubo-os ([#405](https://github.com/opensearch-project/opensearch-py-ml/pull/405))
 - Update model upload history -  opensearch-project/opensearch-neural-sparse-encoding-v2-distill (v.1.0.0)(TORCH_SCRIPT) by @dhrubo-os ([#410](https://github.com/opensearch-project/opensearch-py-ml/pull/410))
 - updating listing file with three v2 sparse model - by @dhrubo-os ([#412](https://github.com/opensearch-project/opensearch-py-ml/pull/412))
-- Update model upload history -  opensearch-project/opensearch-neural-sparse-encoding-doc-v2-distill (v.1.0.0)(TORCH_SCRIPT) by @dhrubo-os ([#415](https://github.com/opensearch-project/opensearch-py-ml/pull/415))
 - Update model upload history -  opensearch-project/opensearch-neural-sparse-encoding-doc-v2-mini (v.1.0.0)(TORCH_SCRIPT) by @dhrubo-os ([#417](https://github.com/opensearch-project/opensearch-py-ml/pull/417))
 - Update model upload history -  opensearch-project/opensearch-neural-sparse-encoding-v2-distill (v.1.0.0)(TORCH_SCRIPT) by @dhrubo-os ([#419](https://github.com/opensearch-project/opensearch-py-ml/pull/419))
 - Upgrade GitHub Actions workflows to use `@v4` to prevent deprecation issues with `@v3` by @yerzhaisang ([#428](https://github.com/opensearch-project/opensearch-py-ml/pull/428))
 - Bump pandas from 1.5.3 to the latest stable version by @yerzhaisang ([#422](https://github.com/opensearch-project/opensearch-py-ml/pull/422))
 - Upgrade mypy, sphinx, sphinx-rtd-theme, and multiple GitHub Actions (setup-python, backport, codecov-action, create-pull-request, get-pr-commits) by @yerzhaisang([#437](https://github.com/opensearch-project/opensearch-py-ml/pull/437))
-- Update model upload history -  opensearch-project/opensearch-neural-sparse-encoding-doc-v3-distill (v.1.0.0)(TORCH_SCRIPT) by @dhrubo-os ([#483](https://github.com/opensearch-project/opensearch-py-ml/pull/483))
-- Update model upload history -  opensearch-project/opensearch-neural-sparse-encoding-multilingual-v1 (v.1.0.0)(TORCH_SCRIPT) by @dhrubo-os ([#485](https://github.com/opensearch-project/opensearch-py-ml/pull/485))
-- Update model upload history -  opensearch-project/opensearch-neural-sparse-encoding-doc-v3-distill (v.1.0.0)(TORCH_SCRIPT) by @dhrubo-os ([#489](https://github.com/opensearch-project/opensearch-py-ml/pull/489))
-- Update model upload history -  opensearch-project/opensearch-neural-sparse-encoding-doc-v3-distill (v.1.0.0)(TORCH_SCRIPT) by @dhrubo-os ([#492](https://github.com/opensearch-project/opensearch-py-ml/pull/492))
-- Update model upload history -  opensearch-project/opensearch-neural-sparse-encoding-multilingual-v1 (v.1.0.0)(TORCH_SCRIPT) by @dhrubo-os ([#494](https://github.com/opensearch-project/opensearch-py-ml/pull/494))
-- Update model upload history -  opensearch-project/opensearch-neural-sparse-encoding-multilingual-v1 (v.1.0.0)(TORCH_SCRIPT) by @dhrubo-os ([#496](https://github.com/opensearch-project/opensearch-py-ml/pull/496))
-- Update model upload history -  opensearch-project/opensearch-semantic-highlighter-v1 (v.1.0.0)(TORCH_SCRIPT) by @greaa-aws ([#499](https://github.com/opensearch-project/opensearch-py-ml/pull/499))
-- Update model upload history -  opensearch-project/opensearch-semantic-highlighter-v1 (v.1.0.0)(TORCH_SCRIPT) by @b4sjoo ([#503](https://github.com/opensearch-project/opensearch-py-ml/pull/503))
 - Increment version to 1.2.0 and update maintainer list in _version.py by @nathaliellenaa([#516](https://github.com/opensearch-project/opensearch-py-ml/pull/516))
-- Update model upload history -  sentence-transformers/all-MiniLM-L6-v2 (v.1.0.2)(BOTH) by @nathaliellenaa ([#523](https://github.com/opensearch-project/opensearch-py-ml/pull/523))
-- Update model upload history -  sentence-transformers/all-MiniLM-L12-v2 (v.1.0.2)(BOTH) by @nathaliellenaa ([#526](https://github.com/opensearch-project/opensearch-py-ml/pull/526))
-- Update model upload history -  sentence-transformers/multi-qa-MiniLM-L6-cos-v1 (v.1.0.2)(BOTH) by @nathaliellenaa ([#528](https://github.com/opensearch-project/opensearch-py-ml/pull/528))
-- Update model upload history -  sentence-transformers/paraphrase-MiniLM-L3-v2 (v.1.0.2)(BOTH) by @nathaliellenaa ([#530](https://github.com/opensearch-project/opensearch-py-ml/pull/530))
-- Update model upload history -  sentence-transformers/msmarco-distilbert-base-tas-b (v.1.0.3)(BOTH) by @nathaliellenaa ([#532](https://github.com/opensearch-project/opensearch-py-ml/pull/532))
-- Update model upload history -  sentence-transformers/all-distilroberta-v1 (v.1.0.2)(BOTH) by @nathaliellenaa ([#535](https://github.com/opensearch-project/opensearch-py-ml/pull/535))
-- Update model upload history -  sentence-transformers/all-mpnet-base-v2 (v.1.0.2)(BOTH) by @nathaliellenaa ([#537](https://github.com/opensearch-project/opensearch-py-ml/pull/537))
-- Update model upload history -  sentence-transformers/multi-qa-mpnet-base-dot-v1 (v.1.0.2)(BOTH) by @nathaliellenaa ([#539](https://github.com/opensearch-project/opensearch-py-ml/pull/539))
-- Update model upload history -  sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2 (v.1.0.2)(BOTH) by @nathaliellenaa ([#541](https://github.com/opensearch-project/opensearch-py-ml/pull/541))
-- Update model upload history -  sentence-transformers/paraphrase-mpnet-base-v2 (v.1.0.1)(BOTH) by @nathaliellenaa ([#543](https://github.com/opensearch-project/opensearch-py-ml/pull/543))
-- Update model upload history -  sentence-transformers/distiluse-base-multilingual-cased-v1 (v.1.0.2)(TORCH_SCRIPT) by @nathaliellenaa ([#545](https://github.com/opensearch-project/opensearch-py-ml/pull/545))
-- Update pretrained_models_all_versions.json (2025-06-02 17:57:40) by @nathaliellenaa ([#547](https://github.com/opensearch-project/opensearch-py-ml/pull/547))
-- Update pretrained_models_all_versions.json by @nathaliellenaa ([#548](https://github.com/opensearch-project/opensearch-py-ml/pull/548))
 
 ### Fixed
 - Fix the wrong final zip file name in model_uploader workflow, now will name it by the upload_prefix alse.([#413](https://github.com/opensearch-project/opensearch-py-ml/pull/413/files))
@@ -200,3 +209,5 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 [1.0.0]: https://github.com/opensearch-project/opensearch-py-ml/compare/1.0.0b1...1.0.0
 [1.0.0b1]: https://github.com/opensearch-project/opensearch-py-ml/commits/1.0.0b1
+[1.1.0]: https://github.com/opensearch-project/opensearch-py-ml/commits/1.1.0
+[1.2.0]: https://github.com/opensearch-project/opensearch-py-ml/commits/1.2.0
