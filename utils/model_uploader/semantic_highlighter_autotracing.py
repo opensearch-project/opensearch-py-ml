@@ -220,6 +220,7 @@ def main(
     upload_prefix: Optional[str] = None,
     model_name: Optional[str] = None,
     skip_deployment: bool = False,
+    device: Optional[str] = None,
 ) -> None:
     """
     Perform model auto-tracing and prepare files for uploading to OpenSearch model hub.
@@ -259,6 +260,7 @@ def main(
     Upload Prefix: {upload_prefix if upload_prefix is not None else 'N/A'}
     Model Name: {model_name if model_name is not None else 'N/A'}
     Skip Deployment: {skip_deployment}
+    Device Selection: Auto (prefer GPU if available)
     ==========================================
     """
     )
@@ -468,4 +470,5 @@ if __name__ == "__main__":
         args.upload_prefix,
         args.model_name,
         args.skip_deployment,
+        None,  # Always use auto device selection
     )

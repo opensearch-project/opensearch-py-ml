@@ -135,7 +135,9 @@ You can customize the deployment using these environment variables:
 
 ### Optional Variables:
 - `INSTANCE_TYPE`: SageMaker instance type (default: "ml.m5.xlarge")
-  - Example: `export INSTANCE_TYPE="ml.m5.xlarge"`
+  - **CPU instances**: "ml.m5.xlarge", "ml.m5.2xlarge", "ml.c5.xlarge"
+  - **GPU instances**: "ml.g4dn.xlarge", "ml.g4dn.2xlarge", "ml.p3.2xlarge"
+  - Example: `export INSTANCE_TYPE="ml.g4dn.xlarge"`
 
 - `AWS_PROFILE`: AWS credentials profile (default: "default")
   - Example: `export AWS_PROFILE="my-profile"`
@@ -143,11 +145,34 @@ You can customize the deployment using these environment variables:
 - `AWS_REGION`: AWS region (default: from AWS configuration)
   - Example: `export AWS_REGION="us-west-2"`
 
+## GPU Deployment
+
+To deploy with GPU acceleration for faster inference:
+
+### Deploy with GPU:
+```bash
+# Set GPU instance type
+export INSTANCE_TYPE="ml.g4dn.xlarge"
+
+# Deploy
+python deploy.py
+```
+
+### GPU Verification:
+The inference logs will show GPU usage:
+```
+Environment Information:
+CUDA Available: True
+CUDA Device Name: NVIDIA T4
+Using GPU for inference
+Model device detected: cuda:0 - Moving tensors to this device for inference
+```
+
 Example configuration:
 ```bash
 # Optional: Set custom instance type and region
 export AWS_REGION="us-west-2"
-export INSTANCE_TYPE="ml.m5.xlarge"
+export INSTANCE_TYPE="ml.g4dn.xlarge"
 
 # Then run the deployment script
 python deploy.py
