@@ -34,14 +34,10 @@ def model_fn(model_dir):
         # Log environment information
         logger.info("Environment Information:")
         logger.info(f"PyTorch Version: {torch.__version__}")
-        logger.info(f"CUDA Available: {torch.cuda.is_available()}")
         if torch.cuda.is_available():
             logger.info(f"CUDA Version: {torch.version.cuda}")
             logger.info(f"Current CUDA Device: {torch.cuda.current_device()}")
             logger.info(f"CUDA Device Name: {torch.cuda.get_device_name()}")
-
-        # Determine device for model loading
-        if torch.cuda.is_available():
             device = torch.device("cuda")
             logger.info("Using GPU for inference")
         else:

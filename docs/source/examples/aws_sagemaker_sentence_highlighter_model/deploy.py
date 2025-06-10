@@ -61,7 +61,10 @@ def download_and_extract_model(url, extract_dir):
         if not pt_files:
             raise FileNotFoundError("No .pt file found in the extracted contents")
         
-        model_path = pt_files[0]  # Use the first .pt file found
+        if len(pt_files) > 1:
+            raise ValueError(f"Expected exactly one .pt file, but found {len(pt_files)}: {pt_files}")
+        
+        model_path = pt_files[0]
         logger.info(f"Found model file at: {model_path}")
         
         # Clean up temporary directory

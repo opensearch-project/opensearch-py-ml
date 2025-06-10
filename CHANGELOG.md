@@ -5,6 +5,7 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Added
 - Add space type mapping for sentence transformer models by @nathaliellenaa in ([#512](https://github.com/opensearch-project/opensearch-py-ml/pull/512))
+- Add example script for deploying semantic highlighter model on aws sagemaker. ([#513](https://github.com/opensearch-project/opensearch-py-ml/pull/513))
 
 ### Changed
 - Update model upload history -  opensearch-project/opensearch-neural-sparse-encoding-doc-v2-distill (v.1.0.0)(TORCH_SCRIPT) by @dhrubo-os ([#415](https://github.com/opensearch-project/opensearch-py-ml/pull/415))
@@ -29,7 +30,6 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Update model upload history -  sentence-transformers/distiluse-base-multilingual-cased-v1 (v.1.0.2)(TORCH_SCRIPT) by @nathaliellenaa ([#545](https://github.com/opensearch-project/opensearch-py-ml/pull/545))
 - Update pretrained_models_all_versions.json (2025-06-02 17:57:40) by @nathaliellenaa ([#547](https://github.com/opensearch-project/opensearch-py-ml/pull/547))
 - Update pretrained_models_all_versions.json by @nathaliellenaa ([#548](https://github.com/opensearch-project/opensearch-py-ml/pull/548))
-- Add example script for deploying semantic highlighter model on aws sagemaker. ([#513](https://github.com/opensearch-project/opensearch-py-ml/pull/513))
 
 ### Fixed
 
