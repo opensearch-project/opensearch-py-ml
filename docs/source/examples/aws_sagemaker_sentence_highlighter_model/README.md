@@ -25,13 +25,13 @@ This directory contains scripts for deploying the OpenSearch Sentence Highlighti
    ```
 
 3. Python 3.10 or higher
-4. Required Python packages (installed via requirements.txt)
+4. Required Python packages (installed via requirements-highlighter.txt)
 
 ## Files
 
 - `deploy.py`: Main deployment script
 - `inference.py`: Model inference code for SageMaker
-- `requirements.txt`: Python package dependencies
+- `requirements-highlighter.txt`: Python package dependencies
 
 ## Quick Start
 
@@ -42,7 +42,7 @@ This directory contains scripts for deploying the OpenSearch Sentence Highlighti
 
 2. Install dependencies:
    ```bash
-   pip install -r requirements.txt
+   pip install -r requirements-highlighter.txt
    ```
 
 3. Run the deployment script:

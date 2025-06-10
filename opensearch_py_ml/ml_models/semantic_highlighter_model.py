@@ -298,7 +298,7 @@ class SemanticHighlighterModel(BaseUploadModel):
             model_id
         )
         tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
-        
+
         # Move model to target device instead of hardcoded CPU
         model = model.to(target_device)
 
@@ -447,7 +447,7 @@ class SemanticHighlighterModel(BaseUploadModel):
     def _test_traced_model(self, traced_model_cpu, original_inputs, model_path):
         """
         Test the traced model on both CPU and GPU to ensure compatibility.
-        
+
         Parameters
         ----------
         traced_model_cpu : torch.jit.ScriptModule
@@ -458,45 +458,49 @@ class SemanticHighlighterModel(BaseUploadModel):
             Path where the model was saved
         """
         print("🧪 Testing traced model compatibility...")
-        
+
         # Test on CPU
         try:
-            loaded_model_cpu = torch.jit.load(model_path, map_location=torch.device("cpu"))
+            loaded_model_cpu = torch.jit.load(
+                model_path, map_location=torch.device("cpu")
+            )
             cpu_inputs = {k: v.cpu() for k, v in original_inputs.items()}
-            
+
             cpu_output = loaded_model_cpu(
                 cpu_inputs["input_ids"],
-                cpu_inputs["attention_mask"], 
+                cpu_inputs["attention_mask"],
                 cpu_inputs["token_type_ids"],
-                cpu_inputs["sentence_ids"]
+                cpu_inputs["sentence_ids"],
             )
             print("CPU inference test passed")
-            
+
         except Exception as e:
             print(f"CPU inference test failed: {e}")
             raise
-        
+
         # Test on GPU (if available)
         if torch.cuda.is_available():
             try:
-                loaded_model_gpu = torch.jit.load(model_path, map_location=torch.device("cuda"))
+                loaded_model_gpu = torch.jit.load(
+                    model_path, map_location=torch.device("cuda")
+                )
                 gpu_inputs = {k: v.cuda() for k, v in original_inputs.items()}
-                
+
                 gpu_output = loaded_model_gpu(
                     gpu_inputs["input_ids"],
                     gpu_inputs["attention_mask"],
-                    gpu_inputs["token_type_ids"], 
-                    gpu_inputs["sentence_ids"]
+                    gpu_inputs["token_type_ids"],
+                    gpu_inputs["sentence_ids"],
                 )
                 print("GPU inference test passed")
-                
+
                 # Compare outputs (move GPU output to CPU for comparison)
                 gpu_output_cpu = tuple(tensor.cpu() for tensor in gpu_output)
                 if len(cpu_output) == len(gpu_output_cpu):
                     print("CPU and GPU outputs have matching structure")
                 else:
                     print("CPU and GPU outputs have different structures")
-                    
+
             except Exception as e:
                 print(f"GPU inference test failed: {e}")
                 print("Model may not work properly on GPU")
