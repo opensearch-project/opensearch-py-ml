@@ -103,10 +103,10 @@ def prepare_model_package():
             raise FileNotFoundError("inference.py not found")
         shutil.copy("inference.py", code_dir)
         
-        # Copy requirements-highlighter.txt to code directory
-        if not os.path.exists("requirements-highlighter.txt"):
-            raise FileNotFoundError("requirements-highlighter.txt not found")
-        shutil.copy("requirements-highlighter.txt", code_dir)
+        # Copy requirements.txt to code directory
+        if not os.path.exists("requirements.txt"):
+            raise FileNotFoundError("requirements.txt not found")
+        shutil.copy("requirements.txt", code_dir)
         
         # Create model.tar.gz
         if os.path.exists("model.tar.gz"):
