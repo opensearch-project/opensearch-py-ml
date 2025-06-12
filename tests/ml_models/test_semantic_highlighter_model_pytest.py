@@ -8,6 +8,7 @@
 import json
 import os
 import shutil
+from unittest.mock import MagicMock, patch
 from zipfile import ZipFile
 
 import pytest
@@ -222,6 +223,159 @@ def test_model_zip_content():
     compare_model_zip_file(
         torch_script_zip_file_path, torch_script_expected_filenames, model_format
     )
+
+    clean_test_folder(TEST_FOLDER)
+
+
+def create_mock_traced_model():
+    """Create a mock traced model for testing"""
+    mock_model = MagicMock()
+    # Mock the model to return a tuple of tensors (typical model output)
+    mock_output = (torch.tensor([[0.1, 0.2, 0.3]]), torch.tensor([[0.4, 0.5, 0.6]]))
+    mock_model.return_value = mock_output
+    return mock_model
+
+
+def test_test_traced_model_cpu_success():
+    """Test _test_traced_model with successful CPU inference"""
+    clean_test_folder(TEST_FOLDER)
+    test_model_cpu = SemanticHighlighterModel(folder_path=TEST_FOLDER)
+
+    # Create mock inputs
+    original_inputs = prepare_example_inputs()
+    model_path = os.path.join(TEST_FOLDER, "test_model.pt")
+
+    # Create a dummy model file for testing
+    os.makedirs(TEST_FOLDER, exist_ok=True)
+    with open(model_path, "wb") as f:
+        f.write(b"dummy model file")
+
+    # Mock torch.jit.load to return our mock model
+    mock_model = create_mock_traced_model()
+
+    with patch("torch.jit.load", return_value=mock_model):
+        with patch("torch.cuda.is_available", return_value=False):
+            # This should not raise any exceptions
+            test_model_cpu._test_traced_model(mock_model, original_inputs, model_path)
+
+    clean_test_folder(TEST_FOLDER)
+
+
+def test_test_traced_model_gpu_success_and_output_comparison():
+    """Test _test_traced_model with GPU success and output structure comparison"""
+    clean_test_folder(TEST_FOLDER)
+    test_model_gpu = SemanticHighlighterModel(folder_path=TEST_FOLDER)
+
+    # Create mock inputs
+    original_inputs = prepare_example_inputs()
+    model_path = os.path.join(TEST_FOLDER, "test_model.pt")
+
+    # Create a dummy model file for testing
+    os.makedirs(TEST_FOLDER, exist_ok=True)
+    with open(model_path, "wb") as f:
+        f.write(b"dummy model file")
+
+    # Mock CPU model returns 2 tensors
+    mock_cpu_model = MagicMock()
+    cpu_output = (torch.tensor([[0.1, 0.2]]), torch.tensor([[0.3, 0.4]]))
+    mock_cpu_model.return_value = cpu_output
+
+    # Mock GPU model returns 3 tensors (different structure to test comparison logic)
+    mock_gpu_model = MagicMock()
+    gpu_tensor1 = MagicMock()
+    gpu_tensor1.cpu.return_value = torch.tensor([[0.1, 0.2]])
+    gpu_tensor2 = MagicMock()
+    gpu_tensor2.cpu.return_value = torch.tensor([[0.3, 0.4]])
+    gpu_tensor3 = MagicMock()
+    gpu_tensor3.cpu.return_value = torch.tensor([[0.5, 0.6]])
+    gpu_output = (gpu_tensor1, gpu_tensor2, gpu_tensor3)
+    mock_gpu_model.return_value = gpu_output
+
+    def mock_jit_load(path, map_location):
+        if map_location.type == "cpu":
+            return mock_cpu_model
+        else:
+            return mock_gpu_model
+
+    with patch("torch.jit.load", side_effect=mock_jit_load):
+        with patch("torch.cuda.is_available", return_value=True):
+            # This covers GPU success path, output comparison, and different structures message
+            test_model_gpu._test_traced_model(
+                mock_cpu_model, original_inputs, model_path
+            )
+
+    clean_test_folder(TEST_FOLDER)
+
+
+def test_test_traced_model_failure_scenarios():
+    """Test _test_traced_model with various failure scenarios"""
+    clean_test_folder(TEST_FOLDER)
+
+    # Test CPU inference failure
+    test_model_cpu_fail = SemanticHighlighterModel(folder_path=TEST_FOLDER)
+    original_inputs = prepare_example_inputs()
+    model_path = os.path.join(TEST_FOLDER, "test_model.pt")
+
+    os.makedirs(TEST_FOLDER, exist_ok=True)
+    with open(model_path, "wb") as f:
+        f.write(b"dummy model file")
+
+    # Mock model that raises an exception for CPU inference
+    mock_model = MagicMock()
+    mock_model.side_effect = RuntimeError("CPU inference failed")
+
+    with patch("torch.jit.load", return_value=mock_model):
+        with patch("torch.cuda.is_available", return_value=False):
+            with pytest.raises(RuntimeError, match="CPU inference failed"):
+                test_model_cpu_fail._test_traced_model(
+                    mock_model, original_inputs, model_path
+                )
+
+    # Test model loading failure
+    test_model_load_fail = SemanticHighlighterModel(folder_path=TEST_FOLDER)
+    with patch("torch.jit.load", side_effect=FileNotFoundError("Model file not found")):
+        with patch("torch.cuda.is_available", return_value=False):
+            with pytest.raises(FileNotFoundError, match="Model file not found"):
+                test_model_load_fail._test_traced_model(
+                    None, original_inputs, model_path
+                )
+
+    clean_test_folder(TEST_FOLDER)
+
+
+def test_test_traced_model_gpu_failure_and_no_gpu():
+    """Test _test_traced_model with GPU failure and no GPU scenarios"""
+    clean_test_folder(TEST_FOLDER)
+    test_model = SemanticHighlighterModel(folder_path=TEST_FOLDER)
+
+    original_inputs = prepare_example_inputs()
+    model_path = os.path.join(TEST_FOLDER, "test_model.pt")
+
+    os.makedirs(TEST_FOLDER, exist_ok=True)
+    with open(model_path, "wb") as f:
+        f.write(b"dummy model file")
+
+    # Test GPU failure scenario (should not raise exception)
+    mock_cpu_model = create_mock_traced_model()
+    mock_gpu_model = MagicMock()
+    mock_gpu_model.side_effect = RuntimeError("GPU inference failed")
+
+    def mock_jit_load(path, map_location):
+        if map_location.type == "cpu":
+            return mock_cpu_model
+        else:
+            return mock_gpu_model
+
+    with patch("torch.jit.load", side_effect=mock_jit_load):
+        with patch("torch.cuda.is_available", return_value=True):
+            # GPU failure should be handled gracefully
+            test_model._test_traced_model(mock_cpu_model, original_inputs, model_path)
+
+    # Test no GPU available scenario
+    with patch("torch.jit.load", return_value=mock_cpu_model):
+        with patch("torch.cuda.is_available", return_value=False):
+            # Should skip GPU testing
+            test_model._test_traced_model(mock_cpu_model, original_inputs, model_path)
 
     clean_test_folder(TEST_FOLDER)
 

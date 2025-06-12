@@ -124,7 +124,10 @@ class TraceableBertTaggerForSentenceExtractionWithBackoff(BertPreTrainedModel):
                             dim=-2, keepdim=True
                         )
                     )
-                padding = torch.zeros((int(max_sentences - num_sentences), d_model))
+                padding = torch.zeros(
+                    (int(max_sentences - num_sentences), d_model),
+                    device=sequence_output.device,
+                )
                 out.append(padding)
                 out = torch.cat(out, dim=0)
                 agg_output.append(out)
@@ -286,12 +289,18 @@ class SemanticHighlighterModel(BaseUploadModel):
 
         zip_file_path = os.path.join(model_output_path, zip_file_name)
 
+        # Auto device selection: prefer GPU if available, fallback to CPU
+        target_device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        print(f"Using device for tracing: {target_device}")
+
         # Download and initialize model
         model = TraceableBertTaggerForSentenceExtractionWithBackoff.from_pretrained(
             model_id
         )
         tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
-        model = model.to("cpu")
+
+        # Move model to target device instead of hardcoded CPU
+        model = model.to(target_device)
 
         # Save tokenizer files
         tokenizer_path = os.path.join(self.folder_path, "tokenizer")
@@ -299,20 +308,32 @@ class SemanticHighlighterModel(BaseUploadModel):
         tokenizer.save_pretrained(tokenizer_path)
         print(f"Tokenizer files saved to {tokenizer_path}")
 
-        # Trace the model with example inputs
+        # Move example inputs to the same device as the model
+        device_inputs = {}
+        for key, tensor in example_inputs.items():
+            device_inputs[key] = tensor.to(target_device)
+            print(f"Moved {key} to {target_device}: {device_inputs[key].shape}")
+
+        # Trace the model with example inputs on the target device
         traced_model = torch.jit.trace(
             model,
             (
-                example_inputs["input_ids"],
-                example_inputs["attention_mask"],
-                example_inputs["token_type_ids"],
-                example_inputs["sentence_ids"],
+                device_inputs["input_ids"],
+                device_inputs["attention_mask"],
+                device_inputs["token_type_ids"],
+                device_inputs["sentence_ids"],
             ),
         )
 
+        # Move traced model to CPU for saving (standard practice)
+        traced_model_cpu = traced_model.cpu()
+
         # Save the traced model
-        torch.jit.save(traced_model, model_path)
+        torch.jit.save(traced_model_cpu, model_path)
         print(f"Model file saved to {model_path}")
+
+        # Test traced model on both CPU and GPU (if available)
+        self._test_traced_model(traced_model_cpu, device_inputs, model_path)
 
         # Create zip file with model and tokenizer
         with ZipFile(str(zip_file_path), "w") as zipObj:
@@ -422,3 +443,66 @@ class SemanticHighlighterModel(BaseUploadModel):
 
         print(f"Model config file saved at: {model_config_file_path}")
         return model_config_file_path
+
+    def _test_traced_model(self, traced_model_cpu, original_inputs, model_path):
+        """
+        Test the traced model on both CPU and GPU to ensure compatibility.
+
+        Parameters
+        ----------
+        traced_model_cpu : torch.jit.ScriptModule
+            The traced model on CPU
+        original_inputs : dict
+            Original inputs used for tracing
+        model_path : str
+            Path where the model was saved
+        """
+        print("🧪 Testing traced model compatibility...")
+
+        # Test on CPU
+        try:
+            loaded_model_cpu = torch.jit.load(
+                model_path, map_location=torch.device("cpu")
+            )
+            cpu_inputs = {k: v.cpu() for k, v in original_inputs.items()}
+
+            cpu_output = loaded_model_cpu(
+                cpu_inputs["input_ids"],
+                cpu_inputs["attention_mask"],
+                cpu_inputs["token_type_ids"],
+                cpu_inputs["sentence_ids"],
+            )
+            print("CPU inference test passed")
+
+        except Exception as e:
+            print(f"CPU inference test failed: {e}")
+            raise
+
+        # Test on GPU (if available)
+        if torch.cuda.is_available():
+            try:
+                loaded_model_gpu = torch.jit.load(
+                    model_path, map_location=torch.device("cuda")
+                )
+                gpu_inputs = {k: v.cuda() for k, v in original_inputs.items()}
+
+                gpu_output = loaded_model_gpu(
+                    gpu_inputs["input_ids"],
+                    gpu_inputs["attention_mask"],
+                    gpu_inputs["token_type_ids"],
+                    gpu_inputs["sentence_ids"],
+                )
+                print("GPU inference test passed")
+
+                # Compare outputs (move GPU output to CPU for comparison)
+                gpu_output_cpu = tuple(tensor.cpu() for tensor in gpu_output)
+                if len(cpu_output) == len(gpu_output_cpu):
+                    print("CPU and GPU outputs have matching structure")
+                else:
+                    print("CPU and GPU outputs have different structures")
+
+            except Exception as e:
+                print(f"GPU inference test failed: {e}")
+                print("Model may not work properly on GPU")
+        else:
+            print("GPU not available, skipping GPU test")
