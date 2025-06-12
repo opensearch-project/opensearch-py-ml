@@ -368,5 +368,15 @@
         "Embedding Dimension": "512",
         "Pooling Mode": "N/A",
         "Workflow Run ID": "15400467060"
+    },
+    {
+        "Model Uploader": "@nathaliellenaa",
+        "Upload Time": "2025-06-12 10:31:57",
+        "Model ID": "opensearch-project/opensearch-semantic-highlighter-v1",
+        "Model Version": "1.0.0",
+        "Model Format": "TORCH_SCRIPT",
+        "Embedding Dimension": "N/A",
+        "Pooling Mode": "N/A",
+        "Workflow Run ID": "15617103395"
     }
 ]
