@@ -21,7 +21,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Get configuration from environment variables
-INSTANCE_TYPE = os.getenv('INSTANCE_TYPE', 'ml.m5.xlarge')
+INSTANCE_TYPE = os.getenv('INSTANCE_TYPE', 'ml.g5.xlarge')
 
 def get_endpoint_name():
     """Generate a unique endpoint name with timestamp"""
@@ -81,7 +81,7 @@ def prepare_model_package():
     try:
         logger.info("Preparing model package...")
         model_dir = "model"
-        
+
         # Clean up existing model directory
         if os.path.exists(model_dir):
             shutil.rmtree(model_dir)
@@ -89,7 +89,7 @@ def prepare_model_package():
 
         # model from OpenSearch pre-trained model hub
         model_url = "https://artifacts.opensearch.org/models/ml-models/amazon/sentence-highlighting/opensearch-semantic-highlighter-v1/1.0.0/torch_script/sentence-highlighting_opensearch-semantic-highlighter-v1-1.0.0-torch_script.zip"
-        
+
         # Download and extract model
         model_path = download_and_extract_model(model_url, model_dir)
         model_filename = os.path.basename(model_path)
@@ -232,7 +232,7 @@ def deploy_model():
         # Get default bucket (creates it if it doesn't exist)
         bucket = session.default_bucket()
         logger.info(f"Using default SageMaker bucket: {bucket}")
-        
+
         # Upload model to S3
         s3_prefix = 'semantic-highlighter'
         logger.info(f"Uploading model to S3: {bucket}/{s3_prefix}")
@@ -256,7 +256,7 @@ def deploy_model():
             sagemaker_session=session
         )
         logger.info("SageMaker model created successfully")
-        
+
         # Deploy endpoint
         logger.info("Starting endpoint deployment...")
         logger.info("This may take several minutes...")
