@@ -1,6 +1,7 @@
 import json
 import os
 import logging
+import time
 import nltk
 import torch
 import torch.nn.functional
@@ -13,74 +14,101 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-logger.info("inference.py script started")
+# Global variables for core optimizations
+GLOBAL_DEVICE = None
+TOKENIZER_CACHE = None
+
+logger.info("Optimized inference script started")
 
 def ensure_nltk_data():
     """Ensure NLTK punkt data is available"""
     try:
-        nltk.download('punkt')
-        nltk.download('punkt_tab')
+        nltk.download('punkt', quiet=True)
+        nltk.download('punkt_tab', quiet=True)
         logger.info("Successfully downloaded NLTK data")
     except Exception as e:
         logger.error(f"Error downloading NLTK data: {str(e)}")
         raise
 
-# Ensure NLTK data is available at startup
-ensure_nltk_data()
+def setup_local_tokenizer():
+    """Setup local tokenizer cache to avoid HuggingFace API calls"""
+    global TOKENIZER_CACHE
+    
+    try:
+        cache_dir = "/tmp/tokenizer_cache"
+        os.makedirs(cache_dir, exist_ok=True)
+        
+        tokenizer_name = "bert-base-uncased"
+        tokenizer_path = os.path.join(cache_dir, "bert-base-uncased")
+        
+        if not os.path.exists(tokenizer_path):
+            logger.info("Downloading and caching tokenizer locally...")
+            tokenizer = AutoTokenizer.from_pretrained(
+                tokenizer_name,
+                cache_dir=cache_dir,
+                local_files_only=False
+            )
+            tokenizer.save_pretrained(tokenizer_path)
+            logger.info(f"Tokenizer cached at: {tokenizer_path}")
+        else:
+            logger.info("Using existing cached tokenizer")
+        
+        # Load tokenizer from local cache
+        TOKENIZER_CACHE = AutoTokenizer.from_pretrained(
+            tokenizer_path,
+            local_files_only=True
+        )
+        logger.info("Local tokenizer setup completed successfully")
+        
+    except Exception as e:
+        logger.error(f"Failed to setup local tokenizer: {str(e)}")
+        logger.info("Falling back to online tokenizer")
+        try:
+            TOKENIZER_CACHE = AutoTokenizer.from_pretrained("bert-base-uncased")
+            logger.info("Fallback tokenizer loaded successfully")
+        except Exception as fallback_error:
+            logger.error(f"Fallback tokenizer also failed: {str(fallback_error)}")
+            TOKENIZER_CACHE = None
 
 def model_fn(model_dir):
     """Load the model for inference"""
-    try:
-        # Log environment information
-        logger.info("Environment Information:")
-        logger.info(f"PyTorch Version: {torch.__version__}")
-        if torch.cuda.is_available():
-            logger.info(f"CUDA Version: {torch.version.cuda}")
-            logger.info(f"Current CUDA Device: {torch.cuda.current_device()}")
-            logger.info(f"CUDA Device Name: {torch.cuda.get_device_name()}")
-            device = torch.device("cuda")
-            logger.info("Using GPU for inference")
-        else:
-            device = torch.device("cpu")
-            logger.info("Using CPU for inference")
-
-        # Load model file
-        model_path = os.path.join(model_dir, "opensearch-semantic-highlighter-v1.pt")
-        logger.info(f"Loading model from: {model_path}")
-        if not os.path.exists(model_path):
-            raise FileNotFoundError(f"Model file not found at {model_path}")
-
-        # Load the model with explicit device mapping
-        model = torch.jit.load(model_path, map_location=device)
-        logger.info("Model loaded successfully")
-        model.eval()
-        
-        return model
-        
-    except Exception as e:
-        logger.error(f"Error loading model: {str(e)}")
-        raise
+    global GLOBAL_DEVICE
+    
+    logger.info(f"Loading model from {model_dir}")
+    
+    # Setup device with GPU optimization
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    GLOBAL_DEVICE = device
+    logger.info(f"Using device: {device}")
+    
+    # Ensure NLTK data is available
+    ensure_nltk_data()
+    
+    # Setup local tokenizer cache
+    setup_local_tokenizer()
+    
+    # Find and load the model file
+    model_files = [f for f in os.listdir(model_dir) if f.endswith('.pt')]
+    if not model_files:
+        raise FileNotFoundError(f"No .pt model file found in {model_dir}")
+    
+    model_path = os.path.join(model_dir, model_files[0])
+    logger.info(f"Loading model from: {model_path}")
+    
+    # Load model with proper device mapping
+    model = torch.jit.load(model_path, map_location=device)
+    model.eval()
+    
+    # GPU memory optimization
+    if device.type == 'cuda':
+        torch.cuda.empty_cache()
+        logger.info(f"GPU memory after loading: {torch.cuda.memory_allocated()/1024**2:.1f}MB")
+    
+    logger.info("Model loaded successfully")
+    return model
 
 def input_fn(request_body, request_content_type):
-    """
-    Deserialize and prepare the prediction input
-    
-    Expected input format (JSON):
-    {
-        "question": "What is the main topic discussed?",
-        "context": "This is a long text document containing multiple sentences. The model will identify which sentences are most relevant to answering the question."
-    }
-    
-    Args:
-        request_body: The request body as bytes
-        request_content_type: Content type of the request (should be 'application/json')
-    
-    Returns:
-        dict: Parsed input data containing 'question' and 'context' fields
-    
-    Raises:
-        ValueError: If content type is not supported or required fields are missing
-    """
+    """Parse input data"""
     try:
         if request_content_type == 'application/json':
             input_data = json.loads(request_body)
@@ -94,19 +122,38 @@ def input_fn(request_body, request_content_type):
             return input_data
         raise ValueError(f"Unsupported content type: {request_content_type}")
     except Exception as e:
-        logger.error(f"Error processing input: {str(e)}", exc_info=True)
+        logger.error(f"Error processing input: {str(e)}")
         raise
 
+def get_tokenizer():
+    """Get cached tokenizer instance"""
+    global TOKENIZER_CACHE
+    
+    if TOKENIZER_CACHE is not None:
+        return TOKENIZER_CACHE
+    
+    # Fallback: try to load tokenizer
+    try:
+        TOKENIZER_CACHE = AutoTokenizer.from_pretrained("bert-base-uncased")
+        return TOKENIZER_CACHE
+    except Exception as e:
+        logger.error(f"Failed to load tokenizer: {str(e)}")
+        raise RuntimeError("Tokenizer not available")
+
 def predict_fn(input_data, model):
-    """Apply model to the input data"""
+    """Apply model to the input data with optimizations"""
+    start_time = time.time()
+    
     try:
         # Get input data
         question = input_data['question']
         context = input_data['context']
         
+        # Use cached tokenizer for better performance
+        tokenizer = get_tokenizer()
+        
         # Determine device for tensor operations
-        device = next(model.parameters()).device
-        logger.info(f"Model device detected: {device} - Moving tensors to this device for inference")
+        device = GLOBAL_DEVICE or next(model.parameters()).device
         
         # Step 1: Split context into sentences and assign sentence IDs
         sent_list = nltk.sent_tokenize(context)
@@ -128,7 +175,6 @@ def predict_fn(input_data, model):
             word_level_sentence_ids.extend([i] * len(sent_words))
         
         # Step 2: Tokenize question and context
-        tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
         question_words = question.split(' ')
         context_words = context.split(' ')
         
@@ -149,7 +195,6 @@ def predict_fn(input_data, model):
         sentence_ids = []
         
         for i in range(n_chunks):
-            logger.info(f"Processing chunk {i+1}/{n_chunks}")
             # Find where the context starts
             sequence_ids = tokenized_examples.sequence_ids(i)
             token_start_index = 0
@@ -183,7 +228,6 @@ def predict_fn(input_data, model):
             for x in output:
                 highlight_sentences.extend(x.tolist())
         
-        
         # Step 5: Format output with positions
         highlighted_sentences = []
         for h in highlight_sentences:
@@ -197,39 +241,18 @@ def predict_fn(input_data, model):
                 'position': h
             })
 
+        # Add basic performance info
+        processing_time = (time.time() - start_time) * 1000
+        logger.info(f"Processing completed in {processing_time:.1f}ms")
+        
         return highlighted_sentences
         
     except Exception as e:
-        logger.error(f"Error in prediction: {str(e)}", exc_info=True)
+        logger.error(f"Error in prediction: {str(e)}")
         raise
 
 def output_fn(prediction_output, response_content_type):
-    """
-    Serialize and prepare the prediction output
-    
-    Output format (JSON):
-    {
-        "highlights": [
-            {
-                "start": 45,
-                "end": 123,
-                "text": "This sentence is relevant to the question.",
-                "position": 2
-            },
-            ...
-        ]
-    }
-    
-    Args:
-        prediction_output: List of highlighted sentences with metadata
-        response_content_type: Content type for the response (should be 'application/json')
-    
-    Returns:
-        str: JSON-formatted response
-    
-    Raises:
-        ValueError: If content type is not supported
-    """
+    """Serialize and prepare the prediction output"""
     try:
         if response_content_type == 'application/json':
             # Format the output in the desired structure
@@ -251,5 +274,7 @@ def output_fn(prediction_output, response_content_type):
             return response
         raise ValueError(f"Unsupported content type: {response_content_type}")
     except Exception as e:
-        logger.error(f"Error preparing output: {str(e)}", exc_info=True)
+        logger.error(f"Error preparing output: {str(e)}")
         raise
+
+logger.info("Inference script loaded successfully")

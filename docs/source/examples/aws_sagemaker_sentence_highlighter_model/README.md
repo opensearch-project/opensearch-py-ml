@@ -136,7 +136,7 @@ print(result)
 You can customize the deployment using these environment variables:
 
 ### Optional Variables:
-- `INSTANCE_TYPE`: SageMaker instance type (default: "ml.m5.xlarge")
+- `INSTANCE_TYPE`: SageMaker instance type (default: "ml.g5.xlarge")
   - **CPU instances**: "ml.m5.xlarge", "ml.m5.2xlarge", "ml.c5.xlarge"
   - **GPU instances**: "ml.g4dn.xlarge", "ml.g4dn.2xlarge", "ml.p3.2xlarge"
   - Example: `export INSTANCE_TYPE="ml.g4dn.xlarge"`
@@ -154,7 +154,7 @@ To deploy with GPU acceleration for faster inference:
 ### Deploy with GPU:
 ```bash
 # Set GPU instance type
-export INSTANCE_TYPE="ml.g4dn.xlarge"
+export INSTANCE_TYPE="ml.g5.xlarge"
 
 # Deploy
 python deploy.py
@@ -174,7 +174,7 @@ Example configuration:
 ```bash
 # Optional: Set custom instance type and region
 export AWS_REGION="us-west-2"
-export INSTANCE_TYPE="ml.g4dn.xlarge"
+export INSTANCE_TYPE="ml.g5.xlarge"
 
 # Then run the deployment script
 python deploy.py
