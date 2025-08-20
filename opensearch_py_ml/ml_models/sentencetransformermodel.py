@@ -1436,7 +1436,7 @@ class SentenceTransformerModel(BaseUploadModel):
             "version": version_number,
             "description": description,
             "model_format": model_format,
-            "model_task_type": "TEXT_EMBEDDING",
+            "function_name": "TEXT_EMBEDDING",
             "model_config": {
                 "model_type": model_type,
                 "embedding_dimension": embedding_dimension,

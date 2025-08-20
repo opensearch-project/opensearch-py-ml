@@ -25,7 +25,7 @@ FRAMEWORK_TYPE = "framework_type"
 MODEL_CONTENT_HASH_VALUE = "model_content_hash_value"
 MODEL_GROUP_ID = "model_group_id"
 MODEL_FUNCTION_NAME = "function_name"
-MODEL_TASK_TYPE = "model_task_type"
+
 # URL of the license file for the OpenSearch project
 LICENSE_URL = "https://github.com/opensearch-project/opensearch-py-ml/raw/main/LICENSE"
 # Name of the function used for sparse encoding

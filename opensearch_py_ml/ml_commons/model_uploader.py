@@ -26,7 +26,6 @@ from opensearch_py_ml.ml_commons.ml_common_utils import (
     MODEL_GROUP_ID,
     MODEL_MAX_SIZE,
     MODEL_NAME_FIELD,
-    MODEL_TASK_TYPE,
     MODEL_TYPE,
     MODEL_VERSION_FIELD,
     TOTAL_CHUNKS_FIELD,
@@ -182,9 +181,6 @@ class ModelUploader:
                 raise ValueError(f"{TOTAL_CHUNKS_FIELD} can not be empty")
             if not model_meta.get(MODEL_CONFIG_FIELD):
                 if model_meta.get(MODEL_FUNCTION_NAME) not in [
-                    "SPARSE_ENCODING",
-                    "SPARSE_TOKENIZE",
-                ] and model_meta.get(MODEL_TASK_TYPE) not in [
                     "SPARSE_ENCODING",
                     "SPARSE_TOKENIZE",
                 ]:

@@ -2,7 +2,7 @@
   "name": "all-MiniLM-L6-v2",
   "version": 1,
   "model_format": "TORCH_SCRIPT",
-  "model_task_type": "TEXT_EMBEDDING",
+  "function_name": "TEXT_EMBEDDING",
   "model_config": {
     "model_type": "bert",
     "embedding_dimension": 384,
