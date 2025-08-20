@@ -56,6 +56,7 @@ def trace_sparse_encoding_model(
     sparse_prune_ratio: float = 0,
     activation: str = None,
     is_tokenizer: bool = False,
+    trust_remote_code: bool = False,
 ) -> Tuple[str, str]:
     """
     Trace the pretrained sparse encoding model, create a model config file,
@@ -75,6 +76,8 @@ def trace_sparse_encoding_model(
     :type activation: str
     :param is_tokenizer: Whether to trace a sparse encoding model or just tokenizer
     :type is_tokenizer: bool
+    :param trust_remote_code: Whether to trust remote model code
+    :type trust_remote_code: bool
     :return: Tuple of model_path (path to model zip file) and model_config_path (path to model config json file)
     :rtype: Tuple[str, str]
     """
@@ -88,7 +91,7 @@ def trace_sparse_encoding_model(
     # 1.) Initiate a sparse encoding model class object
     model_cls = SparseTokenizeModel if is_tokenizer else SparseEncodingModel
     pre_trained_model = init_sparse_model(
-        model_cls, model_id, folder_path, sparse_prune_ratio, activation
+        model_cls, model_id, folder_path, sparse_prune_ratio, activation, trust_remote_code
     )
 
     # 2.) Save the model in the specified format
@@ -207,6 +210,7 @@ def main(
     model_name: Optional[str] = None,
     sparse_prune_ratio: float = 0,
     activation: str = None,
+    trust_remote_code: bool = False,
     is_tokenizer: bool = False,
 ) -> None:
     """
@@ -228,6 +232,8 @@ def main(
     :type sparse_prune_ratio: float
     :param activation: Sparse model activation type. The default None means log(1+relu(x)).
     :type activation: str
+    :param trust_remote_code: Whether to trust remote model code
+    :type trust_remote_code: bool
     :param is_tokenizer: Whether to trace a sparse encoding model or just tokenizer
     :type is_tokenizer: bool
     :return: No return value expected
@@ -245,6 +251,7 @@ def main(
     Upload Prefix: {upload_prefix if upload_prefix is not None else 'N/A'}
     Sparse Prune Ratio: {sparse_prune_ratio}
     Activation: {activation if activation is not None else 'N/A'}
+    Trust Remote Code: {trust_remote_code}
     Is Tokenizer: {is_tokenizer}
     ==========================================
     """
@@ -258,7 +265,7 @@ def main(
     ml_client = MLCommonClient(OPENSEARCH_TEST_CLIENT)
     model_cls = SparseTokenizeModel if is_tokenizer else SparseEncodingModel
     pre_trained_model = init_sparse_model(
-        model_cls, model_id, None, sparse_prune_ratio, activation
+        model_cls, model_id, None, sparse_prune_ratio, activation, trust_remote_code
     )
     original_encoding_datas = pre_trained_model.process_sparse_encoding(TEST_SENTENCES)
     pre_trained_model.save(path=TEMP_MODEL_PATH)
@@ -282,6 +289,7 @@ def main(
             sparse_prune_ratio=sparse_prune_ratio,
             activation=activation,
             is_tokenizer=is_tokenizer,
+            trust_remote_code=trust_remote_code,
         )
 
         torchscript_encoding_datas = register_and_deploy_sparse_encoding_model(
@@ -329,6 +337,7 @@ def main(
             sparse_prune_ratio=sparse_prune_ratio,
             activation=activation,
             is_tokenizer=is_tokenizer,
+            trust_remote_code=trust_remote_code,
         )
 
         onnx_embedding_datas = register_and_deploy_sparse_encoding_model(
@@ -427,6 +436,14 @@ if __name__ == "__main__":
         help="sparse encoding model activation",
     )
     parser.add_argument(
+        "-trc",
+        "--trust_remote_code",
+        type=bool,
+        nargs="?",
+        default=False,
+        help="Whether to trust remote model code",
+    )
+    parser.add_argument(
         "-t",
         "--is_tokenizer",
         action="store_true",
@@ -451,5 +468,6 @@ if __name__ == "__main__":
         args.model_name,
         sparse_prune_ratio,
         args.activation,
+        args.trust_remote_code,
         args.is_tokenizer,
     )

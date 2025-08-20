@@ -50,12 +50,13 @@ class SparseEncodingModel(SparseModel):
         overwrite: bool = False,
         sparse_prune_ratio: float = 0,
         activation: str = None,
+        trust_remote_code: bool = False,
     ) -> None:
 
         super().__init__(model_id, folder_path, overwrite)
         self.tokenizer = AutoTokenizer.from_pretrained(model_id)
         self.backbone_model = AutoModelForMaskedLM.from_pretrained(
-            model_id, _attn_implementation="eager"
+            model_id, _attn_implementation="eager", trust_remote_code=trust_remote_code
         )
         default_folder_path = os.path.join(
             os.getcwd(), "opensearch_neural_sparse_model_files"
@@ -78,7 +79,7 @@ class SparseEncodingModel(SparseModel):
         self.onnx_zip_file_path = None
         self.sparse_prune_ratio = sparse_prune_ratio
         self.activation = activation
-
+        
     def save_as_pt(
         self,
         sentences: [str],

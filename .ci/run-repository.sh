@@ -77,13 +77,14 @@ elif [[ "$TASK_TYPE" == "SentenceTransformerTrace" || "$TASK_TYPE" == "SparseTra
   echo -e "\033[34;1mINFO:\033[0m ACTIVATION: ${ACTIVATION:-N/A}\033[0m"
   echo -e "\033[34;1mINFO:\033[0m MODEL_DESCRIPTION: ${MODEL_DESCRIPTION:-N/A}\033[0m"
   echo -e "\033[34;1mINFO:\033[0m MODEL_NAME: ${MODEL_NAME:-N/A}\033[0m"
+  echo -e "\033[34;1mINFO:\033[0m TRUST_REMOTE_CODE: ${TRUST_REMOTE_CODE:-N/A}\033[0m"
 
   if [[ "$TASK_TYPE" == "SentenceTransformerTrace" ]]; then
       NOX_TRACE_TYPE="trace"
       EXTRA_ARGS="-ed ${EMBEDDING_DIMENSION} -pm ${POOLING_MODE}"
   elif [[ "$TASK_TYPE" == "SparseTrace" ]]; then
       NOX_TRACE_TYPE="sparsetrace"
-      EXTRA_ARGS="-spr ${SPARSE_PRUNE_RATIO} -act ${ACTIVATION}"
+      EXTRA_ARGS="-spr ${SPARSE_PRUNE_RATIO} -act ${ACTIVATION} -trc ${TRUST_REMOTE_CODE}"
   elif [[ "$TASK_TYPE" == "SparseTokenizerTrace" ]]; then
       NOX_TRACE_TYPE="sparsetrace"
       # use extra args to trigger the tokenizer tracing logics
