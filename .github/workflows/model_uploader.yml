@@ -67,7 +67,7 @@ on:
             "sparse_prune_ratio": (Optional) Float. Specifies the model-side prune ratio based on max values. Sparse model only.
             "activation": (Optional) String. Specifies the activation function for the sparse model. Sparse model only.
             "model_name": (Optional) String. Specifies the model name for uploading. Example: transforms "sentence-transformers/model" to "sentence-transformers/{model_name}",
-            "trust_remote_code": (Optional) Boolean. Specifies whether to trust remote model code.
+            "model_init_kwargs": (Optional) Object. JSON object to pass to from_pretrained via **kwargs.
           }
           
           Example:
@@ -103,27 +103,27 @@ jobs:
         sparse_prune_ratio=0
         activation=""
         model_name="${model_id##*/}"
-        trust_remote_code=false
+        model_init_kwargs="{}"
 
         if [ "$custom_params" != "{}" ] && [ -n "$custom_params" ]; then
           tmp_up=$(echo "$custom_params" | jq -r '.upload_prefix | select(.!=null)')
           tmp_spr=$(echo "$custom_params" | jq -r '.sparse_prune_ratio | select(.!=null)')
           tmp_act=$(echo "$custom_params" | jq -r '.activation | select(.!=null)')
           tmp_mn=$(echo "$custom_params" | jq -r '.model_name | select(.!=null)')
-          tmp_trc=$(echo "$custom_params" | jq -r '.trust_remote_code | select(.!=null)')
+          tmp_mik=$(echo "$custom_params" | jq -c '.model_init_kwargs | select(.!=null)')
 
           [ -n "$tmp_up" ] && upload_prefix="$tmp_up"
           [ -n "$tmp_spr" ] && sparse_prune_ratio="$tmp_spr"
           [ -n "$tmp_act" ] && activation="$tmp_act"
           [ -n "$tmp_mn" ] && model_name="$tmp_mn"
-          [ -n "$tmp_trc" ] && trust_remote_code="$tmp_trc"
+          [ -n "$tmp_mik" ] && model_init_kwargs="$tmp_mik"
         fi
 
         echo "upload_prefix=$upload_prefix" >> $GITHUB_OUTPUT
         echo "sparse_prune_ratio=$sparse_prune_ratio" >> $GITHUB_OUTPUT
         echo "activation=$activation" >> $GITHUB_OUTPUT
         echo "model_name=$model_name" >> $GITHUB_OUTPUT
-        echo "trust_remote_code=$trust_remote_code" >> $GITHUB_OUTPUT
+        echo "model_init_kwargs=$model_init_kwargs" >> $GITHUB_OUTPUT
     - name: Initiate folders
       # This scripts init the folders path variables.
       # 1. Retrieves the input model_id.
@@ -172,7 +172,7 @@ jobs:
         - Model Prefix Folder: ${{ steps.init_folders.outputs.model_prefix_folder }}
         - Sparse Prune Ratio: ${{ steps.parse_custom_params.outputs.sparse_prune_ratio || 'N/A' }}
         - Activation: ${{ steps.parse_custom_params.outputs.activation || 'N/A' }}
-        - Trust Remote Code: ${{ steps.parse_custom_params.outputs.trust_remote_code || 'N/A' }}
+        - Model Init Kwargs: ${{ steps.parse_custom_params.outputs.model_init_kwargs || '{}' }}
         
         ======== Workflow Output Information =========
         - Embedding Verification: Passed"
@@ -196,7 +196,7 @@ jobs:
       sparse_prune_ratio: ${{ steps.parse_custom_params.outputs.sparse_prune_ratio }}
       activation: ${{ steps.parse_custom_params.outputs.activation }}
       model_name: ${{ steps.parse_custom_params.outputs.model_name }}
-      trust_remote_code: ${{ steps.parse_custom_params.outputs.trust_remote_code }}
+      model_init_kwargs: ${{ steps.parse_custom_params.outputs.model_init_kwargs }}
 
   # Step 3: Check if the model already exists in the model hub
   checking-out-model-hub:
@@ -274,7 +274,7 @@ jobs:
           echo "MODEL_NAME=${{ needs.init-workflow-var.outputs.model_name }}" >> $GITHUB_ENV
           echo "SPARSE_PRUNE_RATIO=${{ needs.init-workflow-var.outputs.sparse_prune_ratio }}" >> $GITHUB_ENV
           echo "ACTIVATION=${{ needs.init-workflow-var.outputs.activation }}" >> $GITHUB_ENV
-          echo "TRUST_REMOTE_CODE=${{ needs.init-workflow-var.outputs.trust_remote_code }}" >> $GITHUB_ENV
+          echo "MODEL_INIT_KWARGS=${{ needs.init-workflow-var.outputs.model_init_kwargs }}" >> $GITHUB_ENV
       - name: Autotracing ${{ matrix.cluster }} secured=${{ matrix.secured }} version=${{matrix.entry.opensearch_version}}
         run: "./.ci/run-tests ${{ matrix.cluster }} ${{ matrix.secured }} ${{ matrix.entry.opensearch_version }} ${{github.event.inputs.model_type}}Trace"
         shell: bash

@@ -8,7 +8,7 @@ import json
 import os
 import shutil
 import warnings
-from typing import Type, TypeVar
+from typing import Any, Dict, Optional, Type, TypeVar
 
 from huggingface_hub import HfApi
 
@@ -230,16 +230,23 @@ T = TypeVar("T")
 
 
 def init_sparse_model(
-    model_class: Type[T], model_id, folder_path, sparse_prune_ratio=0, activation=None, trust_remote_code=False
+    model_class: Type[T],
+    model_id,
+    folder_path,
+    sparse_prune_ratio=0,
+    activation=None,
+    model_init_kwargs: Optional[Dict[str, Any]] = None,
 ) -> T:
     try:
+        if model_init_kwargs is None:
+            model_init_kwargs = {}
         pre_trained_model = model_class(
             model_id=model_id,
             folder_path=folder_path,
             overwrite=True,
             sparse_prune_ratio=sparse_prune_ratio,
             activation=activation,
-            trust_remote_code=trust_remote_code,
+            model_init_kwargs=model_init_kwargs,
         )
     except Exception as e:
         raise ModelTraceError("initiating a sparse encoding model class object", e)

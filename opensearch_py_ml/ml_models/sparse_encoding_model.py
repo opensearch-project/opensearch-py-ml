@@ -7,6 +7,7 @@
 import json
 import os
 from zipfile import ZipFile
+from typing import Optional
 
 import torch
 from transformers import AutoModelForMaskedLM, AutoTokenizer
@@ -50,13 +51,15 @@ class SparseEncodingModel(SparseModel):
         overwrite: bool = False,
         sparse_prune_ratio: float = 0,
         activation: str = None,
-        trust_remote_code: bool = False,
+        model_init_kwargs: Optional[dict] = None,
     ) -> None:
 
         super().__init__(model_id, folder_path, overwrite)
-        self.tokenizer = AutoTokenizer.from_pretrained(model_id)
+        if model_init_kwargs is None:
+            model_init_kwargs = {}
+        self.tokenizer = AutoTokenizer.from_pretrained(model_id, **model_init_kwargs)
         self.backbone_model = AutoModelForMaskedLM.from_pretrained(
-            model_id, _attn_implementation="eager", trust_remote_code=trust_remote_code
+            model_id, _attn_implementation="eager", **model_init_kwargs
         )
         default_folder_path = os.path.join(
             os.getcwd(), "opensearch_neural_sparse_model_files"
