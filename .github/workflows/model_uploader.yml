@@ -172,7 +172,7 @@ jobs:
         - Model Prefix Folder: ${{ steps.init_folders.outputs.model_prefix_folder }}
         - Sparse Prune Ratio: ${{ steps.parse_custom_params.outputs.sparse_prune_ratio || 'N/A' }}
         - Activation: ${{ steps.parse_custom_params.outputs.activation || 'N/A' }}
-        - Model Init Kwargs: ${{ steps.parse_custom_params.outputs.model_init_kwargs || '{}' }}
+        - Model Init Kwargs: '${{ toJSON(fromJSON(steps.parse_custom_params.outputs.model_init_kwargs || '{}')) }}'
         
         ======== Workflow Output Information =========
         - Embedding Verification: Passed"
@@ -274,7 +274,9 @@ jobs:
           echo "MODEL_NAME=${{ needs.init-workflow-var.outputs.model_name }}" >> $GITHUB_ENV
           echo "SPARSE_PRUNE_RATIO=${{ needs.init-workflow-var.outputs.sparse_prune_ratio }}" >> $GITHUB_ENV
           echo "ACTIVATION=${{ needs.init-workflow-var.outputs.activation }}" >> $GITHUB_ENV
-          echo "MODEL_INIT_KWARGS=${{ needs.init-workflow-var.outputs.model_init_kwargs }}" >> $GITHUB_ENV
+          echo "MODEL_INIT_KWARGS<<EOF" >> $GITHUB_ENV
+          echo '${{ toJSON(fromJSON(needs.init-workflow-var.outputs.model_init_kwargs)) }}' >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
       - name: Autotracing ${{ matrix.cluster }} secured=${{ matrix.secured }} version=${{matrix.entry.opensearch_version}}
         run: "./.ci/run-tests ${{ matrix.cluster }} ${{ matrix.secured }} ${{ matrix.entry.opensearch_version }} ${{github.event.inputs.model_type}}Trace"
         shell: bash
