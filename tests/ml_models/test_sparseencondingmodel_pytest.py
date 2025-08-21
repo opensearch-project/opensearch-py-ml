@@ -13,8 +13,11 @@ from functools import wraps
 from zipfile import ZipFile
 
 import pytest
+from torch import nn
 
 from opensearch_py_ml.ml_models import SparseEncodingModel
+from opensearch_py_ml.ml_models.sparse_encoding_model import sanitize_model_modules
+from utils.model_uploader.autotracing_utils import init_sparse_model
 
 TEST_FOLDER = os.path.join(
     os.path.dirname(os.path.abspath("__file__")), "tests", "test_model_files"
@@ -372,6 +375,70 @@ def test_process_sparse_encoding():
     check_value(0.9765068888664246, encoding_result[0]["hello"], 0.001)
     assert len(encoding_result[1]) == 64
     check_value(1.0706572532653809, encoding_result[1]["hello"], 0.001)
+
+
+def test_sanitize_module_name_and_trace():
+    class WeirdSub(nn.Module):
+        def __init__(self):
+            super().__init__()
+
+        def forward(self, input_ids=None, attention_mask=None):
+            pass
+
+    # simulate weird remote module path
+    WeirdSub.__module__ = "remote.repo@bad:name/1"
+
+    class Toy(nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.m = WeirdSub()
+
+        def forward(self, features: dict):
+            pass
+
+    model = Toy().eval()
+    sanitize_model_modules(model)
+
+    # After sanitize, module name should only contain [0-9A-Za-z_.]
+    assert all(c.isalnum() or c in {"_", "."} for c in model.m.__class__.__module__)
+
+
+def test_init_sparse_model_kwargs_passthrough():
+    received = {}
+
+    class FakeModel:
+        def __init__(
+            self,
+            model_id,
+            folder_path,
+            overwrite,
+            sparse_prune_ratio,
+            activation,
+            model_init_kwargs,
+        ):
+            received["model_id"] = model_id
+            received["folder_path"] = folder_path
+            received["overwrite"] = overwrite
+            received["sparse_prune_ratio"] = sparse_prune_ratio
+            received["activation"] = activation
+            received["model_init_kwargs"] = model_init_kwargs
+
+    model = init_sparse_model(
+        FakeModel,
+        model_id="foo/bar",
+        folder_path="/tmp/xyz",
+        sparse_prune_ratio=0.2,
+        activation="l0",
+        model_init_kwargs={"trust_remote_code": True, "revision": "dev"},
+    )
+
+    assert isinstance(model, FakeModel)
+    assert received["model_id"] == "foo/bar"
+    assert received["folder_path"] == "/tmp/xyz"
+    assert received["overwrite"] is True
+    assert received["sparse_prune_ratio"] == 0.2
+    assert received["activation"] == "l0"
+    assert received["model_init_kwargs"]["trust_remote_code"] is True
 
 
 clean_test_folder(TEST_FOLDER)
