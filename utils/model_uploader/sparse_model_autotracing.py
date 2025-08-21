@@ -92,7 +92,12 @@ def trace_sparse_encoding_model(
     # 1.) Initiate a sparse encoding model class object
     model_cls = SparseTokenizeModel if is_tokenizer else SparseEncodingModel
     pre_trained_model = init_sparse_model(
-        model_cls, model_id, folder_path, sparse_prune_ratio, activation, model_init_kwargs
+        model_cls,
+        model_id,
+        folder_path,
+        sparse_prune_ratio,
+        activation,
+        model_init_kwargs,
     )
 
     # 2.) Save the model in the specified format

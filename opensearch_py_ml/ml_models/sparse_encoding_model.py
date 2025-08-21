@@ -6,8 +6,9 @@
 # GitHub history for details.
 import json
 import os
-from zipfile import ZipFile
+import re
 from typing import Optional
+from zipfile import ZipFile
 
 import torch
 from transformers import AutoModelForMaskedLM, AutoTokenizer
@@ -35,6 +36,30 @@ def _generate_default_model_description() -> str:
     )
     description = "This is a neural sparse encoding model: It transfers text into sparse vector, and then extract nonzero index and value to entry and weights. It serves only in ingestion and customer should use tokenizer model in query."
     return description
+
+
+def _sanitize_module_name(name: str) -> str:
+    name = re.sub(r"[^0-9A-Za-z_\.]", "_", name)
+    parts = []
+    for p in name.split("."):
+        if not p:
+            continue
+        if p[0].isdigit():
+            p = f"n_{p}"
+        parts.append(p)
+    return ".".join(parts)
+
+
+def sanitize_model_modules(model: torch.nn.Module) -> None:
+    seen: set[type] = set()
+    for m in model.modules():
+        cls = m.__class__
+        if cls in seen:
+            continue
+        safe = _sanitize_module_name(getattr(cls, "__module__", ""))
+        if safe and safe != cls.__module__:
+            cls.__module__ = safe
+        seen.add(cls)
 
 
 class SparseEncodingModel(SparseModel):
@@ -82,7 +107,7 @@ class SparseEncodingModel(SparseModel):
         self.onnx_zip_file_path = None
         self.sparse_prune_ratio = sparse_prune_ratio
         self.activation = activation
-        
+
     def save_as_pt(
         self,
         sentences: [str],
@@ -171,6 +196,7 @@ class SparseEncodingModel(SparseModel):
             return_tensors="pt",
         ).to(device)
 
+        sanitize_model_modules(cpu_model)
         compiled_model = torch.jit.trace(cpu_model, dict(features), strict=False)
         torch.jit.save(compiled_model, model_path)
         print("model file is saved to ", model_path)
