@@ -22,6 +22,7 @@ from opensearch_py_ml.ml_commons.ml_common_utils import (
     MODEL_CONTENT_HASH_VALUE,
     MODEL_CONTENT_SIZE_IN_BYTES_FIELD,
     MODEL_FORMAT_FIELD,
+    MODEL_FUNCTION_NAME,
     MODEL_GROUP_ID,
     MODEL_MAX_SIZE,
     MODEL_NAME_FIELD,
@@ -95,9 +96,9 @@ class ModelUploader:
         model_meta_json[TOTAL_CHUNKS_FIELD] = total_num_chunks
 
         if MODEL_CONTENT_SIZE_IN_BYTES_FIELD not in model_meta_json:
-            model_meta_json[
-                MODEL_CONTENT_SIZE_IN_BYTES_FIELD
-            ] = model_content_size_in_bytes
+            model_meta_json[MODEL_CONTENT_SIZE_IN_BYTES_FIELD] = (
+                model_content_size_in_bytes
+            )
         if MODEL_CONTENT_HASH_VALUE not in model_meta_json:
             # Generate the sha1 hash for the model zip file
             hash_val_model_file = _generate_model_content_hash_value(model_path)
@@ -167,6 +168,7 @@ class ModelUploader:
         """
 
         if model_meta:
+
             if not model_meta.get(MODEL_NAME_FIELD):
                 raise ValueError(f"{MODEL_NAME_FIELD} can not be empty")
             if not model_meta.get(MODEL_VERSION_FIELD):
@@ -178,7 +180,11 @@ class ModelUploader:
             if not model_meta.get(TOTAL_CHUNKS_FIELD):
                 raise ValueError(f"{TOTAL_CHUNKS_FIELD} can not be empty")
             if not model_meta.get(MODEL_CONFIG_FIELD):
-                raise ValueError(f"{MODEL_CONFIG_FIELD} can not be empty")
+                if model_meta.get(MODEL_FUNCTION_NAME) not in [
+                    "SPARSE_ENCODING",
+                    "SPARSE_TOKENIZE",
+                ]:
+                    raise ValueError(f"{MODEL_CONFIG_FIELD} can not be empty")
             else:
                 if not isinstance(model_meta.get(MODEL_CONFIG_FIELD), dict):
                     raise TypeError(
@@ -187,8 +193,9 @@ class ModelUploader:
                 model_config = model_meta.get(MODEL_CONFIG_FIELD)
                 if not model_config.get(MODEL_TYPE):
                     raise ValueError(f"{MODEL_TYPE} can not be empty")
-                if not model_config.get(EMBEDDING_DIMENSION):
-                    raise ValueError(f"{EMBEDDING_DIMENSION} can not be empty")
+                if model_config.get(MODEL_TYPE) != "sentence_highlighting":
+                    if not model_config.get(EMBEDDING_DIMENSION):
+                        raise ValueError(f"{EMBEDDING_DIMENSION} can not be empty")
                 if not model_config.get(FRAMEWORK_TYPE):
                     raise ValueError(f"{FRAMEWORK_TYPE} can not be empty")
             return True

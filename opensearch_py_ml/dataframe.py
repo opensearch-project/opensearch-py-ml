@@ -47,12 +47,15 @@ from opensearch_py_ml.filter import BooleanFilter
 from opensearch_py_ml.groupby import DataFrameGroupBy
 from opensearch_py_ml.ndframe import NDFrame
 from opensearch_py_ml.series import Series
-from opensearch_py_ml.utils import is_valid_attr_name
+from opensearch_py_ml.utils import is_valid_attr_name, to_list_if_needed
 
 if TYPE_CHECKING:
     from opensearchpy import OpenSearch
 
     from .query_compiler import QueryCompiler
+
+
+PANDAS_MAJOR_VERSION = int(pd.__version__.split(".")[0])
 
 
 class DataFrame(NDFrame):
@@ -275,22 +278,13 @@ class DataFrame(NDFrame):
         >>> from tests import OPENSEARCH_TEST_CLIENT
 
         >>> df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights', columns=['Origin', 'Dest'])
-        >>> df.tail()
-                                                                    Origin  \\
-        13054                                   Pisa International Airport...
-        13055  Winnipeg / James Armstrong Richardson International Airport...
-        13056               Licenciado Benito Juarez International Airport...
-        13057                                                Itami Airport...
-        13058                               Adelaide International Airport...
-        <BLANKLINE>
-                                                   Dest...
-        13054      Xi'an Xianyang International Airport...
-        13055                            Zurich Airport...
-        13056                         Ukrainka Air Base...
-        13057  Ministro Pistarini International Airport...
-        13058   Washington Dulles International Airport...
-        <BLANKLINE>
-        [5 rows x 2 columns]
+        >>> print(df.tail().to_string().strip())
+        Origin                                      Dest
+        13054                                   Pisa International Airport      Xi'an Xianyang International Airport
+        13055  Winnipeg / James Armstrong Richardson International Airport                            Zurich Airport
+        13056               Licenciado Benito Juarez International Airport                         Ukrainka Air Base
+        13057                                                Itami Airport  Ministro Pistarini International Airport
+        13058                               Adelaide International Airport   Washington Dulles International Airport
         """
         return DataFrame(_query_compiler=self._query_compiler.tail(n))
 
@@ -424,9 +418,14 @@ class DataFrame(NDFrame):
             axis = pd.DataFrame._get_axis_name(axis)
             axes = {axis: labels}
         elif index is not None or columns is not None:
-            axes, _ = pd.DataFrame()._construct_axes_from_arguments(
-                (index, columns), {}
-            )
+            axes = {
+                "index": to_list_if_needed(index),
+                "columns": (
+                    pd.Index(to_list_if_needed(columns))
+                    if columns is not None
+                    else None
+                ),
+            }
         else:
             raise ValueError(
                 "Need to specify at least one of 'labels', 'index' or 'columns'"
@@ -440,7 +439,7 @@ class DataFrame(NDFrame):
                 axes["index"] = [axes["index"]]
             if errors == "raise":
                 # Check if axes['index'] values exists in index
-                count = self._query_compiler._index_matches_count(axes["index"])
+                count = self._query_compiler._index_matches_count(list(axes["index"]))
                 if count != len(axes["index"]):
                     raise ValueError(
                         f"number of labels {count}!={len(axes['index'])} not contained in axis"
@@ -978,8 +977,10 @@ class DataFrame(NDFrame):
         elif verbose is False:  # specifically set to False, not nesc None
             _non_verbose_repr()
         else:
-            _non_verbose_repr() if exceeds_info_cols else _verbose_repr(
-                number_of_columns
+            (
+                _non_verbose_repr()
+                if exceeds_info_cols
+                else _verbose_repr(number_of_columns)
             )
 
         # pandas 0.25.1 uses get_dtype_counts() here. This
@@ -1339,6 +1340,10 @@ class DataFrame(NDFrame):
         --------
         :pandas_api_docs:`pandas.DataFrame.to_csv`
         """
+        if PANDAS_MAJOR_VERSION < 2:
+            line_terminator_keyword = "line_terminator"
+        else:
+            line_terminator_keyword = "lineterminator"
         kwargs = {
             "path_or_buf": path_or_buf,
             "sep": sep,
@@ -1353,7 +1358,7 @@ class DataFrame(NDFrame):
             "compression": compression,
             "quoting": quoting,
             "quotechar": quotechar,
-            "line_terminator": line_terminator,
+            line_terminator_keyword: line_terminator,
             "chunksize": chunksize,
             "date_format": date_format,
             "doublequote": doublequote,

@@ -26,6 +26,7 @@
 from typing import TYPE_CHECKING, List, Optional, Union
 
 from opensearch_py_ml.query_compiler import QueryCompiler
+from opensearch_py_ml.utils import MEAN_ABSOLUTE_DEVIATION, STANDARD_DEVIATION, VARIANCE
 
 if TYPE_CHECKING:
     import pandas as pd  # type: ignore
@@ -153,7 +154,7 @@ class DataFrameGroupBy(GroupBy):
         """
         return self._query_compiler.aggs_groupby(
             by=self._by,
-            pd_aggs=["var"],
+            pd_aggs=[VARIANCE],
             dropna=self._dropna,
             numeric_only=numeric_only,
         )
@@ -206,7 +207,7 @@ class DataFrameGroupBy(GroupBy):
         """
         return self._query_compiler.aggs_groupby(
             by=self._by,
-            pd_aggs=["std"],
+            pd_aggs=[STANDARD_DEVIATION],
             dropna=self._dropna,
             numeric_only=numeric_only,
         )
@@ -259,7 +260,7 @@ class DataFrameGroupBy(GroupBy):
         """
         return self._query_compiler.aggs_groupby(
             by=self._by,
-            pd_aggs=["mad"],
+            pd_aggs=[MEAN_ABSOLUTE_DEVIATION],
             dropna=self._dropna,
             numeric_only=numeric_only,
         )

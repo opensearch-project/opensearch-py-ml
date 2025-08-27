@@ -5,7 +5,7 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
-""" Module for validating model access control parameters """
+"""Module for validating model access control parameters"""
 
 from typing import List, Optional
 
@@ -95,3 +95,11 @@ def validate_delete_model_group_parameters(model_group_id: str):
 
 def validate_search_model_group_parameters(query: dict):
     _validate_model_group_query(query)
+
+
+def validate_profile_input(path_parameter, payload):
+    if path_parameter is not None and not isinstance(path_parameter, str):
+        raise ValueError("path_parameter needs to be a string or None")
+
+    if payload is not None and not isinstance(payload, dict):
+        raise ValueError("payload needs to be a dictionary or None")

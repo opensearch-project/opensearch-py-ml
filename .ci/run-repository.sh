@@ -45,7 +45,7 @@ if [[ "$TASK_TYPE" == "test" ]]; then
   --env "TEST_TYPE=server" \
   --name opensearch-py-ml-test-runner \
   opensearch-project/opensearch-py-ml \
-  nox -s "test-${PYTHON_VERSION}(pandas_version='${PANDAS_VERSION}')"
+  nox -s "test-${PYTHON_VERSION}"
   
   docker cp opensearch-py-ml-test-runner:/code/opensearch-py-ml/junit/ ./junit/
   docker rm opensearch-py-ml-test-runner
@@ -61,18 +61,54 @@ elif [[ "$TASK_TYPE" == "doc" ]]; then
   --env "TEST_TYPE=server" \
   --name opensearch-py-ml-doc-runner \
   opensearch-project/opensearch-py-ml \
-  nox -s "docs-${PYTHON_VERSION}(pandas_version='${PANDAS_VERSION}')"
+  nox -s "docs-${PYTHON_VERSION}"
   
   docker cp opensearch-py-ml-doc-runner:/code/opensearch-py-ml/docs/build/ ./docs/
   docker rm opensearch-py-ml-doc-runner
-elif [[ "$TASK_TYPE" == "trace" ]]; then
+elif [[ "$TASK_TYPE" == "SentenceTransformerTrace" || "$TASK_TYPE" == "SparseTrace" || "$TASK_TYPE" == "SparseTokenizerTrace" || "$TASK_TYPE" == "SemanticHighlighterTrace" ]]; then
   # Set up OpenSearch cluster & Run model autotracing (Invoked by model_uploader.yml workflow)
   echo -e "\033[34;1mINFO:\033[0m MODEL_ID: ${MODEL_ID}\033[0m"
   echo -e "\033[34;1mINFO:\033[0m MODEL_VERSION: ${MODEL_VERSION}\033[0m"
   echo -e "\033[34;1mINFO:\033[0m TRACING_FORMAT: ${TRACING_FORMAT}\033[0m"
   echo -e "\033[34;1mINFO:\033[0m EMBEDDING_DIMENSION: ${EMBEDDING_DIMENSION:-N/A}\033[0m"
   echo -e "\033[34;1mINFO:\033[0m POOLING_MODE: ${POOLING_MODE:-N/A}\033[0m"
+  echo -e "\033[34;1mINFO:\033[0m UPLOAD_PREFIX: ${UPLOAD_PREFIX:-N/A}\033[0m"
+  echo -e "\033[34;1mINFO:\033[0m SPARSE_PRUNE_RATIO: ${SPARSE_PRUNE_RATIO:-N/A}\033[0m"
+  echo -e "\033[34;1mINFO:\033[0m ACTIVATION: ${ACTIVATION:-N/A}\033[0m"
   echo -e "\033[34;1mINFO:\033[0m MODEL_DESCRIPTION: ${MODEL_DESCRIPTION:-N/A}\033[0m"
+  echo -e "\033[34;1mINFO:\033[0m MODEL_NAME: ${MODEL_NAME:-N/A}\033[0m"
+
+  if [[ "$TASK_TYPE" == "SentenceTransformerTrace" ]]; then
+      NOX_TRACE_TYPE="trace"
+      EXTRA_ARGS="-ed ${EMBEDDING_DIMENSION} -pm ${POOLING_MODE}"
+  elif [[ "$TASK_TYPE" == "SparseTrace" ]]; then
+      NOX_TRACE_TYPE="sparsetrace"
+      EXTRA_ARGS="-spr ${SPARSE_PRUNE_RATIO} -act ${ACTIVATION}"
+  elif [[ "$TASK_TYPE" == "SparseTokenizerTrace" ]]; then
+      NOX_TRACE_TYPE="sparsetrace"
+      # use extra args to trigger the tokenizer tracing logics
+      EXTRA_ARGS="-t"
+  elif [[ "$TASK_TYPE" == "SemanticHighlighterTrace" ]]; then
+      NOX_TRACE_TYPE="semantic_highlighter_trace"
+      EXTRA_ARGS=""
+  else
+      echo "Unknown TASK_TYPE: $TASK_TYPE"
+      exit 1
+  fi
+
+  nox_command=(
+    "${NOX_TRACE_TYPE}-${PYTHON_VERSION}"
+    --
+    "${MODEL_ID}"
+    "${MODEL_VERSION}"
+    "${TRACING_FORMAT}"
+    -up "${UPLOAD_PREFIX}"
+    -mn "${MODEL_NAME}"
+    -md "${MODEL_DESCRIPTION:+"$MODEL_DESCRIPTION"}"
+    ${EXTRA_ARGS}
+  )
+
+  echo "nox -s ${nox_command[@]}"
 
   docker run \
   --network=${network_name} \
@@ -84,9 +120,13 @@ elif [[ "$TASK_TYPE" == "trace" ]]; then
   --env "TEST_TYPE=server" \
   --name opensearch-py-ml-trace-runner \
   opensearch-project/opensearch-py-ml \
-  nox -s "trace-${PYTHON_VERSION}(pandas_version='${PANDAS_VERSION}')" -- ${MODEL_ID} ${MODEL_VERSION} ${TRACING_FORMAT} -ed ${EMBEDDING_DIMENSION} -pm ${POOLING_MODE} -md ${MODEL_DESCRIPTION:+"$MODEL_DESCRIPTION"}
-  
+  nox -s "${nox_command[@]}"
+
+  # To upload a model, we need the model artifact, description, license files into local path
+  # trace_output should include description and license file.
   docker cp opensearch-py-ml-trace-runner:/code/opensearch-py-ml/upload/ ./upload/
   docker cp opensearch-py-ml-trace-runner:/code/opensearch-py-ml/trace_output/ ./trace_output/
+
+  # Delete the docker image
   docker rm opensearch-py-ml-trace-runner
 fi

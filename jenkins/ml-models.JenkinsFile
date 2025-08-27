@@ -9,6 +9,7 @@ pipeline {
         docker {
             label 'Jenkins-Agent-AL2-X64-C54xlarge-Docker-Host'
             image 'opensearchstaging/ci-runner:release-centos7-clients-v4'
+            registryUrl 'https://public.ecr.aws/'
             alwaysPull true
         }
     }

@@ -5,6 +5,8 @@
 # Any modifications Copyright OpenSearch Contributors. See
 # GitHub history for details.
 
+import warnings
+
 from opensearchpy import OpenSearch
 
 from opensearch_py_ml.ml_commons.ml_common_utils import ML_BASE_URI
@@ -14,12 +16,35 @@ class Connector:
     def __init__(self, os_client: OpenSearch):
         self.client = os_client
 
-    def create_standalone_connector(self, payload: dict):
-        if not isinstance(payload, dict):
-            raise ValueError("payload needs to be a dictionary")
+    def create_standalone_connector(self, body: dict = None, payload: dict = None):
+        """
+        Create a standalone connector.
+
+        Parameters:
+            body (dict): The request body, preferred parameter.
+            payload (dict): Deprecated. Use 'body' instead.
+
+        Raises:
+            ValueError: If neither 'body' nor 'payload' is provided or if the provided argument is not a dictionary.
+        """
+        if body is None and payload is None:
+            raise ValueError("A 'body' parameter must be provided as a dictionary.")
+
+        if payload is not None:
+            if not isinstance(payload, dict):
+                raise ValueError("'payload' needs to be a dictionary.")
+            warnings.warn(
+                "'payload' is deprecated. Please use 'body' instead.",
+                DeprecationWarning,
+            )
+            # Use `payload` if `body` is not provided for backward compatibility
+            body = body or payload
+
+        if not isinstance(body, dict):
+            raise ValueError("'body' needs to be a dictionary.")
 
         return self.client.transport.perform_request(
-            method="POST", url=f"{ML_BASE_URI}/connectors/_create", body=payload
+            method="POST", url=f"{ML_BASE_URI}/connectors/_create", body=body
         )
 
     def list_connectors(self):

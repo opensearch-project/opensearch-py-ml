@@ -17,13 +17,23 @@ on:
         required: true
         type: string
       tracing_format:
-        description: "Model format for auto-tracing (torch_script/onnx)"
+        description: "Model format for auto-tracing (torch_script/onnx), now the sparse model only support torchscript model."
         required: true
         type: choice
         options:
         - "BOTH"
         - "TORCH_SCRIPT"
         - "ONNX"
+      model_type:
+        description: "Model type for auto-tracing (SentenceTransformer/Sparse/SparseTokenizer/SemanticHighlighter)"
+        required: true
+        type: choice
+        options:
+          - "SentenceTransformer"
+          - "Sparse"
+          - "SparseTokenizer"
+          - "SemanticHighlighter"
+        default: "SentenceTransformer"
       embedding_dimension:
         description: "(Optional) Embedding Dimension (Specify here if it does not exist in original config.json file, or you want to overwrite it.)"
         required: false
@@ -49,6 +59,24 @@ on:
         options:
         - "NO"
         - "YES"
+      custom_params:
+        description: |
+          (Optional) custom parameters in JSON format. Supported fields:
+          {
+            "upload_prefix": (Optional) String. Specifies the model prefix for uploading. Example: transforms "sentence-transformers/model" to "{prefix}/model",
+            "sparse_prune_ratio": (Optional) Float. Specifies the model-side prune ratio based on max values. Sparse model only.
+            "activation": (Optional) String. Specifies the activation function for the sparse model. Sparse model only.
+            "model_name": (Optional) String. Specifies the model name for uploading. Example: transforms "sentence-transformers/model" to "sentence-transformers/{model_name}",
+          }
+          
+          Example:
+          {
+            "upload_prefix": "custom-prefix",
+            "sparse_prune_ratio": 0.1
+          }
+        required: false
+        type: string
+        default: "{}"
         
 
 jobs:
@@ -61,33 +89,84 @@ jobs:
       run: |
          echo "This workflow should only be triggered on 'main' branch"
          exit 1
+    - name: Parse custom params from json string
+      # Handles dynamic parameter configuration with three-level fallback:
+      # 1. Default values initialized at script start
+      # 2. Automatic model_name derivation from model_id (when not explicitly provided)
+      # 3. Custom parameter override system with null safety checks
+      id: parse_custom_params
+      run: |
+        custom_params='${{ github.event.inputs.custom_params }}'
+        model_id='${{ github.event.inputs.model_id }}'
+        upload_prefix=""
+        sparse_prune_ratio=0
+        activation=""
+        model_name="${model_id##*/}"
+
+        if [ "$custom_params" != "{}" ] && [ -n "$custom_params" ]; then
+          tmp_up=$(echo "$custom_params" | jq -r '.upload_prefix | select(.!=null)')
+          tmp_spr=$(echo "$custom_params" | jq -r '.sparse_prune_ratio | select(.!=null)')
+          tmp_act=$(echo "$custom_params" | jq -r '.activation | select(.!=null)')
+          tmp_mn=$(echo "$custom_params" | jq -r '.model_name | select(.!=null)')
+
+          [ -n "$tmp_up" ] && upload_prefix="$tmp_up"
+          [ -n "$tmp_spr" ] && sparse_prune_ratio="$tmp_spr"
+          [ -n "$tmp_act" ] && activation="$tmp_act"
+          [ -n "$tmp_mn" ] && model_name="$tmp_mn"
+        fi
+
+        echo "upload_prefix=$upload_prefix" >> $GITHUB_OUTPUT
+        echo "sparse_prune_ratio=$sparse_prune_ratio" >> $GITHUB_OUTPUT
+        echo "activation=$activation" >> $GITHUB_OUTPUT
+        echo "model_name=$model_name" >> $GITHUB_OUTPUT
     - name: Initiate folders
+      # This scripts init the folders path variables.
+      # 1. Retrieves the input model_id.
+      # 2. If upload_prefix is provided, constructs model_prefix using upload_prefix and model_source.
+      #    - model_prefix: "ml-models/{model_source}/{upload_prefix}"
+      # 3. If upload_prefix is not provided, it constructs model_prefix using model_source and the prefix part of model_id.
+      #    - The prefix part is the substring before the first '/' in model_id.
+      #    Example:
+      #    - Given model_id: "opensearch-project/opensearch-neural-sparse-encoding-v1"
+      #    - model_prefix: "ml-models/{model_source}/opensearch-project"
+      # 4. Constructs model_folder and model_prefix_folder
       id: init_folders
       run: |
         model_id=${{ github.event.inputs.model_id }}
-        echo "model_folder=ml-models/${{github.event.inputs.model_source}}/${model_id}" >> $GITHUB_OUTPUT
-        echo "sentence_transformer_folder=ml-models/${{github.event.inputs.model_source}}/${model_id%%/*}/" >> $GITHUB_OUTPUT
+        if [[ -n "${{ steps.parse_custom_params.outputs.upload_prefix }}" ]]; then
+          model_prefix="ml-models/${{ github.event.inputs.model_source }}/${{ steps.parse_custom_params.outputs.upload_prefix }}"
+        else
+          model_prefix="ml-models/${{ github.event.inputs.model_source }}/${model_id%%/*}"
+        fi
+        echo "model_folder=$model_prefix/${{ steps.parse_custom_params.outputs.model_name }}" >> $GITHUB_OUTPUT
+        echo "model_prefix_folder=$model_prefix" >> $GITHUB_OUTPUT
     - name: Initiate workflow_info
       id: init_workflow_info
       run: |
         embedding_dimension=${{ github.event.inputs.embedding_dimension }}
         pooling_mode=${{ github.event.inputs.pooling_mode }}
         model_description="${{ github.event.inputs.model_description }}"
-        
+        model_type=${{ github.event.inputs.model_type }}
         workflow_info="
         ============= Workflow Details ==============
         - Workflow Name: ${{ github.workflow }}
         - Workflow Run ID: ${{ github.run_id }}
         - Workflow Initiator: @${{ github.actor }}
-        - Aloow Overwrite:  ${{ github.event.inputs.allow_overwrite }}
+        - Allow Overwrite:  ${{ github.event.inputs.allow_overwrite }}
           
         ========= Workflow Input Information =========
+        - Model Source: ${{ github.event.inputs.model_source }}
         - Model ID: ${{ github.event.inputs.model_id }}
         - Model Version: ${{ github.event.inputs.model_version }}
+        - Model Type: ${{ github.event.inputs.model_type }}
         - Tracing Format: ${{ github.event.inputs.tracing_format }}
         - Embedding Dimension: ${embedding_dimension:-N/A}
         - Pooling Mode: ${pooling_mode:-N/A}
         - Model Description: ${model_description:-N/A}
+        - Model Folder: ${{ steps.init_folders.outputs.model_folder }}
+        - Model Prefix Folder: ${{ steps.init_folders.outputs.model_prefix_folder }}
+        - Sparse Prune Ratio: ${{ steps.parse_custom_params.outputs.sparse_prune_ratio || 'N/A' }}
+        - Activation: ${{ steps.parse_custom_params.outputs.activation || 'N/A' }}
         
         ======== Workflow Output Information =========
         - Embedding Verification: Passed"
@@ -103,10 +182,14 @@ jobs:
         echo "unverified=- [ ]  :warning: The license cannot be verified. Please confirm by yourself that the model is licensed under Apache 2.0  :warning:" >> $GITHUB_OUTPUT
     outputs:
       model_folder: ${{ steps.init_folders.outputs.model_folder }}
-      sentence_transformer_folder: ${{ steps.init_folders.outputs.sentence_transformer_folder }}
+      model_prefix_folder: ${{ steps.init_folders.outputs.model_prefix_folder }}
       workflow_info: ${{ steps.init_workflow_info.outputs.workflow_info }}
       verified_license_line: ${{ steps.init_license_line.outputs.verified }}
       unverified_license_line: ${{ steps.init_license_line.outputs.unverified }}
+      upload_prefix: ${{ steps.parse_custom_params.outputs.upload_prefix }}
+      sparse_prune_ratio: ${{ steps.parse_custom_params.outputs.sparse_prune_ratio }}
+      activation: ${{ steps.parse_custom_params.outputs.activation }}
+      model_name: ${{ steps.parse_custom_params.outputs.model_name }}
 
   # Step 3: Check if the model already exists in the model hub
   checking-out-model-hub:
@@ -118,9 +201,9 @@ jobs:
     environment: opensearch-py-ml-cicd-env
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Set Up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: '3.x'
       - name: Configure AWS Credentials
@@ -133,8 +216,8 @@ jobs:
         if: github.event.inputs.allow_overwrite == 'NO' && (github.event.inputs.tracing_format == 'TORCH_SCRIPT' || github.event.inputs.tracing_format == 'BOTH')
         run: |
           TORCH_FILE_PATH=$(python utils/model_uploader/save_model_file_path_to_env.py \
-              ${{ needs.init-workflow-var.outputs.sentence_transformer_folder }} ${{ github.event.inputs.model_id }} \
-              ${{ github.event.inputs.model_version }} TORCH_SCRIPT)
+              ${{ needs.init-workflow-var.outputs.model_prefix_folder }} ${{ github.event.inputs.model_id }} \
+              ${{ github.event.inputs.model_version }} TORCH_SCRIPT '${{ github.event.inputs.custom_params }}')
           aws s3api head-object --bucket ${{ secrets.MODEL_BUCKET }} --key $TORCH_FILE_PATH > /dev/null 2>&1 || TORCH_MODEL_NOT_EXIST=true
           if [[ -z $TORCH_MODEL_NOT_EXIST ]]
           then
@@ -145,8 +228,8 @@ jobs:
         if: github.event.inputs.allow_overwrite == 'NO' && (github.event.inputs.tracing_format == 'ONNX' || github.event.inputs.tracing_format == 'BOTH')
         run: |
           ONNX_FILE_PATH=$(python utils/model_uploader/save_model_file_path_to_env.py \
-            ${{ needs.init-workflow-var.outputs.sentence_transformer_folder }} ${{ github.event.inputs.model_id }} \
-            ${{ github.event.inputs.model_version }} ONNX)
+            ${{ needs.init-workflow-var.outputs.model_prefix_folder }} ${{ github.event.inputs.model_id }} \
+            ${{ github.event.inputs.model_version }} ONNX '${{ github.event.inputs.custom_params }}')
           aws s3api head-object --bucket ${{ secrets.MODEL_BUCKET }} --key $ONNX_FILE_PATH > /dev/null 2>&1 || ONNX_MODEL_NOT_EXIST=true
           if [[ -z $ONNX_MODEL_NOT_EXIST ]]
           then
@@ -166,22 +249,28 @@ jobs:
     strategy:
       matrix:
         cluster: ["opensearch"]
-        secured: ["true"]
+        secured: ["false"]
         entry:
-          - { opensearch_version: 2.7.0 }
+          - { opensearch_version: 3.0.0-beta1 }
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Export Arguments
         run: | 
           echo "MODEL_ID=${{ github.event.inputs.model_id }}" >> $GITHUB_ENV
           echo "MODEL_VERSION=${{ github.event.inputs.model_version }}" >> $GITHUB_ENV
           echo "TRACING_FORMAT=${{ github.event.inputs.tracing_format }}" >> $GITHUB_ENV
           echo "EMBEDDING_DIMENSION=${{ github.event.inputs.embedding_dimension }}" >> $GITHUB_ENV
-          echo "POOLING_MODE=${{ github.event.inputs.pooling_mode }}" >> $GITHUB_ENV     
-          echo "MODEL_DESCRIPTION=${{ github.event.inputs.model_description }}" >> $GITHUB_ENV     
+          echo "POOLING_MODE=${{ github.event.inputs.pooling_mode }}" >> $GITHUB_ENV    
+          echo "MODEL_DESCRIPTION=${{ github.event.inputs.model_description }}" >> $GITHUB_ENV
+          echo "UPLOAD_PREFIX=${{ needs.init-workflow-var.outputs.upload_prefix }}" >> $GITHUB_ENV
+          echo "MODEL_NAME=${{ needs.init-workflow-var.outputs.model_name }}" >> $GITHUB_ENV
+          echo "SPARSE_PRUNE_RATIO=${{ needs.init-workflow-var.outputs.sparse_prune_ratio }}" >> $GITHUB_ENV
+          echo "ACTIVATION=${{ needs.init-workflow-var.outputs.activation }}" >> $GITHUB_ENV
       - name: Autotracing ${{ matrix.cluster }} secured=${{ matrix.secured }} version=${{matrix.entry.opensearch_version}}
-        run: "./.ci/run-tests ${{ matrix.cluster }} ${{ matrix.secured }} ${{ matrix.entry.opensearch_version }} trace"
+        run: "./.ci/run-tests ${{ matrix.cluster }} ${{ matrix.secured }} ${{ matrix.entry.opensearch_version }} ${{github.event.inputs.model_type}}Trace"
+        shell: bash
+
       - name: Limit Model Size to 2GB
         run: |
           upload_size_in_binary_bytes=$(ls -lR ./upload/ | awk '{ SUM += $5} END {print SUM}')
@@ -211,7 +300,7 @@ jobs:
           echo "model_description_info=- Model Description: $model_description_info" >> $GITHUB_OUTPUT
           echo "$model_description_info"
       - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with: 
           name: upload
           path: ./upload/
@@ -226,7 +315,7 @@ jobs:
       - name: Dryrun model uploading
         id: dryrun_model_uploading
         run: |
-          dryrun_output=$(aws s3 sync ./upload/ s3://${{ secrets.MODEL_BUCKET }}/${{ needs.init-workflow-var.outputs.sentence_transformer_folder }} --dryrun \
+          dryrun_output=$(aws s3 sync ./upload/ s3://${{ secrets.MODEL_BUCKET }}/${{ needs.init-workflow-var.outputs.model_prefix_folder }} --dryrun \
             | sed 's|s3://${{ secrets.MODEL_BUCKET }}/|s3://(MODEL_BUCKET)/|' 
           )
           echo "dryrun_output<<EOF" >> $GITHUB_OUTPUT
@@ -247,7 +336,7 @@ jobs:
       issues: write
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Get Approvers
         id: get_approvers
         run: |
@@ -288,7 +377,7 @@ jobs:
     environment: opensearch-py-ml-cicd-env
     steps:
       - name: Download Artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: upload
           path: ./upload/
@@ -301,7 +390,7 @@ jobs:
       - name: Copy Files to the Bucket
         id: copying_to_bucket
         run: |
-          aws s3 sync ./upload/ s3://${{ secrets.MODEL_BUCKET }}/${{ needs.init-workflow-var.outputs.sentence_transformer_folder }}
+          aws s3 sync ./upload/ s3://${{ secrets.MODEL_BUCKET }}/${{ needs.init-workflow-var.outputs.model_prefix_folder }}
           echo "upload_time=$(TZ='America/Los_Angeles' date "+%Y-%m-%d %T")" >> $GITHUB_OUTPUT
     outputs:
       upload_time: ${{ steps.copying_to_bucket.outputs.upload_time }}
@@ -318,9 +407,9 @@ jobs:
       model_info: ${{ github.event.inputs.model_id }} (v.${{ github.event.inputs.model_version }})(${{ github.event.inputs.tracing_format }})
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Set Up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: '3.x'
       - name: Install Packages
@@ -354,7 +443,7 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
           echo "${pr_body@E}"
       - name: Create a Branch & Raise a PR
-        uses: peter-evans/create-pull-request@v5
+        uses: peter-evans/create-pull-request@v7
         id: create_pr
         with:
           committer: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
@@ -369,7 +458,7 @@ jobs:
             ./utils/model_uploader/upload_history/MODEL_UPLOAD_HISTORY.md
             ./utils/model_uploader/upload_history/supported_models.json
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: model-uploader/${{ github.run_id }}
       - name: Create a line for updating CHANGELOG.md
@@ -420,12 +509,11 @@ jobs:
       contents: read
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Trigger Jenkins Workflow with Generic Webhook
         run: |
-          jenkins_trigger_token=${{ secrets.JENKINS_ML_MODELS_RELEASE_GENERIC_WEBHOOK_TOKEN }}
           base_download_path=${{ needs.init-workflow-var.outputs.model_folder }}
           version=${{ github.event.inputs.model_version }}
           format=${{ github.event.inputs.tracing_format }}
           jenkins_params="{\"BASE_DOWNLOAD_PATH\":\"$base_download_path\", \"VERSION\":\"$version\", \"FORMAT\":\"$format\"}"
-          sh utils/model_uploader/trigger_ml_models_release.sh $jenkins_trigger_token "$jenkins_params"
+          sh utils/model_uploader/trigger_ml_models_release.sh -t ${{ secrets.JENKINS_ML_MODELS_RELEASE_GENERIC_WEBHOOK_TOKEN }} -d "$jenkins_params" -u ${{ secrets.JENKINS_GITHUB_USER}} -p ${{ secrets.JENKINS_GITHUB_USER_TOKEN}}

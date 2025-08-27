@@ -1,8 +1,67 @@
 [
   {
+    "name": "huggingface/cross-encoders/ms-marco-MiniLM-L-12-v2",
+    "versions": {
+      "1.0.0": {
+        "format": [
+          "onnx",
+          "torch_script"
+        ],
+        "description": "The model can be used for Information Retrieval: Given a query, encode the query will all possible passages (e.g. retrieved with ElasticSearch). Then sort the passages in a decreasing order."
+      },
+      "1.0.1": {
+        "format": [
+          "onnx",
+          "torch_script"
+        ],
+        "description": "The model can be used for Information Retrieval: Given a query, encode the query will all possible passages (e.g. retrieved with ElasticSearch). Then sort the passages in a decreasing order."
+      },
+      "1.0.2": {
+        "format": [
+          "onnx",
+          "torch_script"
+        ],
+        "description": "The model can be used for Information Retrieval: Given a query, encode the query will all possible passages (e.g. retrieved with ElasticSearch). Then sort the passages in a decreasing order."
+      }
+    }
+  },
+  {
+    "name": "huggingface/cross-encoders/ms-marco-MiniLM-L-6-v2",
+    "versions": {
+      "1.0.0": {
+        "format": [
+          "onnx",
+          "torch_script"
+        ],
+        "description": "The model can be used for Information Retrieval: Given a query, encode the query will all possible passages (e.g. retrieved with ElasticSearch). Then sort the passages in a decreasing order."
+      },
+      "1.0.1": {
+        "format": [
+          "onnx",
+          "torch_script"
+        ],
+        "description": "The model can be used for Information Retrieval: Given a query, encode the query will all possible passages (e.g. retrieved with ElasticSearch). Then sort the passages in a decreasing order."
+      },
+      "1.0.2": {
+        "format": [
+          "onnx",
+          "torch_script"
+        ],
+        "description": "The model can be used for Information Retrieval: Given a query, encode the query will all possible passages (e.g. retrieved with ElasticSearch). Then sort the passages in a decreasing order."
+      }
+    }
+  },
+  {
     "name": "huggingface/sentence-transformers/all-MiniLM-L12-v2",
     "versions": {
       "1.0.1": {
+        "format": [
+          "onnx",
+          "torch_script"
+        ],
+        "description": "This is a sentence-transformers model: It maps sentences & paragraphs to a 384 dimensional dense vector space and can be used for tasks like clustering or semantic search."
+      },
+      "1.0.2": {
         "format": [
           "onnx",
           "torch_script"
@@ -20,6 +79,13 @@
           "torch_script"
         ],
         "description": "This is a sentence-transformers model: It maps sentences & paragraphs to a 384 dimensional dense vector space and can be used for tasks like clustering or semantic search."
+      },
+      "1.0.2": {
+        "format": [
+          "onnx",
+          "torch_script"
+        ],
+        "description": "This is a sentence-transformers model: It maps sentences & paragraphs to a 384 dimensional dense vector space and can be used for tasks like clustering or semantic search."
       }
     }
   },
@@ -27,6 +93,13 @@
     "name": "huggingface/sentence-transformers/all-distilroberta-v1",
     "versions": {
       "1.0.1": {
+        "format": [
+          "onnx",
+          "torch_script"
+        ],
+        "description": "This is a sentence-transformers model: It maps sentences & paragraphs to a 768 dimensional dense vector space and can be used for tasks like clustering or semantic search."
+      },
+      "1.0.2": {
         "format": [
           "onnx",
           "torch_script"
@@ -44,6 +117,13 @@
           "torch_script"
         ],
         "description": "This is a sentence-transformers model: It maps sentences & paragraphs to a 768 dimensional dense vector space and can be used for tasks like clustering or semantic search."
+      },
+      "1.0.2": {
+        "format": [
+          "onnx",
+          "torch_script"
+        ],
+        "description": "This is a sentence-transformers model: It maps sentences & paragraphs to a 768 dimensional dense vector space and can be used for tasks like clustering or semantic search."
       }
     }
   },
@@ -51,6 +131,12 @@
     "name": "huggingface/sentence-transformers/distiluse-base-multilingual-cased-v1",
     "versions": {
       "1.0.1": {
+        "format": [
+          "torch_script"
+        ],
+        "description": "This is a sentence-transformers model: It maps sentences & paragraphs to a 512 dimensional dense vector space and can be used for tasks like clustering or semantic search."
+      },
+      "1.0.2": {
         "format": [
           "torch_script"
         ],
@@ -74,6 +160,13 @@
           "torch_script"
         ],
         "description": "This is a port of the DistilBert TAS-B Model to sentence-transformers model: It maps sentences & paragraphs to a 768 dimensional dense vector space and is optimized for the task of semantic search. This model version automatically truncates to a maximum of 512 tokens."
+      },
+      "1.0.3": {
+        "format": [
+          "onnx",
+          "torch_script"
+        ],
+        "description": "This is a port of the DistilBert TAS-B Model to sentence-transformers model: It maps sentences & paragraphs to a 768 dimensional dense vector space and is optimized for the task of semantic search. This model version automatically truncates to a maximum of 512 tokens."
       }
     }
   },
@@ -81,6 +174,13 @@
     "name": "huggingface/sentence-transformers/multi-qa-MiniLM-L6-cos-v1",
     "versions": {
       "1.0.1": {
+        "format": [
+          "onnx",
+          "torch_script"
+        ],
+        "description": "This is a sentence-transformers model: It maps sentences & paragraphs to a 384 dimensional dense vector space and was designed for semantic search. It has been trained on 215M (question, answer) pairs from diverse sources."
+      },
+      "1.0.2": {
         "format": [
           "onnx",
           "torch_script"
@@ -98,6 +198,13 @@
           "torch_script"
         ],
         "description": "This is a sentence-transformers model: It maps sentences & paragraphs to a 768 dimensional dense vector space and was designed for semantic search. It has been trained on 215M (question, answer) pairs from diverse sources."
+      },
+      "1.0.2": {
+        "format": [
+          "onnx",
+          "torch_script"
+        ],
+        "description": "This is a sentence-transformers model: It maps sentences & paragraphs to a 768 dimensional dense vector space and was designed for semantic search. It has been trained on 215M (question, answer) pairs from diverse sources."
       }
     }
   },
@@ -105,6 +212,13 @@
     "name": "huggingface/sentence-transformers/paraphrase-MiniLM-L3-v2",
     "versions": {
       "1.0.1": {
+        "format": [
+          "onnx",
+          "torch_script"
+        ],
+        "description": "This is a sentence-transformers model: It maps sentences & paragraphs to a 384 dimensional dense vector space and can be used for tasks like clustering or semantic search."
+      },
+      "1.0.2": {
         "format": [
           "onnx",
           "torch_script"
@@ -122,6 +236,13 @@
           "torch_script"
         ],
         "description": "This is a sentence-transformers model: It maps sentences & paragraphs to a 768 dimensional dense vector space and can be used for tasks like clustering or semantic search."
+      },
+      "1.0.1": {
+        "format": [
+          "onnx",
+          "torch_script"
+        ],
+        "description": "This is a sentence-transformers model: It maps sentences & paragraphs to a 768 dimensional dense vector space and can be used for tasks like clustering or semantic search."
       }
     }
   },
@@ -129,6 +250,13 @@
     "name": "huggingface/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
     "versions": {
       "1.0.1": {
+        "format": [
+          "onnx",
+          "torch_script"
+        ],
+        "description": "This is a sentence-transformers model: It maps sentences & paragraphs to a 384 dimensional dense vector space and can be used for tasks like clustering or semantic search."
+      },
+      "1.0.2": {
         "format": [
           "onnx",
           "torch_script"
@@ -146,5 +274,50 @@
         ],
         "description": "This is a neural sparse encoding model: It transfers text into sparse vector, and then extract nonzero index and value to entry and weights. It serves only in ingestion and customer should use tokenizer model in query."
       }
-    },
+    }
+  },
+  {
+    "name": "amazon/neural-sparse/opensearch-neural-sparse-encoding-doc-v2-distill",
+    "versions": {
+      "1.0.0": {
+        "format": [
+          "torch_script"
+        ],
+        "description": "This is a neural sparse encoding model: It transfers text into sparse vector, and then extract nonzero index and value to entry and weights. It serves only in ingestion and customer should use tokenizer model in query."
+      }
+    }
+  },
+  {
+    "name": "amazon/neural-sparse/opensearch-neural-sparse-encoding-doc-v2-mini",
+    "versions": {
+      "1.0.0": {
+        "format": [
+          "torch_script"
+        ],
+        "description": "This is a neural sparse encoding model: It transfers text into sparse vector, and then extract nonzero index and value to entry and weights. It serves only in ingestion and customer should use tokenizer model in query."
+      }
+    }
+  },
+  {
+    "name": "amazon/neural-sparse/opensearch-neural-sparse-encoding-v2-distill",
+    "versions": {
+      "1.0.0": {
+        "format": [
+          "torch_script"
+        ],
+        "description": "This is a neural sparse encoding model: It transfers text into sparse vector, and then extract nonzero index and value to entry and weights. It serves in both ingestion and search."
+      }
+    }
+  },
+  {
+    "name": "amazon/sentence-highlighting/opensearch-semantic-highlighter-v1",
+    "versions": {
+      "1.0.0": {
+        "format": [
+          "torch_script"
+        ],
+        "description": "A semantic highlighter model that identifies and highlights relevant sentences in a document given a query."
+      }
+    }
+  }
 ]

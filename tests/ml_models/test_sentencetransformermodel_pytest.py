@@ -243,6 +243,7 @@ def test_make_model_config_json_for_torch_script():
         "embedding_dimension": 384,
         "pooling_mode": "MEAN",
         "normalize_result": True,
+        "additional_config": {"space_type": "l2"},
     }
 
     clean_test_folder(TEST_FOLDER)
@@ -275,6 +276,7 @@ def test_make_model_config_json_for_onnx():
         "embedding_dimension": 384,
         "pooling_mode": "MEAN",
         "normalize_result": False,
+        "additional_config": {"space_type": "cosine"},
     }
 
     clean_test_folder(TEST_FOLDER)
@@ -304,12 +306,14 @@ def test_overwrite_fields_in_model_config():
         "embedding_dimension": 768,
         "pooling_mode": "MEAN",
         "normalize_result": True,
+        "additional_config": {"space_type": "l2"},
     }
 
     overwritten_model_config_data = {
         "embedding_dimension": 128,
         "pooling_mode": "MAX",
         "normalize_result": False,
+        "additional_config": {"space_type": "cosine"},
     }
 
     clean_test_folder(TEST_FOLDER)
@@ -343,6 +347,7 @@ def test_overwrite_fields_in_model_config():
         embedding_dimension=overwritten_model_config_data["embedding_dimension"],
         pooling_mode=overwritten_model_config_data["pooling_mode"],
         normalize_result=overwritten_model_config_data["normalize_result"],
+        additional_config=overwritten_model_config_data["additional_config"],
     )
 
     compare_model_config(
@@ -463,7 +468,7 @@ def test_overwrite_description():
 def test_long_description():
     model_id = "sentence-transformers/gtr-t5-base"
     model_format = "TORCH_SCRIPT"
-    expected_model_description = "This is a sentence-transformers model: It maps sentences & paragraphs to a 768 dimensional dense vector space. The model was specifically trained for the task of sematic search."
+    expected_model_description = "This is a sentence-transformers model: It maps sentences & paragraphs to a 768 dimensional dense vector space. The model was specifically trained for the task of semantic search."
 
     clean_test_folder(TEST_FOLDER)
     test_model12 = SentenceTransformerModel(

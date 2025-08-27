@@ -20,6 +20,7 @@ environment=($(cat <<-END
   --env cluster.name=$cluster_name
   --env discovery.type=single-node
   --env discovery.seed_hosts=$master_node_name
+  --env OPENSEARCH_INITIAL_ADMIN_PASSWORD=myStrongPassword123!
   --env cluster.routing.allocation.disk.threshold_enabled=false
   --env bootstrap.memory_lock=true
   --env node.attr.testattr=test
@@ -62,10 +63,21 @@ END
   local_detach="true"
   if [[ "$i" == "$((NUMBER_OF_NODES-1))" ]]; then local_detach=$DETACH; fi
 
+  OPENSEARCH_REQUIRED_VERSION="2.12.0"
+
+  password="admin"
+  # Starting in 2.12.0, security demo configuration script requires an initial admin password
+  COMPARE_VERSION=`echo $OPENSEARCH_REQUIRED_VERSION $OPENSEARCH_VERSION | tr ' ' '\n' | sort -V | uniq | head -n 1`
+  if [ "$COMPARE_VERSION" != "$OPENSEARCH_REQUIRED_VERSION" ]; then
+    password="admin"
+  else
+    password="myStrongPassword123!"
+  fi
+
   set -x
   healthcmd="curl -vvv -s --fail http://localhost:9200/_cluster/health || exit 1"
   if [[ "$SECURE_INTEGRATION" == "true" ]]; then
-    healthcmd="curl -vvv -s --insecure -u admin:admin --fail https://localhost:9200/_cluster/health || exit 1"
+    healthcmd="curl -vvv -s --insecure -u admin:$password --fail https://localhost:9200/_cluster/health || exit 1"
   fi
 
   CLUSTER_TAG=$CLUSTER
@@ -85,7 +97,7 @@ END
     docker run \
       --name "$node_name" \
       --network "$network_name" \
-      --env "ES_JAVA_OPTS=-Xms1g -Xmx1g" \
+      --env "OPENSEARCH_JAVA_OPTS=-Xms4g -Xmx4g" \
       "${environment[@]}" \
       "${volumes[@]}" \
       "${security[@]}" \

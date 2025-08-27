@@ -23,7 +23,7 @@ jobs:
          echo "This workflow should only be triggered on 'main' branch"
          exit 1
     - name: Checkout Repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v2
       with:
@@ -40,9 +40,8 @@ jobs:
       contents: read
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Trigger Jenkins Workflow with Generic Webhook
         run: |
-          jenkins_trigger_token=${{ secrets.JENKINS_ML_MODELS_RELEASE_GENERIC_WEBHOOK_TOKEN }}
           jenkins_params="{\"BASE_DOWNLOAD_PATH\":\"ml-models/model_listing\"}"
-          sh utils/model_uploader/trigger_ml_models_release.sh $jenkins_trigger_token $jenkins_params
+          sh utils/model_uploader/trigger_ml_models_release.sh -t ${{ secrets.JENKINS_ML_MODELS_RELEASE_GENERIC_WEBHOOK_TOKEN }} -d "$jenkins_params" -u ${{ secrets.JENKINS_GITHUB_USER}} -p ${{ secrets.JENKINS_GITHUB_USER_TOKEN}}

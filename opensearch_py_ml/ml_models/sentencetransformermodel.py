@@ -6,6 +6,7 @@
 # GitHub history for details.
 
 import json
+import math
 import os
 import pickle
 import platform
@@ -21,8 +22,8 @@ from zipfile import ZipFile
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import requests
 import torch
+import torch.nn as nn
 import yaml
 from accelerate import Accelerator, notebook_launcher
 from mdutils.fileutils import MarkDownFile
@@ -32,21 +33,39 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 from transformers import TrainingArguments, get_linear_schedule_with_warmup
 from transformers.convert_graph_to_onnx import convert
+from transformers.models.distilbert.modeling_distilbert import (
+    DistilBertSdpaAttention,
+    MultiHeadSelfAttention,
+)
 
 from opensearch_py_ml.ml_commons.ml_common_utils import (
     _generate_model_content_hash_value,
 )
 
-LICENSE_URL = "https://github.com/opensearch-project/opensearch-py-ml/raw/main/LICENSE"
+from .base_models import BaseUploadModel
 
 
-class SentenceTransformerModel:
+class SentenceTransformerModel(BaseUploadModel):
     """
     Class for training, exporting and configuring the SentenceTransformers model.
     """
 
     DEFAULT_MODEL_ID = "sentence-transformers/msmarco-distilbert-base-tas-b"
     SYNTHETIC_QUERY_FOLDER = "synthetic_queries"
+
+    MODEL_SPACE_TYPE_MAPPING = {
+        "all-distilroberta-v1": "l2",
+        "all-MiniLM-L6-v2": "l2",
+        "all-MiniLM-L12-v2": "l2",
+        "all-mpnet-base-v2": "l2",
+        "msmarco-distilbert-base-tas-b": "innerproduct",
+        "multi-qa-MiniLM-L6-cos-v1": "l2",
+        "multi-qa-mpnet-base-dot-v1": "innerproduct",
+        "paraphrase-MiniLM-L3-v2": "cosine",
+        "paraphrase-multilingual-MiniLM-L12-v2": "cosine",
+        "paraphrase-mpnet-base-v2": "cosine",
+        "distiluse-base-multilingual-cased-v1": "cosine",
+    }
 
     def __init__(
         self,
@@ -73,6 +92,7 @@ class SentenceTransformerModel:
         :return: no return value expected
         :rtype: None
         """
+        super().__init__(model_id, folder_path, overwrite)
         default_folder_path = os.path.join(
             os.getcwd(), "sentence_transformer_model_files"
         )
@@ -368,6 +388,173 @@ class SentenceTransformerModel:
             train_examples.append([queries[i], passages[i]])
         return train_examples
 
+    def _get_parent_and_attr(self, model, module_name):
+        """
+        Retrieve the parent module and the attribute name for a given module.
+        For example, if module_name is "encoder.layer.0.attention", this function will return
+        the "encoder.layer.0" module and "attention" as the attribute name.
+
+        :param model:
+            required, the model instance to traverse
+        :type model: SentenceTransformer
+        :param module_name:
+            required, the dot-separated path to the module
+        :type module_name: string
+        :return: tuple containing parent module object and the name of the target attribute
+        :rtype: Tuple[object, string]
+        """
+        parts = module_name.split(".")
+        parent = model
+        for part in parts[:-1]:  # Traverse until the second last part
+            parent = getattr(parent, part)
+        return parent, parts[-1]
+
+    def patch_model_weights(self, model):
+        """
+        Replace DistilBertSdpaAttention with MultiHeadSelfAttention in the given model.
+        Needed for compatibility with newer PyTorch version (2.5.1) while preserving the model's learned weights.
+
+        This function performs the following steps:
+        1. Identifies all DistilBertSdpaAttention layers in the model
+        2. Creates new MultiHeadSelfAttention layers with identical weights and configuration
+        3. Replaces the old DistilBertSdpaAttention attention layers with the new MultiHeadSelfAttention attention layers
+        4. Ensures the forward method returns proper tuple format for compatibility
+
+        :param model:
+            required, the DistilBert model instance
+        :type model: SentenceTransformer
+        :return: the modified model with replaced attention layers
+        :rtype: SentenceTransformer
+        """
+        # Collect the layers to replace in a separate list to avoid modifying dictionary while iterating
+        modules_to_replace = []
+
+        for name, module in model.named_modules():
+            # Identify modules that need to be replaced
+            if isinstance(module, DistilBertSdpaAttention):
+                modules_to_replace.append((name, module))
+
+        # Replace the identified modules
+        for name, module in modules_to_replace:
+            # Retrieve the original config
+            config = getattr(module, "config", None)
+            if config is None:
+                raise ValueError(f"Module {name} does not have a 'config' attribute.")
+
+            # Create new MultiHeadSelfAttention with same config
+            new_module = MultiHeadSelfAttention(config)
+
+            # Copy weights into new module
+            new_module.q_lin.weight.data = module.q_lin.weight.data.clone()
+            new_module.q_lin.bias.data = module.q_lin.bias.data.clone()
+            new_module.k_lin.weight.data = module.k_lin.weight.data.clone()
+            new_module.k_lin.bias.data = module.k_lin.bias.data.clone()
+            new_module.v_lin.weight.data = module.v_lin.weight.data.clone()
+            new_module.v_lin.bias.data = module.v_lin.bias.data.clone()
+            new_module.out_lin.weight.data = module.out_lin.weight.data.clone()
+            new_module.out_lin.bias.data = module.out_lin.bias.data.clone()
+
+            # Modify the forward method to fix tuple return issue
+            def new_forward(
+                self, query, key, value, mask, head_mask, output_attentions
+            ):
+                """
+                Replace forward method to ensure proper tuple return format.
+
+                :param query:
+                    required, tensor containing query vectors of shape [batch_size, seq_length, dim]
+                :type query: Tensor
+                :param key:
+                    required, tensor containing key vectors of shape [batch_size, seq_length, dim]
+                :type key: Tensor
+                :param value:
+                    required, tensor containing value vectors of shape [batch_size, seq_length, dim]
+                :type value: Tensor
+                :param mask:
+                    required, attention mask tensor of shape [batch_size, seq_length] or [batch_size, seq_length, seq_length]
+                :type mask: Tensor
+                :param head_mask:
+                    required, mask for attention heads
+                :type head_mask: Tensor
+                :param output_attentions:
+                    required, boolean flag indicating whether to output attention weights
+                :type output_attentions: bool
+                :return: A tuple of output and the attention weights if output_attentions is True,
+                        otherwise a tuple of output. Output shape: [batch_size, seq_length, dim]
+                :rtype: Tuple[Tensor, Tensor] or Tuple[Tensor]
+                """
+                batch_size, seq_length, _ = query.shape
+                dim_per_head = self.dim // self.n_heads
+
+                # Ensure the mask is the correct shape
+                if mask.dim() == 2:  # [batch_size, seq_length]
+                    mask = mask[
+                        :, None, None, :
+                    ]  # Convert to [batch_size, 1, 1, seq_length]
+                elif mask.dim() == 3:  # [batch_size, seq_length, seq_length]
+                    mask = mask[
+                        :, None, :, :
+                    ]  # Convert to [batch_size, 1, seq_length, seq_length]
+
+                # Validate the new mask shape before applying expansion
+                if mask.shape[-1] != seq_length:
+                    raise ValueError(
+                        f"Mask shape {mask.shape} does not match sequence length {seq_length}"
+                    )
+
+                # Apply mask expansion for all attention heads
+                mask = (mask == 0).expand(
+                    batch_size, self.n_heads, seq_length, seq_length
+                )
+
+                # Transform query, key, and value for multi-head attention
+                q = (
+                    self.q_lin(query)
+                    .view(batch_size, seq_length, self.n_heads, dim_per_head)
+                    .transpose(1, 2)
+                )
+                k = (
+                    self.k_lin(key)
+                    .view(batch_size, seq_length, self.n_heads, dim_per_head)
+                    .transpose(1, 2)
+                )
+                v = (
+                    self.v_lin(value)
+                    .view(batch_size, seq_length, self.n_heads, dim_per_head)
+                    .transpose(1, 2)
+                )
+
+                q = q / math.sqrt(dim_per_head)
+                scores = torch.matmul(q, k.transpose(-2, -1))
+
+                # Apply the correctly shaped mask
+                scores = scores.masked_fill(mask, torch.finfo(scores.dtype).min)
+
+                weights = nn.functional.softmax(scores, dim=-1)
+                weights = nn.functional.dropout(
+                    weights, p=self.dropout.p, training=self.training
+                )
+
+                context = torch.matmul(weights, v)
+                context = (
+                    context.transpose(1, 2)
+                    .contiguous()
+                    .view(batch_size, seq_length, self.dim)
+                )
+                output = self.out_lin(context)
+
+                # Ensure return is always a tuple, as expected by DistilBERT
+                return (output, weights) if output_attentions else (output,)
+
+            # Replace forward method with the new function
+            new_module.forward = new_forward.__get__(new_module, MultiHeadSelfAttention)
+
+            # Replace module in the model
+            parent_module, attr_name = self._get_parent_and_attr(model, name)
+            setattr(parent_module, attr_name, new_module)
+
+        return model
+
     def train_model(
         self,
         train_examples: List[List[str]],
@@ -616,6 +803,7 @@ class SentenceTransformerModel:
                         plt.plot(loss[::100])
                         plt.show()
 
+        model = self.patch_model_weights(model)
         # saving the pytorch model and the tokenizers.json file is saving at this step
         model.save(self.folder_path)
         device = "cpu"
@@ -640,22 +828,6 @@ class SentenceTransformerModel:
         torch.jit.save(traced_cpu, os.path.join(self.folder_path, output_model_name))
         print("Model saved to path: " + self.folder_path + "\n")
         return traced_cpu
-
-    def _add_apache_license_to_model_zip_file(self, model_zip_file_path: str):
-        """
-        Add Apache-2.0 license file to the model zip file at model_zip_file_path
-
-        :param model_zip_file_path:
-            Path to the model zip file
-        :type model_zip_file_path: string
-        :return: no return value expected
-        :rtype: None
-        """
-        r = requests.get(LICENSE_URL)
-        assert r.status_code == 200, "Failed to add license file to the model zip file"
-
-        with ZipFile(str(model_zip_file_path), "a") as zipObj:
-            zipObj.writestr("LICENSE", r.content)
 
     def zip_model(
         self,
@@ -728,39 +900,9 @@ class SentenceTransformerModel:
                 arcname="tokenizer.json",
             )
         if add_apache_license:
-            self._add_apache_license_to_model_zip_file(zip_file_path)
+            super()._add_apache_license_to_model_zip_file(zip_file_path)
 
         print("zip file is saved to " + zip_file_path + "\n")
-
-    def _fill_null_truncation_field(
-        self,
-        save_json_folder_path: str,
-        max_length: int,
-    ) -> None:
-        """
-        Fill truncation field in tokenizer.json when it is null
-
-        :param save_json_folder_path:
-             path to save model json file, e.g, "home/save_pre_trained_model_json/")
-        :type save_json_folder_path: string
-        :param max_length:
-             maximum sequence length for model
-        :type max_length: int
-        :return: no return value expected
-        :rtype: None
-        """
-        tokenizer_file_path = os.path.join(save_json_folder_path, "tokenizer.json")
-        with open(tokenizer_file_path) as user_file:
-            parsed_json = json.load(user_file)
-        if "truncation" not in parsed_json or parsed_json["truncation"] is None:
-            parsed_json["truncation"] = {
-                "direction": "Right",
-                "max_length": max_length,
-                "strategy": "LongestFirst",
-                "stride": 0,
-            }
-            with open(tokenizer_file_path, "w") as file:
-                json.dump(parsed_json, file, indent=2)
 
     def save_as_pt(
         self,
@@ -833,7 +975,7 @@ class SentenceTransformerModel:
 
         # save tokenizer.json in save_json_folder_name
         model.save(save_json_folder_path)
-        self._fill_null_truncation_field(
+        super()._fill_null_truncation_field(
             save_json_folder_path, model.tokenizer.model_max_length
         )
 
@@ -869,7 +1011,7 @@ class SentenceTransformerModel:
                 arcname="tokenizer.json",
             )
         if add_apache_license:
-            self._add_apache_license_to_model_zip_file(zip_file_path)
+            super()._add_apache_license_to_model_zip_file(zip_file_path)
 
         self.torch_script_zip_file_path = zip_file_path
         print("zip file is saved to ", zip_file_path, "\n")
@@ -943,7 +1085,7 @@ class SentenceTransformerModel:
 
         # save tokenizer.json in output_path
         model.save(save_json_folder_path)
-        self._fill_null_truncation_field(
+        super()._fill_null_truncation_field(
             save_json_folder_path, model.tokenizer.model_max_length
         )
 
@@ -967,7 +1109,7 @@ class SentenceTransformerModel:
                 arcname="tokenizer.json",
             )
         if add_apache_license:
-            self._add_apache_license_to_model_zip_file(zip_file_path)
+            super()._add_apache_license_to_model_zip_file(zip_file_path)
 
         self.onnx_zip_file_path = zip_file_path
         print("zip file is saved to ", zip_file_path, "\n")
@@ -1149,6 +1291,7 @@ class SentenceTransformerModel:
         normalize_result: bool = None,
         description: str = None,
         all_config: str = None,
+        additional_config: dict = None,
         model_type: str = None,
         verbose: bool = False,
     ) -> str:
@@ -1186,7 +1329,10 @@ class SentenceTransformerModel:
         :param all_config:
             Optional, the all_config of the model. If None, parse all contents from the config file of pre-trained
             hugging-face model
-        :type all_config: dict
+        :type all_config: str
+        :param additional_config:
+            Optional, the additional_config of the model. If None, set additional_config as an empty dictionary
+        :type additional_config: dict
         :param model_type:
             Optional, the model_type of the model. If None, parse model_type from the config file of pre-trained
             hugging-face model
@@ -1273,13 +1419,24 @@ class SentenceTransformerModel:
                     ". Please check the config.json ",
                     "file in the path.",
                 )
+        if additional_config is None:
+            additional_config = {}
+        if not additional_config.get("space_type"):
+            model_name_suffix = self.model_id.split("/")[-1]
+            if model_name_suffix not in self.MODEL_SPACE_TYPE_MAPPING:
+                print(
+                    f"Default space type cannot be determined for model '{model_name_suffix}'. Consider adding space_type in additional_config."
+                )
+            else:
+                space_type = self.MODEL_SPACE_TYPE_MAPPING[model_name_suffix]
+                additional_config["space_type"] = space_type
 
         model_config_content = {
             "name": model_name,
             "version": version_number,
             "description": description,
             "model_format": model_format,
-            "model_task_type": "TEXT_EMBEDDING",
+            "function_name": "TEXT_EMBEDDING",
             "model_config": {
                 "model_type": model_type,
                 "embedding_dimension": embedding_dimension,
@@ -1289,6 +1446,10 @@ class SentenceTransformerModel:
                 "all_config": json.dumps(all_config),
             },
         }
+        if additional_config:
+            model_config_content["model_config"][
+                "additional_config"
+            ] = additional_config
 
         if model_zip_file_path is None:
             model_zip_file_path = (
@@ -1304,9 +1465,9 @@ class SentenceTransformerModel:
                 model_config_content["model_content_size_in_bytes"] = os.stat(
                     model_zip_file_path
                 ).st_size
-                model_config_content[
-                    "model_content_hash_value"
-                ] = _generate_model_content_hash_value(model_zip_file_path)
+                model_config_content["model_content_hash_value"] = (
+                    _generate_model_content_hash_value(model_zip_file_path)
+                )
 
         if verbose:
             print("generating ml-commons_model_config.json file...\n")
