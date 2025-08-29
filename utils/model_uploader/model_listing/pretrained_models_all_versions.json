@@ -310,6 +310,17 @@
     }
   },
   {
+    "name": "amazon/neural-sparse/opensearch-neural-sparse-encoding-doc-v3-gte",
+    "versions": {
+      "1.0.0": {
+        "format": [
+          "torch_script"
+        ],
+        "description": "This is a neural sparse encoding model: It transfers text into sparse vector, and then extract nonzero index and value to entry and weights. It serves only in ingestion and customer should use tokenizer model in query."
+      }
+    }
+  },
+  {
     "name": "amazon/sentence-highlighting/opensearch-semantic-highlighter-v1",
     "versions": {
       "1.0.0": {
