@@ -6,6 +6,8 @@
 # GitHub history for details.
 import json
 import os
+import re
+from typing import Optional
 from zipfile import ZipFile
 
 import torch
@@ -36,6 +38,30 @@ def _generate_default_model_description() -> str:
     return description
 
 
+def _sanitize_module_name(name: str) -> str:
+    name = re.sub(r"[^0-9A-Za-z_\.]", "_", name)
+    parts = []
+    for p in name.split("."):
+        if not p:
+            continue
+        if p[0].isdigit():
+            p = f"n_{p}"
+        parts.append(p)
+    return ".".join(parts)
+
+
+def sanitize_model_modules(model: torch.nn.Module) -> None:
+    seen: set[type] = set()
+    for m in model.modules():
+        cls = m.__class__
+        if cls in seen:
+            continue
+        safe = _sanitize_module_name(getattr(cls, "__module__", ""))
+        if safe and safe != cls.__module__:
+            cls.__module__ = safe
+        seen.add(cls)
+
+
 class SparseEncodingModel(SparseModel):
     """
     Class for  exporting and configuring the NeuralSparseV2Model model.
@@ -50,12 +76,15 @@ class SparseEncodingModel(SparseModel):
         overwrite: bool = False,
         sparse_prune_ratio: float = 0,
         activation: str = None,
+        model_init_kwargs: Optional[dict] = None,
     ) -> None:
 
         super().__init__(model_id, folder_path, overwrite)
-        self.tokenizer = AutoTokenizer.from_pretrained(model_id)
+        if model_init_kwargs is None:
+            model_init_kwargs = {}
+        self.tokenizer = AutoTokenizer.from_pretrained(model_id, **model_init_kwargs)
         self.backbone_model = AutoModelForMaskedLM.from_pretrained(
-            model_id, _attn_implementation="eager"
+            model_id, _attn_implementation="eager", **model_init_kwargs
         )
         default_folder_path = os.path.join(
             os.getcwd(), "opensearch_neural_sparse_model_files"
@@ -167,6 +196,7 @@ class SparseEncodingModel(SparseModel):
             return_tensors="pt",
         ).to(device)
 
+        sanitize_model_modules(cpu_model)
         compiled_model = torch.jit.trace(cpu_model, dict(features), strict=False)
         torch.jit.save(compiled_model, model_path)
         print("model file is saved to ", model_path)

@@ -77,20 +77,21 @@ elif [[ "$TASK_TYPE" == "SentenceTransformerTrace" || "$TASK_TYPE" == "SparseTra
   echo -e "\033[34;1mINFO:\033[0m ACTIVATION: ${ACTIVATION:-N/A}\033[0m"
   echo -e "\033[34;1mINFO:\033[0m MODEL_DESCRIPTION: ${MODEL_DESCRIPTION:-N/A}\033[0m"
   echo -e "\033[34;1mINFO:\033[0m MODEL_NAME: ${MODEL_NAME:-N/A}\033[0m"
+  echo -e "\033[34;1mINFO:\033[0m MODEL_INIT_KWARGS: ${MODEL_INIT_KWARGS:-{}}\033[0m"
 
   if [[ "$TASK_TYPE" == "SentenceTransformerTrace" ]]; then
       NOX_TRACE_TYPE="trace"
-      EXTRA_ARGS="-ed ${EMBEDDING_DIMENSION} -pm ${POOLING_MODE}"
+      EXTRA_ARGS=( -ed "${EMBEDDING_DIMENSION}" -pm "${POOLING_MODE}" )
   elif [[ "$TASK_TYPE" == "SparseTrace" ]]; then
       NOX_TRACE_TYPE="sparsetrace"
-      EXTRA_ARGS="-spr ${SPARSE_PRUNE_RATIO} -act ${ACTIVATION}"
+      EXTRA_ARGS=( -spr "${SPARSE_PRUNE_RATIO}" -act "${ACTIVATION}" -mik "${MODEL_INIT_KWARGS}" )
   elif [[ "$TASK_TYPE" == "SparseTokenizerTrace" ]]; then
       NOX_TRACE_TYPE="sparsetrace"
-      # use extra args to trigger the tokenizer tracing logics
-      EXTRA_ARGS="-t"
+      # use extra args to trigger the tokenizer tracing logics (no -mik for tokenizer)
+      EXTRA_ARGS=( -t )
   elif [[ "$TASK_TYPE" == "SemanticHighlighterTrace" ]]; then
       NOX_TRACE_TYPE="semantic_highlighter_trace"
-      EXTRA_ARGS=""
+      EXTRA_ARGS=()
   else
       echo "Unknown TASK_TYPE: $TASK_TYPE"
       exit 1
@@ -105,7 +106,7 @@ elif [[ "$TASK_TYPE" == "SentenceTransformerTrace" || "$TASK_TYPE" == "SparseTra
     -up "${UPLOAD_PREFIX}"
     -mn "${MODEL_NAME}"
     -md "${MODEL_DESCRIPTION:+"$MODEL_DESCRIPTION"}"
-    ${EXTRA_ARGS}
+    "${EXTRA_ARGS[@]}"
   )
 
   echo "nox -s ${nox_command[@]}"
