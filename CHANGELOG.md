@@ -33,6 +33,7 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Update pretrained_models_all_versions.json by @nathaliellenaa ([#548](https://github.com/opensearch-project/opensearch-py-ml/pull/548))
 - Update model upload history -  opensearch-project/opensearch-semantic-highlighter-v1 (v.1.0.0)(TORCH_SCRIPT) by @nathaliellenaa ([#550](https://github.com/opensearch-project/opensearch-py-ml/pull/550))
 - Update pretrained_models_all_versions.json by @nathaliellenaa ([#560](https://github.com/opensearch-project/opensearch-py-ml/pull/560))
+- Upgrade torch version to fix security issue ([#561](https://github.com/opensearch-project/opensearch-py-ml/pull/561))
 
 ### Fixed
 - Fix for uploading models with function_name instead of model_task ([#553](https://github.com/opensearch-project/opensearch-py-ml/pull/553))
