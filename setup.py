@@ -86,7 +86,7 @@ setup(
         "opensearch-py>=2",
         "pandas>=1.5.2,<2.3,!=2.1.0",
         "matplotlib>=3.6.0,<4",
-        "numpy>=1.24.0,<2",
+        "numpy>=2.3.2",
         "deprecated>=1.2.14,<2",
         "boto3>=1.26.0",
         "botocore>=1.29.0",

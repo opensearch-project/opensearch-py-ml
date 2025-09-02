@@ -3,7 +3,7 @@
 #
 pandas>=1.5.2,<2.3,!=2.1.0
 matplotlib>=3.6.2,<4
-numpy>=1.24.0,<2
+numpy>=2.3.2
 opensearch-py>=2.2.0
 torch>=2.7.1-rc1
 onnx>=1.15.0
