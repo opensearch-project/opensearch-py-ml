@@ -102,7 +102,7 @@ def lint(session):
     #         session.error("\n" + "\n".join(sorted(set(errors))))
 
 
-@nox.session(python=["3.8", "3.9", "3.10"])
+@nox.session(python=["3.11", "3.12", "3.13"])
 def test(session):
     session.install(
         "-r",
@@ -137,7 +137,7 @@ def test(session):
     )
 
 
-@nox.session(python=["3.9"])
+@nox.session(python=["3.12"])
 def docs(session):
     # Run this so users get an error if they don't have Pandoc installed.
     session.install("-r", "docs/requirements-docs.txt")
@@ -151,7 +151,7 @@ def docs(session):
 # While nox is typically used for automating testing, in this case, we utilize it
 # to automate the action workflow, leveraging its ability to set up the environment
 # required for model autotracing.
-@nox.session(python=["3.9"])
+@nox.session(python=["3.12"])
 def trace(session):
     session.install(
         "-r",
@@ -168,7 +168,7 @@ def trace(session):
     )
 
 
-@nox.session(python=["3.9"])
+@nox.session(python=["3.12"])
 def sparsetrace(session):
     session.install(
         "-r",
@@ -185,7 +185,7 @@ def sparsetrace(session):
     )
 
 
-@nox.session(python=["3.9"])
+@nox.session(python=["3.12"])
 def semantic_highlighter_trace(session):
     session.install(
         "-r",
