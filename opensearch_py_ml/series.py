@@ -1620,7 +1620,7 @@ class Series(NDFrame):
 
         >>> s = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')['Carrier']
         >>> s.nunique()
-        4
+        np.int64(4)
         """
         results = super().nunique()
         return results.squeeze()

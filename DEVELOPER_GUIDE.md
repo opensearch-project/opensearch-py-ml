@@ -42,7 +42,7 @@ If you don't already have it installed (check with `git --version`) we recommend
 
 #### Install `python`
 
-You can install any version of python starting from 3.8.
+You can install any version of python starting from 3.11.
 
 ### Fork and clone OpenSearch-py-ml
 
