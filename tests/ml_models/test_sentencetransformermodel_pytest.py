@@ -276,7 +276,7 @@ def test_make_model_config_json_for_onnx():
         "embedding_dimension": 384,
         "pooling_mode": "MEAN",
         "normalize_result": False,
-        "additional_config": {"space_type": "cosine"},
+        "additional_config": {"space_type": "cosinesimil"},
     }
 
     clean_test_folder(TEST_FOLDER)
@@ -313,7 +313,7 @@ def test_overwrite_fields_in_model_config():
         "embedding_dimension": 128,
         "pooling_mode": "MAX",
         "normalize_result": False,
-        "additional_config": {"space_type": "cosine"},
+        "additional_config": {"space_type": "cosinesimil"},
     }
 
     clean_test_folder(TEST_FOLDER)
