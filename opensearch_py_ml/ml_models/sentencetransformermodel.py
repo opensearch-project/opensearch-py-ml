@@ -61,10 +61,10 @@ class SentenceTransformerModel(BaseUploadModel):
         "msmarco-distilbert-base-tas-b": "innerproduct",
         "multi-qa-MiniLM-L6-cos-v1": "l2",
         "multi-qa-mpnet-base-dot-v1": "innerproduct",
-        "paraphrase-MiniLM-L3-v2": "cosine",
-        "paraphrase-multilingual-MiniLM-L12-v2": "cosine",
-        "paraphrase-mpnet-base-v2": "cosine",
-        "distiluse-base-multilingual-cased-v1": "cosine",
+        "paraphrase-MiniLM-L3-v2": "cosinesimil",
+        "paraphrase-multilingual-MiniLM-L12-v2": "cosinesimil",
+        "paraphrase-mpnet-base-v2": "cosinesimil",
+        "distiluse-base-multilingual-cased-v1": "cosinesimil",
     }
 
     def __init__(
