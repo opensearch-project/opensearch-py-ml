@@ -36,6 +36,7 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Upgrade torch version to fix security issue ([#561](https://github.com/opensearch-project/opensearch-py-ml/pull/561))
 - Upgrade numpy and python version ([#562](https://github.com/opensearch-project/opensearch-py-ml/pull/562))
 - Update space type mapping for sentence transformer models ([#574](https://github.com/opensearch-project/opensearch-py-ml/pull/574))
+- Update model upload history -  sentence-transformers/paraphrase-mpnet-base-v2 (v.1.0.1)(BOTH) by @nathaliellenaa ([#580](https://github.com/opensearch-project/opensearch-py-ml/pull/580))
 
 ### Fixed
 - Fix for uploading models with function_name instead of model_task ([#553](https://github.com/opensearch-project/opensearch-py-ml/pull/553))
