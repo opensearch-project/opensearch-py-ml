@@ -27,7 +27,7 @@
 __title__ = "opensearch_py_ml"
 __description__ = "Python Client and Toolkit for DataFrames, Big Data, Machine Learning and ETL in OpenSearch"
 __url__ = "https://github.com/opensearch-project/opensearch-py-ml"
-__version__ = "1.3.0"
+__version__ = "1.4.0"
 __author__ = "Dhrubo Saha"
 __author_email__ = "dhrubo@amazon.com, "
 __maintainer__ = "Dhrubo Saha, Yaliang Wu, Alexander Greaves-Tunnell, Sicheng Song, Jing Zhang, Bhavana Goud Ramaram, Yerzhaisang Taskali, Nathalie Jonathan"
