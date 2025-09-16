@@ -1,6 +1,14 @@
 # CHANGELOG
 Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
+## [1.4.0]
+
+### Added
+
+### Changed
+
+### Fixed
+
 ## [1.3.0]
 
 ### Added
@@ -219,3 +227,4 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 [1.0.0b1]: https://github.com/opensearch-project/opensearch-py-ml/commits/1.0.0b1
 [1.1.0]: https://github.com/opensearch-project/opensearch-py-ml/commits/1.1.0
 [1.2.0]: https://github.com/opensearch-project/opensearch-py-ml/commits/1.2.0
+[1.3.0]: https://github.com/opensearch-project/opensearch-py-ml/commits/1.3.0
