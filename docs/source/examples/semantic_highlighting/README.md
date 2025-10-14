@@ -13,26 +13,28 @@ This directory contains deployment script examples for semantic highlighting mod
 
 Install deployment dependencies:
 ```bash
+cd docs/source/examples/semantic_highlighting
 pip install -r requirements.txt
 ```
 
 ### Deploy Models
-
-Deploy ModernBERT model:
-```bash
-python deploy.py --model modernbert
-```
 
 Deploy OpenSearch Semantic Highlighter:
 ```bash
 python deploy.py --model opensearch-semantic-highlighter
 ```
 
+Deploy ModernBERT model:
+```bash
+python deploy.py --model modernbert
+```
+
+
 ### Custom Configuration
 
 Specify instance type and count:
 ```bash
-python deploy.py --model modernbert --instance-type ml.g5.2xlarge --instance-count 2
+python deploy.py --model opensearch-semantic-highlighter --instance-type ml.g5.2xlarge --instance-count 2
 ```
 
 ### Environment Variables

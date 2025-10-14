@@ -32,7 +32,7 @@ def model_fn(model_dir):
     model_path = os.path.join(model_dir, "model_files") if os.path.exists(os.path.join(model_dir, "model_files")) else model_dir
     
     model = AutoModel.from_pretrained(model_path)
-    tokenizer = AutoTokenizer.from_pretrained("answerdotai/ModernBERT-base")
+    tokenizer = AutoTokenizer.from_pretrained(model_path)
     model.to(DEVICE)
     model.eval()
     

@@ -134,12 +134,13 @@ def model_fn(model_dir):
 
     logger.info(f"Loading model from: {model_dir}")
 
-    _tokenizer = AutoTokenizer.from_pretrained(
-        "opensearch-project/opensearch-semantic-highlighter-v1",
-        use_fast=True
-    )
-
     model_path = os.path.join(model_dir, "model_files") if os.path.exists(os.path.join(model_dir, "model_files")) else model_dir
+
+    _tokenizer = AutoTokenizer.from_pretrained(
+        model_path,
+        use_fast=True,
+        local_files_only=True
+    )
 
     logger.info(f"Loading model from: {model_path}")
     

@@ -43,7 +43,6 @@ AWS_REGION = os.environ.get("AWS_REGION", "us-east-1")
 
 # Generate deployment identifiers once for consistency
 DEPLOYMENT_TIMESTAMP = datetime.now().strftime("%Y%m%d-%H%M%S")
-DEPLOYMENT_TIMESTAMP_UNDERSCORE = datetime.now().strftime("%Y%m%d_%H%M%S")
 DEPLOYMENT_UUID = uuid.uuid4().hex[:8]
 DEPLOYMENT_ID = f"{DEPLOYMENT_TIMESTAMP}-{DEPLOYMENT_UUID}"
 
@@ -102,17 +101,19 @@ def prepare_model_files(model_key):
         
         safetensors_path = hf_hub_download(repo_id=model_name, filename="model.safetensors")
         config_path = hf_hub_download(repo_id=model_name, filename="config.json")
+        tokenizer_config = hf_hub_download(repo_id=model_name, filename="tokenizer_config.json")
+        tokenizer_json = hf_hub_download(repo_id=model_name, filename="tokenizer.json")
         
     except Exception as e:
         logger.error(f"Failed to download model files from {model_name}: {e}")
         raise RuntimeError(f"Model download failed: {e}")
     
-    # Copy safetensors directly
+    # Copy model files
     shutil.copy(safetensors_path, f"{work_dir}/model_files/model.safetensors")
-    logger.info("Copied model files (safetensors format)")
-    
     shutil.copy(config_path, f"{work_dir}/model_files/config.json")
-    
+    shutil.copy(tokenizer_config, f"{work_dir}/model_files/tokenizer_config.json")
+    shutil.copy(tokenizer_json, f"{work_dir}/model_files/tokenizer.json")
+
     return work_dir
 
 def create_model_tar(work_dir, model_key):
