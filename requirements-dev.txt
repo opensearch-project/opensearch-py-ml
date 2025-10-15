@@ -27,6 +27,7 @@ pytest-cov
 nbval
 pywavelets
 scikit-learn
+onnxscript
 
 #
 #Docs
