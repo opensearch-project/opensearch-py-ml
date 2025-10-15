@@ -5,6 +5,7 @@ import time
 import logging
 import torch
 import re
+import nltk
 from transformers import AutoTokenizer, AutoModel
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
@@ -16,6 +17,23 @@ logger = logging.getLogger(__name__)
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 logger.info(f"Device: {DEVICE}")
+
+def ensure_nltk_data():
+    """Ensure NLTK data is available"""
+    try:
+        nltk.data.find('tokenizers/punkt')
+        nltk.data.find('tokenizers/punkt_tab')
+        logger.info("NLTK data already available")
+    except LookupError:
+        try:
+            nltk.download('punkt', quiet=True)
+            nltk.download('punkt_tab', quiet=True)
+            logger.info("Successfully downloaded NLTK data")
+        except Exception as e:
+            logger.error(f"Error downloading NLTK data: {str(e)}")
+            raise
+
+ensure_nltk_data()
 
 # Global model and tokenizer
 model = None
@@ -50,15 +68,15 @@ def get_embedding(text):
 
 
 def split_sentences(text):
-    """Split text into sentences with character positions"""
-    # Split by periods (both English and Chinese)
+    """Split text into sentences with character positions using NLTK"""
+    doc_sents = nltk.sent_tokenize(text)
+    
     sentences = []
     current_pos = 0
     
-    for match in re.finditer(r'[^.。]+[.。]?', text):
-        sentence = match.group().strip()
-        if sentence:
-            start = text.find(sentence, current_pos)
+    for sentence in doc_sents:
+        start = text.find(sentence, current_pos)
+        if start != -1:
             end = start + len(sentence)
             sentences.append({
                 'text': sentence,
