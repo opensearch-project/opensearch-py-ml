@@ -70,22 +70,9 @@ def split_sentences(text):
     return sentences
 
 
-def _normalize_token(token: str) -> str:
-    token = token.lower()
-    if token.endswith("ies") and len(token) > 4:
-        return token[:-3] + "y"
-    if token.endswith("s") and len(token) > 3:
-        return token[:-1]
-    return token
-
-
-def _tokenize_for_overlap(text: str):
-    return [_normalize_token(tok) for tok in re.findall(r"[A-Za-z]+", text)]
-
-
 def highlight_sentences(question, context, min_score=0.65) -> List[HighlightSpan]:
     """
-    Highlight relevant sentences using ModernBERT with normalized scoring.
+    Highlight relevant sentences using ModernBERT semantic similarity.
     
     Returns character-level positions of highlighted sentences.
     """
@@ -113,29 +100,14 @@ def highlight_sentences(question, context, min_score=0.65) -> List[HighlightSpan
         dim=-1
     )
     
-    min_val = scores.min()
-    max_val = scores.max()
-    if torch.isclose(max_val, min_val):
-        normalized = torch.zeros_like(scores)
-    else:
-        normalized = (scores - min_val) / (max_val - min_val)
-
-    query_terms = set(_tokenize_for_overlap(question))
-
+    # Use raw similarity scores
     highlights = []
-    for i in range(len(sentences)):
-        norm_score = normalized[i].item()
-        if norm_score < min_score:
-            continue
-
-        sentence_terms = set(_tokenize_for_overlap(sentences[i]['text']))
-        if query_terms and not query_terms.intersection(sentence_terms):
-            continue
-
-        highlights.append({
-            'start': sentences[i]['start'],
-            'end': sentences[i]['end']
-        })
+    for i, score in enumerate(scores):
+        if score.item() >= min_score:
+            highlights.append({
+                'start': sentences[i]['start'],
+                'end': sentences[i]['end']
+            })
 
     return [{'start': h['start'], 'end': h['end']} for h in highlights]
 

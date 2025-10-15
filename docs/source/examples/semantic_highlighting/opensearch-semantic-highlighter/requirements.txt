@@ -1,5 +1,5 @@
-torch>=2.0.0
-transformers>=4.30.0
+torch>=2.6.0
+transformers>=4.48.0
 nltk>=3.8
 numpy>=1.24.0
 safetensors>=0.3.1
