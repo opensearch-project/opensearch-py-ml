@@ -4,7 +4,7 @@ import json
 import time
 import logging
 import torch
-import re
+import numpy as np
 import nltk
 from transformers import AutoTokenizer, AutoModel
 
@@ -59,7 +59,7 @@ def model_fn(model_dir):
 
 
 def get_embedding(text):
-    """Get sentence embedding from ModernBERT"""
+    """Get pooled embedding for a single text snippet"""
     inputs = tokenizer(text, return_tensors="pt", truncation=True, max_length=8192).to(DEVICE)
     with torch.no_grad():
         outputs = model(**inputs)
@@ -88,13 +88,62 @@ def split_sentences(text):
     return sentences
 
 
-def highlight_sentences(question, context, min_score=0.65) -> List[HighlightSpan]:
+def extract_context_embeddings(sentences, context_embeddings, offset_mapping):
+    """Extract context-aware embeddings for sentences using offset mapping"""
+    context_embs = []
+    for sent in sentences:
+        sent_start, sent_end = sent['start'], sent['end']
+        token_mask = (
+            (offset_mapping[:, 0] >= sent_start)
+            & (offset_mapping[:, 1] <= sent_end)
+            & (offset_mapping[:, 1] > offset_mapping[:, 0])
+        )
+
+        if token_mask.sum() > 0:
+            context_embs.append(context_embeddings[token_mask].mean(dim=0))
+        else:
+            context_embs.append(torch.zeros_like(context_embeddings[0]))
+
+    return torch.stack(context_embs)
+
+
+def compute_highlights(question_emb, sentence_embs, context_embs, sentences, min_score=0.8, top_k_ratio=0.15):
+    """Compute highlights from embeddings"""
+    combined_embs = 0.7 * sentence_embs + 0.3 * context_embs
+
+    scores = torch.nn.functional.cosine_similarity(
+        question_emb.unsqueeze(0),
+        combined_embs,
+        dim=-1
+    )
+
+    scores_np = scores.detach().cpu().numpy()
+    k = max(1, int(len(scores_np) * top_k_ratio))
+    topk_floor = np.partition(scores_np, -k)[-k]
+    threshold = max(min_score, topk_floor)
+
+    highlights = []
+    for i, score in enumerate(scores_np):
+        if score >= threshold:
+            highlights.append({
+                'start': sentences[i]['start'],
+                'end': sentences[i]['end']
+            })
+
+    return highlights
+
+
+def highlight_sentences(
+    question,
+    context,
+    min_score: float = 0.8,
+    top_k_ratio: float = 0.15,
+) -> List[HighlightSpan]:
     """
-    Highlight relevant sentences using ModernBERT semantic similarity.
+    Highlight relevant sentences using ModernBERT with context-aware encoding.
     
     Returns character-level positions of highlighted sentences.
     """
-    # Split context into sentences
     sentences = split_sentences(context)
     
     if not sentences:
@@ -103,31 +152,138 @@ def highlight_sentences(question, context, min_score=0.65) -> List[HighlightSpan
     # Get query embedding
     query_emb = get_embedding(question)
     
-    # Batch process all sentences at once
-    sentence_texts = [s['text'] for s in sentences]
-    inputs = tokenizer(sentence_texts, return_tensors="pt", truncation=True, 
-                      max_length=8192, padding=True).to(DEVICE)
-    with torch.no_grad():
-        outputs = model(**inputs)
-        sentence_embs = outputs.last_hidden_state.mean(dim=1)
-    
-    # Calculate cosine similarity
-    scores = torch.nn.functional.cosine_similarity(
-        query_emb.unsqueeze(0),
-        sentence_embs,
-        dim=-1
-    )
-    
-    # Use raw similarity scores
-    highlights = []
-    for i, score in enumerate(scores):
-        if score.item() >= min_score:
-            highlights.append({
-                'start': sentences[i]['start'],
-                'end': sentences[i]['end']
-            })
+    # Encode sentences independently to retain absolute similarity magnitudes
+    sentence_texts = [sent['text'] for sent in sentences]
+    sent_inputs = tokenizer(
+        sentence_texts,
+        return_tensors="pt",
+        truncation=True,
+        max_length=8192,
+        padding=True,
+    ).to(DEVICE)
 
-    return [{'start': h['start'], 'end': h['end']} for h in highlights]
+    with torch.no_grad():
+        sent_outputs = model(**sent_inputs)
+        sentence_embs = sent_outputs.last_hidden_state.mean(dim=1)
+
+    # Encode full context once for relative cues
+    ctx_inputs = tokenizer(
+        context,
+        return_tensors="pt",
+        truncation=True,
+        max_length=8192,
+        return_offsets_mapping=True,
+    ).to(DEVICE)
+
+    offset_mapping = ctx_inputs.pop("offset_mapping")[0].cpu()
+    with torch.no_grad():
+        ctx_outputs = model(**ctx_inputs)
+        full_embeddings = ctx_outputs.last_hidden_state[0]
+
+    context_embs = extract_context_embeddings(sentences, full_embeddings, offset_mapping)
+    
+    return compute_highlights(query_emb, sentence_embs, context_embs, sentences, min_score, top_k_ratio)
+
+
+def highlight_sentences_batch(
+    questions: List[str],
+    contexts: List[str],
+    min_score: float = 0.8,
+    top_k_ratio: float = 0.15,
+) -> List[List[HighlightSpan]]:
+    """
+    Batch process multiple documents with GPU parallelization.
+    
+    Returns list of highlights for each document.
+    """
+    # Step 1: Batch encode all questions
+    question_inputs = tokenizer(
+        questions,
+        return_tensors="pt",
+        padding=True,
+        truncation=True,
+        max_length=8192
+    ).to(DEVICE)
+    
+    with torch.no_grad():
+        question_outputs = model(**question_inputs)
+        question_embs = question_outputs.last_hidden_state.mean(dim=1)
+    
+    # Step 2: Prepare all sentences from all documents
+    all_doc_data = []
+    all_sentences_flat = []
+    doc_sentence_counts = []
+    
+    for context in contexts:
+        sentences = split_sentences(context)
+        all_doc_data.append({'context': context, 'sentences': sentences})
+        all_sentences_flat.extend([s['text'] for s in sentences])
+        doc_sentence_counts.append(len(sentences))
+    
+    # Step 3: Batch encode all sentences from all documents
+    if all_sentences_flat:
+        sent_inputs = tokenizer(
+            all_sentences_flat,
+            return_tensors="pt",
+            padding=True,
+            truncation=True,
+            max_length=8192
+        ).to(DEVICE)
+        
+        with torch.no_grad():
+            sent_outputs = model(**sent_inputs)
+            all_sentence_embs = sent_outputs.last_hidden_state.mean(dim=1)
+    else:
+        all_sentence_embs = torch.tensor([])
+    
+    # Step 4: Batch encode all full contexts
+    ctx_inputs = tokenizer(
+        contexts,
+        return_tensors="pt",
+        padding=True,
+        truncation=True,
+        max_length=8192,
+        return_offsets_mapping=True
+    ).to(DEVICE)
+    
+    offset_mappings = ctx_inputs.pop("offset_mapping").cpu()
+    with torch.no_grad():
+        ctx_outputs = model(**ctx_inputs)
+        all_context_embs = ctx_outputs.last_hidden_state
+    
+    # Step 5: Compute highlights for each document
+    all_highlights = []
+    sent_idx = 0
+    
+    for doc_idx, doc_data in enumerate(all_doc_data):
+        num_sents = doc_sentence_counts[doc_idx]
+        
+        if num_sents == 0:
+            all_highlights.append([])
+            continue
+        
+        # Extract embeddings for this document
+        sentence_embs = all_sentence_embs[sent_idx:sent_idx + num_sents]
+        context_embs = extract_context_embeddings(
+            doc_data['sentences'],
+            all_context_embs[doc_idx],
+            offset_mappings[doc_idx]
+        )
+        
+        # Compute highlights
+        highlights = compute_highlights(
+            question_embs[doc_idx],
+            sentence_embs,
+            context_embs,
+            doc_data['sentences'],
+            min_score,
+            top_k_ratio
+        )
+        
+        all_highlights.append(highlights)
+        sent_idx += num_sents
+    
+    return all_highlights
 
 
 def input_fn(request_body: str, request_content_type: str) -> dict:
@@ -146,13 +302,11 @@ def predict_fn(data, model) -> InferenceResponse:
     # Batch with individual questions (if inputs has content)
     if "inputs" in data and data["inputs"]:
         inputs = data["inputs"]
-        all_highlights = []
+        questions = [item.get("question", "") for item in inputs]
+        contexts = [item.get("context", "") for item in inputs]
         
-        for item in inputs:
-            question = item.get("question", "")
-            context = item.get("context", "")
-            highlights = highlight_sentences(question, context)
-            all_highlights.append(highlights)
+        # True batch processing with GPU parallelization
+        all_highlights = highlight_sentences_batch(questions, contexts)
         
         processing_time = (time.time() - start_time) * 1000
 

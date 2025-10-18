@@ -9,7 +9,6 @@ import tarfile
 import boto3
 import sagemaker
 import json
-import time
 import logging
 import tempfile
 import uuid
