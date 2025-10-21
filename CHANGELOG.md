@@ -37,6 +37,7 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Upgrade numpy and python version ([#562](https://github.com/opensearch-project/opensearch-py-ml/pull/562))
 - Update space type mapping for sentence transformer models ([#574](https://github.com/opensearch-project/opensearch-py-ml/pull/574))
 - Update semantic highlighting sagemaker endpoint deploy scripts ([#585](https://github.com/opensearch-project/opensearch-py-ml/pull/585))
+- Update pretrained_models_all_versions.json (2025-10-21 11:15:33) by @nathaliellenaa ([#586](https://github.com/opensearch-project/opensearch-py-ml/pull/586))
 
 ### Fixed
 - Fix for uploading models with function_name instead of model_task ([#553](https://github.com/opensearch-project/opensearch-py-ml/pull/553))
