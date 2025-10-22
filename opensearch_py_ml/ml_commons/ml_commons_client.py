@@ -366,8 +366,6 @@ class MLCommonClient:
         ]
 
         print(f"Task ID: {task_id}")
-        get_deploy_task = self._get_task_info(task_id)
-        print(f"Get deploy task: {get_deploy_task}")
         if wait_until_deployed:
             # Wait until deployed
             for i in range(TIMEOUT):
@@ -379,6 +377,8 @@ class MLCommonClient:
 
             # TODO: need to add the test case later for this line
             # Check the model status
+            get_deploy_task = self._get_task_info(task_id)
+            print(f"Get deploy task: {get_deploy_task}")
             if model_state == "DEPLOYED":
                 print("Model deployed successfully")
             elif model_state == "PARTIALLY_DEPLOYED":
