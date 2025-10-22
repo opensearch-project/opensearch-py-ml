@@ -366,6 +366,8 @@ class MLCommonClient:
         ]
 
         print(f"Task ID: {task_id}")
+        get_deploy_task = self._get_task_info(task_id)
+        print(f"Get deploy task: {get_deploy_task}")
         if wait_until_deployed:
             # Wait until deployed
             for i in range(TIMEOUT):
