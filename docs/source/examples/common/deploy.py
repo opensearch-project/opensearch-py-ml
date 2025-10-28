@@ -26,12 +26,20 @@ MODEL_CONFIGS = {
     'opensearch-semantic-highlighter': {
         'model_name': 'opensearch-project/opensearch-semantic-highlighter-v1',
         'endpoint_prefix': 'opensearch-semantic-highlighter',
-        's3_prefix': 'opensearch-semantic-highlighter'
+        's3_prefix': 'opensearch-semantic-highlighter',
+        'task_type': 'semantic_highlighting'
     },
     'modernbert': {
         'model_name': 'answerdotai/ModernBERT-base',
         'endpoint_prefix': 'modernbert-highlighter',
-        's3_prefix': 'modernbert-highlighter'
+        's3_prefix': 'modernbert-highlighter',
+        'task_type': 'semantic_highlighting'
+    },
+    'asymmetric_e5': {
+        'model_name': 'intfloat/multilingual-e5-small',
+        'endpoint_prefix': 'asymmetric-e5',
+        's3_prefix': 'asymmetric-e5',
+        'task_type': 'embedding_models'
     }
 }
 
@@ -52,7 +60,7 @@ def create_sagemaker_role():
         sts = boto3.client('sts')
         account_id = sts.get_caller_identity()["Account"]
         role_name = 'SageMakerExecutionRole'
-        role_arn = f'arn:aws:iam::{account_id}:role/{role_name}'
+        role_arn = 'arn:aws:iam::{}:role/{}'.format(account_id, role_name)
         
         try:
             iam.get_role(RoleName=role_name)
@@ -117,12 +125,15 @@ def prepare_model_files(model_key):
 
 def create_model_tar(work_dir, model_key):
     """Create model.tar.gz with model files and inference code."""
+    config = MODEL_CONFIGS[model_key]
+    task_type = config['task_type']
+    
     os.makedirs(f"{work_dir}/code", exist_ok=True)
     
     # Copy model-specific inference code
-    inference_src = f"{model_key}/inference.py"
-    requirements_src = f"{model_key}/requirements.txt"
-    api_types_src = "api_types.py"
+    inference_src = f"../{task_type}/{model_key}/inference.py"
+    requirements_src = f"../{task_type}/{model_key}/requirements.txt"
+    api_types_src = f"../{task_type}/api_types.py"
     
     if not os.path.exists(inference_src):
         raise FileNotFoundError(f"Inference code not found: {inference_src}")
@@ -131,7 +142,7 @@ def create_model_tar(work_dir, model_key):
     if os.path.exists(requirements_src):
         shutil.copy(requirements_src, f"{work_dir}/code/requirements.txt")
     
-    # Copy shared API types
+    # Copy task-specific API types
     if os.path.exists(api_types_src):
         shutil.copy(api_types_src, f"{work_dir}/code/api_types.py")
     
