@@ -330,5 +330,16 @@
         "description": "A semantic highlighter model that identifies and highlights relevant sentences in a document given a query."
       }
     }
+  },
+  {
+    "name": "amazon/metrics_correlation",
+    "versions": {
+      "1.0.0b2": {
+        "format": [
+          "torch_script"
+        ],
+        "description": "A metrics correlation model that detects anomalous events in time series data by identifying when multiple metrics simultaneously display unusual behavior."
+      }
+    }
   }
 ]
