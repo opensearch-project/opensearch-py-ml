@@ -42,10 +42,6 @@ class MCorr(torch.nn.Module):
         """
         # Validate inputs
         M, T = metrics.shape
-        if M >= T:
-            raise ValueError(
-                "The number of metrics to correlate must be smaller than the length of each time series."
-            )
 
         #
         # Step 1: piecewise constant approx. and activity scoring for input metrics
