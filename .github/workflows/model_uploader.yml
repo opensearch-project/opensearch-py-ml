@@ -141,6 +141,8 @@ jobs:
         model_id=${{ github.event.inputs.model_id }}
         if [[ -n "${{ steps.parse_custom_params.outputs.upload_prefix }}" ]]; then
           model_prefix="ml-models/${{ github.event.inputs.model_source }}/${{ steps.parse_custom_params.outputs.upload_prefix }}"
+        elif [[ "$model_id" == "metrics_correlation" ]]; then
+          model_prefix="ml-models/${{ github.event.inputs.model_source }}"
         else
           model_prefix="ml-models/${{ github.event.inputs.model_source }}/${model_id%%/*}"
         fi
