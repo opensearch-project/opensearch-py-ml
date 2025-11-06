@@ -290,6 +290,8 @@ def prepare_files_for_uploading(
         model_type = model_id.split("/")[0]
     if model_name is None:
         model_name = model_id.split("/")[-1]
+    if model_id == "metrics_correlation":
+        model_type = "amazon"
     model_format = model_format.lower()
     folder_to_delete = (
         TORCHSCRIPT_FOLDER_PATH if model_format == "torch_script" else ONNX_FOLDER_PATH
@@ -301,12 +303,25 @@ def prepare_files_for_uploading(
             f"{UPLOAD_FOLDER_PATH}{model_name}/{model_version}/{model_format}"
         )
         os.makedirs(dst_model_dir, exist_ok=True)
-        dst_model_filename = (
-            f"{model_type}_{model_name}-{model_version}-{model_format}.zip"
-        )
+        if model_id == "metrics_correlation":
+            dst_model_filename = f"{model_name}-{model_version}-{model_format}.zip"
+        else:
+            dst_model_filename = (
+                f"{model_type}_{model_name}-{model_version}-{model_format}.zip"
+            )
         dst_model_path = dst_model_dir + "/" + dst_model_filename
-        shutil.copy(src_model_path, dst_model_path)
-        print(f"\nCopied {src_model_path} to {dst_model_path}")
+        if model_id == "metrics_correlation":
+            import zipfile
+
+            with zipfile.ZipFile(dst_model_path, "w", zipfile.ZIP_DEFLATED) as dst_zip:
+                dst_zip.write(src_model_path, os.path.basename(src_model_path))
+                # Add LICENSE file
+                license_path = os.path.join(os.path.dirname(__file__), "../../LICENSE")
+                if os.path.exists(license_path):
+                    dst_zip.write(license_path, "LICENSE")
+        else:
+            shutil.copy(src_model_path, dst_model_path)
+            print(f"\nCopied {src_model_path} to {dst_model_path}")
 
         dst_model_config_dir = (
             f"{UPLOAD_FOLDER_PATH}{model_name}/{model_version}/{model_format}"

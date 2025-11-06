@@ -13,6 +13,13 @@ for deployment in OpenSearch. It handles creating example inputs, tracing the mo
 packaging it for upload.
 """
 
+import os
+import sys
+
+THIS_DIR = os.path.dirname(__file__)
+ROOT_DIR = os.path.join(THIS_DIR, "../..")
+sys.path.append(ROOT_DIR)
+
 import argparse
 import json
 import warnings
@@ -38,6 +45,7 @@ def main(
     tracing_format: str,
     model_description: Optional[str] = None,
     model_name: Optional[str] = None,
+    upload_prefix: Optional[str] = None,
 ) -> None:
     """
     Perform model auto-tracing and prepare files for uploading to OpenSearch model hub.
@@ -60,6 +68,8 @@ def main(
         Custom description for the model in the config file
     model_name : str, optional
         Custom name for the model in the config file and when registered
+    upload_prefix : str, optional
+        Path prefix for the uploaded model files
     """
     print(
         f"""
@@ -69,6 +79,7 @@ def main(
     Tracing Format: {tracing_format}
     Model Description: {model_description if model_description is not None else 'N/A'}
     Model Name: {model_name if model_name is not None else 'N/A'}
+    Upload Prefix: {upload_prefix if upload_prefix is not None else 'N/A'}
     ==========================================
     """
     )
@@ -113,9 +124,6 @@ def main(
     if model_description is None:
         model_description = "A metrics correlation model that detects anomalous events in time series data by identifying when multiple metrics simultaneously display unusual behavior."
 
-    store_description_variable(model_description)
-    print(f"Model description: {model_description}")
-
     # Create model config
     print("--- Creating model configuration ---")
     config = {
@@ -126,13 +134,17 @@ def main(
         "description": model_description,
     }
 
-    # Preview and prepare files for uploading
-    preview_model_config(config)
-
+    # Save config file
     config_file_path = "ml-commons_model_config.json"
     with open(config_file_path, "w") as f:
         json.dump(config, f, indent=2)
     print(f"Config file saved to: {config_file_path}")
+
+    # Preview and prepare files for uploading
+    preview_model_config(tracing_format, config_file_path)
+
+    # Store description
+    store_description_variable(model_description)
 
     prepare_files_for_uploading(
         model_id=model_id,
@@ -167,6 +179,14 @@ if __name__ == "__main__":
         help="Model format for auto-tracing (only TORCH_SCRIPT supported)",
     )
     parser.add_argument(
+        "-up",
+        "--upload_prefix",
+        type=str,
+        nargs="?",
+        default=None,
+        help="Model customize path prefix for upload",
+    )
+    parser.add_argument(
         "-mn",
         "--model_name",
         type=str,
@@ -198,4 +218,5 @@ if __name__ == "__main__":
         args.tracing_format,
         args.model_description,
         args.model_name,
+        args.upload_prefix,
     )
