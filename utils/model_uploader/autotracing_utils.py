@@ -313,9 +313,9 @@ def prepare_files_for_uploading(
         if model_id == "metrics_correlation":
             import zipfile
 
+            # Create a zip file containing .pt and License file
             with zipfile.ZipFile(dst_model_path, "w", zipfile.ZIP_DEFLATED) as dst_zip:
                 dst_zip.write(src_model_path, os.path.basename(src_model_path))
-                # Add LICENSE file
                 license_path = os.path.join(os.path.dirname(__file__), "../../LICENSE")
                 if os.path.exists(license_path):
                     dst_zip.write(license_path, "LICENSE")
