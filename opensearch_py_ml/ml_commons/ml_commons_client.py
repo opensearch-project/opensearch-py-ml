@@ -377,16 +377,6 @@ class MLCommonClient:
 
             # TODO: need to add the test case later for this line
             # Check the model status
-            try:
-                cluster_settings = self._client.cluster.get_settings(
-                    include_defaults=True
-                )
-                print(f"Cluster settings: {cluster_settings}")
-            except Exception as e:
-                print(f"Warning: Could not retrieve cluster settings: {e}")
-
-            get_deploy_task = self._get_task_info(task_id)
-            print(f"Get deploy task: {get_deploy_task}")
             if model_state == "DEPLOYED":
                 print("Model deployed successfully")
             elif model_state == "PARTIALLY_DEPLOYED":
