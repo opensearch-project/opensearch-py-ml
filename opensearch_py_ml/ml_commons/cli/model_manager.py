@@ -103,6 +103,8 @@ class ModelManager(CLIBase):
         connector_id: Optional[str] = None,
         model_name: Optional[str] = None,
         model_description: Optional[str] = None,
+        output_path: Optional[str] = None,
+        interactive: bool = False,
     ) -> bool:
         """
         Orchestrates the entire model registration process.
@@ -123,6 +125,27 @@ class ModelManager(CLIBase):
                 return False
             ai_helper, _, _, _ = config_result
 
+            # In non-interactive mode, ensure all required parameters are provided
+            if not interactive:
+                # Specify which parameters are missing
+                missing_params = []
+                if not model_name:
+                    missing_params.append("--name")
+                if not model_description:
+                    missing_params.append("--description")
+                if not connector_id:
+                    missing_params.append("--connectorId")
+
+                if missing_params:
+                    missing_str = "\n\t".join(missing_params)
+                    logger.error(
+                        "%sMissing required parameters: \n\t%s%s",
+                        Fore.RED,
+                        missing_str,
+                        Style.RESET_ALL,
+                    )
+                    return False  # Early return due to missing parameters
+
             # Prompt for model name, description, and connector ID if not provided
             if not model_name:
                 model_name = input("\nEnter the model name: ").strip()
@@ -137,12 +160,14 @@ class ModelManager(CLIBase):
 
             if model_id:
                 print(
-                    f"{Fore.GREEN}\nSuccessfully registered a model with ID: {model_id}{Style.RESET_ALL}"
+                    f"{Fore.GREEN}\nSuccessfully registered a model with IDs: {model_id}{Style.RESET_ALL}"
                 )
-                self.register_model_output(model_id, model_name, connector_id)
+                self.register_model_output(
+                    model_id, model_name, connector_id, output_path, interactive
+                )
                 return True
-            else:
-                logger.warning(f"{Fore.RED}Failed to register model.{Style.RESET_ALL}")
-                return False
+
+            logger.warning(f"{Fore.RED}Failed to register model.{Style.RESET_ALL}")
+            return False
         except Exception:
             return False
