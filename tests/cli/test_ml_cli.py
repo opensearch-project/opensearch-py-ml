@@ -142,6 +142,7 @@ class TestMLCLI(unittest.TestCase):
             "test model",
             "--description",
             "test description",
+            "-i",
         ]
         with patch.object(sys, "argv", test_args):
             main()
@@ -150,6 +151,8 @@ class TestMLCLI(unittest.TestCase):
                 connector_id="connector123",
                 model_name="test model",
                 model_description="test description",
+                output_path=None,
+                interactive=True,
             )
 
     @patch("opensearch_py_ml.ml_commons.cli.ml_cli.logger")
@@ -280,6 +283,7 @@ class TestMLCLI(unittest.TestCase):
             "test model",
             "--description",
             "test description",
+            "-i",
         ]
         with patch.object(sys, "argv", test_args):
             main()
@@ -288,6 +292,8 @@ class TestMLCLI(unittest.TestCase):
                 connector_id="-connector123",
                 model_name="test model",
                 model_description="test description",
+                output_path=None,
+                interactive=True,
             )
 
     @patch("argparse.ArgumentParser.error")

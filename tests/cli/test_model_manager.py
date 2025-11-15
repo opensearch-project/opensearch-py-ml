@@ -248,7 +248,7 @@ class TestModelManager(unittest.TestCase):
         mock_load_check_config.return_value = (mock_ai_helper, None, None, None)
 
         # Execute
-        result = self.model_manager.initialize_register_model(self.config_path)
+        result = self.model_manager.initialize_register_model(self.config_path, interactive=True)
 
         # Verify result
         self.assertTrue(result)
