@@ -462,7 +462,7 @@ class TestCLIBase(unittest.TestCase):
             self.cli_base.output_config["connector_create"], expected_update
         )
         self.cli_base.save_yaml_file.assert_called_once_with(
-            self.cli_base.output_config, "output", merge_existing=True
+            self.cli_base.output_config, "output", merge_existing=True, output_path=None, interactive=True
         )
 
     @patch.object(CLIBase, "save_yaml_file", Mock())
