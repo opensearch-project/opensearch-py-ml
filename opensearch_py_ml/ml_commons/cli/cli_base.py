@@ -362,7 +362,13 @@ class CLIBase:
                 "response": response,
             }
         )
-        self.save_yaml_file(self.output_config, "output", merge_existing=True)
+        self.save_yaml_file(
+            self.output_config,
+            "output",
+            merge_existing=True,
+            output_path=None,
+            interactive=True,
+        )
 
     def get_opensearch_domain_name(
         self, opensearch_domain_endpoint: str
