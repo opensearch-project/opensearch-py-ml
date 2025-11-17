@@ -280,6 +280,8 @@ class CLIBase:
         role_arn: Optional[str] = None,
         secret_name: Optional[str] = None,
         secret_arn: Optional[str] = None,
+        interactive: bool = True,
+        output_path: Optional[str] = None,
     ) -> None:
         """
         Save connector output to a YAML file.
@@ -305,7 +307,13 @@ class CLIBase:
                 "connector_secret_name": secret_name or "",
             }
         )
-        self.save_yaml_file(self.output_config, "output", merge_existing=True)
+        self.save_yaml_file(
+            self.output_config,
+            "output",
+            merge_existing=True,
+            output_path=output_path,
+            interactive=interactive,
+        )
 
     def register_model_output(
         self,
