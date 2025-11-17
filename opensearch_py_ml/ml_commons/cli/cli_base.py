@@ -129,6 +129,9 @@ class CLIBase:
             merge_existing (optional): Whether to merge with existing file content
                 if the file exists. Defaults to False. If False and file exists, will
                 prompt for overwrite confirmation.
+            output_path (optional): Path to save the output information.
+                It overrides the default or configured path, since it is explicitely provided by the user.
+            interactive (optional): Whether to run in interactive mode, False by default.
 
         Returns:
             Optional[str]: The absolute path where the file was saved, or None if:
@@ -330,6 +333,9 @@ class CLIBase:
             model_id: The registered model ID.
             model_name: The registered model name.
             connector_id: The connector ID associated with the registered model.
+            output_path (optional): Path to save the output information.
+                                    If not provided, output will be current working directory.
+            interactive (optional): Whether to run in interactive mode.
         """
         # Update the register_model section
         self.output_config["register_model"].append(

@@ -113,6 +113,9 @@ Examples:
   Register a model with a model name, description, and the connector ID
     opensearch-ml model register --connectorId 'connector123' --name 'Test model' --description 'This is a test model'
     
+  Register a model with a model name, description, and the connector ID, optionally provide output path:
+    opensearch-ml model register --connectorId 'connector123' --name 'Test model' --description 'This is a test model' --outputPath '/file/output.json'
+    
   Register a model in interactive mode:
     opensearch-ml model register -i
 

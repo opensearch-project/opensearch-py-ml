@@ -114,6 +114,8 @@ class ModelManager(CLIBase):
             connector_id (optional): The connector ID to register the model with.
             model_name (optional): Name of the model.
             model_description (optional): Description of the model.
+            output_path (optional): Path to save the output information.
+            interactive (optional): Whether to run in interactive mode.
 
         Returns:
             bool: True if registration successful, False otherwise
