@@ -1,6 +1,14 @@
 # CHANGELOG
 Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
+## [1.4.0]
+
+### Added
+
+- Standardized interactive mode `-i/--interactive` for <u>model registration</u> CLI command to adhere to common conventions. ([#591](https://github.com/opensearch-project/opensearch-py-ml/pull/591))
+- Add `-o/--output` option to <u>model registration</u> to specify output file path enabling end to end automation. ([#591](https://github.com/opensearch-project/opensearch-py-ml/pull/591))
+- Update documentation for <u>model registration</u> to reflect new options and usage. ([#591](https://github.com/opensearch-project/opensearch-py-ml/pull/591))
+
 ## [1.3.0]
 
 ### Added
