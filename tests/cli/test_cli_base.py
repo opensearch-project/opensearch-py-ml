@@ -230,7 +230,10 @@ class TestCLIBase(unittest.TestCase):
 
         # Execute
         save_result = self.cli_base.save_yaml_file(
-            config=test_config, file_type="output", merge_existing=True, interactive=True
+            config=test_config,
+            file_type="output",
+            merge_existing=True,
+            interactive=True,
         )
 
         # Verify result
@@ -462,7 +465,11 @@ class TestCLIBase(unittest.TestCase):
             self.cli_base.output_config["connector_create"], expected_update
         )
         self.cli_base.save_yaml_file.assert_called_once_with(
-            self.cli_base.output_config, "output", merge_existing=True, output_path=None, interactive=True
+            self.cli_base.output_config,
+            "output",
+            merge_existing=True,
+            output_path=None,
+            interactive=True,
         )
 
     @patch.object(CLIBase, "save_yaml_file", Mock())
@@ -495,13 +502,20 @@ class TestCLIBase(unittest.TestCase):
 
         # Execute
         self.cli_base.register_model_output(
-            model_id=model_id, model_name=model_name, connector_id=connector_id, interactive=True
+            model_id=model_id,
+            model_name=model_name,
+            connector_id=connector_id,
+            interactive=True,
         )
 
         # Verify
         self.assertEqual(self.cli_base.output_config["register_model"], expected_update)
         self.cli_base.save_yaml_file.assert_called_once_with(
-            self.cli_base.output_config, "output", merge_existing=True, output_path=None, interactive=True
+            self.cli_base.output_config,
+            "output",
+            merge_existing=True,
+            output_path=None,
+            interactive=True,
         )
 
     @patch.object(CLIBase, "save_yaml_file", Mock())
@@ -517,7 +531,11 @@ class TestCLIBase(unittest.TestCase):
         # Verify
         self.assertEqual(self.cli_base.output_config["predict_model"], expected_update)
         self.cli_base.save_yaml_file.assert_called_once_with(
-            self.cli_base.output_config, "output", merge_existing=True, output_path=None, interactive=True
+            self.cli_base.output_config,
+            "output",
+            merge_existing=True,
+            output_path=None,
+            interactive=True,
         )
 
     def test_get_opensearch_domain_name(self):
