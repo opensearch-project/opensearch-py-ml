@@ -113,6 +113,12 @@ Examples:
   Register a model with a model name, description, and the connector ID
     opensearch-ml model register --connectorId 'connector123' --name 'Test model' --description 'This is a test model'
 
+  Register a model with a model name, description, and the connector ID, optionally provide output path:
+    opensearch-ml model register --connectorId 'connector123' --name 'Test model' --description 'This is a test model' --outputPath '/file/output.json'
+
+  Register a model in interactive mode:
+    opensearch-ml model register -i
+
   Predict a model:
     opensearch-ml model predict
 
@@ -162,6 +168,12 @@ Examples:
         "register", help="Register a new model"
     )
     model_register.add_argument(
+        "-i",
+        "--interactive",
+        action="store_true",
+        help="Register a model in interactive mode",
+    )
+    model_register.add_argument(
         "--connectorId",
         action=AllowDashActionConnector,
         help="The connector ID to register the model with.",
@@ -177,6 +189,12 @@ Examples:
         "--description",
         help="Description of the model to register.",
         metavar="MODEL_DESCRIPTION",
+    )
+    model_register.add_argument(
+        "-o",
+        "--outputPath",
+        help="Path to save the output information.",
+        metavar="OUTPUT_PATH",
     )
 
     # Predict command
@@ -255,11 +273,15 @@ Examples:
             connector_id = getattr(args, "connectorId", None)
             model_name = args.name if args.name else None
             model_description = args.description if args.description else None
+            output_path = args.outputPath if args.outputPath else None
+            is_interactive_mode = args.interactive if args.interactive else False
             model_manager.initialize_register_model(
                 config_path,
                 connector_id=connector_id,
                 model_name=model_name,
                 model_description=model_description,
+                output_path=output_path,
+                interactive=is_interactive_mode,
             )
         elif args.subcommand == "predict":
             # Read the saved setup config path
