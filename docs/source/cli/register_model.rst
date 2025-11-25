@@ -12,13 +12,16 @@ Use the `model register` command to register an externally hosted model with Ope
 Command syntax
 ~~~~~~~~~~~~~~
 
-``opensearch-ml model register [--connectorId '<value>'][--name '<value>'][--description '<value>']``
+``opensearch-ml model register [-h][-i][--connectorId '<value>'][--name '<value>'][--description '<value>'][-o <value>]``
 
 **Options:**
 
+* ``-h``: Show help message and exit
+* ``-i``: (Optional) Enable interactive mode for model registration. Off by default
 * ``--connectorId '<value>'``: (Optional) The connector ID to associate the model with
 * ``--name '<value>'``: (Optional) The name of the model
 * ``--description '<value>'``: (Optional) A brief description of the model
+* ``-o <value>``: (Optional) The file path to save the output information. If not provided, the output will be saved in the current directory while in non-interactive mode
 
 Usage examples
 ~~~~~~~~~~~~~~
@@ -27,7 +30,7 @@ Usage examples
 
     Use the following command to register a model interactively:
 
-    ``opensearch-ml model register``
+    ``opensearch-ml model register -i``
 
     Sample response:
 
@@ -51,7 +54,9 @@ Usage examples
 
     To register a model directly, provide all parameters to the following command:
 
-    ``opensearch-ml model register --connectorId 'connector123' --name 'Test model' --description 'This is a test model'``
+    ``opensearch-ml model register --connectorId 'connector123' --name 'Test model' --description 'This is a test model' -o /Documents/cli/output.yml``
+
+    If `-o` or `--output` is not specified, the output file will be saved in the current directory in non-interactive mode.
 
     Sample response:
 
@@ -62,8 +67,6 @@ Usage examples
         Setup configuration loaded successfully from /Documents/cli/setup_config.yml
 
         Successfully registered a model with ID: model123
-
-        Enter the path to save the output information, or press Enter to save it in the current directory [/Documents/cli/output.yml]: 
 
         Output information saved successfully to /Documents/cli/output.yml
 
