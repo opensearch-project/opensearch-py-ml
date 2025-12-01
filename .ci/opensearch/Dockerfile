@@ -14,6 +14,5 @@ RUN if [ "$OPENSEARCH_VERSION" == "2.11.0" -o "$OPENSEARCH_VERSION" == "3.0.0-be
     echo "plugins.ml_commons.model_access_control_enabled: true" >> $opensearch_yml; \
     echo "plugins.ml_commons.allow_registering_model_via_local_file: true" >> $opensearch_yml; \
     echo "plugins.ml_commons.allow_registering_model_via_url: true" >> $opensearch_yml; \
-    echo "plugins.ml_commons.jvm_heap_memory_threshold: 100" >> $opensearch_yml; \
 fi
 RUN if [ "$SECURE_INTEGRATION" != "true" ] ; then echo "plugins.security.disabled: true" >> $opensearch_yml; fi
