@@ -12,6 +12,5 @@ RUN echo "plugins.ml_commons.only_run_on_ml_node: false" >> $opensearch_yml && \
     echo "plugins.ml_commons.native_memory_threshold: 100" >> $opensearch_yml && \
     echo "plugins.ml_commons.model_access_control_enabled: true" >> $opensearch_yml && \
     echo "plugins.ml_commons.allow_registering_model_via_local_file: true" >> $opensearch_yml && \
-    echo "plugins.ml_commons.allow_registering_model_via_url: true" >> $opensearch_yml && \
-    echo "plugins.ml_commons.disk_free_space_threshold: 100MB" >> $opensearch_yml
+    echo "plugins.ml_commons.allow_registering_model_via_url: true" >> $opensearch_yml
 RUN if [ "$SECURE_INTEGRATION" != "true" ] ; then echo "plugins.security.disabled: true" >> $opensearch_yml; fi
