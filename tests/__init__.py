@@ -45,7 +45,9 @@ if "@" in OPENSEARCH_HOST and ":" in OPENSEARCH_HOST.split("@")[0]:
     OPENSEARCH_HOST = OPENSEARCH_HOST.replace(f"{creds_part}@", "")
 else:
     OPENSEARCH_ADMIN_USER = "admin"
-    OPENSEARCH_ADMIN_PASSWORD = os.environ.get("OPENSEARCH_INITIAL_ADMIN_PASSWORD", "myStrongPassword123!")
+    OPENSEARCH_ADMIN_PASSWORD = os.environ.get(
+        "OPENSEARCH_INITIAL_ADMIN_PASSWORD", "myStrongPassword123!"
+    )
 
 # Determine scheme for use_ssl
 use_ssl = OPENSEARCH_HOST.startswith("https://")
