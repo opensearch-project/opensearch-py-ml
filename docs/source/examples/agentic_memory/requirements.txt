@@ -1,0 +1,5 @@
+strands-agents
+requests
+rich
+langchain_aws
+langgraph
