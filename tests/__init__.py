@@ -44,7 +44,8 @@ if "@" in OPENSEARCH_HOST and ":" in OPENSEARCH_HOST.split("@")[0]:
     # Remove credentials from host URL for client connection
     OPENSEARCH_HOST = OPENSEARCH_HOST.replace(f"{creds_part}@", "")
 else:
-    OPENSEARCH_ADMIN_USER, OPENSEARCH_ADMIN_PASSWORD = "admin", "admin"
+    OPENSEARCH_ADMIN_USER = "admin"
+    OPENSEARCH_ADMIN_PASSWORD = os.environ.get("OPENSEARCH_PASSWORD", "MyPassword123!")
 
 # Determine scheme for use_ssl
 use_ssl = OPENSEARCH_HOST.startswith("https://")
