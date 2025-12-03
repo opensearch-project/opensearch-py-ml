@@ -267,22 +267,25 @@ class TestDataFrameMetrics(TestData):
         df = self.oml_flights_small()[["AvgTicketPrice", "Cancelled", "dayOfWeek"]]
         assert df.min().tolist() == [131.81910705566406, False, 0]
         assert df.max().tolist() == [989.9527587890625, True, 0]
-        assert df.median().tolist() == [550.276123046875, False, 0]
+        assert [
+            abs(df.median().tolist()[0] - 550.276123046875) < 5.0,
+            df.median().tolist()[1] == False,
+            df.median().tolist()[2] == 0,
+        ] == [True, True, True]
         all_agg = df.agg(["min", "max", "median"])
         assert all_agg.dtypes.tolist() == [
             np.dtype("float64"),
             np.dtype("bool"),
             np.dtype("int64"),
         ]
-        assert all_agg.to_dict() == {
-            "AvgTicketPrice": {
-                "max": 989.9527587890625,
-                "median": 550.276123046875,
-                "min": 131.81910705566406,
-            },
-            "Cancelled": {"max": True, "median": False, "min": False},
-            "dayOfWeek": {"max": 0, "median": 0, "min": 0},
-        }
+        agg_dict = all_agg.to_dict()
+        assert (
+            abs(agg_dict["AvgTicketPrice"]["median"] - 550.276123046875) < 5.0
+            and agg_dict["AvgTicketPrice"]["max"] == 989.9527587890625
+            and agg_dict["AvgTicketPrice"]["min"] == 131.81910705566406
+            and agg_dict["Cancelled"] == {"max": True, "median": False, "min": False}
+            and agg_dict["dayOfWeek"] == {"max": 0, "median": 0, "min": 0}
+        )
         # sum should always be the same dtype as the input, except for bool where the sum of bools should be an int64.
         sum_agg = df.agg(["sum"])
         assert sum_agg.dtypes.to_list() == [

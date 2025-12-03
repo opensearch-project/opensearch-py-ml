@@ -175,7 +175,7 @@ def test_execute():
             f"Raised Exception during execute API testing with dictionary. Exception info: {ex}"
         )
     else:
-        assert result["output"]["result"] == 3
+        assert result["result"] == 3
 
     try:
         input_json = '{"operation": "max", "input_data": [1.0, 2.0, 3.0]}'
@@ -187,7 +187,7 @@ def test_execute():
             f"Raised Exception during execute API testing with JSON string. Exception info: {ex}"
         )
     else:
-        assert result["output"]["result"] == 3
+        assert result["result"] == 3
 
 
 def test_DEPRECATED_integration_pretrained_model_upload_unload_delete():

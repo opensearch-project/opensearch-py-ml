@@ -8,7 +8,7 @@
 import os
 
 import pytest
-from opensearchpy.exceptions import NotFoundError, RequestError
+from opensearchpy.exceptions import NotFoundError
 from packaging.version import parse as parse_version
 
 from opensearch_py_ml.ml_commons.model_connector import Connector
@@ -141,9 +141,9 @@ def test_get_connector(client, test_connector):
     with pytest.raises(ValueError):
         client.get_connector(connector_id=None)
 
-    with pytest.raises(RequestError) as exec_info:
+    with pytest.raises(NotFoundError) as exec_info:
         client.get_connector(connector_id="test-unknown")
-    assert exec_info.value.status_code == 400
+    assert exec_info.value.status_code == 404
 
 
 @pytest.mark.skipif(
