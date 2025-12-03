@@ -1,9 +1,10 @@
 import os
 import sys
 import urllib3
-from dotenv import load_dotenv
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-load_dotenv('.env.strands-long')
+
+from dotenv import load_dotenv
+load_dotenv(os.path.join(os.path.dirname(__file__), '.env.strands-long'))
 
 # Suppress SSL warnings
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -15,7 +16,7 @@ from commons.opensearch_memory_tool import OpenSearchMemoryToolProvider
 cluster_url = os.getenv('OPENSEARCH_URL')
 username = os.getenv('OPENSEARCH_USERNAME')
 password = os.getenv('OPENSEARCH_PASSWORD')
-verify_ssl = os.getenv("OPENSEARCH_VERIFY_SSL", "false").lower() == "true"
+verify_ssl = os.getenv('OPENSEARCH_VERIFY_SSL', 'false').lower() == 'true'
 
 # Model configuration
 embedding_model_id = os.getenv('EMBEDDING_MODEL_ID')

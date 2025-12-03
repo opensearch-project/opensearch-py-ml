@@ -169,7 +169,7 @@ class OpenSearchMemoryToolProvider:
         Args:
             action: The memory operation to perform (one of: "store", "get", "search", "delete")
             content: For store action: Simple text string to store as a memory
-                     Example: "User prefers vegetarian pizza with extra cheese"
+                     (e.g., "User prefers vegetarian pizza with extra cheese")
             query: For search action: Simple text string to search for
             session_id: Session ID (uses default from initialization if not provided)
             agent_id: Agent ID (uses default from initialization if not provided)

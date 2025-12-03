@@ -10,20 +10,20 @@ import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 from dotenv import load_dotenv
-load_dotenv('.env.langgraph')
+load_dotenv(os.path.join(os.path.dirname(__file__), '.env.langgraph-short'))
 
 # Opensearch cluster configuration
 cluster_url = os.getenv('OPENSEARCH_URL')
 username = os.getenv('OPENSEARCH_USERNAME')
 password = os.getenv('OPENSEARCH_PASSWORD')
-verify_ssl = os.getenv("OPENSEARCH_VERIFY_SSL", "false").lower() == "true"
+verify_ssl = os.getenv('OPENSEARCH_VERIFY_SSL', 'false').lower() == 'true'
 
 # Memory configuration
-memory_container_name = os.getenv('MEMORY_CONTAINER_NAME', 'langgraph_short_term')
+memory_container_name = os.getenv('MEMORY_CONTAINER_NAME') or 'langgraph_short_term'
 
 # AWS Bedrock configuration
-bedrock_model_id = os.getenv("BEDROCK_MODEL_ID", "global.anthropic.claude-opus-4-5-20251101-v1:0")
-aws_region = os.getenv("AWS_REGION", "us-east-1")
+bedrock_model_id = os.getenv('BEDROCK_MODEL_ID') or 'global.anthropic.claude-opus-4-5-20251101-v1:0'
+aws_region = os.getenv('AWS_REGION') or 'us-east-1'
 
 def create_chatbot(checkpointer):
     """Create a minimal chatbot with checkpoint support."""

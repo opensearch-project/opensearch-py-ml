@@ -1,9 +1,9 @@
 import os
 import urllib3
-from dotenv import load_dotenv
 
 # Load environment variables
-load_dotenv('.env.strands-short')
+from dotenv import load_dotenv
+load_dotenv(os.path.join(os.path.dirname(__file__), '.env.strands-short'))
 
 # Suppress SSL warnings
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -16,7 +16,7 @@ from opensearch_session_manager import OpenSearchSessionRepository
 cluster_url = os.getenv('OPENSEARCH_URL')
 username = os.getenv('OPENSEARCH_USERNAME')
 password = os.getenv('OPENSEARCH_PASSWORD')
-verify_ssl = os.getenv("OPENSEARCH_VERIFY_SSL", "false").lower() == "true"
+verify_ssl = os.getenv('OPENSEARCH_VERIFY_SSL', 'false').lower() == 'true'
 
 # Memory and session configuration
 memory_container_name = os.getenv('MEMORY_CONTAINER_NAME') or 'strands_short_term'

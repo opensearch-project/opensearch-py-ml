@@ -446,10 +446,10 @@ class OpenSearchAgenticMemory:
     def _create_embedding_model(self) -> str:
         """Create Amazon Bedrock Titan embedding model for long-term memory"""
         url = f"{self.base_url}/_plugins/_ml/models/_register"
-        aws_region = os.getenv("AWS_REGION", "us-east-1")
-        aws_access_key = os.getenv("AWS_ACCESS_KEY_ID")
-        aws_secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
-        aws_session_token = os.getenv("AWS_SESSION_TOKEN")
+        aws_region = os.getenv('AWS_REGION') or 'us-east-1'
+        aws_access_key = os.getenv('AWS_ACCESS_KEY_ID')
+        aws_secret_key = os.getenv('AWS_SECRET_ACCESS_KEY')
+        aws_session_token = os.getenv('AWS_SESSION_TOKEN')
 
         body = {
             "name": "Bedrock embedding model",
@@ -499,10 +499,10 @@ class OpenSearchAgenticMemory:
         
     def _create_llm_model(self) -> str:
         """Create Amazon Bedrock LLM model for long-term memory"""
-        aws_region = os.getenv("AWS_REGION", "us-east-1")
-        aws_access_key = os.getenv("AWS_ACCESS_KEY_ID")
-        aws_secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
-        aws_session_token = os.getenv("AWS_SESSION_TOKEN")
+        aws_region = os.getenv('AWS_REGION') or 'us-east-1'
+        aws_access_key = os.getenv('AWS_ACCESS_KEY_ID')
+        aws_secret_key = os.getenv('AWS_SECRET_ACCESS_KEY')
+        aws_session_token = os.getenv('AWS_SESSION_TOKEN')
         
         url = f"{self.base_url}/_plugins/_ml/models/_register"
         body = {
