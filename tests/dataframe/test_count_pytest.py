@@ -39,7 +39,15 @@ class TestDataFrameCount(TestData):
 
     def test_count(self, df):
         df.load_dataset("ecommerce")
-        df.count()
+        oml_count = df.oml.count()
+        pd_count = df.pd.count()
+
+        # Allow small differences in count due to version differences
+        for col in oml_count.index:
+            diff = abs(oml_count[col] - pd_count[col])
+            assert (
+                diff <= 1
+            ), f"Count difference for {col}: {oml_count[col]} vs {pd_count[col]}"
 
     def test_count_flights(self):
         pd_flights = self.pd_flights().filter(self.filter_data)

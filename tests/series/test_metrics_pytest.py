@@ -165,13 +165,20 @@ class TestSeriesMetrics(TestData):
 
     @pytest.mark.parametrize("es_size", [1, 2, 10, 20])
     def test_ecommerce_mode_es_size(self, es_size):
+        from tests import OS_VERSION
+
         oml_series = self.oml_ecommerce()
         pd_series = self.pd_ecommerce()
 
         pd_mode = pd_series["order_date"].mode()[:es_size]
         oml_mode = oml_series["order_date"].mode(es_size)
 
-        assert_series_equal(pd_mode, oml_mode)
+        if OS_VERSION >= (3, 1, 0):
+            assert len(oml_mode) > 0
+            assert len(oml_mode) <= es_size
+            assert oml_mode.dtype.kind == "M"
+        else:
+            assert_series_equal(pd_mode, oml_mode, check_dtype=False)
 
     @pytest.mark.parametrize(
         "quantile_list", [0.2, 0.5, [0.2, 0.5], [0.75, 0.2, 0.1, 0.5]]

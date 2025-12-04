@@ -16,7 +16,7 @@ from packaging.version import parse as parse_version
 from opensearch_py_ml.ml_commons.model_access_control import ModelAccessControl
 from tests import OPENSEARCH_TEST_CLIENT
 
-OPENSEARCH_VERSION = parse_version(os.environ.get("OPENSEARCH_VERSION", "2.11.0"))
+OPENSEARCH_VERSION = parse_version(os.environ.get("OPENSEARCH_VERSION", "2.19.0"))
 
 # MAC = Model Access Control
 # Minimum opensearch version that supports Model Access Control.
