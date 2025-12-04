@@ -45,3 +45,4 @@ Demo Notebooks for Agentic Memory
    :maxdepth: 1
 
    agentic_memory/strands/demo_travel_assistant
+   agentic_memory/langgraph/demo_fitness_assistant

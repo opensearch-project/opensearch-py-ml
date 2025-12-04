@@ -81,7 +81,7 @@ class OpenSearchMemoryToolProvider:
         self.cluster_url = cluster_url
         self.username = username
         self.password = password
-        self.verify = verify_ssl
+        self.verify_ssl = verify_ssl
         self.memory_container_id = memory_container_id
         self.memory_container_name = memory_container_name
         self.session_id = session_id
@@ -101,7 +101,7 @@ class OpenSearchMemoryToolProvider:
             cluster_url=self.cluster_url,
             username=self.username,
             password=self.password,
-            verify_ssl=self.verify,
+            verify_ssl=self.verify_ssl,
             memory_container_id=memory_container_id,
             memory_container_name=memory_container_name,
             memory_container_description=memory_container_description,
