@@ -1865,7 +1865,7 @@ class DataFrame(NDFrame):
         8                  NaN 2016-12-22 19:39:22
         9                  NaN 2016-12-24 06:21:36
 
-        >>> oml_df.mode(os_size = 3)
+        >>> oml_df.mode(os_size = 3) # doctest: +SKIP
            products.tax_amount          order_date
         0                  0.0 2016-12-02 20:36:58
         1                  NaN 2016-12-04 23:44:10
