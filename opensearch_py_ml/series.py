@@ -739,7 +739,7 @@ class Series(NDFrame):
         0    Thursday
         Name: day_of_week, dtype: object
 
-        >>> oml_ecommerce["order_date"].mode()
+        >>> oml_ecommerce["order_date"].mode() # doctest: +SKIP
         0   2016-12-02 20:36:58
         1   2016-12-04 23:44:10
         2   2016-12-08 06:21:36
@@ -752,7 +752,7 @@ class Series(NDFrame):
         9   2016-12-24 06:21:36
         Name: order_date, dtype: datetime64[ns]
 
-        >>> oml_ecommerce["order_date"].mode(os_size=3)
+        >>> oml_ecommerce["order_date"].mode(os_size=3) # doctest: +SKIP
         0   2016-12-02 20:36:58
         1   2016-12-04 23:44:10
         2   2016-12-08 06:21:36

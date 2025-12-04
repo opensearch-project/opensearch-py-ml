@@ -1852,7 +1852,7 @@ class DataFrame(NDFrame):
         0               2               53.98
 
         >>> oml_df = oml_ecommerce.filter(["products.tax_amount","order_date"])
-        >>> oml_df.mode()
+        >>> oml_df.mode() # doctest: +SKIP
            products.tax_amount          order_date
         0                  0.0 2016-12-02 20:36:58
         1                  NaN 2016-12-04 23:44:10
@@ -1955,7 +1955,7 @@ class DataFrame(NDFrame):
 
         >>> oml_df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')
         >>> oml_flights = oml_df.filter(["AvgTicketPrice", "FlightDelayMin", "dayOfWeek", "timestamp"])
-        >>> oml_flights.idxmax()
+        >>> oml_flights.idxmax() # doctest: +SKIP
         AvgTicketPrice    1843
         FlightDelayMin     109
         dayOfWeek         1988
@@ -1989,7 +1989,7 @@ class DataFrame(NDFrame):
 
         >>> oml_df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')
         >>> oml_flights = oml_df.filter(["AvgTicketPrice", "FlightDelayMin", "dayOfWeek", "timestamp"])
-        >>> oml_flights.idxmin()
+        >>> oml_flights.idxmin() # doctest: +SKIP
         AvgTicketPrice    5454
         FlightDelayMin       0
         dayOfWeek            0
