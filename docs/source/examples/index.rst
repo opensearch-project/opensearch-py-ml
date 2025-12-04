@@ -37,3 +37,11 @@ Demo Notebooks for In-house python based models
    :maxdepth: 1
 
    demo_metrics_correlation
+
+Demo Notebooks for Agentic Memory
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. toctree::
+   :maxdepth: 1
+
+   agentic_memory/strands/demo_travel_assistant
