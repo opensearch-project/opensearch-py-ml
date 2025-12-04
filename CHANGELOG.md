@@ -17,7 +17,7 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Add example script for deploying semantic highlighter model on aws sagemaker. ([#513](https://github.com/opensearch-project/opensearch-py-ml/pull/513))
 - Add model_init_kwargs to sparse model uploading pipeline. ([#555](https://github.com/opensearch-project/opensearch-py-ml/pull/555))
 // Move to 1.4.0
-- Add agentic memory integration script ([#592](https://github.com/opensearch-project/opensearch-py-ml/pull/592))
+- Add agentic memory integration script ([#593](https://github.com/opensearch-project/opensearch-py-ml/pull/593))
 
 ### Changed
 - Update model upload history -  opensearch-project/opensearch-neural-sparse-encoding-doc-v2-distill (v.1.0.0)(TORCH_SCRIPT) by @dhrubo-os ([#415](https://github.com/opensearch-project/opensearch-py-ml/pull/415))
