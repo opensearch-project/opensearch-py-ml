@@ -52,6 +52,10 @@ ENV/
 env.bak/
 venv.bak/
 .mypy_cache
+.env.langgraph-short
+.env.langgraph-long
+.env.strands-short
+.env.strands-long
 
 # Coverage
 .coverage

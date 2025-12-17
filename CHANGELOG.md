@@ -4,6 +4,7 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ## [1.4.0]
 
 ### Added
+- Add agentic memory integration script ([#593](https://github.com/opensearch-project/opensearch-py-ml/pull/593))
 
 ### Changed
 - Update semantic highlighting sagemaker endpoint deploy scripts ([#585](https://github.com/opensearch-project/opensearch-py-ml/pull/585))
