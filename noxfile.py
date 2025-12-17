@@ -206,3 +206,21 @@ def semantic_highlighter_trace(session):
         "utils/model_uploader/semantic_highlighter_autotracing.py",
         *(session.posargs),
     )
+
+
+@nox.session(python=["3.12"])
+def metrics_correlation_trace(session):
+    session.install(
+        "-r",
+        "requirements-dev.txt",
+        "--timeout",
+        "1500",
+    )
+
+    session.install(".")
+
+    session.run(
+        "python",
+        "utils/model_uploader/metrics_correlation_autotracing.py",
+        *(session.posargs),
+    )

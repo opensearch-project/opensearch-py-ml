@@ -30,6 +30,10 @@ def verify_inputs(model_id: str, model_version: str) -> None:
     :return: No return value expected
     :rtype: None
     """
+    # Skip validation for metrics correlation
+    if model_id == "metrics_correlation":
+        return
+
     assert model_id.count("/") == 1, f"Invalid Model ID: {model_id}"
     assert (
         re.fullmatch(VERSION_PATTERN, model_version) is not None
@@ -59,7 +63,16 @@ def get_model_file_path(
     :return: Expected model file path on model hub
     :rtype: string
     """
-    model_type, model_name = model_id.split("/")
+    if model_id == "metrics_correlation":
+        model_file_path = str(
+            Path(model_id)
+            / model_version
+            / model_format.lower()
+            / f"{model_id}-{model_version}-{model_format.lower()}.zip"
+        )
+        return model_file_path
+    else:
+        model_type, model_name = model_id.split("/")
     if UPLOAD_PREFIX_KEY in custom_params:
         model_type = custom_params[UPLOAD_PREFIX_KEY]
     if MODEL_NAME_KEY in custom_params:
