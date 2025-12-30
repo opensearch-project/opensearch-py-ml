@@ -86,109 +86,113 @@ jobs:
   init-workflow-var:
     runs-on: 'ubuntu-latest'
     steps:
-    - name: Fail if branch is not main
-      if: github.ref != 'refs/heads/main'
-      run: |
-         echo "This workflow should only be triggered on 'main' branch"
-         exit 1
-    - name: Parse custom params from json string
-      # Handles dynamic parameter configuration with three-level fallback:
-      # 1. Default values initialized at script start
-      # 2. Automatic model_name derivation from model_id (when not explicitly provided)
-      # 3. Custom parameter override system with null safety checks
-      id: parse_custom_params
-      run: |
-        custom_params='${{ github.event.inputs.custom_params }}'
-        model_id='${{ github.event.inputs.model_id }}'
-        upload_prefix=""
-        sparse_prune_ratio=0
-        activation=""
-        model_name="${model_id##*/}"
-        model_init_kwargs="{}"
-
-        if [ "$custom_params" != "{}" ] && [ -n "$custom_params" ]; then
-          tmp_up=$(echo "$custom_params" | jq -r '.upload_prefix | select(.!=null)')
-          tmp_spr=$(echo "$custom_params" | jq -r '.sparse_prune_ratio | select(.!=null)')
-          tmp_act=$(echo "$custom_params" | jq -r '.activation | select(.!=null)')
-          tmp_mn=$(echo "$custom_params" | jq -r '.model_name | select(.!=null)')
-          tmp_mik=$(echo "$custom_params" | jq -c '.model_init_kwargs | select(.!=null)')
-
-          [ -n "$tmp_up" ] && upload_prefix="$tmp_up"
-          [ -n "$tmp_spr" ] && sparse_prune_ratio="$tmp_spr"
-          [ -n "$tmp_act" ] && activation="$tmp_act"
-          [ -n "$tmp_mn" ] && model_name="$tmp_mn"
-          [ -n "$tmp_mik" ] && model_init_kwargs="$tmp_mik"
-        fi
-
-        echo "upload_prefix=$upload_prefix" >> $GITHUB_OUTPUT
-        echo "sparse_prune_ratio=$sparse_prune_ratio" >> $GITHUB_OUTPUT
-        echo "activation=$activation" >> $GITHUB_OUTPUT
-        echo "model_name=$model_name" >> $GITHUB_OUTPUT
-        echo "model_init_kwargs=$model_init_kwargs" >> $GITHUB_OUTPUT
-    - name: Initiate folders
-      # This scripts init the folders path variables.
-      # 1. Retrieves the input model_id.
-      # 2. If upload_prefix is provided, constructs model_prefix using upload_prefix and model_source.
-      #    - model_prefix: "ml-models/{model_source}/{upload_prefix}"
-      # 3. If upload_prefix is not provided, it constructs model_prefix using model_source and the prefix part of model_id.
-      #    - The prefix part is the substring before the first '/' in model_id.
-      #    Example:
-      #    - Given model_id: "opensearch-project/opensearch-neural-sparse-encoding-v1"
-      #    - model_prefix: "ml-models/{model_source}/opensearch-project"
-      # 4. Constructs model_folder and model_prefix_folder
-      id: init_folders
-      run: |
-        model_id=${{ github.event.inputs.model_id }}
-        if [[ -n "${{ steps.parse_custom_params.outputs.upload_prefix }}" ]]; then
-          model_prefix="ml-models/${{ github.event.inputs.model_source }}/${{ steps.parse_custom_params.outputs.upload_prefix }}"
-        elif [[ "$model_id" == "metrics_correlation" ]]; then
-          model_prefix="ml-models/${{ github.event.inputs.model_source }}"
-        else
-          model_prefix="ml-models/${{ github.event.inputs.model_source }}/${model_id%%/*}"
-        fi
-        echo "model_folder=$model_prefix/${{ steps.parse_custom_params.outputs.model_name }}" >> $GITHUB_OUTPUT
-        echo "model_prefix_folder=$model_prefix" >> $GITHUB_OUTPUT
-    - name: Initiate workflow_info
-      id: init_workflow_info
-      run: |
-        embedding_dimension=${{ github.event.inputs.embedding_dimension }}
-        pooling_mode=${{ github.event.inputs.pooling_mode }}
-        model_description="${{ github.event.inputs.model_description }}"
-        model_type=${{ github.event.inputs.model_type }}
-        workflow_info="
-        ============= Workflow Details ==============
-        - Workflow Name: ${{ github.workflow }}
-        - Workflow Run ID: ${{ github.run_id }}
-        - Workflow Initiator: @${{ github.actor }}
-        - Allow Overwrite:  ${{ github.event.inputs.allow_overwrite }}
+      - name: Fail if branch is not main
+        if: github.ref != 'refs/heads/main'
+        run: |
+           echo "This workflow should only be triggered on 'main' branch"
+           exit 1
+      - name: Remove unnecessary files
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+      - name: Parse custom params from json string
+        # Handles dynamic parameter configuration with three-level fallback:
+        # 1. Default values initialized at script start
+        # 2. Automatic model_name derivation from model_id (when not explicitly provided)
+        # 3. Custom parameter override system with null safety checks
+        id: parse_custom_params
+        run: |
+          custom_params='${{ github.event.inputs.custom_params }}'
+          model_id='${{ github.event.inputs.model_id }}'
+          upload_prefix=""
+          sparse_prune_ratio=0
+          activation=""
+          model_name="${model_id##*/}"
+          model_init_kwargs="{}"
+  
+          if [ "$custom_params" != "{}" ] && [ -n "$custom_params" ]; then
+            tmp_up=$(echo "$custom_params" | jq -r '.upload_prefix | select(.!=null)')
+            tmp_spr=$(echo "$custom_params" | jq -r '.sparse_prune_ratio | select(.!=null)')
+            tmp_act=$(echo "$custom_params" | jq -r '.activation | select(.!=null)')
+            tmp_mn=$(echo "$custom_params" | jq -r '.model_name | select(.!=null)')
+            tmp_mik=$(echo "$custom_params" | jq -c '.model_init_kwargs | select(.!=null)')
+  
+            [ -n "$tmp_up" ] && upload_prefix="$tmp_up"
+            [ -n "$tmp_spr" ] && sparse_prune_ratio="$tmp_spr"
+            [ -n "$tmp_act" ] && activation="$tmp_act"
+            [ -n "$tmp_mn" ] && model_name="$tmp_mn"
+            [ -n "$tmp_mik" ] && model_init_kwargs="$tmp_mik"
+          fi
+  
+          echo "upload_prefix=$upload_prefix" >> $GITHUB_OUTPUT
+          echo "sparse_prune_ratio=$sparse_prune_ratio" >> $GITHUB_OUTPUT
+          echo "activation=$activation" >> $GITHUB_OUTPUT
+          echo "model_name=$model_name" >> $GITHUB_OUTPUT
+          echo "model_init_kwargs=$model_init_kwargs" >> $GITHUB_OUTPUT
+      - name: Initiate folders
+        # This scripts init the folders path variables.
+        # 1. Retrieves the input model_id.
+        # 2. If upload_prefix is provided, constructs model_prefix using upload_prefix and model_source.
+        #    - model_prefix: "ml-models/{model_source}/{upload_prefix}"
+        # 3. If upload_prefix is not provided, it constructs model_prefix using model_source and the prefix part of model_id.
+        #    - The prefix part is the substring before the first '/' in model_id.
+        #    Example:
+        #    - Given model_id: "opensearch-project/opensearch-neural-sparse-encoding-v1"
+        #    - model_prefix: "ml-models/{model_source}/opensearch-project"
+        # 4. Constructs model_folder and model_prefix_folder
+        id: init_folders
+        run: |
+          model_id=${{ github.event.inputs.model_id }}
+          if [[ -n "${{ steps.parse_custom_params.outputs.upload_prefix }}" ]]; then
+            model_prefix="ml-models/${{ github.event.inputs.model_source }}/${{ steps.parse_custom_params.outputs.upload_prefix }}"
+          elif [[ "$model_id" == "metrics_correlation" ]]; then
+            model_prefix="ml-models/${{ github.event.inputs.model_source }}"
+          else
+            model_prefix="ml-models/${{ github.event.inputs.model_source }}/${model_id%%/*}"
+          fi
+          echo "model_folder=$model_prefix/${{ steps.parse_custom_params.outputs.model_name }}" >> $GITHUB_OUTPUT
+          echo "model_prefix_folder=$model_prefix" >> $GITHUB_OUTPUT
+      - name: Initiate workflow_info
+        id: init_workflow_info
+        run: |
+          embedding_dimension=${{ github.event.inputs.embedding_dimension }}
+          pooling_mode=${{ github.event.inputs.pooling_mode }}
+          model_description="${{ github.event.inputs.model_description }}"
+          model_type=${{ github.event.inputs.model_type }}
+          workflow_info="
+          ============= Workflow Details ==============
+          - Workflow Name: ${{ github.workflow }}
+          - Workflow Run ID: ${{ github.run_id }}
+          - Workflow Initiator: @${{ github.actor }}
+          - Allow Overwrite:  ${{ github.event.inputs.allow_overwrite }}
+            
+          ========= Workflow Input Information =========
+          - Model Source: ${{ github.event.inputs.model_source }}
+          - Model ID: ${{ github.event.inputs.model_id }}
+          - Model Version: ${{ github.event.inputs.model_version }}
+          - Model Type: ${{ github.event.inputs.model_type }}
+          - Tracing Format: ${{ github.event.inputs.tracing_format }}
+          - Embedding Dimension: ${embedding_dimension:-N/A}
+          - Pooling Mode: ${pooling_mode:-N/A}
+          - Model Description: ${model_description:-N/A}
+          - Model Folder: ${{ steps.init_folders.outputs.model_folder }}
+          - Model Prefix Folder: ${{ steps.init_folders.outputs.model_prefix_folder }}
+          - Sparse Prune Ratio: ${{ steps.parse_custom_params.outputs.sparse_prune_ratio || 'N/A' }}
+          - Activation: ${{ steps.parse_custom_params.outputs.activation || 'N/A' }}
+          - Model Init Kwargs: '${{ toJSON(fromJSON(steps.parse_custom_params.outputs.model_init_kwargs || '{}')) }}'
           
-        ========= Workflow Input Information =========
-        - Model Source: ${{ github.event.inputs.model_source }}
-        - Model ID: ${{ github.event.inputs.model_id }}
-        - Model Version: ${{ github.event.inputs.model_version }}
-        - Model Type: ${{ github.event.inputs.model_type }}
-        - Tracing Format: ${{ github.event.inputs.tracing_format }}
-        - Embedding Dimension: ${embedding_dimension:-N/A}
-        - Pooling Mode: ${pooling_mode:-N/A}
-        - Model Description: ${model_description:-N/A}
-        - Model Folder: ${{ steps.init_folders.outputs.model_folder }}
-        - Model Prefix Folder: ${{ steps.init_folders.outputs.model_prefix_folder }}
-        - Sparse Prune Ratio: ${{ steps.parse_custom_params.outputs.sparse_prune_ratio || 'N/A' }}
-        - Activation: ${{ steps.parse_custom_params.outputs.activation || 'N/A' }}
-        - Model Init Kwargs: '${{ toJSON(fromJSON(steps.parse_custom_params.outputs.model_init_kwargs || '{}')) }}'
-        
-        ======== Workflow Output Information =========
-        - Embedding Verification: Passed"
-
-        echo "workflow_info<<EOF" >> $GITHUB_OUTPUT
-        echo "${workflow_info@E}" >> $GITHUB_OUTPUT
-        echo "EOF" >> $GITHUB_OUTPUT
-        echo "${workflow_info@E}"
-    - name: Initiate license_line
-      id: init_license_line
-      run: |
-        echo "verified=:white_check_mark: — It is verified that this model is licensed under Apache 2.0" >> $GITHUB_OUTPUT
-        echo "unverified=- [ ]  :warning: The license cannot be verified. Please confirm by yourself that the model is licensed under Apache 2.0  :warning:" >> $GITHUB_OUTPUT
+          ======== Workflow Output Information =========
+          - Embedding Verification: Passed"
+  
+          echo "workflow_info<<EOF" >> $GITHUB_OUTPUT
+          echo "${workflow_info@E}" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          echo "${workflow_info@E}"
+      - name: Initiate license_line
+        id: init_license_line
+        run: |
+          echo "verified=:white_check_mark: — It is verified that this model is licensed under Apache 2.0" >> $GITHUB_OUTPUT
+          echo "unverified=- [ ]  :warning: The license cannot be verified. Please confirm by yourself that the model is licensed under Apache 2.0  :warning:" >> $GITHUB_OUTPUT
     outputs:
       model_folder: ${{ steps.init_folders.outputs.model_folder }}
       model_prefix_folder: ${{ steps.init_folders.outputs.model_prefix_folder }}
@@ -210,6 +214,10 @@ jobs:
       contents: read
     environment: opensearch-py-ml-cicd-env
     steps:
+      - name: Remove unnecessary files
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
       - name: Checkout Repository
         uses: actions/checkout@v4
       - name: Set Up Python
@@ -263,6 +271,10 @@ jobs:
         entry:
           - { opensearch_version: 3.0.0-beta1 }
     steps:
+      - name: Remove unnecessary files
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
       - name: Checkout
         uses: actions/checkout@v4
       - name: Export Arguments
@@ -348,6 +360,10 @@ jobs:
     permissions:
       issues: write
     steps:
+      - name: Remove unnecessary files
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
       - name: Checkout Repository
         uses: actions/checkout@v4
       - name: Get Approvers
@@ -389,6 +405,10 @@ jobs:
       contents: read
     environment: opensearch-py-ml-cicd-env
     steps:
+      - name: Remove unnecessary files
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
       - name: Download Artifact
         uses: actions/download-artifact@v4
         with:
@@ -419,6 +439,10 @@ jobs:
     env:
       model_info: ${{ github.event.inputs.model_id }} (v.${{ github.event.inputs.model_version }})(${{ github.event.inputs.tracing_format }})
     steps:
+      - name: Remove unnecessary files
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
       - name: Checkout Repository
         uses: actions/checkout@v4
       - name: Set Up Python
@@ -521,6 +545,10 @@ jobs:
     permissions:
       contents: read
     steps:
+      - name: Remove unnecessary files
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
       - name: Checkout Repository
         uses: actions/checkout@v4
       - name: Trigger Jenkins Workflow with Generic Webhook
