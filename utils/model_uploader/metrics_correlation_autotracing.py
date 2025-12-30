@@ -143,10 +143,7 @@ def main(
     # Preview and prepare files for uploading
     preview_model_config(tracing_format, config_file_path)
 
-    # Store description
-    store_description_variable(model_description)
-
-    prepare_files_for_uploading(
+    mcorr_model_path, mcorr_model_config_path = prepare_files_for_uploading(
         model_id=model_id,
         model_version=model_version,
         model_format=tracing_format,
@@ -155,6 +152,9 @@ def main(
         upload_prefix=None,
         model_name=model_name,
     )
+
+    # Store description
+    store_description_variable(mcorr_model_config_path)
 
     print("=== Metrics correlation auto-tracing completed ===")
 
