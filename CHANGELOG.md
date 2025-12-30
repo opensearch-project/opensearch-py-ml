@@ -8,6 +8,7 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Changed
 - Update semantic highlighting sagemaker endpoint deploy scripts ([#585](https://github.com/opensearch-project/opensearch-py-ml/pull/585))
+- Update model upload history -  metrics_correlation (v.1.0.0b2)(TORCH_SCRIPT) by @nathaliellenaa ([#597](https://github.com/opensearch-project/opensearch-py-ml/pull/597))
 
 ### Fixed
 
