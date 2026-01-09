@@ -17,9 +17,8 @@ logger.info(f"Device: {DEVICE}")
 
 def model_fn(model_dir):
     """Load model and tokenizer"""
-    model_name = "intfloat/multilingual-e5-small"
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModel.from_pretrained(model_name).to(DEVICE)
+    tokenizer = AutoTokenizer.from_pretrained(model_dir)
+    model = AutoModel.from_pretrained(model_dir).to(DEVICE)
     return {"model": model, "tokenizer": tokenizer}
 
 def input_fn(request_body, request_content_type):
