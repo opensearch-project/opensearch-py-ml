@@ -56,7 +56,7 @@ Usage examples
 
     ``opensearch-ml model register --connectorId 'connector123' --name 'Test model' --description 'This is a test model' -o /Documents/cli/output.yml``
 
-    If `-o` or `--output` is not specified, the output file will be saved in the current directory in non-interactive mode.
+    If `-o` or `--outputPath` is not specified, the output file will be saved in the current directory in non-interactive mode.
 
     Sample response:
 
