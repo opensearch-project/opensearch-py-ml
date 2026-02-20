@@ -71,8 +71,7 @@ def main(
     upload_prefix : str, optional
         Path prefix for the uploaded model files
     """
-    print(
-        f"""
+    print(f"""
     === Begin running metrics_correlation_autotracing.py ===
     Model ID: {model_id}
     Model Version: {model_version}
@@ -81,8 +80,7 @@ def main(
     Model Name: {model_name if model_name is not None else 'N/A'}
     Upload Prefix: {upload_prefix if upload_prefix is not None else 'N/A'}
     ==========================================
-    """
-    )
+    """)
 
     # Metrics correlation only supports TorchScript
     assert (
