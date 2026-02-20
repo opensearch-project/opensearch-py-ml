@@ -5,17 +5,17 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>opensearch_py_ml.dataframe &mdash; Opensearch-py-ml 1.3.0 documentation</title>
+  <title>opensearch_py_ml.dataframe &mdash; Opensearch-py-ml 1.4.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
-      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=1f29e9d3"></script>
-      <script src="../../_static/doctools.js?v=9bcbadda"></script>
-      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/documentation_options.js?v=9172181d"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -1988,7 +1988,7 @@
 <span class="sd">        0               2               53.98</span>
 
 <span class="sd">        &gt;&gt;&gt; oml_df = oml_ecommerce.filter([&quot;products.tax_amount&quot;,&quot;order_date&quot;])</span>
-<span class="sd">        &gt;&gt;&gt; oml_df.mode()</span>
+<span class="sd">        &gt;&gt;&gt; oml_df.mode() # doctest: +SKIP</span>
 <span class="sd">           products.tax_amount          order_date</span>
 <span class="sd">        0                  0.0 2016-12-02 20:36:58</span>
 <span class="sd">        1                  NaN 2016-12-04 23:44:10</span>
@@ -2001,7 +2001,7 @@
 <span class="sd">        8                  NaN 2016-12-22 19:39:22</span>
 <span class="sd">        9                  NaN 2016-12-24 06:21:36</span>
 
-<span class="sd">        &gt;&gt;&gt; oml_df.mode(os_size = 3)</span>
+<span class="sd">        &gt;&gt;&gt; oml_df.mode(os_size = 3) # doctest: +SKIP</span>
 <span class="sd">           products.tax_amount          order_date</span>
 <span class="sd">        0                  0.0 2016-12-02 20:36:58</span>
 <span class="sd">        1                  NaN 2016-12-04 23:44:10</span>
@@ -2097,7 +2097,7 @@
 
 <span class="sd">        &gt;&gt;&gt; oml_df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;flights&#39;)</span>
 <span class="sd">        &gt;&gt;&gt; oml_flights = oml_df.filter([&quot;AvgTicketPrice&quot;, &quot;FlightDelayMin&quot;, &quot;dayOfWeek&quot;, &quot;timestamp&quot;])</span>
-<span class="sd">        &gt;&gt;&gt; oml_flights.idxmax()</span>
+<span class="sd">        &gt;&gt;&gt; oml_flights.idxmax() # doctest: +SKIP</span>
 <span class="sd">        AvgTicketPrice    1843</span>
 <span class="sd">        FlightDelayMin     109</span>
 <span class="sd">        dayOfWeek         1988</span>
@@ -2134,7 +2134,7 @@
 
 <span class="sd">        &gt;&gt;&gt; oml_df = oml.DataFrame(OPENSEARCH_TEST_CLIENT, &#39;flights&#39;)</span>
 <span class="sd">        &gt;&gt;&gt; oml_flights = oml_df.filter([&quot;AvgTicketPrice&quot;, &quot;FlightDelayMin&quot;, &quot;dayOfWeek&quot;, &quot;timestamp&quot;])</span>
-<span class="sd">        &gt;&gt;&gt; oml_flights.idxmin()</span>
+<span class="sd">        &gt;&gt;&gt; oml_flights.idxmin() # doctest: +SKIP</span>
 <span class="sd">        AvgTicketPrice    5454</span>
 <span class="sd">        FlightDelayMin       0</span>
 <span class="sd">        dayOfWeek            0</span>
@@ -2397,7 +2397,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2025, Opensearch.</p>
+    <p>&#169; Copyright 2026, Opensearch.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

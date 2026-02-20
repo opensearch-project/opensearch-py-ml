@@ -1,0 +1,585 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Travel Assistant Demo - OpenSearch Agentic Memory with Strands Agent &mdash; Opensearch-py-ml 1.4.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=9172181d"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Fitness Assistant Demo - OpenSearch Agentic Memory with LangGraph" href="../langgraph/demo_fitness_assistant.html" />
+    <link rel="prev" title="Demo Notebook for Metrics Correlation Model Testing" href="../../demo_metrics_correlation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Opensearch-py-ml
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/index.html">API Reference</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../index.html#demo-notebooks-for-data-exploration-panda-like-dataframe">Demo notebooks for Data Exploration Panda like DataFrame</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../index.html#demo-notebooks-for-model-training-and-tracing">Demo notebooks for Model Training and Tracing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../index.html#demo-notebooks-for-ml-commons-plugin-integration">Demo notebooks for ML Commons plugin integration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../index.html#demo-notebooks-for-in-house-python-based-models">Demo Notebooks for In-house python based models</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../../index.html#demo-notebooks-for-agentic-memory">Demo Notebooks for Agentic Memory</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Travel Assistant Demo - OpenSearch Agentic Memory with Strands Agent</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Introduction">Introduction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Prerequisites">Prerequisites</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Step-1:-Install-Dependencies-and-Setup">Step 1: Install Dependencies and Setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Step-2:-Initialize-Memory-Provider">Step 2: Initialize Memory Provider</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Step-3:-Create-Travel-Agent-Assistant-with-Long-term-Memory">Step 3: Create Travel Agent Assistant with Long-term Memory</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Step-4:-First-Session---Learning-User-Preferences">Step 4: First Session - Learning User Preferences</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Step-5:-New-Session---Demonstrating-Memory-Recall">Step 5: New Session - Demonstrating Memory Recall</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../langgraph/demo_fitness_assistant.html">Fitness Assistant Demo - OpenSearch Agentic Memory with LangGraph</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../cli/index.html">Command Line Interface (CLI)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/pre_trained_models.html">Pre-trained models</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Opensearch-py-ml</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Examples</a></li>
+      <li class="breadcrumb-item active">Travel Assistant Demo - OpenSearch Agentic Memory with Strands Agent</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/examples/agentic_memory/strands/demo_travel_assistant.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Travel-Assistant-Demo---OpenSearch-Agentic-Memory-with-Strands-Agent">
+<h1>Travel Assistant Demo - OpenSearch Agentic Memory with Strands Agent<a class="headerlink" href="#Travel-Assistant-Demo---OpenSearch-Agentic-Memory-with-Strands-Agent" title="Link to this heading"></a></h1>
+<section id="Introduction">
+<h2>Introduction<a class="headerlink" href="#Introduction" title="Link to this heading"></a></h2>
+<p>This notebook demonstrates how to build an intelligent travel assistant using OpenSearch’s agentic memory capabilities integrated with Strands agent. The travel assistant showcases <strong>long-term memory</strong> functionality, enabling it to remember user preferences, past conversations, and travel history across multiple sessions.</p>
+<section id="Key-Features">
+<h3>Key Features<a class="headerlink" href="#Key-Features" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Persistent Memory</strong>: Remembers user preferences and travel history across sessions</p></li>
+<li><p><strong>Semantic Search</strong>: Retrieves relevant memories based on context and meaning</p></li>
+<li><p><strong>Travel Intelligence</strong>: Provides personalized recommendations based on past interactions</p></li>
+<li><p><strong>Session Continuity</strong>: Maintains context even when conversations are resumed later</p></li>
+</ul>
+</section>
+<section id="What-You'll-Learn">
+<h3>What You’ll Learn<a class="headerlink" href="#What-You'll-Learn" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>How to set up OpenSearch agentic memory for long-term storage</p></li>
+<li><p>Integration patterns between Strands agents and OpenSearch</p></li>
+<li><p>Building conversational AI that learns and remembers user preferences</p></li>
+<li><p>Implementing semantic memory retrieval for personalized experiences</p></li>
+</ul>
+</section>
+</section>
+<section id="Prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#Prerequisites" title="Link to this heading"></a></h2>
+<p>To use this notebook, you’ll need:</p>
+<ul class="simple">
+<li><p>Python 3.10+</p></li>
+<li><p>OpenSearch 3.3.2+</p></li>
+<li><p>AWS Credentials for Amazon Bedrock access</p></li>
+</ul>
+</section>
+<section id="Step-1:-Install-Dependencies-and-Setup">
+<h2>Step 1: Install Dependencies and Setup<a class="headerlink" href="#Step-1:-Install-Dependencies-and-Setup" title="Link to this heading"></a></h2>
+<p>Install dependencies:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>pip<span class="w"> </span>install<span class="w"> </span>-qr<span class="w"> </span>../requirements.txt
+</pre></div>
+</div>
+</div>
+<p>Set OpenSearch domain configuration:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">opensearch_url</span> <span class="o">=</span> <span class="s1">&#39;https://localhost:9200&#39;</span>
+<span class="n">opensearch_username</span> <span class="o">=</span> <span class="s1">&#39;admin&#39;</span>
+<span class="n">opensearch_password</span> <span class="o">=</span> <span class="s1">&#39;your_opensearch_password&#39;</span>
+<span class="n">opensearch_verify_ssl</span> <span class="o">=</span> <span class="kc">False</span>
+</pre></div>
+</div>
+</div>
+<p>Set model configuration:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">embedding_model_id</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>  <span class="c1"># Leave empty to auto-create Amazon Titan Embedding model</span>
+<span class="n">llm_model_id</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>        <span class="c1"># Leave empty to auto-create Amazon Bedrock Claude model</span>
+</pre></div>
+</div>
+</div>
+<p>Set memory and session configuration:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Modify as needed</span>
+<span class="n">memory_container_name</span> <span class="o">=</span> <span class="s1">&#39;travel_memory&#39;</span>
+<span class="n">session_id</span> <span class="o">=</span> <span class="s1">&#39;travel_session&#39;</span>
+<span class="n">user_id</span> <span class="o">=</span> <span class="s1">&#39;travel_user&#39;</span>
+<span class="n">agent_id</span> <span class="o">=</span> <span class="s1">&#39;travel_agent&#39;</span>
+</pre></div>
+</div>
+</div>
+<p>Set AWS credentials (Required for Amazon Bedrock access):</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;AWS_REGION&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s1">&#39;AWS_REGION&#39;</span><span class="p">,</span> <span class="s1">&#39;your_aws_region&#39;</span><span class="p">)</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;AWS_ACCESS_KEY_ID&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s1">&#39;AWS_ACCESS_KEY_ID&#39;</span><span class="p">,</span> <span class="s1">&#39;your_access_key&#39;</span><span class="p">)</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;AWS_SECRET_ACCESS_KEY&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s1">&#39;AWS_SECRET_ACCESS_KEY&#39;</span><span class="p">,</span> <span class="s1">&#39;your_secret_key&#39;</span><span class="p">)</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;AWS_SESSION_TOKEN&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s1">&#39;AWS_SESSION_TOKEN&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>  <span class="c1"># Optional</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Step-2:-Initialize-Memory-Provider">
+<h2>Step 2: Initialize Memory Provider<a class="headerlink" href="#Step-2:-Initialize-Memory-Provider" title="Link to this heading"></a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">urllib3</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;..&#39;</span><span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">commons.opensearch_memory_tool</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpenSearchMemoryToolProvider</span>
+
+<span class="n">urllib3</span><span class="o">.</span><span class="n">disable_warnings</span><span class="p">(</span><span class="n">urllib3</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">InsecureRequestWarning</span><span class="p">)</span>
+
+
+<span class="n">memory_provider</span> <span class="o">=</span> <span class="n">OpenSearchMemoryToolProvider</span><span class="p">(</span>
+    <span class="n">cluster_url</span><span class="o">=</span><span class="n">opensearch_url</span><span class="p">,</span>
+    <span class="n">username</span><span class="o">=</span><span class="n">opensearch_username</span><span class="p">,</span>
+    <span class="n">password</span><span class="o">=</span><span class="n">opensearch_password</span><span class="p">,</span>
+    <span class="n">verify_ssl</span><span class="o">=</span><span class="n">opensearch_verify_ssl</span><span class="p">,</span>
+    <span class="n">memory_container_name</span><span class="o">=</span><span class="n">memory_container_name</span><span class="p">,</span>
+    <span class="n">session_id</span><span class="o">=</span><span class="n">session_id</span><span class="p">,</span>
+    <span class="n">agent_id</span><span class="o">=</span><span class="n">agent_id</span><span class="p">,</span>
+    <span class="n">user_id</span><span class="o">=</span><span class="n">user_id</span><span class="p">,</span>
+    <span class="n">embedding_model_id</span><span class="o">=</span><span class="n">embedding_model_id</span><span class="p">,</span>
+    <span class="n">llm_id</span><span class="o">=</span><span class="n">llm_model_id</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Step-3:-Create-Travel-Agent-Assistant-with-Long-term-Memory">
+<h2>Step 3: Create Travel Agent Assistant with Long-term Memory<a class="headerlink" href="#Step-3:-Create-Travel-Agent-Assistant-with-Long-term-Memory" title="Link to this heading"></a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[50]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">strands</span><span class="w"> </span><span class="kn">import</span> <span class="n">Agent</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">strands.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">BedrockModel</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">start_travel_session</span><span class="p">(</span><span class="n">session_name</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Start a travel agent conversation session&quot;&quot;&quot;</span>
+    <span class="c1"># Update session for memory provider</span>
+    <span class="n">memory_provider</span><span class="o">.</span><span class="n">session_id</span> <span class="o">=</span> <span class="n">session_name</span>
+
+    <span class="c1"># Configure the model and agent</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">BedrockModel</span><span class="p">(</span><span class="n">model_id</span><span class="o">=</span><span class="s2">&quot;global.anthropic.claude-opus-4-5-20251101-v1:0&quot;</span><span class="p">)</span>
+    <span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span>
+        <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+        <span class="n">tools</span><span class="o">=</span><span class="n">memory_provider</span><span class="o">.</span><span class="n">tools</span><span class="p">,</span>
+        <span class="n">system_prompt</span><span class="o">=</span><span class="s2">&quot;&quot;&quot;You are a professional travel agent with access to client memory.</span>
+<span class="s2">        Always store important client information (preferences, budget, restrictions) using the opensearch_memory tool.</span>
+<span class="s2">        When clients return, search your memory to provide personalized recommendations.&quot;&quot;&quot;</span>
+    <span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;🌍 Travel Agent Ready - Session: </span><span class="si">{</span><span class="n">session_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Type &#39;q&#39; or &#39;quit&#39; to end the conversation</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">question</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;👤 You: &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">question</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;q&#39;</span><span class="p">,</span> <span class="s1">&#39;quit&#39;</span><span class="p">]:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;🤖 Travel Agent: Safe travels! I&#39;ll remember our conversation for next time.&quot;</span><span class="p">)</span>
+            <span class="k">break</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">question</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;🤖 Travel Agent: &quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">agent</span><span class="p">(</span><span class="n">question</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+<br/></pre></div>
+</div>
+</div>
+</section>
+<section id="Step-4:-First-Session---Learning-User-Preferences">
+<h2>Step 4: First Session - Learning User Preferences<a class="headerlink" href="#Step-4:-First-Session---Learning-User-Preferences" title="Link to this heading"></a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[51]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Conversation where user shares travel preferences</span>
+<span class="n">start_travel_session</span><span class="p">(</span><span class="n">session_id</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+🌍 Travel Agent Ready - Session: travel_session1
+Type &#39;q&#39; or &#39;quit&#39; to end the conversation
+
+👤 You:  Hi, I&#39;m Sarah and I&#39;m planning a family vacation for next summer
+🤖 Travel Agent: Hi Sarah! Welcome! I&#39;m excited to help you plan your family vacation for next summer. 🌴✈️
+
+To give you the best recommendations, I&#39;d love to learn more about your trip. Could you tell me:
+
+1. **How many people** will be traveling? (Adults and children&#39;s ages?)
+2. **Where are you departing from?**
+3. **Do you have any destinations in mind**, or are you open to suggestions?
+4. **What&#39;s your approximate budget** for the trip?
+5. **What kind of activities** does your family enjoy? (Beach relaxation, adventure, theme parks, cultural experiences, nature, etc.)
+6. **Any dietary restrictions, mobility concerns, or other special needs** I should keep in mind?
+7. **How long** are you thinking for the trip?
+
+Feel free to share as much or as little as you&#39;d like, and we can start building your perfect family getaway!
+
+👤 You:  We&#39;re a family of 4 - me, my husband, and two kids aged 8 and 12. Our budget is around $8000 for the whole trip. We love beaches and the kids are really into water sports.
+🤖 Travel Agent: How wonderful, Sarah! A family of four with beach lovers and water sports enthusiasts – that gives us some fantastic options to work with! Let me save these details so I can always provide you with personalized recommendations.
+Tool #1: opensearch_memory
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="color: #008000; text-decoration-color: #008000">╭───────────────────── </span><span style="color: #008000; text-decoration-color: #008000; font-weight: bold">Add long-term memory for session travel_session1, agent travel_agent</span><span style="color: #008000; text-decoration-color: #008000"> ──────────────────────╮</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> Client Sarah is planning a family vacation for summer. Family of 4: Sarah, her husband, and two kids aged 8 and <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> 12. Budget is approximately $8000 for the whole trip. They love beaches and the kids are really into water      <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> sports.                                                                                                         <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯</span>
+</pre></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="color: #008000; text-decoration-color: #008000">╭───────────────────────────────────────────────── </span><span style="color: #008000; text-decoration-color: #008000; font-weight: bold">Memory Stored</span><span style="color: #008000; text-decoration-color: #008000"> ─────────────────────────────────────────────────╮</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> ✅ Memory stored successfully:                                                                                  <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> 🔑 Memory ID: Vivb5poB8SWL6T84odHA                                                                              <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯</span>
+</pre></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Got it! With a $8,000 budget for a family of 4 who loves beaches and water sports, here are some fantastic destination ideas:
+
+## 🏖️ Top Recommendations for Your Family:
+
+### 1. **Riviera Maya, Mexico** 🇲🇽
+- All-inclusive resorts with kids&#39; clubs
+- Snorkeling, kayaking, paddleboarding
+- Day trips to cenotes (natural swimming holes) and Mayan ruins
+- Great value for the budget
+
+### 2. **San Diego, California** 🇺🇸
+- Beautiful beaches with surfing lessons for kids
+- La Jolla coves for kayaking and snorkeling
+- SeaWorld and LEGOLAND nearby
+- No passport needed!
+
+### 3. **Punta Cana, Dominican Republic** 🇩🇴
+- Stunning beaches with calm waters
+- Excellent all-inclusive family resorts
+- Water sports galore: jet skiing, parasailing, windsurfing
+- Very budget-friendly
+
+### 4. **Maui, Hawaii** 🌺
+- World-class beaches and snorkeling
+- Surfing lessons, stand-up paddleboarding
+- Incredible scenery and family adventures
+- Slightly higher cost but doable within budget
+
+---
+
+**A few more questions to narrow it down:**
+- Where will you be departing from?
+- How long are you hoping to travel? (1 week, 10 days, 2 weeks?)
+- Do you prefer an all-inclusive resort experience or more of an explore-on-your-own adventure?
+
+👤 You:  Hawaii sounds amazing! We&#39;d love a 7-day trip. The kids have never been snorkeling before. Oh, and I should mention - my 8-year-old has a severe seafood allergy, so we need to be careful about restaurants.
+🤖 Travel Agent: Hawaii is a fantastic choice – and a first snorkeling experience there will be absolutely magical for your kids! 🐠🌺 Let me save these important details, especially about the seafood allergy.
+Tool #2: opensearch_memory
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="color: #008000; text-decoration-color: #008000">╭───────────────────── </span><span style="color: #008000; text-decoration-color: #008000; font-weight: bold">Add long-term memory for session travel_session1, agent travel_agent</span><span style="color: #008000; text-decoration-color: #008000"> ──────────────────────╮</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> Sarah's family has chosen Hawaii for their summer vacation. Trip duration: 7 days. Kids have never been         <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> snorkeling before - this will be their first experience. IMPORTANT: 8-year-old child has a severe seafood       <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> allergy - must be careful about restaurant selections.                                                          <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯</span>
+</pre></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="color: #008000; text-decoration-color: #008000">╭───────────────────────────────────────────────── </span><span style="color: #008000; text-decoration-color: #008000; font-weight: bold">Memory Stored</span><span style="color: #008000; text-decoration-color: #008000"> ─────────────────────────────────────────────────╮</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> ✅ Memory stored successfully:                                                                                  <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> 🔑 Memory ID: Xyvc5poB8SWL6T84sNEh                                                                              <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯</span>
+</pre></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+I&#39;ve made a special note about your 8-year-old&#39;s seafood allergy – that&#39;s so important, especially in Hawaii where seafood is everywhere. Here&#39;s how we can plan around that:
+
+---
+
+## 🌺 Your 7-Day Hawaii Family Adventure
+
+### Island Recommendation: **Maui**
+Perfect for families with beginners – calmer waters, amazing snorkel spots, and lots of non-seafood dining options.
+
+### 🤿 Snorkeling for First-Timers
+- **Kapalua Bay** – Calm, shallow, perfect for kids learning to snorkel
+- **Turtle Town** – Gentle waters and sea turtles! 🐢
+- Consider a **family snorkel tour** with guides who provide instruction and gear sized for kids
+
+### 🍽️ Navigating the Seafood Allergy
+Great news – Hawaii has excellent allergy awareness! Here&#39;s my advice:
+- **Resorts with kitchenettes** – gives you control over some meals
+- **Restaurants I recommend**:
+  - Many Italian, Mexican, and farm-to-table spots in Maui handle allergies well
+  - Chains like **Monkeypod Kitchen** and **Kihei Caffe** are known for accommodating allergies
+- **Pro tip**: I&#39;ll help you compile a list of allergy-friendly restaurants and suggest bringing chef allergy cards in English and Hawaiian
+
+### 💰 Budget Breakdown (Estimated for 7 days, family of 4)
+| Category | Estimated Cost |
+|----------|----------------|
+| Flights | $2,000 - $2,800 |
+| Accommodations (condo/resort) | $2,100 - $2,800 |
+| Car Rental | $350 - $500 |
+| Activities &amp; Tours | $800 - $1,000 |
+| Food &amp; Dining | $700 - $900 |
+| **Total** | **$6,000 - $8,000** |
+
+---
+
+**Next steps – a couple more questions:**
+1. **Where will you be flying from?** (So I can check flight options)
+2. **Would you prefer a condo/vacation rental** (more space, kitchen for allergy-safe meals) **or a resort** (more amenities, kids&#39; activities)?
+
+👤 You:  q
+🤖 Travel Agent: Safe travels! I&#39;ll remember our conversation for next time.
+</pre></div></div>
+</div>
+</section>
+<section id="Step-5:-New-Session---Demonstrating-Memory-Recall">
+<h2>Step 5: New Session - Demonstrating Memory Recall<a class="headerlink" href="#Step-5:-New-Session---Demonstrating-Memory-Recall" title="Link to this heading"></a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[52]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Agent will previous conversations from previous conversation</span>
+<span class="c1"># Note: The session_id will be different</span>
+<span class="n">start_travel_session</span><span class="p">(</span><span class="s1">&#39;travel_session2&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+🌍 Travel Agent Ready - Session: travel_session2
+Type &#39;q&#39; or &#39;quit&#39; to end the conversation
+
+👤 You:  Hi, it&#39;s Sarah again. I wanted to follow up on our Hawaii trip planning.
+🤖 Travel Agent: Welcome back, Sarah! Let me quickly check my notes from our previous conversations about your Hawaii trip planning.
+Tool #1: opensearch_memory
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="color: #008000; text-decoration-color: #008000">╭──────────────────────────────────────────────── </span><span style="color: #008000; text-decoration-color: #008000; font-weight: bold">Search Results</span><span style="color: #008000; text-decoration-color: #008000"> ─────────────────────────────────────────────────╮</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> <span style="font-style: italic">                             Long term memories                              </span>                                   <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> ┏━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓                                   <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> ┃<span style="color: #800080; text-decoration-color: #800080; font-weight: bold"> Memory ID            </span>┃<span style="color: #800080; text-decoration-color: #800080; font-weight: bold"> Content                                            </span>┃                                   <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> ┡━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩                                   <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> │<span style="color: #008080; text-decoration-color: #008080"> YCvc5poB8SWL6T841dF2 </span>│<span style="color: #808000; text-decoration-color: #808000"> Sarah's 8-year-old child has a severe seafood      </span>│                                   <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> │<span style="color: #008080; text-decoration-color: #008080">                      </span>│<span style="color: #808000; text-decoration-color: #808000"> allergy requiring careful restaurant selection     </span>│                                   <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> │<span style="color: #008080; text-decoration-color: #008080">                      </span>│<span style="color: #808000; text-decoration-color: #808000"> during ...                                         </span>│                                   <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> │<span style="color: #008080; text-decoration-color: #008080"> Wivb5poB8SWL6T84s9FZ </span>│<span style="color: #808000; text-decoration-color: #808000"> Sarah's family consists of 4 members: Sarah, her   </span>│                                   <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> │<span style="color: #008080; text-decoration-color: #008080">                      </span>│<span style="color: #808000; text-decoration-color: #808000"> husband, and two children aged 8 and 12.           </span>│                                   <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> │<span style="color: #008080; text-decoration-color: #008080"> WSvb5poB8SWL6T84s9FZ </span>│<span style="color: #808000; text-decoration-color: #808000"> Client Sarah is planning a 7-day family vacation   </span>│                                   <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> │<span style="color: #008080; text-decoration-color: #008080">                      </span>│<span style="color: #808000; text-decoration-color: #808000"> to Hawaii for summer with a budget of              </span>│                                   <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> │<span style="color: #008080; text-decoration-color: #008080">                      </span>│<span style="color: #808000; text-decoration-color: #808000"> approximately...                                   </span>│                                   <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> │<span style="color: #008080; text-decoration-color: #008080"> Wyvb5poB8SWL6T84s9FZ </span>│<span style="color: #808000; text-decoration-color: #808000"> Sarah's family loves beaches and the children are  </span>│                                   <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> │<span style="color: #008080; text-decoration-color: #008080">                      </span>│<span style="color: #808000; text-decoration-color: #808000"> interested in water sports. The kids have never    </span>│                                   <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> │<span style="color: #008080; text-decoration-color: #008080">                      </span>│<span style="color: #808000; text-decoration-color: #808000"> be...                                              </span>│                                   <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> └──────────────────────┴────────────────────────────────────────────────────┘                                   <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯</span>
+</pre></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Wonderful, Sarah! I have all our previous notes right here. Let me recap what we&#39;ve discussed so far about your Hawaii vacation:
+
+**Your Trip Details:**
+- 📅 **Duration:** 7-day family vacation to Hawaii this summer
+- 💰 **Budget:** Approximately $8,000
+- 👨‍👩‍👧‍👦 **Family:** 4 members - you, your husband, and two children (ages 8 and 12)
+
+**Preferences &amp; Important Notes:**
+- 🏖️ Your family loves beaches
+- 🏄 The kids are interested in water sports
+- 🤿 This will be the children&#39;s **first snorkeling experience** - how exciting!
+- ⚠️ **Critical:** Your 8-year-old has a **severe seafood allergy**, so we need to be very careful with restaurant selections
+
+How can I help you today? Are you ready to start booking, or did you have questions about specific resorts, activities, or dining options that can safely accommodate your child&#39;s allergy?
+
+👤 You:  That&#39;s amazing you remembered everything! Do you have any resort recommendations?
+🤖 Travel Agent: I&#39;m so glad those notes are helpful! Based on your family&#39;s profile, here are my top resort recommendations for your Hawaii trip:
+
+---
+
+## 🌺 Top Family Resort Recommendations
+
+### 1. **Aulani, A Disney Resort &amp; Spa** (Oahu - Ko Olina)
+- **Why it&#39;s perfect for you:** World-class kids&#39; programs for both your 8 and 12-year-old, beautiful lagoon beach perfect for beginner snorkeling, and Disney is renowned for handling food allergies with extreme care
+- **Budget fit:** Mid-to-higher range, but excellent value for families
+- **Highlights:** Private lagoon, water slides, character experiences, dedicated allergy-trained chefs
+
+### 2. **Grand Hyatt Kauai Resort &amp; Spa** (Kauai)
+- **Why it&#39;s perfect for you:** Stunning beach access, saltwater lagoon ideal for first-time snorkelers, excellent kids&#39; camp
+- **Budget fit:** Works well within your $8,000 budget
+- **Highlights:** Multiple pools, nearby Poipu Beach for water sports, restaurants with strong allergen protocols
+
+### 3. **Fairmont Orchid** (Big Island)
+- **Why it&#39;s perfect for you:** Protected snorkeling cove right on property (perfect for beginners!), family-friendly atmosphere, excellent beach activities
+- **Budget fit:** Moderate - can fit your budget especially with a partial stay
+- **Highlights:** On-site snorkeling with sea turtles, water sports equipment rentals, responsive to dietary needs
+
+### 4. **Honua Kai Resort &amp; Spa** (Maui - Kaanapali)
+- **Why it&#39;s perfect for you:** Condo-style suites with full kitchens (great for preparing safe meals for your 8-year-old!), right on the beach, close to snorkeling spots
+- **Budget fit:** Excellent value - having a kitchen can save significantly on dining costs
+- **Highlights:** Multiple pools, near family-friendly Kaanapali Beach, flexibility to cook allergen-safe meals
+
+---
+
+**My top pick for your family:** I&#39;d lean toward **Aulani** or **Honua Kai**. Aulani offers peace of mind with their allergy protocols, while Honua Kai gives you kitchen flexibility and budget savings.
+
+Would you like me to look into specific pricing or availability for any of these? Or do you have a particular Hawaiian island you&#39;re most drawn to?
+
+👤 You:  q
+🤖 Travel Agent: Safe travels! I&#39;ll remember our conversation for next time.
+</pre></div></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../../demo_metrics_correlation.html" class="btn btn-neutral float-left" title="Demo Notebook for Metrics Correlation Model Testing" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../langgraph/demo_fitness_assistant.html" class="btn btn-neutral float-right" title="Fitness Assistant Demo - OpenSearch Agentic Memory with LangGraph" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Opensearch.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

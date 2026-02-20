@@ -6,17 +6,17 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SentenceTransformerModel.train &mdash; Opensearch-py-ml 1.3.0 documentation</title>
+  <title>SentenceTransformerModel.train &mdash; Opensearch-py-ml 1.4.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
-      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=1f29e9d3"></script>
-      <script src="../../_static/doctools.js?v=9bcbadda"></script>
-      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/documentation_options.js?v=9172181d"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -97,105 +97,6 @@
              
   <section id="sentencetransformermodel-train">
 <h1>SentenceTransformerModel.train<a class="headerlink" href="#sentencetransformermodel-train" title="Link to this heading"></a></h1>
-<dl class="py function">
-<dt class="sig sig-object py" id="opensearch_py_ml.ml_models.SentenceTransformerModel.train">
-<span class="sig-prename descclassname"><span class="pre">opensearch_py_ml.ml_models.SentenceTransformerModel.</span></span><span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">read_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zip_file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compute_environment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_machines</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_gpu</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">learning_rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_epochs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">32</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">percentile</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">95</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#opensearch_py_ml.ml_models.SentenceTransformerModel.train" title="Link to this definition"></a></dt>
-<dd><p>Read the synthetic queries and use it to fine tune/train (and save) a sentence transformer model.</p>
-<section id="parameters">
-<h2>Parameters<a class="headerlink" href="#parameters" title="Link to this heading"></a></h2>
-<dl class="field-list simple">
-<dt class="field-odd">param read_path<span class="colon">:</span></dt>
-<dd class="field-odd"><p>required, path to the zipped file that contains generated queries, if None, raise exception.
-the zipped file should contain pickled file in list of dictionary format with key named as ‘query’,
-‘probability’ and ‘passages’. For example: [{‘query’:q1,’probability’: p1,’passages’: pa1}, …].
-‘probability’ is not required for training purpose</p>
-</dd>
-<dt class="field-even">type read_path<span class="colon">:</span></dt>
-<dd class="field-even"><p>string</p>
-</dd>
-<dt class="field-odd">param overwrite<span class="colon">:</span></dt>
-<dd class="field-odd"><p>optional, synthetic_queries/ folder in current directory is to store unzip queries files.
-Default to set overwrite as false and if the folder is not empty, raise exception to recommend users
-to either clean up folder or enable overwriting is True</p>
-</dd>
-<dt class="field-even">type overwrite<span class="colon">:</span></dt>
-<dd class="field-even"><p>bool</p>
-</dd>
-<dt class="field-odd">param output_model_name<span class="colon">:</span></dt>
-<dd class="field-odd"><p>the name of the trained custom model. If None, default as model_id + ‘.pt’</p>
-</dd>
-<dt class="field-even">type output_model_name<span class="colon">:</span></dt>
-<dd class="field-even"><p>string</p>
-</dd>
-<dt class="field-odd">param zip_file_name<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Optional, file name for zip file. if None, default as model_id + ‘.zip’</p>
-</dd>
-<dt class="field-even">type zip_file_name<span class="colon">:</span></dt>
-<dd class="field-even"><p>string</p>
-</dd>
-<dt class="field-odd">param compute_environment<span class="colon">:</span></dt>
-<dd class="field-odd"><p>optional, compute environment type to run model, if None, default using <cite>LOCAL_MACHINE</cite></p>
-</dd>
-<dt class="field-even">type compute_environment<span class="colon">:</span></dt>
-<dd class="field-even"><p>string</p>
-</dd>
-<dt class="field-odd">param num_machines<span class="colon">:</span></dt>
-<dd class="field-odd"><p>optional, number of machine to run model , if None, default using 1</p>
-</dd>
-<dt class="field-even">type num_machines<span class="colon">:</span></dt>
-<dd class="field-even"><p>int</p>
-</dd>
-<dt class="field-odd">param num_gpu<span class="colon">:</span></dt>
-<dd class="field-odd"><p>optional, number of gpus to run model , if None, default to 0. If number of gpus &gt; 1, use HuggingFace
-accelerate to launch distributed training</p>
-</dd>
-<dt class="field-even">param learning_rate<span class="colon">:</span></dt>
-<dd class="field-even"><p>optional, learning rate to train model, default is 2e-5</p>
-</dd>
-<dt class="field-odd">type learning_rate<span class="colon">:</span></dt>
-<dd class="field-odd"><p>float</p>
-</dd>
-<dt class="field-even">param num_epochs<span class="colon">:</span></dt>
-<dd class="field-even"><p>optional, number of epochs to train model, default is 10</p>
-</dd>
-<dt class="field-odd">type num_epochs<span class="colon">:</span></dt>
-<dd class="field-odd"><p>int</p>
-</dd>
-<dt class="field-even">param batch_size<span class="colon">:</span></dt>
-<dd class="field-even"><p>optional, batch size for training, default is 32</p>
-</dd>
-<dt class="field-odd">type batch_size<span class="colon">:</span></dt>
-<dd class="field-odd"><p>int</p>
-</dd>
-<dt class="field-even">param verbose<span class="colon">:</span></dt>
-<dd class="field-even"><p>optional, use plotting to plot the training progress. Default as false</p>
-</dd>
-<dt class="field-odd">type verbose<span class="colon">:</span></dt>
-<dd class="field-odd"><p>bool</p>
-</dd>
-<dt class="field-even">param percentile<span class="colon">:</span></dt>
-<dd class="field-even"><p>we find the max length of {percentile}% of the documents. Default is 95%
-Since this length is measured in terms of words and not tokens we multiply it by 1.4 to approximate the fact
-that 1 word in the english vocabulary roughly translates to 1.3 to 1.5 tokens</p>
-</dd>
-<dt class="field-odd">type percentile<span class="colon">:</span></dt>
-<dd class="field-odd"><p>float</p>
-</dd>
-</dl>
-</section>
-<section id="returns">
-<h2>Returns<a class="headerlink" href="#returns" title="Link to this heading"></a></h2>
-<dl class="field-list simple">
-<dt class="field-odd">return<span class="colon">:</span></dt>
-<dd class="field-odd"><p>no return value expected</p>
-</dd>
-<dt class="field-even">rtype<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-</section>
-</dd></dl>
-
 </section>
 
 
@@ -209,7 +110,7 @@ that 1 word in the english vocabulary roughly translates to 1.3 to 1.5 tokens</p
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2025, Opensearch.</p>
+    <p>&#169; Copyright 2026, Opensearch.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

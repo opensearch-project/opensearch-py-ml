@@ -1,0 +1,1080 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "id": "94f95a57",
+   "metadata": {},
+   "source": [
+    "# Fitness Assistant Demo - OpenSearch Agentic Memory with LangGraph"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "09544c58",
+   "metadata": {},
+   "source": [
+    "## Introduction"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "465b14bd",
+   "metadata": {},
+   "source": [
+    "This notebook demonstrates how to build an intelligent fitness assistant using OpenSearch's agentic memory capabilities integrated with LangGraph. The fitness assistant showcases **long-term memory** functionality, enabling it to remember user preferences, past conversations, and fitness history across multiple sessions."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "c0144909",
+   "metadata": {},
+   "source": [
+    "### Key Features"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "31a78169",
+   "metadata": {},
+   "source": [
+    "- **Persistent Memory**: Remembers user fitness goals, workout preferences, and progress across sessions\n",
+    "- **Semantic Search**: Retrieves relevant memories based on context and meaning\n",
+    "- **Fitness Intelligence**: Provides personalized workout recommendations based on past interactions\n",
+    "- **Session Continuity**: Maintains context even when conversations are resumed later"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "39fe07e8",
+   "metadata": {},
+   "source": [
+    "### What You'll Learn"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "5f012d47",
+   "metadata": {},
+   "source": [
+    "- How to set up OpenSearch agentic memory for long-term storage\n",
+    "- Integration patterns between LangGraph and OpenSearch\n",
+    "- Building conversational AI that learns and remembers user fitness preferences\n",
+    "- Implementing semantic memory retrieval for personalized fitness experiences"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "767062e5",
+   "metadata": {},
+   "source": [
+    "## Prerequisites"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "d66a0728",
+   "metadata": {},
+   "source": [
+    "To use this notebook, you'll need:\n",
+    "- Python 3.10+\n",
+    "- OpenSearch 3.3.2+\n",
+    "- AWS Credentials for Amazon Bedrock access"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "dccd25ab",
+   "metadata": {},
+   "source": [
+    "## Step 1: Install Dependencies and Setup"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "4d64dfa3",
+   "metadata": {},
+   "source": [
+    "Install dependencies:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 59,
+   "id": "71bd19de",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "!pip install -qr ../requirements.txt"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "2186f329",
+   "metadata": {},
+   "source": [
+    "Set OpenSearch domain configuration:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 60,
+   "id": "f83c464d",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "opensearch_url = 'https://localhost:9200'\n",
+    "opensearch_username = 'admin'\n",
+    "opensearch_password = 'your_opensearch_password'\n",
+    "opensearch_verify_ssl = False"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "94368f1d",
+   "metadata": {},
+   "source": [
+    "Set model configuration:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 61,
+   "id": "f6489fff",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "embedding_model_id = ''  # Leave empty to auto-create Amazon Titan Embedding model\n",
+    "llm_model_id = ''        # Leave empty to auto-create Amazon Bedrock Claude model\n",
+    "bedrock_model_id= 'global.anthropic.claude-opus-4-5-20251101-v1:0'     # Modify as needed"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "4d372cc4",
+   "metadata": {},
+   "source": [
+    "Set memory and session configuration:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 62,
+   "id": "2064f4ba",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Modify as needed\n",
+    "memory_container_name = 'fitness_memory'\n",
+    "session_id = 'fitness_session' \n",
+    "user_id = 'fitness_user'\n",
+    "agent_id = 'fitness_agent'"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "73097f87",
+   "metadata": {},
+   "source": [
+    "Set AWS credentials (Required for Amazon Bedrock access):"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 63,
+   "id": "3b1d7943",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import os\n",
+    "\n",
+    "os.environ['AWS_REGION'] = os.getenv('AWS_REGION', 'your_aws_region')\n",
+    "os.environ['AWS_ACCESS_KEY_ID'] = os.getenv('AWS_ACCESS_KEY_ID', 'your_access_key')\n",
+    "os.environ['AWS_SECRET_ACCESS_KEY'] = os.getenv('AWS_SECRET_ACCESS_KEY', 'your_secret_key')\n",
+    "os.environ['AWS_SESSION_TOKEN'] = os.getenv('AWS_SESSION_TOKEN', '')  # Optional"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "ca5821d6",
+   "metadata": {},
+   "source": [
+    "## Step 2: Initialize Memory Provider"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 64,
+   "id": "1de9471d",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Created embedding model with id 'a4WU65oBr_9DzEod77fM'\n",
+      "Created LLM model with id 'bYWU65oBr_9DzEod8LeS'\n",
+      "Created memory container with id 'b4WU65oBr_9DzEod8LfP'\n"
+     ]
+    }
+   ],
+   "source": [
+    "import urllib3\n",
+    "import sys\n",
+    "\n",
+    "sys.path.append('..')\n",
+    "from commons.opensearch_memory_tool import OpenSearchMemoryToolProvider\n",
+    "\n",
+    "urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)\n",
+    "\n",
+    "\n",
+    "memory_provider = OpenSearchMemoryToolProvider(\n",
+    "    cluster_url=opensearch_url,\n",
+    "    username=opensearch_username,\n",
+    "    password=opensearch_password,\n",
+    "    verify_ssl=opensearch_verify_ssl,\n",
+    "    memory_container_name=memory_container_name,\n",
+    "    session_id=session_id,\n",
+    "    agent_id=agent_id,\n",
+    "    user_id=user_id,\n",
+    "    embedding_model_id=embedding_model_id,\n",
+    "    llm_id=llm_model_id\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "d9403bcf",
+   "metadata": {},
+   "source": [
+    "## Step 3: Setup OpenSearch Checkpointer"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 65,
+   "id": "268f80a6-866c-4a72-9568-09fd19376035",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Setting up OpenSearch checkpointer...\n",
+      "✅ Use memory container with ID: b4WU65oBr_9DzEod8LfP\n"
+     ]
+    }
+   ],
+   "source": [
+    "from opensearch_checkpoint_saver import OpenSearchSaver\n",
+    "\n",
+    "print(\"Setting up OpenSearch checkpointer...\")\n",
+    "checkpointer = OpenSearchSaver(\n",
+    "    base_url=opensearch_url,\n",
+    "    memory_container_id=memory_provider.memory.memory_container_id,\n",
+    "    auth=(opensearch_username, opensearch_password),\n",
+    "    verify_ssl=opensearch_verify_ssl,\n",
+    ")\n",
+    "print(f\"✅ Use memory container with ID: {memory_provider.memory.memory_container_id}\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "c31ca587-d334-47d5-a899-ea03c97871cc",
+   "metadata": {},
+   "source": [
+    "## Step 4: Create Chatbot"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 66,
+   "id": "22623829-886e-4e13-a07a-448fb9363946",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Creating chatbot...\n",
+      "✅ Chatbot ready\n"
+     ]
+    }
+   ],
+   "source": [
+    "from langchain_aws import ChatBedrock\n",
+    "from langgraph.graph import StateGraph, MessagesState, START, END\n",
+    "from langgraph.prebuilt import ToolNode\n",
+    "\n",
+    "def create_chatbot(checkpointer, memory_tools):\n",
+    "    \"\"\"Create a minimal chatbot with checkpoint support.\"\"\"\n",
+    "    \n",
+    "    model = ChatBedrock(\n",
+    "        model_id=bedrock_model_id,\n",
+    "        region_name=os.getenv('AWS_REGION'),\n",
+    "        model_kwargs={\"temperature\": 0.7, \"max_tokens\": 1024}\n",
+    "    )\n",
+    "    \n",
+    "    model_with_tools = model.bind_tools(memory_tools)\n",
+    "\n",
+    "    def chat_node(state: MessagesState):\n",
+    "        messages = state[\"messages\"]\n",
+    "        if not any(isinstance(msg, SystemMessage) for msg in messages):\n",
+    "            system_msg = SystemMessage(content=\"\"\"You are a professional fitness coach with access to client memory.\n",
+    "            Always store important client information (fitness goals, workout preferences, injuries, restrictions, progress) using the opensearch_memory tool.\n",
+    "            When clients return, search your memory to provide personalized fitness recommendations and track their progress.\n",
+    "            Focus on safe, effective workouts tailored to each client's fitness level and limitations.\"\"\")\n",
+    "            messages = [system_msg] + messages\n",
+    "        return {\"messages\": [model_with_tools.invoke(messages)]}\n",
+    "\n",
+    "    def should_continue(state: MessagesState):\n",
+    "        messages = state['messages']\n",
+    "        last_message = messages[-1]\n",
+    "        if last_message.tool_calls:\n",
+    "            return \"tools\"\n",
+    "        return END\n",
+    "    \n",
+    "    graph = StateGraph(MessagesState)\n",
+    "    graph.add_node(\"chat\", chat_node)\n",
+    "    graph.add_node(\"tools\", ToolNode(memory_tools))\n",
+    "    \n",
+    "    graph.add_edge(START, \"chat\")\n",
+    "    graph.add_conditional_edges(\"chat\", should_continue)\n",
+    "    graph.add_edge(\"tools\", \"chat\")\n",
+    "    \n",
+    "    return graph.compile(checkpointer=checkpointer)\n",
+    "    \n",
+    "print(\"Creating chatbot...\")\n",
+    "app = create_chatbot(checkpointer, memory_provider.tools)\n",
+    "print(\"✅ Chatbot ready\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "4a39982e-bd19-490d-93d8-e497229e98c1",
+   "metadata": {},
+   "source": [
+    "## Step 5: Create Fitness Agent Assistant with Long-term Memory"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 67,
+   "id": "eb3f2b1c-8d94-4f51-9a76-0de0118104bb",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from datetime import datetime\n",
+    "from langchain_core.messages import HumanMessage, SystemMessage\n",
+    "\n",
+    "def find_existing_thread(container_id: str, user_prefix: str = \"demo_\") -> str:\n",
+    "    \"\"\"Find the most recent thread ID for this user.\"\"\"\n",
+    "    import requests\n",
+    "    \n",
+    "    auth = (opensearch_username, opensearch_password)\n",
+    "    url = f\"{opensearch_url}/_plugins/_ml/memory_containers/{container_id}/memories/working/_search\"\n",
+    "    \n",
+    "    body = {\n",
+    "        \"query\": {\n",
+    "            \"bool\": {\n",
+    "                \"filter\": [\n",
+    "                    {\"term\": {\"payload_type\": \"data\"}},\n",
+    "                    {\"term\": {\"metadata.type\": \"checkpoint\"}},\n",
+    "                    {\"wildcard\": {\"namespace.thread_id\": f\"{user_prefix}*\"}}\n",
+    "                ]\n",
+    "            }\n",
+    "        },\n",
+    "        \"sort\": [{\"checkpoint_id\": {\"order\": \"desc\"}}],\n",
+    "        \"size\": 1\n",
+    "    }\n",
+    "    \n",
+    "    try:\n",
+    "        response = requests.post(url, json=body, auth=auth, verify=opensearch_verify_ssl)\n",
+    "        response.raise_for_status()\n",
+    "        data = response.json()\n",
+    "        \n",
+    "        hits = data.get(\"hits\", {}).get(\"hits\", [])\n",
+    "        if hits:\n",
+    "            return hits[0][\"_source\"][\"namespace\"][\"thread_id\"]\n",
+    "        return None\n",
+    "    except Exception:\n",
+    "        return None\n",
+    "\n",
+    "def send_message(app, thread_id: str, message: str):\n",
+    "    \"\"\"Send a message and return the response.\"\"\"\n",
+    "    config = {\"configurable\": {\"thread_id\": thread_id}}\n",
+    "    result = app.invoke({\"messages\": [HumanMessage(content=message)]}, config)\n",
+    "    return result[\"messages\"][-1].content\n",
+    "\n",
+    "\n",
+    "def get_message_count(app, thread_id: str) -> int:\n",
+    "    \"\"\"Get the number of messages in the conversation.\"\"\"\n",
+    "    config = {\"configurable\": {\"thread_id\": thread_id}}\n",
+    "    state = app.get_state(config)\n",
+    "    if state and state.values:\n",
+    "        return len(state.values.get(\"messages\", []))\n",
+    "    return 0\n",
+    "\n",
+    "def start_fitness_session(session_name):\n",
+    "    \"\"\"Start a fitness agent conversation session\"\"\"\n",
+    "\n",
+    "    # Check for existing threads\n",
+    "    existing_thread = find_existing_thread(memory_provider.memory.memory_container_id)\n",
+    "\n",
+    "    if existing_thread:\n",
+    "        print(f\"Found existing thread: {existing_thread}\")\n",
+    "        choice = input(\"Resume existing conversation? (y/n): \").strip().lower()\n",
+    "        if choice == 'y':\n",
+    "            thread_id = existing_thread\n",
+    "            print(f\"Resuming thread: {thread_id}\")\n",
+    "        else:\n",
+    "            thread_id = f\"demo_{datetime.now().strftime('%Y%m%d_%H%M%S')}\"\n",
+    "            print(f\"Starting new thread: {thread_id}\")\n",
+    "    else:\n",
+    "        thread_id = f\"demo_{datetime.now().strftime('%Y%m%d_%H%M%S')}\"\n",
+    "        print(f\"Starting new thread: {thread_id}\")\n",
+    "\n",
+    "    print(\"💪 Fitness Coach Interactive Demo\")\n",
+    "    print(\"Type 'q' or 'quit' to end the conversation\\n\")\n",
+    "    \n",
+    "    while True:\n",
+    "        question = input(\"👤 You: \").strip()\n",
+    "        \n",
+    "        if question.lower() in ['q', 'quit']:\n",
+    "            print(\"💪 Fitness Agent: Keep up the great work! I'll remember our progress for next time.\")\n",
+    "            \n",
+    "            # Show session summary\n",
+    "            msg_count = get_message_count(app, thread_id)\n",
+    "            print(\"\\n\" + \"=\" * 70)\n",
+    "            print(f\"\\n📊 Session Summary:\")\n",
+    "            print(f\"Thread ID: {thread_id}\")\n",
+    "            print(f\"Total messages: {msg_count}\")\n",
+    "            print(f\"Session ended: {datetime.now()}\")\n",
+    "            break\n",
+    "        \n",
+    "        if not question:\n",
+    "            continue\n",
+    "        \n",
+    "        response = send_message(app, thread_id, question)\n",
+    "        print(f\"💪 Fitness Agent: {response}\")\n",
+    "        print()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "0fc43edd-7684-4c16-995b-d10d8a98dd1b",
+   "metadata": {},
+   "source": [
+    "## Step 6: First Session - Learning User Fitness Preferences and Goals"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 68,
+   "id": "d99c7ffa-7a55-4f66-baf5-2505dd9df26f",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Starting new thread: demo_20251204_145652\n",
+      "💪 Fitness Coach Interactive Demo\n",
+      "Type 'q' or 'quit' to end the conversation\n",
+      "\n"
+     ]
+    },
+    {
+     "name": "stdin",
+     "output_type": "stream",
+     "text": [
+      "👤 You:  Hi, I'm Alex and I want to start getting in shape. I haven't exercised in years.\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "⚠️  No checkpoint found for thread_id=demo_20251204_145652, checkpoint_ns=, checkpoint_id=None\n",
+      "💪 Fitness Agent: Hi Alex! Welcome, and congratulations on taking this first step toward getting in shape – that's a big decision and I'm here to support you every step of the way!\n",
+      "\n",
+      "Before we dive in, let me learn a bit more about you so I can create a safe and effective plan. Since you haven't exercised in years, we'll want to start gradually and build a solid foundation.\n",
+      "\n",
+      "**A few questions to get started:**\n",
+      "\n",
+      "1. **What are your main fitness goals?** (e.g., lose weight, build strength, improve energy/stamina, general health, etc.)\n",
+      "\n",
+      "2. **Do you have any injuries, health conditions, or physical limitations** I should know about? (e.g., back pain, knee issues, high blood pressure, etc.)\n",
+      "\n",
+      "3. **What's your current activity level like?** (desk job, on your feet all day, etc.)\n",
+      "\n",
+      "4. **Do you have access to a gym, or would you prefer home workouts?** Any equipment available?\n",
+      "\n",
+      "5. **How many days per week** do you think you could realistically commit to exercise?\n",
+      "\n",
+      "6. **Are there any types of exercise you enjoy** or have enjoyed in the past? (walking, swimming, cycling, dancing, sports, etc.)\n",
+      "\n",
+      "Take your time answering – the more I know, the better I can tailor a program that works for YOU and sets you up for long-term success! 💪\n",
+      "\n"
+     ]
+    },
+    {
+     "name": "stdin",
+     "output_type": "stream",
+     "text": [
+      "👤 You:  I want to lose about 20 pounds and build some muscle. I have a bad knee from an old sports injury, so I need to be careful with high-impact exercises. I can probably work out 3-4 times per week.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<pre style=\"white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace\"><span style=\"color: #008000; text-decoration-color: #008000\">╭───────────────────── </span><span style=\"color: #008000; text-decoration-color: #008000; font-weight: bold\">Add long-term memory for session fitness_session, agent fitness_agent</span><span style=\"color: #008000; text-decoration-color: #008000\"> ─────────────────────╮</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> New client Alex - Starting fitness journey after years without exercise. Goals: Lose 20 pounds and build        <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> muscle. Has a bad knee from old sports injury - must avoid high-impact exercises. Available to workout 3-4      <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> times per week. Fitness level: Beginner. Start date: January 2025.                                              <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯</span>\n",
+       "</pre>\n"
+      ],
+      "text/plain": [
+       "\u001b[32m╭─\u001b[0m\u001b[32m────────────────────\u001b[0m\u001b[32m \u001b[0m\u001b[1;32mAdd long-term memory for session fitness_session, agent fitness_agent\u001b[0m\u001b[32m \u001b[0m\u001b[32m────────────────────\u001b[0m\u001b[32m─╮\u001b[0m\n",
+       "\u001b[32m│\u001b[0m New client Alex - Starting fitness journey after years without exercise. Goals: Lose 20 pounds and build        \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m muscle. Has a bad knee from old sports injury - must avoid high-impact exercises. Available to workout 3-4      \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m times per week. Fitness level: Beginner. Start date: January 2025.                                              \u001b[32m│\u001b[0m\n",
+       "\u001b[32m╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯\u001b[0m\n"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "text/html": [
+       "<pre style=\"white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace\"><span style=\"color: #008000; text-decoration-color: #008000\">╭───────────────────────────────────────────────── </span><span style=\"color: #008000; text-decoration-color: #008000; font-weight: bold\">Memory Stored</span><span style=\"color: #008000; text-decoration-color: #008000\"> ─────────────────────────────────────────────────╮</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> ✅ Memory stored successfully:                                                                                  <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> 🔑 Memory ID: ioWW65oBr_9DzEodCbdU                                                                              <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯</span>\n",
+       "</pre>\n"
+      ],
+      "text/plain": [
+       "\u001b[32m╭─\u001b[0m\u001b[32m────────────────────────────────────────────────\u001b[0m\u001b[32m \u001b[0m\u001b[1;32mMemory Stored\u001b[0m\u001b[32m \u001b[0m\u001b[32m────────────────────────────────────────────────\u001b[0m\u001b[32m─╮\u001b[0m\n",
+       "\u001b[32m│\u001b[0m ✅ Memory stored successfully:                                                                                  \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m 🔑 Memory ID: ioWW65oBr_9DzEodCbdU                                                                              \u001b[32m│\u001b[0m\n",
+       "\u001b[32m╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯\u001b[0m\n"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "💪 Fitness Agent: I've got all your details saved. Here's what I recommend for your **Beginner Program**:\n",
+      "\n",
+      "---\n",
+      "\n",
+      "## 🏋️ Alex's Starter Plan (3-4 Days/Week)\n",
+      "\n",
+      "### **Workout Structure:**\n",
+      "- **2 Strength Days** (build muscle, boost metabolism)\n",
+      "- **1-2 Cardio Days** (low-impact fat burning)\n",
+      "\n",
+      "### **Knee-Friendly Exercises We'll Focus On:**\n",
+      "\n",
+      "**Strength Training:**\n",
+      "- ✅ Seated or lying leg exercises (leg extensions, hamstring curls)\n",
+      "- ✅ Upper body work (push-ups, rows, shoulder press)\n",
+      "- ✅ Core exercises (planks, dead bugs, bird dogs)\n",
+      "- ✅ Glute bridges & hip thrusts\n",
+      "- ✅ Wall sits (partial range if needed)\n",
+      "\n",
+      "**Low-Impact Cardio:**\n",
+      "- ✅ Swimming or water aerobics (excellent for bad knees!)\n",
+      "- ✅ Stationary cycling\n",
+      "- ✅ Elliptical machine\n",
+      "- ✅ Walking (flat surfaces)\n",
+      "- ✅ Rowing machine\n",
+      "\n",
+      "### **Exercises We'll Avoid/Modify:**\n",
+      "- ❌ Running/jogging\n",
+      "- ❌ Jump squats, box jumps, burpees\n",
+      "- ❌ Deep lunges or full squats (we can do partial range)\n",
+      "- ❌ High-impact aerobics\n",
+      "\n",
+      "---\n",
+      "\n",
+      "### **Quick Questions:**\n",
+      "1. **Do you have gym access** or will you be working out at home?\n",
+      "2. **Any equipment at home?** (dumbbells, resistance bands, etc.)\n",
+      "\n",
+      "Once I know this, I can write out your specific weekly workout schedule! 🎯\n",
+      "\n"
+     ]
+    },
+    {
+     "name": "stdin",
+     "output_type": "stream",
+     "text": [
+      "👤 You:  I have a gym membership that I can use 3-4 times per week. At home, I have a set of adjustable dumbbells (5-50 lbs), resistance bands, and a yoga mat. I also have a pull-up bar in my doorway.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<pre style=\"white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace\"><span style=\"color: #008000; text-decoration-color: #008000\">╭───────────────────── </span><span style=\"color: #008000; text-decoration-color: #008000; font-weight: bold\">Add long-term memory for session fitness_session, agent fitness_agent</span><span style=\"color: #008000; text-decoration-color: #008000\"> ─────────────────────╮</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> Alex has gym membership (can use 3-4 times per week). Home equipment: adjustable dumbbells (5-50 lbs),          <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> resistance bands, yoga mat, and doorway pull-up bar. Great equipment setup for hybrid gym/home training         <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> program.                                                                                                        <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯</span>\n",
+       "</pre>\n"
+      ],
+      "text/plain": [
+       "\u001b[32m╭─\u001b[0m\u001b[32m────────────────────\u001b[0m\u001b[32m \u001b[0m\u001b[1;32mAdd long-term memory for session fitness_session, agent fitness_agent\u001b[0m\u001b[32m \u001b[0m\u001b[32m────────────────────\u001b[0m\u001b[32m─╮\u001b[0m\n",
+       "\u001b[32m│\u001b[0m Alex has gym membership (can use 3-4 times per week). Home equipment: adjustable dumbbells (5-50 lbs),          \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m resistance bands, yoga mat, and doorway pull-up bar. Great equipment setup for hybrid gym/home training         \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m program.                                                                                                        \u001b[32m│\u001b[0m\n",
+       "\u001b[32m╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯\u001b[0m\n"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "text/html": [
+       "<pre style=\"white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace\"><span style=\"color: #008000; text-decoration-color: #008000\">╭───────────────────────────────────────────────── </span><span style=\"color: #008000; text-decoration-color: #008000; font-weight: bold\">Memory Stored</span><span style=\"color: #008000; text-decoration-color: #008000\"> ─────────────────────────────────────────────────╮</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> ✅ Memory stored successfully:                                                                                  <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> 🔑 Memory ID: ooWX65oBr_9DzEodZLeg                                                                              <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯</span>\n",
+       "</pre>\n"
+      ],
+      "text/plain": [
+       "\u001b[32m╭─\u001b[0m\u001b[32m────────────────────────────────────────────────\u001b[0m\u001b[32m \u001b[0m\u001b[1;32mMemory Stored\u001b[0m\u001b[32m \u001b[0m\u001b[32m────────────────────────────────────────────────\u001b[0m\u001b[32m─╮\u001b[0m\n",
+       "\u001b[32m│\u001b[0m ✅ Memory stored successfully:                                                                                  \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m 🔑 Memory ID: ooWX65oBr_9DzEodZLeg                                                                              \u001b[32m│\u001b[0m\n",
+       "\u001b[32m╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯\u001b[0m\n"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "💪 Fitness Agent: Here's your personalized weekly workout plan:\n",
+      "\n",
+      "---\n",
+      "\n",
+      "## 💪 Alex's 4-Week Starter Program\n",
+      "\n",
+      "### **Weekly Schedule:**\n",
+      "\n",
+      "| Day | Workout | Location |\n",
+      "|-----|---------|----------|\n",
+      "| **Day 1** | Upper Body Strength | Gym |\n",
+      "| **Day 2** | Rest or Light Walk | — |\n",
+      "| **Day 3** | Lower Body Strength (Knee-Safe) | Gym |\n",
+      "| **Day 4** | Rest | — |\n",
+      "| **Day 5** | Full Body + Core | Home |\n",
+      "| **Day 6** | Low-Impact Cardio | Gym |\n",
+      "| **Day 7** | Rest | — |\n",
+      "\n",
+      "---\n",
+      "\n",
+      "### **DAY 1: Upper Body (Gym)**\n",
+      "| Exercise | Sets | Reps | Notes |\n",
+      "|----------|------|------|-------|\n",
+      "| Lat Pulldown | 3 | 10-12 | Control the movement |\n",
+      "| Seated Cable Row | 3 | 10-12 | Squeeze shoulder blades |\n",
+      "| Chest Press Machine | 3 | 10-12 | Or dumbbell bench press |\n",
+      "| Seated Shoulder Press | 3 | 10-12 | Dumbbells or machine |\n",
+      "| Bicep Curls | 2 | 12 | Dumbbells |\n",
+      "| Tricep Pushdowns | 2 | 12 | Cable machine |\n",
+      "\n",
+      "---\n",
+      "\n",
+      "### **DAY 3: Lower Body – Knee-Safe (Gym)**\n",
+      "| Exercise | Sets | Reps | Notes |\n",
+      "|----------|------|------|-------|\n",
+      "| Leg Press | 3 | 12 | Partial range, don't go too deep |\n",
+      "| Leg Curl Machine | 3 | 12 | Hamstrings |\n",
+      "| Leg Extension | 3 | 12 | Light weight, control |\n",
+      "| Glute Bridge (weighted) | 3 | 15 | Barbell or dumbbell on hips |\n",
+      "| Calf Raises | 3 | 15 | Seated or standing |\n",
+      "| Seated Hip Abduction | 2 | 15 | Machine |\n",
+      "\n",
+      "---\n",
+      "\n",
+      "### **DAY 5: Full Body + Core (Home)**\n",
+      "| Exercise | Sets | Reps | Notes |\n",
+      "|----------|------|------|-------|\n",
+      "| Goblet Squats | 3 | 10 | Partial depth, protect knee |\n",
+      "| Dumbbell Romanian Deadlift | 3 | 12 | Great for hamstrings/glutes |\n",
+      "| Push-Ups | 3 | 8-12 | On knees if needed |\n",
+      "| Dumbbell Rows | 3 | 10 each | One arm at a time |\n",
+      "| Dead Bugs | 3 | 10 each | Core stability |\n",
+      "| Plank | 3 | 20-30 sec | Build up over time |\n",
+      "| Band Pull-Aparts | 2 | 15 | Posture & shoulders |\n",
+      "\n",
+      "---\n",
+      "\n",
+      "### **DAY 6: Low-Impact Cardio (Gym)**\n",
+      "Choose ONE:\n",
+      "- 🚴 **Stationary Bike:** 25-30 min, moderate pace\n",
+      "- 🏊 **Swimming:** 20-30 min laps or water walking\n",
+      "- 🚣 **Rowing Machine:** 15-20 min intervals\n",
+      "- ⭕ **Elliptical:** 25-30 min\n",
+      "\n",
+      "---\n",
+      "\n",
+      "## 📋 Key Guidelines:\n",
+      "\n",
+      "1. **Start light** – Focus on form first, increase weight gradually\n",
+      "2. **Warm up** – 5 min light cardio before every session\n",
+      "3. **Listen to your knee** – If something hurts, stop and modify\n",
+      "4. **Rest between sets** – 60-90 seconds\n",
+      "5. **Stay hydrated** – Aim for water throughout the day\n",
+      "\n",
+      "---\n",
+      "\n",
+      "### **Ready to Start?**\n",
+      "\n",
+      "Would you like me to:\n",
+      "- 📝 Provide more detail on any specific exercise?\n",
+      "- 🍎 Discuss basic nutrition tips to support your 20 lb weight loss goal?\n",
+      "- 📅 Set a check-in schedule to track your progress?\n",
+      "\n",
+      "Let's get you moving, Alex! 🎯🔥\n",
+      "\n"
+     ]
+    },
+    {
+     "name": "stdin",
+     "output_type": "stream",
+     "text": [
+      "👤 You:  q\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "💪 Fitness Agent: Keep up the great work! I'll remember our progress for next time.\n",
+      "\n",
+      "======================================================================\n",
+      "\n",
+      "📊 Session Summary:\n",
+      "Thread ID: demo_20251204_145652\n",
+      "Total messages: 10\n",
+      "Session ended: 2025-12-04 15:00:05.076484\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Conversation where user shares fitness preferences and goals\n",
+    "start_fitness_session(session_id)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "ea9bca1f-d4b0-4f0e-914c-2330aee973f3",
+   "metadata": {},
+   "source": [
+    "## Step 7: New Session - Demonstrating Memory Recall"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 69,
+   "id": "b7e9ced4-381c-49af-add8-897cc26a9e0d",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Found existing thread: demo_20251204_145652\n"
+     ]
+    },
+    {
+     "name": "stdin",
+     "output_type": "stream",
+     "text": [
+      "Resume existing conversation? (y/n):  n\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Starting new thread: demo_20251204_150036\n",
+      "💪 Fitness Coach Interactive Demo\n",
+      "Type 'q' or 'quit' to end the conversation\n",
+      "\n"
+     ]
+    },
+    {
+     "name": "stdin",
+     "output_type": "stream",
+     "text": [
+      "👤 You:  Hi, it's Alex again. I wanted to check in about my workout plan.\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "⚠️  No checkpoint found for thread_id=demo_20251204_150036, checkpoint_ns=, checkpoint_id=None\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<pre style=\"white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace\"><span style=\"color: #008000; text-decoration-color: #008000\">╭──────────────────────────────────────────────── </span><span style=\"color: #008000; text-decoration-color: #008000; font-weight: bold\">Search Results</span><span style=\"color: #008000; text-decoration-color: #008000\"> ─────────────────────────────────────────────────╮</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> <span style=\"font-style: italic\">                             Long term memories                              </span>                                   <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> ┏━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓                                   <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> ┃<span style=\"color: #800080; text-decoration-color: #800080; font-weight: bold\"> Memory ID            </span>┃<span style=\"color: #800080; text-decoration-color: #800080; font-weight: bold\"> Content                                            </span>┃                                   <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> ┡━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩                                   <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> │<span style=\"color: #008080; text-decoration-color: #008080\"> p4WX65oBr_9DzEodjrdQ </span>│<span style=\"color: #808000; text-decoration-color: #808000\"> Alex has home equipment including adjustable       </span>│                                   <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> │<span style=\"color: #008080; text-decoration-color: #008080\">                      </span>│<span style=\"color: #808000; text-decoration-color: #808000\"> dumbbells (5-50 lbs), resistance bands, a yoga     </span>│                                   <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> │<span style=\"color: #008080; text-decoration-color: #008080\">                      </span>│<span style=\"color: #808000; text-decoration-color: #808000\"> mat, and...                                        </span>│                                   <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> │<span style=\"color: #008080; text-decoration-color: #008080\"> kIWW65oBr_9DzEodHbfl </span>│<span style=\"color: #808000; text-decoration-color: #808000\"> New client Alex is starting a fitness journey      </span>│                                   <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> │<span style=\"color: #008080; text-decoration-color: #008080\">                      </span>│<span style=\"color: #808000; text-decoration-color: #808000\"> after years without exercise in January 2025.      </span>│                                   <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> │<span style=\"color: #008080; text-decoration-color: #008080\"> kYWW65oBr_9DzEodHbfl </span>│<span style=\"color: #808000; text-decoration-color: #808000\"> Alex's fitness goals are to lose 20 pounds and     </span>│                                   <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> │<span style=\"color: #008080; text-decoration-color: #008080\">                      </span>│<span style=\"color: #808000; text-decoration-color: #808000\"> build muscle.                                      </span>│                                   <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> │<span style=\"color: #008080; text-decoration-color: #008080\"> koWW65oBr_9DzEodHbfl </span>│<span style=\"color: #808000; text-decoration-color: #808000\"> Alex has a bad knee from an old sports injury and  </span>│                                   <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> │<span style=\"color: #008080; text-decoration-color: #008080\">                      </span>│<span style=\"color: #808000; text-decoration-color: #808000\"> must avoid high-impact exercises.                  </span>│                                   <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> │<span style=\"color: #008080; text-decoration-color: #008080\"> lIWW65oBr_9DzEodHbfl </span>│<span style=\"color: #808000; text-decoration-color: #808000\"> Alex's fitness level is beginner.                  </span>│                                   <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> │<span style=\"color: #008080; text-decoration-color: #008080\"> k4WW65oBr_9DzEodHbfl </span>│<span style=\"color: #808000; text-decoration-color: #808000\"> Alex has a gym membership and is available to      </span>│                                   <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> │<span style=\"color: #008080; text-decoration-color: #008080\">                      </span>│<span style=\"color: #808000; text-decoration-color: #808000\"> workout 3-4 times per week, suitable for a hybrid  </span>│                                   <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> │<span style=\"color: #008080; text-decoration-color: #008080\">                      </span>│<span style=\"color: #808000; text-decoration-color: #808000\"> gym ...                                            </span>│                                   <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> └──────────────────────┴────────────────────────────────────────────────────┘                                   <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯</span>\n",
+       "</pre>\n"
+      ],
+      "text/plain": [
+       "\u001b[32m╭─\u001b[0m\u001b[32m───────────────────────────────────────────────\u001b[0m\u001b[32m \u001b[0m\u001b[1;32mSearch Results\u001b[0m\u001b[32m \u001b[0m\u001b[32m────────────────────────────────────────────────\u001b[0m\u001b[32m─╮\u001b[0m\n",
+       "\u001b[32m│\u001b[0m \u001b[3m                             Long term memories                              \u001b[0m                                   \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m ┏━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓                                   \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m ┃\u001b[1;35m \u001b[0m\u001b[1;35mMemory ID           \u001b[0m\u001b[1;35m \u001b[0m┃\u001b[1;35m \u001b[0m\u001b[1;35mContent                                           \u001b[0m\u001b[1;35m \u001b[0m┃                                   \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m ┡━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩                                   \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m │\u001b[36m \u001b[0m\u001b[36mp4WX65oBr_9DzEodjrdQ\u001b[0m\u001b[36m \u001b[0m│\u001b[33m \u001b[0m\u001b[33mAlex has home equipment including adjustable      \u001b[0m\u001b[33m \u001b[0m│                                   \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m │\u001b[36m                      \u001b[0m│\u001b[33m \u001b[0m\u001b[33mdumbbells (5-50 lbs), resistance bands, a yoga    \u001b[0m\u001b[33m \u001b[0m│                                   \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m │\u001b[36m                      \u001b[0m│\u001b[33m \u001b[0m\u001b[33mmat, and...                                       \u001b[0m\u001b[33m \u001b[0m│                                   \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m │\u001b[36m \u001b[0m\u001b[36mkIWW65oBr_9DzEodHbfl\u001b[0m\u001b[36m \u001b[0m│\u001b[33m \u001b[0m\u001b[33mNew client Alex is starting a fitness journey     \u001b[0m\u001b[33m \u001b[0m│                                   \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m │\u001b[36m                      \u001b[0m│\u001b[33m \u001b[0m\u001b[33mafter years without exercise in January 2025.     \u001b[0m\u001b[33m \u001b[0m│                                   \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m │\u001b[36m \u001b[0m\u001b[36mkYWW65oBr_9DzEodHbfl\u001b[0m\u001b[36m \u001b[0m│\u001b[33m \u001b[0m\u001b[33mAlex's fitness goals are to lose 20 pounds and    \u001b[0m\u001b[33m \u001b[0m│                                   \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m │\u001b[36m                      \u001b[0m│\u001b[33m \u001b[0m\u001b[33mbuild muscle.                                     \u001b[0m\u001b[33m \u001b[0m│                                   \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m │\u001b[36m \u001b[0m\u001b[36mkoWW65oBr_9DzEodHbfl\u001b[0m\u001b[36m \u001b[0m│\u001b[33m \u001b[0m\u001b[33mAlex has a bad knee from an old sports injury and \u001b[0m\u001b[33m \u001b[0m│                                   \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m │\u001b[36m                      \u001b[0m│\u001b[33m \u001b[0m\u001b[33mmust avoid high-impact exercises.                 \u001b[0m\u001b[33m \u001b[0m│                                   \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m │\u001b[36m \u001b[0m\u001b[36mlIWW65oBr_9DzEodHbfl\u001b[0m\u001b[36m \u001b[0m│\u001b[33m \u001b[0m\u001b[33mAlex's fitness level is beginner.                 \u001b[0m\u001b[33m \u001b[0m│                                   \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m │\u001b[36m \u001b[0m\u001b[36mk4WW65oBr_9DzEodHbfl\u001b[0m\u001b[36m \u001b[0m│\u001b[33m \u001b[0m\u001b[33mAlex has a gym membership and is available to     \u001b[0m\u001b[33m \u001b[0m│                                   \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m │\u001b[36m                      \u001b[0m│\u001b[33m \u001b[0m\u001b[33mworkout 3-4 times per week, suitable for a hybrid \u001b[0m\u001b[33m \u001b[0m│                                   \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m │\u001b[36m                      \u001b[0m│\u001b[33m \u001b[0m\u001b[33mgym ...                                           \u001b[0m\u001b[33m \u001b[0m│                                   \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m └──────────────────────┴────────────────────────────────────────────────────┘                                   \u001b[32m│\u001b[0m\n",
+       "\u001b[32m╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯\u001b[0m\n"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "💪 Fitness Agent: Welcome back, Alex! I found all your information. Here's what I have on file:\n",
+      "\n",
+      "**Your Profile:**\n",
+      "- 🎯 **Goals:** Lose 20 pounds and build muscle\n",
+      "- 📅 **Started:** January 2025 (returning after years without exercise)\n",
+      "- 💪 **Fitness Level:** Beginner\n",
+      "- ⚠️ **Injury:** Bad knee from an old sports injury - must avoid high-impact exercises\n",
+      "- 🏋️ **Availability:** 3-4 times per week\n",
+      "- 🏠 **Equipment:** \n",
+      "  - Gym membership\n",
+      "  - Home equipment: adjustable dumbbells (5-50 lbs), resistance bands, yoga mat, and doorway pull-up bar\n",
+      "  - Following a hybrid gym/home training program\n",
+      "\n",
+      "How can I help you today? Are you looking to:\n",
+      "1. **Review or adjust your current workout plan?**\n",
+      "2. **Track progress** on your weight loss or muscle-building goals?\n",
+      "3. **Get new exercises** that are knee-safe?\n",
+      "4. **Discuss any challenges** you've been facing?\n",
+      "5. **Something else?**\n",
+      "\n",
+      "Let me know what's on your mind!\n",
+      "\n"
+     ]
+    },
+    {
+     "name": "stdin",
+     "output_type": "stream",
+     "text": [
+      "👤 You:  My knee feels fine with the gym machines. Can we add some cardio that won't hurt my knee?\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "💪 Fitness Agent: That's great news that your knee is feeling good with the gym machines! That's a really positive sign of progress.\n",
+      "\n",
+      "Absolutely, let's add some knee-friendly cardio options for you. Here are my top recommendations:\n",
+      "\n",
+      "## Knee-Safe Cardio Options 🫀\n",
+      "\n",
+      "### At the Gym:\n",
+      "1. **Stationary Bike (Recumbent or Upright)** - Excellent choice! Low impact and you control the resistance. Start with 15-20 minutes.\n",
+      "\n",
+      "2. **Elliptical Machine** - Smooth, gliding motion that's easy on joints. Keep resistance moderate to start.\n",
+      "\n",
+      "3. **Rowing Machine** - Great full-body cardio that's gentle on knees. Focus on pushing through your heels, not pulling with your knees.\n",
+      "\n",
+      "4. **Swimming/Water Aerobics** - If your gym has a pool, this is the ultimate zero-impact cardio!\n",
+      "\n",
+      "### At Home:\n",
+      "1. **Seated Cardio** - Arm cycling movements, seated punches, seated marching\n",
+      "2. **Standing Low-Impact Moves** - Step touches, lateral shuffles, marching in place (no jumping!)\n",
+      "\n",
+      "## My Recommendation for You:\n",
+      "As a beginner, I'd suggest starting with **2 cardio sessions per week, 15-20 minutes each**. The stationary bike or elliptical would be perfect to start.\n",
+      "\n",
+      "**⚠️ Avoid:** Running, jumping jacks, burpees, stair climbers, and any high-impact jumping movements.\n",
+      "\n",
+      "Would you like me to save this cardio plan to your profile? Also, how many days per week would you like to dedicate to cardio specifically?\n",
+      "\n"
+     ]
+    },
+    {
+     "name": "stdin",
+     "output_type": "stream",
+     "text": [
+      "👤 You:  Yes, please save that cardio plan! I think 2 days per week is perfect to start with. I'd prefer to do cardio on my non-gym days, so maybe Tuesday and Friday?\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<pre style=\"white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace\"><span style=\"color: #008000; text-decoration-color: #008000\">╭───────────────────── </span><span style=\"color: #008000; text-decoration-color: #008000; font-weight: bold\">Add long-term memory for session fitness_session, agent fitness_agent</span><span style=\"color: #008000; text-decoration-color: #008000\"> ─────────────────────╮</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> Alex added knee-safe cardio to workout plan: 2 sessions per week on Tuesdays and Fridays (non-gym days).        <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> Preferred cardio options include stationary bike, elliptical, rowing machine, and swimming at gym. Home options <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> include seated cardio and low-impact standing moves. Avoiding high-impact cardio like running, jumping jacks,   <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> burpees, and stair climbers. Knee is feeling fine with gym machines.                                            <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯</span>\n",
+       "</pre>\n"
+      ],
+      "text/plain": [
+       "\u001b[32m╭─\u001b[0m\u001b[32m────────────────────\u001b[0m\u001b[32m \u001b[0m\u001b[1;32mAdd long-term memory for session fitness_session, agent fitness_agent\u001b[0m\u001b[32m \u001b[0m\u001b[32m────────────────────\u001b[0m\u001b[32m─╮\u001b[0m\n",
+       "\u001b[32m│\u001b[0m Alex added knee-safe cardio to workout plan: 2 sessions per week on Tuesdays and Fridays (non-gym days).        \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m Preferred cardio options include stationary bike, elliptical, rowing machine, and swimming at gym. Home options \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m include seated cardio and low-impact standing moves. Avoiding high-impact cardio like running, jumping jacks,   \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m burpees, and stair climbers. Knee is feeling fine with gym machines.                                            \u001b[32m│\u001b[0m\n",
+       "\u001b[32m╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯\u001b[0m\n"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "text/html": [
+       "<pre style=\"white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace\"><span style=\"color: #008000; text-decoration-color: #008000\">╭───────────────────────────────────────────────── </span><span style=\"color: #008000; text-decoration-color: #008000; font-weight: bold\">Memory Stored</span><span style=\"color: #008000; text-decoration-color: #008000\"> ─────────────────────────────────────────────────╮</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> ✅ Memory stored successfully:                                                                                  <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> 🔑 Memory ID: xIWa65oBr_9DzEodiLcn                                                                              <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯</span>\n",
+       "</pre>\n"
+      ],
+      "text/plain": [
+       "\u001b[32m╭─\u001b[0m\u001b[32m────────────────────────────────────────────────\u001b[0m\u001b[32m \u001b[0m\u001b[1;32mMemory Stored\u001b[0m\u001b[32m \u001b[0m\u001b[32m────────────────────────────────────────────────\u001b[0m\u001b[32m─╮\u001b[0m\n",
+       "\u001b[32m│\u001b[0m ✅ Memory stored successfully:                                                                                  \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m 🔑 Memory ID: xIWa65oBr_9DzEodiLcn                                                                              \u001b[32m│\u001b[0m\n",
+       "\u001b[32m╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯\u001b[0m\n"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "💪 Fitness Agent: I've saved your cardio plan to your profile. Here's your updated schedule:\n",
+      "\n",
+      "## Alex's Weekly Workout Schedule 📅\n",
+      "\n",
+      "| Day | Workout |\n",
+      "|-----|---------|\n",
+      "| **Monday** | Gym - Strength Training |\n",
+      "| **Tuesday** | 🫀 **Cardio Day** (15-20 min) |\n",
+      "| **Wednesday** | Gym - Strength Training |\n",
+      "| **Thursday** | Rest / Light Stretching |\n",
+      "| **Friday** | 🫀 **Cardio Day** (15-20 min) |\n",
+      "| **Saturday** | Gym or Home Strength (optional 3rd/4th session) |\n",
+      "| **Sunday** | Rest |\n",
+      "\n",
+      "## Your Tuesday & Friday Cardio Sessions:\n",
+      "**Choose one:**\n",
+      "- 🚴 Stationary bike - 15-20 min\n",
+      "- 🏊 Swimming - 15-20 min\n",
+      "- 🚣 Rowing machine - 15-20 min\n",
+      "- 🏠 Home: Seated/low-impact cardio - 15-20 min\n",
+      "\n",
+      "**Tip:** Start at a comfortable pace where you can still hold a conversation. As your endurance builds over the next few weeks, we can gradually increase duration to 25-30 minutes.\n",
+      "\n",
+      "This is a smart approach, Alex! Separating cardio and strength days gives your muscles time to recover while still keeping you active. Plus, it's sustainable for a beginner schedule.\n",
+      "\n",
+      "How has your strength training been going so far? Any exercises you're loving or struggling with?\n",
+      "\n"
+     ]
+    },
+    {
+     "name": "stdin",
+     "output_type": "stream",
+     "text": [
+      "👤 You:  q\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "💪 Fitness Agent: Keep up the great work! I'll remember our progress for next time.\n",
+      "\n",
+      "======================================================================\n",
+      "\n",
+      "📊 Session Summary:\n",
+      "Thread ID: demo_20251204_150036\n",
+      "Total messages: 10\n",
+      "Session ended: 2025-12-04 15:02:59.678901\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Agent will previous conversations from previous conversation\n",
+    "# Note: The session_id will be different\n",
+    "start_fitness_session('fitness_session1')"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.13.2"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}

@@ -6,17 +6,17 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>csv_to_opensearch &mdash; Opensearch-py-ml 1.3.0 documentation</title>
+  <title>csv_to_opensearch &mdash; Opensearch-py-ml 1.4.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
-      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=1f29e9d3"></script>
-      <script src="../../_static/doctools.js?v=9bcbadda"></script>
-      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/documentation_options.js?v=9172181d"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -140,9 +140,9 @@ os_dest_index: str</p>
 <section id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Link to this heading"></a></h2>
 <p>See if ‘churn’ index exists in OpenSearch</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">opensearchpy</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpenSearch</span> 
-<span class="gp">&gt;&gt;&gt; </span><span class="n">osclient</span> <span class="o">=</span> <span class="n">OpenSearch</span><span class="p">()</span> 
-<span class="gp">&gt;&gt;&gt; </span><span class="n">osclient</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s2">&quot;churn&quot;</span><span class="p">)</span> 
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">opensearchpy</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpenSearch</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">osclient</span> <span class="o">=</span> <span class="n">OpenSearch</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">osclient</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s2">&quot;churn&quot;</span><span class="p">)</span>
 <span class="go">False</span>
 </pre></div>
 </div>
@@ -160,7 +160,7 @@ os_dest_index: str</p>
 <span class="gp">... </span>     <span class="n">os_dest_index</span><span class="o">=</span><span class="s1">&#39;churn&#39;</span><span class="p">,</span>
 <span class="gp">... </span>     <span class="n">os_refresh</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="gp">... </span>     <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span>
-<span class="gp">... </span><span class="p">)</span> 
+<span class="gp">... </span><span class="p">)</span>
 <span class="go">          account length  area code  churn  customer service calls  ... total night calls  total night charge total night minutes voice mail plan</span>
 <span class="go">0                128        415      0                       1  ...                91               11.01               244.7             yes</span>
 <span class="go">1                107        415      0                       1  ...               103               11.45               254.4             yes</span>
@@ -178,7 +178,7 @@ os_dest_index: str</p>
 </pre></div>
 </div>
 <p>Validate data now exists in ‘churn’ index:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">oml</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s2">&quot;churn&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> 
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">oml</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s2">&quot;churn&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="go">{&#39;took&#39;: 1, &#39;timed_out&#39;: False, &#39;_shards&#39;: {&#39;total&#39;: 1, &#39;successful&#39;: 1, &#39;skipped&#39;: 0, &#39;failed&#39;: 0}, &#39;hits&#39;: {&#39;total&#39;: {&#39;value&#39;: 3333, &#39;relation&#39;: &#39;eq&#39;}, &#39;max_score&#39;: 1.0, &#39;hits&#39;: [{&#39;_index&#39;: &#39;churn&#39;, &#39;_id&#39;: &#39;0&#39;, &#39;_score&#39;: 1.0, &#39;_source&#39;: {&#39;state&#39;: &#39;KS&#39;, &#39;account length&#39;: 128, &#39;area code&#39;: 415, &#39;phone number&#39;: &#39;382-4657&#39;, &#39;international plan&#39;: &#39;no&#39;, &#39;voice mail plan&#39;: &#39;yes&#39;, &#39;number vmail messages&#39;: 25, &#39;total day minutes&#39;: 265.1, &#39;total day calls&#39;: 110, &#39;total day charge&#39;: 45.07, &#39;total eve minutes&#39;: 197.4, &#39;total eve calls&#39;: 99, &#39;total eve charge&#39;: 16.78, &#39;total night minutes&#39;: 244.7, &#39;total night calls&#39;: 91, &#39;total night charge&#39;: 11.01, &#39;total intl minutes&#39;: 10.0, &#39;total intl calls&#39;: 3, &#39;total intl charge&#39;: 2.7, &#39;customer service calls&#39;: 1, &#39;churn&#39;: 0}}]}}</span>
 </pre></div>
 </div>
@@ -199,7 +199,7 @@ os_dest_index: str</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2025, Opensearch.</p>
+    <p>&#169; Copyright 2026, Opensearch.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

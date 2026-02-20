@@ -1,0 +1,988 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fitness Assistant Demo - OpenSearch Agentic Memory with LangGraph &mdash; Opensearch-py-ml 1.4.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/plot_directive.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=9172181d"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Command Line Interface (CLI)" href="../../../cli/index.html" />
+    <link rel="prev" title="Travel Assistant Demo - OpenSearch Agentic Memory with Strands Agent" href="../strands/demo_travel_assistant.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Opensearch-py-ml
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/index.html">API Reference</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../index.html#demo-notebooks-for-data-exploration-panda-like-dataframe">Demo notebooks for Data Exploration Panda like DataFrame</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../index.html#demo-notebooks-for-model-training-and-tracing">Demo notebooks for Model Training and Tracing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../index.html#demo-notebooks-for-ml-commons-plugin-integration">Demo notebooks for ML Commons plugin integration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../index.html#demo-notebooks-for-in-house-python-based-models">Demo Notebooks for In-house python based models</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../../index.html#demo-notebooks-for-agentic-memory">Demo Notebooks for Agentic Memory</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../strands/demo_travel_assistant.html">Travel Assistant Demo - OpenSearch Agentic Memory with Strands Agent</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Fitness Assistant Demo - OpenSearch Agentic Memory with LangGraph</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Introduction">Introduction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Prerequisites">Prerequisites</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Step-1:-Install-Dependencies-and-Setup">Step 1: Install Dependencies and Setup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Step-2:-Initialize-Memory-Provider">Step 2: Initialize Memory Provider</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Step-3:-Setup-OpenSearch-Checkpointer">Step 3: Setup OpenSearch Checkpointer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Step-4:-Create-Chatbot">Step 4: Create Chatbot</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Step-5:-Create-Fitness-Agent-Assistant-with-Long-term-Memory">Step 5: Create Fitness Agent Assistant with Long-term Memory</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Step-6:-First-Session---Learning-User-Fitness-Preferences-and-Goals">Step 6: First Session - Learning User Fitness Preferences and Goals</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#Step-7:-New-Session---Demonstrating-Memory-Recall">Step 7: New Session - Demonstrating Memory Recall</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../cli/index.html">Command Line Interface (CLI)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/pre_trained_models.html">Pre-trained models</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Opensearch-py-ml</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Examples</a></li>
+      <li class="breadcrumb-item active">Fitness Assistant Demo - OpenSearch Agentic Memory with LangGraph</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/examples/agentic_memory/langgraph/demo_fitness_assistant.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Fitness-Assistant-Demo---OpenSearch-Agentic-Memory-with-LangGraph">
+<h1>Fitness Assistant Demo - OpenSearch Agentic Memory with LangGraph<a class="headerlink" href="#Fitness-Assistant-Demo---OpenSearch-Agentic-Memory-with-LangGraph" title="Link to this heading"></a></h1>
+<section id="Introduction">
+<h2>Introduction<a class="headerlink" href="#Introduction" title="Link to this heading"></a></h2>
+<p>This notebook demonstrates how to build an intelligent fitness assistant using OpenSearch’s agentic memory capabilities integrated with LangGraph. The fitness assistant showcases <strong>long-term memory</strong> functionality, enabling it to remember user preferences, past conversations, and fitness history across multiple sessions.</p>
+<section id="Key-Features">
+<h3>Key Features<a class="headerlink" href="#Key-Features" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Persistent Memory</strong>: Remembers user fitness goals, workout preferences, and progress across sessions</p></li>
+<li><p><strong>Semantic Search</strong>: Retrieves relevant memories based on context and meaning</p></li>
+<li><p><strong>Fitness Intelligence</strong>: Provides personalized workout recommendations based on past interactions</p></li>
+<li><p><strong>Session Continuity</strong>: Maintains context even when conversations are resumed later</p></li>
+</ul>
+</section>
+<section id="What-You'll-Learn">
+<h3>What You’ll Learn<a class="headerlink" href="#What-You'll-Learn" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>How to set up OpenSearch agentic memory for long-term storage</p></li>
+<li><p>Integration patterns between LangGraph and OpenSearch</p></li>
+<li><p>Building conversational AI that learns and remembers user fitness preferences</p></li>
+<li><p>Implementing semantic memory retrieval for personalized fitness experiences</p></li>
+</ul>
+</section>
+</section>
+<section id="Prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#Prerequisites" title="Link to this heading"></a></h2>
+<p>To use this notebook, you’ll need:</p>
+<ul class="simple">
+<li><p>Python 3.10+</p></li>
+<li><p>OpenSearch 3.3.2+</p></li>
+<li><p>AWS Credentials for Amazon Bedrock access</p></li>
+</ul>
+</section>
+<section id="Step-1:-Install-Dependencies-and-Setup">
+<h2>Step 1: Install Dependencies and Setup<a class="headerlink" href="#Step-1:-Install-Dependencies-and-Setup" title="Link to this heading"></a></h2>
+<p>Install dependencies:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[59]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>pip<span class="w"> </span>install<span class="w"> </span>-qr<span class="w"> </span>../requirements.txt
+</pre></div>
+</div>
+</div>
+<p>Set OpenSearch domain configuration:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[60]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">opensearch_url</span> <span class="o">=</span> <span class="s1">&#39;https://localhost:9200&#39;</span>
+<span class="n">opensearch_username</span> <span class="o">=</span> <span class="s1">&#39;admin&#39;</span>
+<span class="n">opensearch_password</span> <span class="o">=</span> <span class="s1">&#39;your_opensearch_password&#39;</span>
+<span class="n">opensearch_verify_ssl</span> <span class="o">=</span> <span class="kc">False</span>
+</pre></div>
+</div>
+</div>
+<p>Set model configuration:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[61]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">embedding_model_id</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>  <span class="c1"># Leave empty to auto-create Amazon Titan Embedding model</span>
+<span class="n">llm_model_id</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>        <span class="c1"># Leave empty to auto-create Amazon Bedrock Claude model</span>
+<span class="n">bedrock_model_id</span><span class="o">=</span> <span class="s1">&#39;global.anthropic.claude-opus-4-5-20251101-v1:0&#39;</span>     <span class="c1"># Modify as needed</span>
+</pre></div>
+</div>
+</div>
+<p>Set memory and session configuration:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[62]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Modify as needed</span>
+<span class="n">memory_container_name</span> <span class="o">=</span> <span class="s1">&#39;fitness_memory&#39;</span>
+<span class="n">session_id</span> <span class="o">=</span> <span class="s1">&#39;fitness_session&#39;</span>
+<span class="n">user_id</span> <span class="o">=</span> <span class="s1">&#39;fitness_user&#39;</span>
+<span class="n">agent_id</span> <span class="o">=</span> <span class="s1">&#39;fitness_agent&#39;</span>
+</pre></div>
+</div>
+</div>
+<p>Set AWS credentials (Required for Amazon Bedrock access):</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[63]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;AWS_REGION&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s1">&#39;AWS_REGION&#39;</span><span class="p">,</span> <span class="s1">&#39;your_aws_region&#39;</span><span class="p">)</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;AWS_ACCESS_KEY_ID&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s1">&#39;AWS_ACCESS_KEY_ID&#39;</span><span class="p">,</span> <span class="s1">&#39;your_access_key&#39;</span><span class="p">)</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;AWS_SECRET_ACCESS_KEY&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s1">&#39;AWS_SECRET_ACCESS_KEY&#39;</span><span class="p">,</span> <span class="s1">&#39;your_secret_key&#39;</span><span class="p">)</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;AWS_SESSION_TOKEN&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s1">&#39;AWS_SESSION_TOKEN&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>  <span class="c1"># Optional</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Step-2:-Initialize-Memory-Provider">
+<h2>Step 2: Initialize Memory Provider<a class="headerlink" href="#Step-2:-Initialize-Memory-Provider" title="Link to this heading"></a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[64]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">urllib3</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;..&#39;</span><span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">commons.opensearch_memory_tool</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpenSearchMemoryToolProvider</span>
+
+<span class="n">urllib3</span><span class="o">.</span><span class="n">disable_warnings</span><span class="p">(</span><span class="n">urllib3</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">InsecureRequestWarning</span><span class="p">)</span>
+
+
+<span class="n">memory_provider</span> <span class="o">=</span> <span class="n">OpenSearchMemoryToolProvider</span><span class="p">(</span>
+    <span class="n">cluster_url</span><span class="o">=</span><span class="n">opensearch_url</span><span class="p">,</span>
+    <span class="n">username</span><span class="o">=</span><span class="n">opensearch_username</span><span class="p">,</span>
+    <span class="n">password</span><span class="o">=</span><span class="n">opensearch_password</span><span class="p">,</span>
+    <span class="n">verify_ssl</span><span class="o">=</span><span class="n">opensearch_verify_ssl</span><span class="p">,</span>
+    <span class="n">memory_container_name</span><span class="o">=</span><span class="n">memory_container_name</span><span class="p">,</span>
+    <span class="n">session_id</span><span class="o">=</span><span class="n">session_id</span><span class="p">,</span>
+    <span class="n">agent_id</span><span class="o">=</span><span class="n">agent_id</span><span class="p">,</span>
+    <span class="n">user_id</span><span class="o">=</span><span class="n">user_id</span><span class="p">,</span>
+    <span class="n">embedding_model_id</span><span class="o">=</span><span class="n">embedding_model_id</span><span class="p">,</span>
+    <span class="n">llm_id</span><span class="o">=</span><span class="n">llm_model_id</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Created embedding model with id &#39;a4WU65oBr_9DzEod77fM&#39;
+Created LLM model with id &#39;bYWU65oBr_9DzEod8LeS&#39;
+Created memory container with id &#39;b4WU65oBr_9DzEod8LfP&#39;
+</pre></div></div>
+</div>
+</section>
+<section id="Step-3:-Setup-OpenSearch-Checkpointer">
+<h2>Step 3: Setup OpenSearch Checkpointer<a class="headerlink" href="#Step-3:-Setup-OpenSearch-Checkpointer" title="Link to this heading"></a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[65]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">opensearch_checkpoint_saver</span><span class="w"> </span><span class="kn">import</span> <span class="n">OpenSearchSaver</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Setting up OpenSearch checkpointer...&quot;</span><span class="p">)</span>
+<span class="n">checkpointer</span> <span class="o">=</span> <span class="n">OpenSearchSaver</span><span class="p">(</span>
+    <span class="n">base_url</span><span class="o">=</span><span class="n">opensearch_url</span><span class="p">,</span>
+    <span class="n">memory_container_id</span><span class="o">=</span><span class="n">memory_provider</span><span class="o">.</span><span class="n">memory</span><span class="o">.</span><span class="n">memory_container_id</span><span class="p">,</span>
+    <span class="n">auth</span><span class="o">=</span><span class="p">(</span><span class="n">opensearch_username</span><span class="p">,</span> <span class="n">opensearch_password</span><span class="p">),</span>
+    <span class="n">verify_ssl</span><span class="o">=</span><span class="n">opensearch_verify_ssl</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;✅ Use memory container with ID: </span><span class="si">{</span><span class="n">memory_provider</span><span class="o">.</span><span class="n">memory</span><span class="o">.</span><span class="n">memory_container_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Setting up OpenSearch checkpointer...
+✅ Use memory container with ID: b4WU65oBr_9DzEod8LfP
+</pre></div></div>
+</div>
+</section>
+<section id="Step-4:-Create-Chatbot">
+<h2>Step 4: Create Chatbot<a class="headerlink" href="#Step-4:-Create-Chatbot" title="Link to this heading"></a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[66]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">langchain_aws</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChatBedrock</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">langgraph.graph</span><span class="w"> </span><span class="kn">import</span> <span class="n">StateGraph</span><span class="p">,</span> <span class="n">MessagesState</span><span class="p">,</span> <span class="n">START</span><span class="p">,</span> <span class="n">END</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">langgraph.prebuilt</span><span class="w"> </span><span class="kn">import</span> <span class="n">ToolNode</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">create_chatbot</span><span class="p">(</span><span class="n">checkpointer</span><span class="p">,</span> <span class="n">memory_tools</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a minimal chatbot with checkpoint support.&quot;&quot;&quot;</span>
+
+    <span class="n">model</span> <span class="o">=</span> <span class="n">ChatBedrock</span><span class="p">(</span>
+        <span class="n">model_id</span><span class="o">=</span><span class="n">bedrock_model_id</span><span class="p">,</span>
+        <span class="n">region_name</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s1">&#39;AWS_REGION&#39;</span><span class="p">),</span>
+        <span class="n">model_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;temperature&quot;</span><span class="p">:</span> <span class="mf">0.7</span><span class="p">,</span> <span class="s2">&quot;max_tokens&quot;</span><span class="p">:</span> <span class="mi">1024</span><span class="p">}</span>
+    <span class="p">)</span>
+
+    <span class="n">model_with_tools</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">bind_tools</span><span class="p">(</span><span class="n">memory_tools</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">chat_node</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">MessagesState</span><span class="p">):</span>
+        <span class="n">messages</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;messages&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">SystemMessage</span><span class="p">)</span> <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">messages</span><span class="p">):</span>
+            <span class="n">system_msg</span> <span class="o">=</span> <span class="n">SystemMessage</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="s2">&quot;&quot;&quot;You are a professional fitness coach with access to client memory.</span>
+<span class="s2">            Always store important client information (fitness goals, workout preferences, injuries, restrictions, progress) using the opensearch_memory tool.</span>
+<span class="s2">            When clients return, search your memory to provide personalized fitness recommendations and track their progress.</span>
+<span class="s2">            Focus on safe, effective workouts tailored to each client&#39;s fitness level and limitations.&quot;&quot;&quot;</span><span class="p">)</span>
+            <span class="n">messages</span> <span class="o">=</span> <span class="p">[</span><span class="n">system_msg</span><span class="p">]</span> <span class="o">+</span> <span class="n">messages</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;messages&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">model_with_tools</span><span class="o">.</span><span class="n">invoke</span><span class="p">(</span><span class="n">messages</span><span class="p">)]}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">should_continue</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">MessagesState</span><span class="p">):</span>
+        <span class="n">messages</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s1">&#39;messages&#39;</span><span class="p">]</span>
+        <span class="n">last_message</span> <span class="o">=</span> <span class="n">messages</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">last_message</span><span class="o">.</span><span class="n">tool_calls</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">&quot;tools&quot;</span>
+        <span class="k">return</span> <span class="n">END</span>
+
+    <span class="n">graph</span> <span class="o">=</span> <span class="n">StateGraph</span><span class="p">(</span><span class="n">MessagesState</span><span class="p">)</span>
+    <span class="n">graph</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="s2">&quot;chat&quot;</span><span class="p">,</span> <span class="n">chat_node</span><span class="p">)</span>
+    <span class="n">graph</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="s2">&quot;tools&quot;</span><span class="p">,</span> <span class="n">ToolNode</span><span class="p">(</span><span class="n">memory_tools</span><span class="p">))</span>
+
+    <span class="n">graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">START</span><span class="p">,</span> <span class="s2">&quot;chat&quot;</span><span class="p">)</span>
+    <span class="n">graph</span><span class="o">.</span><span class="n">add_conditional_edges</span><span class="p">(</span><span class="s2">&quot;chat&quot;</span><span class="p">,</span> <span class="n">should_continue</span><span class="p">)</span>
+    <span class="n">graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="s2">&quot;tools&quot;</span><span class="p">,</span> <span class="s2">&quot;chat&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">graph</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">checkpointer</span><span class="o">=</span><span class="n">checkpointer</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Creating chatbot...&quot;</span><span class="p">)</span>
+<span class="n">app</span> <span class="o">=</span> <span class="n">create_chatbot</span><span class="p">(</span><span class="n">checkpointer</span><span class="p">,</span> <span class="n">memory_provider</span><span class="o">.</span><span class="n">tools</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;✅ Chatbot ready&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Creating chatbot...
+✅ Chatbot ready
+</pre></div></div>
+</div>
+</section>
+<section id="Step-5:-Create-Fitness-Agent-Assistant-with-Long-term-Memory">
+<h2>Step 5: Create Fitness Agent Assistant with Long-term Memory<a class="headerlink" href="#Step-5:-Create-Fitness-Agent-Assistant-with-Long-term-Memory" title="Link to this heading"></a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[67]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">langchain_core.messages</span><span class="w"> </span><span class="kn">import</span> <span class="n">HumanMessage</span><span class="p">,</span> <span class="n">SystemMessage</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">find_existing_thread</span><span class="p">(</span><span class="n">container_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">user_prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;demo_&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Find the most recent thread ID for this user.&quot;&quot;&quot;</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+
+    <span class="n">auth</span> <span class="o">=</span> <span class="p">(</span><span class="n">opensearch_username</span><span class="p">,</span> <span class="n">opensearch_password</span><span class="p">)</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">opensearch_url</span><span class="si">}</span><span class="s2">/_plugins/_ml/memory_containers/</span><span class="si">{</span><span class="n">container_id</span><span class="si">}</span><span class="s2">/memories/working/_search&quot;</span>
+
+    <span class="n">body</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;bool&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;filter&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="p">{</span><span class="s2">&quot;term&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;payload_type&quot;</span><span class="p">:</span> <span class="s2">&quot;data&quot;</span><span class="p">}},</span>
+                    <span class="p">{</span><span class="s2">&quot;term&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;metadata.type&quot;</span><span class="p">:</span> <span class="s2">&quot;checkpoint&quot;</span><span class="p">}},</span>
+                    <span class="p">{</span><span class="s2">&quot;wildcard&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;namespace.thread_id&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">user_prefix</span><span class="si">}</span><span class="s2">*&quot;</span><span class="p">}}</span>
+                <span class="p">]</span>
+            <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;sort&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;checkpoint_id&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;order&quot;</span><span class="p">:</span> <span class="s2">&quot;desc&quot;</span><span class="p">}}],</span>
+        <span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="mi">1</span>
+    <span class="p">}</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="n">body</span><span class="p">,</span> <span class="n">auth</span><span class="o">=</span><span class="n">auth</span><span class="p">,</span> <span class="n">verify</span><span class="o">=</span><span class="n">opensearch_verify_ssl</span><span class="p">)</span>
+        <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+
+        <span class="n">hits</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;hits&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;hits&quot;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="k">if</span> <span class="n">hits</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">hits</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;_source&quot;</span><span class="p">][</span><span class="s2">&quot;namespace&quot;</span><span class="p">][</span><span class="s2">&quot;thread_id&quot;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">send_message</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">thread_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Send a message and return the response.&quot;&quot;&quot;</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;configurable&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;thread_id&quot;</span><span class="p">:</span> <span class="n">thread_id</span><span class="p">}}</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">invoke</span><span class="p">({</span><span class="s2">&quot;messages&quot;</span><span class="p">:</span> <span class="p">[</span><span class="n">HumanMessage</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="n">message</span><span class="p">)]},</span> <span class="n">config</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;messages&quot;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">content</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_message_count</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">thread_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the number of messages in the conversation.&quot;&quot;&quot;</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;configurable&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;thread_id&quot;</span><span class="p">:</span> <span class="n">thread_id</span><span class="p">}}</span>
+    <span class="n">state</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">get_state</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">state</span> <span class="ow">and</span> <span class="n">state</span><span class="o">.</span><span class="n">values</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;messages&quot;</span><span class="p">,</span> <span class="p">[]))</span>
+    <span class="k">return</span> <span class="mi">0</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">start_fitness_session</span><span class="p">(</span><span class="n">session_name</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Start a fitness agent conversation session&quot;&quot;&quot;</span>
+
+    <span class="c1"># Check for existing threads</span>
+    <span class="n">existing_thread</span> <span class="o">=</span> <span class="n">find_existing_thread</span><span class="p">(</span><span class="n">memory_provider</span><span class="o">.</span><span class="n">memory</span><span class="o">.</span><span class="n">memory_container_id</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">existing_thread</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Found existing thread: </span><span class="si">{</span><span class="n">existing_thread</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">choice</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;Resume existing conversation? (y/n): &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">choice</span> <span class="o">==</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span>
+            <span class="n">thread_id</span> <span class="o">=</span> <span class="n">existing_thread</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Resuming thread: </span><span class="si">{</span><span class="n">thread_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">thread_id</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;demo_</span><span class="si">{</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">_%H%M%S&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Starting new thread: </span><span class="si">{</span><span class="n">thread_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">thread_id</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;demo_</span><span class="si">{</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">_%H%M%S&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Starting new thread: </span><span class="si">{</span><span class="n">thread_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;💪 Fitness Coach Interactive Demo&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Type &#39;q&#39; or &#39;quit&#39; to end the conversation</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">question</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;👤 You: &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">question</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;q&#39;</span><span class="p">,</span> <span class="s1">&#39;quit&#39;</span><span class="p">]:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;💪 Fitness Agent: Keep up the great work! I&#39;ll remember our progress for next time.&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Show session summary</span>
+            <span class="n">msg_count</span> <span class="o">=</span> <span class="n">get_message_count</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">thread_id</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">70</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">📊 Session Summary:&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Thread ID: </span><span class="si">{</span><span class="n">thread_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total messages: </span><span class="si">{</span><span class="n">msg_count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Session ended: </span><span class="si">{</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">break</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">question</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="n">send_message</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">thread_id</span><span class="p">,</span> <span class="n">question</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;💪 Fitness Agent: </span><span class="si">{</span><span class="n">response</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Step-6:-First-Session---Learning-User-Fitness-Preferences-and-Goals">
+<h2>Step 6: First Session - Learning User Fitness Preferences and Goals<a class="headerlink" href="#Step-6:-First-Session---Learning-User-Fitness-Preferences-and-Goals" title="Link to this heading"></a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[68]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Conversation where user shares fitness preferences and goals</span>
+<span class="n">start_fitness_session</span><span class="p">(</span><span class="n">session_id</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Starting new thread: demo_20251204_145652
+💪 Fitness Coach Interactive Demo
+Type &#39;q&#39; or &#39;quit&#39; to end the conversation
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+👤 You:  Hi, I&#39;m Alex and I want to start getting in shape. I haven&#39;t exercised in years.
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+⚠️  No checkpoint found for thread_id=demo_20251204_145652, checkpoint_ns=, checkpoint_id=None
+💪 Fitness Agent: Hi Alex! Welcome, and congratulations on taking this first step toward getting in shape – that&#39;s a big decision and I&#39;m here to support you every step of the way!
+
+Before we dive in, let me learn a bit more about you so I can create a safe and effective plan. Since you haven&#39;t exercised in years, we&#39;ll want to start gradually and build a solid foundation.
+
+**A few questions to get started:**
+
+1. **What are your main fitness goals?** (e.g., lose weight, build strength, improve energy/stamina, general health, etc.)
+
+2. **Do you have any injuries, health conditions, or physical limitations** I should know about? (e.g., back pain, knee issues, high blood pressure, etc.)
+
+3. **What&#39;s your current activity level like?** (desk job, on your feet all day, etc.)
+
+4. **Do you have access to a gym, or would you prefer home workouts?** Any equipment available?
+
+5. **How many days per week** do you think you could realistically commit to exercise?
+
+6. **Are there any types of exercise you enjoy** or have enjoyed in the past? (walking, swimming, cycling, dancing, sports, etc.)
+
+Take your time answering – the more I know, the better I can tailor a program that works for YOU and sets you up for long-term success! 💪
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+👤 You:  I want to lose about 20 pounds and build some muscle. I have a bad knee from an old sports injury, so I need to be careful with high-impact exercises. I can probably work out 3-4 times per week.
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="color: #008000; text-decoration-color: #008000">╭───────────────────── </span><span style="color: #008000; text-decoration-color: #008000; font-weight: bold">Add long-term memory for session fitness_session, agent fitness_agent</span><span style="color: #008000; text-decoration-color: #008000"> ─────────────────────╮</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> New client Alex - Starting fitness journey after years without exercise. Goals: Lose 20 pounds and build        <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> muscle. Has a bad knee from old sports injury - must avoid high-impact exercises. Available to workout 3-4      <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> times per week. Fitness level: Beginner. Start date: January 2025.                                              <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯</span>
+</pre></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="color: #008000; text-decoration-color: #008000">╭───────────────────────────────────────────────── </span><span style="color: #008000; text-decoration-color: #008000; font-weight: bold">Memory Stored</span><span style="color: #008000; text-decoration-color: #008000"> ─────────────────────────────────────────────────╮</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> ✅ Memory stored successfully:                                                                                  <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> 🔑 Memory ID: ioWW65oBr_9DzEodCbdU                                                                              <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯</span>
+</pre></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+💪 Fitness Agent: I&#39;ve got all your details saved. Here&#39;s what I recommend for your **Beginner Program**:
+
+---
+
+## 🏋️ Alex&#39;s Starter Plan (3-4 Days/Week)
+
+### **Workout Structure:**
+- **2 Strength Days** (build muscle, boost metabolism)
+- **1-2 Cardio Days** (low-impact fat burning)
+
+### **Knee-Friendly Exercises We&#39;ll Focus On:**
+
+**Strength Training:**
+- ✅ Seated or lying leg exercises (leg extensions, hamstring curls)
+- ✅ Upper body work (push-ups, rows, shoulder press)
+- ✅ Core exercises (planks, dead bugs, bird dogs)
+- ✅ Glute bridges &amp; hip thrusts
+- ✅ Wall sits (partial range if needed)
+
+**Low-Impact Cardio:**
+- ✅ Swimming or water aerobics (excellent for bad knees!)
+- ✅ Stationary cycling
+- ✅ Elliptical machine
+- ✅ Walking (flat surfaces)
+- ✅ Rowing machine
+
+### **Exercises We&#39;ll Avoid/Modify:**
+- ❌ Running/jogging
+- ❌ Jump squats, box jumps, burpees
+- ❌ Deep lunges or full squats (we can do partial range)
+- ❌ High-impact aerobics
+
+---
+
+### **Quick Questions:**
+1. **Do you have gym access** or will you be working out at home?
+2. **Any equipment at home?** (dumbbells, resistance bands, etc.)
+
+Once I know this, I can write out your specific weekly workout schedule! 🎯
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+👤 You:  I have a gym membership that I can use 3-4 times per week. At home, I have a set of adjustable dumbbells (5-50 lbs), resistance bands, and a yoga mat. I also have a pull-up bar in my doorway.
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="color: #008000; text-decoration-color: #008000">╭───────────────────── </span><span style="color: #008000; text-decoration-color: #008000; font-weight: bold">Add long-term memory for session fitness_session, agent fitness_agent</span><span style="color: #008000; text-decoration-color: #008000"> ─────────────────────╮</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> Alex has gym membership (can use 3-4 times per week). Home equipment: adjustable dumbbells (5-50 lbs),          <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> resistance bands, yoga mat, and doorway pull-up bar. Great equipment setup for hybrid gym/home training         <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> program.                                                                                                        <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯</span>
+</pre></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="color: #008000; text-decoration-color: #008000">╭───────────────────────────────────────────────── </span><span style="color: #008000; text-decoration-color: #008000; font-weight: bold">Memory Stored</span><span style="color: #008000; text-decoration-color: #008000"> ─────────────────────────────────────────────────╮</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> ✅ Memory stored successfully:                                                                                  <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> 🔑 Memory ID: ooWX65oBr_9DzEodZLeg                                                                              <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯</span>
+</pre></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+💪 Fitness Agent: Here&#39;s your personalized weekly workout plan:
+
+---
+
+## 💪 Alex&#39;s 4-Week Starter Program
+
+### **Weekly Schedule:**
+
+| Day | Workout | Location |
+|-----|---------|----------|
+| **Day 1** | Upper Body Strength | Gym |
+| **Day 2** | Rest or Light Walk | — |
+| **Day 3** | Lower Body Strength (Knee-Safe) | Gym |
+| **Day 4** | Rest | — |
+| **Day 5** | Full Body + Core | Home |
+| **Day 6** | Low-Impact Cardio | Gym |
+| **Day 7** | Rest | — |
+
+---
+
+### **DAY 1: Upper Body (Gym)**
+| Exercise | Sets | Reps | Notes |
+|----------|------|------|-------|
+| Lat Pulldown | 3 | 10-12 | Control the movement |
+| Seated Cable Row | 3 | 10-12 | Squeeze shoulder blades |
+| Chest Press Machine | 3 | 10-12 | Or dumbbell bench press |
+| Seated Shoulder Press | 3 | 10-12 | Dumbbells or machine |
+| Bicep Curls | 2 | 12 | Dumbbells |
+| Tricep Pushdowns | 2 | 12 | Cable machine |
+
+---
+
+### **DAY 3: Lower Body – Knee-Safe (Gym)**
+| Exercise | Sets | Reps | Notes |
+|----------|------|------|-------|
+| Leg Press | 3 | 12 | Partial range, don&#39;t go too deep |
+| Leg Curl Machine | 3 | 12 | Hamstrings |
+| Leg Extension | 3 | 12 | Light weight, control |
+| Glute Bridge (weighted) | 3 | 15 | Barbell or dumbbell on hips |
+| Calf Raises | 3 | 15 | Seated or standing |
+| Seated Hip Abduction | 2 | 15 | Machine |
+
+---
+
+### **DAY 5: Full Body + Core (Home)**
+| Exercise | Sets | Reps | Notes |
+|----------|------|------|-------|
+| Goblet Squats | 3 | 10 | Partial depth, protect knee |
+| Dumbbell Romanian Deadlift | 3 | 12 | Great for hamstrings/glutes |
+| Push-Ups | 3 | 8-12 | On knees if needed |
+| Dumbbell Rows | 3 | 10 each | One arm at a time |
+| Dead Bugs | 3 | 10 each | Core stability |
+| Plank | 3 | 20-30 sec | Build up over time |
+| Band Pull-Aparts | 2 | 15 | Posture &amp; shoulders |
+
+---
+
+### **DAY 6: Low-Impact Cardio (Gym)**
+Choose ONE:
+- 🚴 **Stationary Bike:** 25-30 min, moderate pace
+- 🏊 **Swimming:** 20-30 min laps or water walking
+- 🚣 **Rowing Machine:** 15-20 min intervals
+- ⭕ **Elliptical:** 25-30 min
+
+---
+
+## 📋 Key Guidelines:
+
+1. **Start light** – Focus on form first, increase weight gradually
+2. **Warm up** – 5 min light cardio before every session
+3. **Listen to your knee** – If something hurts, stop and modify
+4. **Rest between sets** – 60-90 seconds
+5. **Stay hydrated** – Aim for water throughout the day
+
+---
+
+### **Ready to Start?**
+
+Would you like me to:
+- 📝 Provide more detail on any specific exercise?
+- 🍎 Discuss basic nutrition tips to support your 20 lb weight loss goal?
+- 📅 Set a check-in schedule to track your progress?
+
+Let&#39;s get you moving, Alex! 🎯🔥
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+👤 You:  q
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+💪 Fitness Agent: Keep up the great work! I&#39;ll remember our progress for next time.
+
+======================================================================
+
+📊 Session Summary:
+Thread ID: demo_20251204_145652
+Total messages: 10
+Session ended: 2025-12-04 15:00:05.076484
+</pre></div></div>
+</div>
+</section>
+<section id="Step-7:-New-Session---Demonstrating-Memory-Recall">
+<h2>Step 7: New Session - Demonstrating Memory Recall<a class="headerlink" href="#Step-7:-New-Session---Demonstrating-Memory-Recall" title="Link to this heading"></a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[69]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Agent will previous conversations from previous conversation</span>
+<span class="c1"># Note: The session_id will be different</span>
+<span class="n">start_fitness_session</span><span class="p">(</span><span class="s1">&#39;fitness_session1&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Found existing thread: demo_20251204_145652
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Resume existing conversation? (y/n):  n
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Starting new thread: demo_20251204_150036
+💪 Fitness Coach Interactive Demo
+Type &#39;q&#39; or &#39;quit&#39; to end the conversation
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+👤 You:  Hi, it&#39;s Alex again. I wanted to check in about my workout plan.
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+⚠️  No checkpoint found for thread_id=demo_20251204_150036, checkpoint_ns=, checkpoint_id=None
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="color: #008000; text-decoration-color: #008000">╭──────────────────────────────────────────────── </span><span style="color: #008000; text-decoration-color: #008000; font-weight: bold">Search Results</span><span style="color: #008000; text-decoration-color: #008000"> ─────────────────────────────────────────────────╮</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> <span style="font-style: italic">                             Long term memories                              </span>                                   <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> ┏━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓                                   <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> ┃<span style="color: #800080; text-decoration-color: #800080; font-weight: bold"> Memory ID            </span>┃<span style="color: #800080; text-decoration-color: #800080; font-weight: bold"> Content                                            </span>┃                                   <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> ┡━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩                                   <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> │<span style="color: #008080; text-decoration-color: #008080"> p4WX65oBr_9DzEodjrdQ </span>│<span style="color: #808000; text-decoration-color: #808000"> Alex has home equipment including adjustable       </span>│                                   <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> │<span style="color: #008080; text-decoration-color: #008080">                      </span>│<span style="color: #808000; text-decoration-color: #808000"> dumbbells (5-50 lbs), resistance bands, a yoga     </span>│                                   <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> │<span style="color: #008080; text-decoration-color: #008080">                      </span>│<span style="color: #808000; text-decoration-color: #808000"> mat, and...                                        </span>│                                   <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> │<span style="color: #008080; text-decoration-color: #008080"> kIWW65oBr_9DzEodHbfl </span>│<span style="color: #808000; text-decoration-color: #808000"> New client Alex is starting a fitness journey      </span>│                                   <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> │<span style="color: #008080; text-decoration-color: #008080">                      </span>│<span style="color: #808000; text-decoration-color: #808000"> after years without exercise in January 2025.      </span>│                                   <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> │<span style="color: #008080; text-decoration-color: #008080"> kYWW65oBr_9DzEodHbfl </span>│<span style="color: #808000; text-decoration-color: #808000"> Alex's fitness goals are to lose 20 pounds and     </span>│                                   <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> │<span style="color: #008080; text-decoration-color: #008080">                      </span>│<span style="color: #808000; text-decoration-color: #808000"> build muscle.                                      </span>│                                   <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> │<span style="color: #008080; text-decoration-color: #008080"> koWW65oBr_9DzEodHbfl </span>│<span style="color: #808000; text-decoration-color: #808000"> Alex has a bad knee from an old sports injury and  </span>│                                   <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> │<span style="color: #008080; text-decoration-color: #008080">                      </span>│<span style="color: #808000; text-decoration-color: #808000"> must avoid high-impact exercises.                  </span>│                                   <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> │<span style="color: #008080; text-decoration-color: #008080"> lIWW65oBr_9DzEodHbfl </span>│<span style="color: #808000; text-decoration-color: #808000"> Alex's fitness level is beginner.                  </span>│                                   <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> │<span style="color: #008080; text-decoration-color: #008080"> k4WW65oBr_9DzEodHbfl </span>│<span style="color: #808000; text-decoration-color: #808000"> Alex has a gym membership and is available to      </span>│                                   <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> │<span style="color: #008080; text-decoration-color: #008080">                      </span>│<span style="color: #808000; text-decoration-color: #808000"> workout 3-4 times per week, suitable for a hybrid  </span>│                                   <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> │<span style="color: #008080; text-decoration-color: #008080">                      </span>│<span style="color: #808000; text-decoration-color: #808000"> gym ...                                            </span>│                                   <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> └──────────────────────┴────────────────────────────────────────────────────┘                                   <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯</span>
+</pre></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+💪 Fitness Agent: Welcome back, Alex! I found all your information. Here&#39;s what I have on file:
+
+**Your Profile:**
+- 🎯 **Goals:** Lose 20 pounds and build muscle
+- 📅 **Started:** January 2025 (returning after years without exercise)
+- 💪 **Fitness Level:** Beginner
+- ⚠️ **Injury:** Bad knee from an old sports injury - must avoid high-impact exercises
+- 🏋️ **Availability:** 3-4 times per week
+- 🏠 **Equipment:**
+  - Gym membership
+  - Home equipment: adjustable dumbbells (5-50 lbs), resistance bands, yoga mat, and doorway pull-up bar
+  - Following a hybrid gym/home training program
+
+How can I help you today? Are you looking to:
+1. **Review or adjust your current workout plan?**
+2. **Track progress** on your weight loss or muscle-building goals?
+3. **Get new exercises** that are knee-safe?
+4. **Discuss any challenges** you&#39;ve been facing?
+5. **Something else?**
+
+Let me know what&#39;s on your mind!
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+👤 You:  My knee feels fine with the gym machines. Can we add some cardio that won&#39;t hurt my knee?
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+💪 Fitness Agent: That&#39;s great news that your knee is feeling good with the gym machines! That&#39;s a really positive sign of progress.
+
+Absolutely, let&#39;s add some knee-friendly cardio options for you. Here are my top recommendations:
+
+## Knee-Safe Cardio Options 🫀
+
+### At the Gym:
+1. **Stationary Bike (Recumbent or Upright)** - Excellent choice! Low impact and you control the resistance. Start with 15-20 minutes.
+
+2. **Elliptical Machine** - Smooth, gliding motion that&#39;s easy on joints. Keep resistance moderate to start.
+
+3. **Rowing Machine** - Great full-body cardio that&#39;s gentle on knees. Focus on pushing through your heels, not pulling with your knees.
+
+4. **Swimming/Water Aerobics** - If your gym has a pool, this is the ultimate zero-impact cardio!
+
+### At Home:
+1. **Seated Cardio** - Arm cycling movements, seated punches, seated marching
+2. **Standing Low-Impact Moves** - Step touches, lateral shuffles, marching in place (no jumping!)
+
+## My Recommendation for You:
+As a beginner, I&#39;d suggest starting with **2 cardio sessions per week, 15-20 minutes each**. The stationary bike or elliptical would be perfect to start.
+
+**⚠️ Avoid:** Running, jumping jacks, burpees, stair climbers, and any high-impact jumping movements.
+
+Would you like me to save this cardio plan to your profile? Also, how many days per week would you like to dedicate to cardio specifically?
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+👤 You:  Yes, please save that cardio plan! I think 2 days per week is perfect to start with. I&#39;d prefer to do cardio on my non-gym days, so maybe Tuesday and Friday?
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="color: #008000; text-decoration-color: #008000">╭───────────────────── </span><span style="color: #008000; text-decoration-color: #008000; font-weight: bold">Add long-term memory for session fitness_session, agent fitness_agent</span><span style="color: #008000; text-decoration-color: #008000"> ─────────────────────╮</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> Alex added knee-safe cardio to workout plan: 2 sessions per week on Tuesdays and Fridays (non-gym days).        <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> Preferred cardio options include stationary bike, elliptical, rowing machine, and swimming at gym. Home options <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> include seated cardio and low-impact standing moves. Avoiding high-impact cardio like running, jumping jacks,   <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> burpees, and stair climbers. Knee is feeling fine with gym machines.                                            <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯</span>
+</pre></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area rendered_html docutils container">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="color: #008000; text-decoration-color: #008000">╭───────────────────────────────────────────────── </span><span style="color: #008000; text-decoration-color: #008000; font-weight: bold">Memory Stored</span><span style="color: #008000; text-decoration-color: #008000"> ─────────────────────────────────────────────────╮</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> ✅ Memory stored successfully:                                                                                  <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">│</span> 🔑 Memory ID: xIWa65oBr_9DzEodiLcn                                                                              <span style="color: #008000; text-decoration-color: #008000">│</span>
+<span style="color: #008000; text-decoration-color: #008000">╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯</span>
+</pre></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+💪 Fitness Agent: I&#39;ve saved your cardio plan to your profile. Here&#39;s your updated schedule:
+
+## Alex&#39;s Weekly Workout Schedule 📅
+
+| Day | Workout |
+|-----|---------|
+| **Monday** | Gym - Strength Training |
+| **Tuesday** | 🫀 **Cardio Day** (15-20 min) |
+| **Wednesday** | Gym - Strength Training |
+| **Thursday** | Rest / Light Stretching |
+| **Friday** | 🫀 **Cardio Day** (15-20 min) |
+| **Saturday** | Gym or Home Strength (optional 3rd/4th session) |
+| **Sunday** | Rest |
+
+## Your Tuesday &amp; Friday Cardio Sessions:
+**Choose one:**
+- 🚴 Stationary bike - 15-20 min
+- 🏊 Swimming - 15-20 min
+- 🚣 Rowing machine - 15-20 min
+- 🏠 Home: Seated/low-impact cardio - 15-20 min
+
+**Tip:** Start at a comfortable pace where you can still hold a conversation. As your endurance builds over the next few weeks, we can gradually increase duration to 25-30 minutes.
+
+This is a smart approach, Alex! Separating cardio and strength days gives your muscles time to recover while still keeping you active. Plus, it&#39;s sustainable for a beginner schedule.
+
+How has your strength training been going so far? Any exercises you&#39;re loving or struggling with?
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+👤 You:  q
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+💪 Fitness Agent: Keep up the great work! I&#39;ll remember our progress for next time.
+
+======================================================================
+
+📊 Session Summary:
+Thread ID: demo_20251204_150036
+Total messages: 10
+Session ended: 2025-12-04 15:02:59.678901
+</pre></div></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../strands/demo_travel_assistant.html" class="btn btn-neutral float-left" title="Travel Assistant Demo - OpenSearch Agentic Memory with Strands Agent" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../../../cli/index.html" class="btn btn-neutral float-right" title="Command Line Interface (CLI)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Opensearch.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

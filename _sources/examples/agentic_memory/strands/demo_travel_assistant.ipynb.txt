@@ -1,0 +1,743 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "id": "82a4ed33",
+   "metadata": {},
+   "source": [
+    "# Travel Assistant Demo - OpenSearch Agentic Memory with Strands Agent"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "5f0f667c",
+   "metadata": {},
+   "source": [
+    "## Introduction"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "9aa85ac0",
+   "metadata": {},
+   "source": [
+    "This notebook demonstrates how to build an intelligent travel assistant using OpenSearch's agentic memory capabilities integrated with Strands agent. The travel assistant showcases **long-term memory** functionality, enabling it to remember user preferences, past conversations, and travel history across multiple sessions."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "312cc782",
+   "metadata": {},
+   "source": [
+    "### Key Features"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "3ed1b8ea",
+   "metadata": {},
+   "source": [
+    "- **Persistent Memory**: Remembers user preferences and travel history across sessions\n",
+    "- **Semantic Search**: Retrieves relevant memories based on context and meaning\n",
+    "- **Travel Intelligence**: Provides personalized recommendations based on past interactions\n",
+    "- **Session Continuity**: Maintains context even when conversations are resumed later"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "77b70e83",
+   "metadata": {},
+   "source": [
+    "### What You'll Learn"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "65ad63a2",
+   "metadata": {},
+   "source": [
+    "- How to set up OpenSearch agentic memory for long-term storage\n",
+    "- Integration patterns between Strands agents and OpenSearch\n",
+    "- Building conversational AI that learns and remembers user preferences\n",
+    "- Implementing semantic memory retrieval for personalized experiences"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "d40e9f22",
+   "metadata": {},
+   "source": [
+    "## Prerequisites"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "ef017628",
+   "metadata": {},
+   "source": [
+    "To use this notebook, you'll need:\n",
+    "- Python 3.10+\n",
+    "- OpenSearch 3.3.2+\n",
+    "- AWS Credentials for Amazon Bedrock access"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "119766b4",
+   "metadata": {},
+   "source": [
+    "## Step 1: Install Dependencies and Setup"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "365bfe00",
+   "metadata": {},
+   "source": [
+    "Install dependencies:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "id": "0ff81e15",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "!pip install -qr ../requirements.txt"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "2764cd51",
+   "metadata": {},
+   "source": [
+    "Set OpenSearch domain configuration:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "id": "227b52a8",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "opensearch_url = 'https://localhost:9200'\n",
+    "opensearch_username = 'admin'\n",
+    "opensearch_password = 'your_opensearch_password'\n",
+    "opensearch_verify_ssl = False"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "766f63cc",
+   "metadata": {},
+   "source": [
+    "Set model configuration:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "id": "22729bdf",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "embedding_model_id = ''  # Leave empty to auto-create Amazon Titan Embedding model\n",
+    "llm_model_id = ''        # Leave empty to auto-create Amazon Bedrock Claude model"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "fcb9fa6b",
+   "metadata": {},
+   "source": [
+    "Set memory and session configuration:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "id": "76d72a10",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Modify as needed\n",
+    "memory_container_name = 'travel_memory'\n",
+    "session_id = 'travel_session' \n",
+    "user_id = 'travel_user'\n",
+    "agent_id = 'travel_agent'"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "c109823a",
+   "metadata": {},
+   "source": [
+    "Set AWS credentials (Required for Amazon Bedrock access):"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "id": "3756e640",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import os\n",
+    "\n",
+    "os.environ['AWS_REGION'] = os.getenv('AWS_REGION', 'your_aws_region')\n",
+    "os.environ['AWS_ACCESS_KEY_ID'] = os.getenv('AWS_ACCESS_KEY_ID', 'your_access_key')\n",
+    "os.environ['AWS_SECRET_ACCESS_KEY'] = os.getenv('AWS_SECRET_ACCESS_KEY', 'your_secret_key')\n",
+    "os.environ['AWS_SESSION_TOKEN'] = os.getenv('AWS_SESSION_TOKEN', '')  # Optional"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "81e0d87d",
+   "metadata": {},
+   "source": [
+    "## Step 2: Initialize Memory Provider"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "e8ae16cf",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import urllib3\n",
+    "import sys\n",
+    "\n",
+    "sys.path.append('..')\n",
+    "from commons.opensearch_memory_tool import OpenSearchMemoryToolProvider\n",
+    "\n",
+    "urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)\n",
+    "\n",
+    "\n",
+    "memory_provider = OpenSearchMemoryToolProvider(\n",
+    "    cluster_url=opensearch_url,\n",
+    "    username=opensearch_username,\n",
+    "    password=opensearch_password,\n",
+    "    verify_ssl=opensearch_verify_ssl,\n",
+    "    memory_container_name=memory_container_name,\n",
+    "    session_id=session_id,\n",
+    "    agent_id=agent_id,\n",
+    "    user_id=user_id,\n",
+    "    embedding_model_id=embedding_model_id,\n",
+    "    llm_id=llm_model_id\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "2fa91006",
+   "metadata": {},
+   "source": [
+    "## Step 3: Create Travel Agent Assistant with Long-term Memory"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 50,
+   "id": "988b5c17-b000-46df-a2f8-661b0b4f1cd5",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from strands import Agent\n",
+    "from strands.models import BedrockModel\n",
+    "\n",
+    "def start_travel_session(session_name):\n",
+    "    \"\"\"Start a travel agent conversation session\"\"\"\n",
+    "    # Update session for memory provider\n",
+    "    memory_provider.session_id = session_name\n",
+    "    \n",
+    "    # Configure the model and agent\n",
+    "    model = BedrockModel(model_id=\"global.anthropic.claude-opus-4-5-20251101-v1:0\")\n",
+    "    agent = Agent(\n",
+    "        model=model,\n",
+    "        tools=memory_provider.tools,\n",
+    "        system_prompt=\"\"\"You are a professional travel agent with access to client memory. \n",
+    "        Always store important client information (preferences, budget, restrictions) using the opensearch_memory tool.\n",
+    "        When clients return, search your memory to provide personalized recommendations.\"\"\"\n",
+    "    )\n",
+    "    \n",
+    "    print(f\"🌍 Travel Agent Ready - Session: {session_name}\")\n",
+    "    print(\"Type 'q' or 'quit' to end the conversation\\n\")\n",
+    "    \n",
+    "    while True:\n",
+    "        question = input(\"👤 You: \").strip()\n",
+    "        \n",
+    "        if question.lower() in ['q', 'quit']:\n",
+    "            print(\"🤖 Travel Agent: Safe travels! I'll remember our conversation for next time.\")\n",
+    "            break\n",
+    "        \n",
+    "        if not question:\n",
+    "            continue\n",
+    "        \n",
+    "        print(\"🤖 Travel Agent: \", end='')\n",
+    "        response = agent(question)\n",
+    "        print(\"\\n\")\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "bbc3355e-e9b9-4818-ad57-f41d966ecf3c",
+   "metadata": {},
+   "source": [
+    "## Step 4: First Session - Learning User Preferences"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 51,
+   "id": "d074c87d-fa2f-4b94-9821-f17dc5eb78f7",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "🌍 Travel Agent Ready - Session: travel_session1\n",
+      "Type 'q' or 'quit' to end the conversation\n",
+      "\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "👤 You:  Hi, I'm Sarah and I'm planning a family vacation for next summer\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "🤖 Travel Agent: Hi Sarah! Welcome! I'm excited to help you plan your family vacation for next summer. 🌴✈️\n",
+      "\n",
+      "To give you the best recommendations, I'd love to learn more about your trip. Could you tell me:\n",
+      "\n",
+      "1. **How many people** will be traveling? (Adults and children's ages?)\n",
+      "2. **Where are you departing from?**\n",
+      "3. **Do you have any destinations in mind**, or are you open to suggestions?\n",
+      "4. **What's your approximate budget** for the trip?\n",
+      "5. **What kind of activities** does your family enjoy? (Beach relaxation, adventure, theme parks, cultural experiences, nature, etc.)\n",
+      "6. **Any dietary restrictions, mobility concerns, or other special needs** I should keep in mind?\n",
+      "7. **How long** are you thinking for the trip?\n",
+      "\n",
+      "Feel free to share as much or as little as you'd like, and we can start building your perfect family getaway!\n",
+      "\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "👤 You:  We're a family of 4 - me, my husband, and two kids aged 8 and 12. Our budget is around $8000 for the whole trip. We love beaches and the kids are really into water sports.\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "🤖 Travel Agent: How wonderful, Sarah! A family of four with beach lovers and water sports enthusiasts – that gives us some fantastic options to work with! Let me save these details so I can always provide you with personalized recommendations.\n",
+      "Tool #1: opensearch_memory\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<pre style=\"white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace\"><span style=\"color: #008000; text-decoration-color: #008000\">╭───────────────────── </span><span style=\"color: #008000; text-decoration-color: #008000; font-weight: bold\">Add long-term memory for session travel_session1, agent travel_agent</span><span style=\"color: #008000; text-decoration-color: #008000\"> ──────────────────────╮</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> Client Sarah is planning a family vacation for summer. Family of 4: Sarah, her husband, and two kids aged 8 and <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> 12. Budget is approximately $8000 for the whole trip. They love beaches and the kids are really into water      <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> sports.                                                                                                         <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯</span>\n",
+       "</pre>\n"
+      ],
+      "text/plain": [
+       "\u001b[32m╭─\u001b[0m\u001b[32m────────────────────\u001b[0m\u001b[32m \u001b[0m\u001b[1;32mAdd long-term memory for session travel_session1, agent travel_agent\u001b[0m\u001b[32m \u001b[0m\u001b[32m─────────────────────\u001b[0m\u001b[32m─╮\u001b[0m\n",
+       "\u001b[32m│\u001b[0m Client Sarah is planning a family vacation for summer. Family of 4: Sarah, her husband, and two kids aged 8 and \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m 12. Budget is approximately $8000 for the whole trip. They love beaches and the kids are really into water      \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m sports.                                                                                                         \u001b[32m│\u001b[0m\n",
+       "\u001b[32m╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯\u001b[0m\n"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "text/html": [
+       "<pre style=\"white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace\"><span style=\"color: #008000; text-decoration-color: #008000\">╭───────────────────────────────────────────────── </span><span style=\"color: #008000; text-decoration-color: #008000; font-weight: bold\">Memory Stored</span><span style=\"color: #008000; text-decoration-color: #008000\"> ─────────────────────────────────────────────────╮</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> ✅ Memory stored successfully:                                                                                  <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> 🔑 Memory ID: Vivb5poB8SWL6T84odHA                                                                              <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯</span>\n",
+       "</pre>\n"
+      ],
+      "text/plain": [
+       "\u001b[32m╭─\u001b[0m\u001b[32m────────────────────────────────────────────────\u001b[0m\u001b[32m \u001b[0m\u001b[1;32mMemory Stored\u001b[0m\u001b[32m \u001b[0m\u001b[32m────────────────────────────────────────────────\u001b[0m\u001b[32m─╮\u001b[0m\n",
+       "\u001b[32m│\u001b[0m ✅ Memory stored successfully:                                                                                  \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m 🔑 Memory ID: Vivb5poB8SWL6T84odHA                                                                              \u001b[32m│\u001b[0m\n",
+       "\u001b[32m╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯\u001b[0m\n"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Got it! With a $8,000 budget for a family of 4 who loves beaches and water sports, here are some fantastic destination ideas:\n",
+      "\n",
+      "## 🏖️ Top Recommendations for Your Family:\n",
+      "\n",
+      "### 1. **Riviera Maya, Mexico** 🇲🇽\n",
+      "- All-inclusive resorts with kids' clubs\n",
+      "- Snorkeling, kayaking, paddleboarding\n",
+      "- Day trips to cenotes (natural swimming holes) and Mayan ruins\n",
+      "- Great value for the budget\n",
+      "\n",
+      "### 2. **San Diego, California** 🇺🇸\n",
+      "- Beautiful beaches with surfing lessons for kids\n",
+      "- La Jolla coves for kayaking and snorkeling\n",
+      "- SeaWorld and LEGOLAND nearby\n",
+      "- No passport needed!\n",
+      "\n",
+      "### 3. **Punta Cana, Dominican Republic** 🇩🇴\n",
+      "- Stunning beaches with calm waters\n",
+      "- Excellent all-inclusive family resorts\n",
+      "- Water sports galore: jet skiing, parasailing, windsurfing\n",
+      "- Very budget-friendly\n",
+      "\n",
+      "### 4. **Maui, Hawaii** 🌺\n",
+      "- World-class beaches and snorkeling\n",
+      "- Surfing lessons, stand-up paddleboarding\n",
+      "- Incredible scenery and family adventures\n",
+      "- Slightly higher cost but doable within budget\n",
+      "\n",
+      "---\n",
+      "\n",
+      "**A few more questions to narrow it down:**\n",
+      "- Where will you be departing from?\n",
+      "- How long are you hoping to travel? (1 week, 10 days, 2 weeks?)\n",
+      "- Do you prefer an all-inclusive resort experience or more of an explore-on-your-own adventure?\n",
+      "\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "👤 You:  Hawaii sounds amazing! We'd love a 7-day trip. The kids have never been snorkeling before. Oh, and I should mention - my 8-year-old has a severe seafood allergy, so we need to be careful about restaurants.\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "🤖 Travel Agent: Hawaii is a fantastic choice – and a first snorkeling experience there will be absolutely magical for your kids! 🐠🌺 Let me save these important details, especially about the seafood allergy.\n",
+      "Tool #2: opensearch_memory\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<pre style=\"white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace\"><span style=\"color: #008000; text-decoration-color: #008000\">╭───────────────────── </span><span style=\"color: #008000; text-decoration-color: #008000; font-weight: bold\">Add long-term memory for session travel_session1, agent travel_agent</span><span style=\"color: #008000; text-decoration-color: #008000\"> ──────────────────────╮</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> Sarah's family has chosen Hawaii for their summer vacation. Trip duration: 7 days. Kids have never been         <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> snorkeling before - this will be their first experience. IMPORTANT: 8-year-old child has a severe seafood       <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> allergy - must be careful about restaurant selections.                                                          <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯</span>\n",
+       "</pre>\n"
+      ],
+      "text/plain": [
+       "\u001b[32m╭─\u001b[0m\u001b[32m────────────────────\u001b[0m\u001b[32m \u001b[0m\u001b[1;32mAdd long-term memory for session travel_session1, agent travel_agent\u001b[0m\u001b[32m \u001b[0m\u001b[32m─────────────────────\u001b[0m\u001b[32m─╮\u001b[0m\n",
+       "\u001b[32m│\u001b[0m Sarah's family has chosen Hawaii for their summer vacation. Trip duration: 7 days. Kids have never been         \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m snorkeling before - this will be their first experience. IMPORTANT: 8-year-old child has a severe seafood       \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m allergy - must be careful about restaurant selections.                                                          \u001b[32m│\u001b[0m\n",
+       "\u001b[32m╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯\u001b[0m\n"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "text/html": [
+       "<pre style=\"white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace\"><span style=\"color: #008000; text-decoration-color: #008000\">╭───────────────────────────────────────────────── </span><span style=\"color: #008000; text-decoration-color: #008000; font-weight: bold\">Memory Stored</span><span style=\"color: #008000; text-decoration-color: #008000\"> ─────────────────────────────────────────────────╮</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> ✅ Memory stored successfully:                                                                                  <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> 🔑 Memory ID: Xyvc5poB8SWL6T84sNEh                                                                              <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯</span>\n",
+       "</pre>\n"
+      ],
+      "text/plain": [
+       "\u001b[32m╭─\u001b[0m\u001b[32m────────────────────────────────────────────────\u001b[0m\u001b[32m \u001b[0m\u001b[1;32mMemory Stored\u001b[0m\u001b[32m \u001b[0m\u001b[32m────────────────────────────────────────────────\u001b[0m\u001b[32m─╮\u001b[0m\n",
+       "\u001b[32m│\u001b[0m ✅ Memory stored successfully:                                                                                  \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m 🔑 Memory ID: Xyvc5poB8SWL6T84sNEh                                                                              \u001b[32m│\u001b[0m\n",
+       "\u001b[32m╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯\u001b[0m\n"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "I've made a special note about your 8-year-old's seafood allergy – that's so important, especially in Hawaii where seafood is everywhere. Here's how we can plan around that:\n",
+      "\n",
+      "---\n",
+      "\n",
+      "## 🌺 Your 7-Day Hawaii Family Adventure\n",
+      "\n",
+      "### Island Recommendation: **Maui**\n",
+      "Perfect for families with beginners – calmer waters, amazing snorkel spots, and lots of non-seafood dining options.\n",
+      "\n",
+      "### 🤿 Snorkeling for First-Timers\n",
+      "- **Kapalua Bay** – Calm, shallow, perfect for kids learning to snorkel\n",
+      "- **Turtle Town** – Gentle waters and sea turtles! 🐢\n",
+      "- Consider a **family snorkel tour** with guides who provide instruction and gear sized for kids\n",
+      "\n",
+      "### 🍽️ Navigating the Seafood Allergy\n",
+      "Great news – Hawaii has excellent allergy awareness! Here's my advice:\n",
+      "- **Resorts with kitchenettes** – gives you control over some meals\n",
+      "- **Restaurants I recommend**: \n",
+      "  - Many Italian, Mexican, and farm-to-table spots in Maui handle allergies well\n",
+      "  - Chains like **Monkeypod Kitchen** and **Kihei Caffe** are known for accommodating allergies\n",
+      "- **Pro tip**: I'll help you compile a list of allergy-friendly restaurants and suggest bringing chef allergy cards in English and Hawaiian\n",
+      "\n",
+      "### 💰 Budget Breakdown (Estimated for 7 days, family of 4)\n",
+      "| Category | Estimated Cost |\n",
+      "|----------|----------------|\n",
+      "| Flights | $2,000 - $2,800 |\n",
+      "| Accommodations (condo/resort) | $2,100 - $2,800 |\n",
+      "| Car Rental | $350 - $500 |\n",
+      "| Activities & Tours | $800 - $1,000 |\n",
+      "| Food & Dining | $700 - $900 |\n",
+      "| **Total** | **$6,000 - $8,000** |\n",
+      "\n",
+      "---\n",
+      "\n",
+      "**Next steps – a couple more questions:**\n",
+      "1. **Where will you be flying from?** (So I can check flight options)\n",
+      "2. **Would you prefer a condo/vacation rental** (more space, kitchen for allergy-safe meals) **or a resort** (more amenities, kids' activities)?\n",
+      "\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "👤 You:  q\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "🤖 Travel Agent: Safe travels! I'll remember our conversation for next time.\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Conversation where user shares travel preferences\n",
+    "start_travel_session(session_id)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "3cef22e4-3912-4db1-88d1-2c71244f0761",
+   "metadata": {},
+   "source": [
+    "## Step 5: New Session - Demonstrating Memory Recall"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 52,
+   "id": "57db33e1-148e-4e63-9d19-d3113e44df0c",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "🌍 Travel Agent Ready - Session: travel_session2\n",
+      "Type 'q' or 'quit' to end the conversation\n",
+      "\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "👤 You:  Hi, it's Sarah again. I wanted to follow up on our Hawaii trip planning.\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "🤖 Travel Agent: Welcome back, Sarah! Let me quickly check my notes from our previous conversations about your Hawaii trip planning.\n",
+      "Tool #1: opensearch_memory\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<pre style=\"white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace\"><span style=\"color: #008000; text-decoration-color: #008000\">╭──────────────────────────────────────────────── </span><span style=\"color: #008000; text-decoration-color: #008000; font-weight: bold\">Search Results</span><span style=\"color: #008000; text-decoration-color: #008000\"> ─────────────────────────────────────────────────╮</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> <span style=\"font-style: italic\">                             Long term memories                              </span>                                   <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> ┏━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓                                   <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> ┃<span style=\"color: #800080; text-decoration-color: #800080; font-weight: bold\"> Memory ID            </span>┃<span style=\"color: #800080; text-decoration-color: #800080; font-weight: bold\"> Content                                            </span>┃                                   <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> ┡━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩                                   <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> │<span style=\"color: #008080; text-decoration-color: #008080\"> YCvc5poB8SWL6T841dF2 </span>│<span style=\"color: #808000; text-decoration-color: #808000\"> Sarah's 8-year-old child has a severe seafood      </span>│                                   <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> │<span style=\"color: #008080; text-decoration-color: #008080\">                      </span>│<span style=\"color: #808000; text-decoration-color: #808000\"> allergy requiring careful restaurant selection     </span>│                                   <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> │<span style=\"color: #008080; text-decoration-color: #008080\">                      </span>│<span style=\"color: #808000; text-decoration-color: #808000\"> during ...                                         </span>│                                   <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> │<span style=\"color: #008080; text-decoration-color: #008080\"> Wivb5poB8SWL6T84s9FZ </span>│<span style=\"color: #808000; text-decoration-color: #808000\"> Sarah's family consists of 4 members: Sarah, her   </span>│                                   <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> │<span style=\"color: #008080; text-decoration-color: #008080\">                      </span>│<span style=\"color: #808000; text-decoration-color: #808000\"> husband, and two children aged 8 and 12.           </span>│                                   <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> │<span style=\"color: #008080; text-decoration-color: #008080\"> WSvb5poB8SWL6T84s9FZ </span>│<span style=\"color: #808000; text-decoration-color: #808000\"> Client Sarah is planning a 7-day family vacation   </span>│                                   <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> │<span style=\"color: #008080; text-decoration-color: #008080\">                      </span>│<span style=\"color: #808000; text-decoration-color: #808000\"> to Hawaii for summer with a budget of              </span>│                                   <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> │<span style=\"color: #008080; text-decoration-color: #008080\">                      </span>│<span style=\"color: #808000; text-decoration-color: #808000\"> approximately...                                   </span>│                                   <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> │<span style=\"color: #008080; text-decoration-color: #008080\"> Wyvb5poB8SWL6T84s9FZ </span>│<span style=\"color: #808000; text-decoration-color: #808000\"> Sarah's family loves beaches and the children are  </span>│                                   <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> │<span style=\"color: #008080; text-decoration-color: #008080\">                      </span>│<span style=\"color: #808000; text-decoration-color: #808000\"> interested in water sports. The kids have never    </span>│                                   <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> │<span style=\"color: #008080; text-decoration-color: #008080\">                      </span>│<span style=\"color: #808000; text-decoration-color: #808000\"> be...                                              </span>│                                   <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">│</span> └──────────────────────┴────────────────────────────────────────────────────┘                                   <span style=\"color: #008000; text-decoration-color: #008000\">│</span>\n",
+       "<span style=\"color: #008000; text-decoration-color: #008000\">╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯</span>\n",
+       "</pre>\n"
+      ],
+      "text/plain": [
+       "\u001b[32m╭─\u001b[0m\u001b[32m───────────────────────────────────────────────\u001b[0m\u001b[32m \u001b[0m\u001b[1;32mSearch Results\u001b[0m\u001b[32m \u001b[0m\u001b[32m────────────────────────────────────────────────\u001b[0m\u001b[32m─╮\u001b[0m\n",
+       "\u001b[32m│\u001b[0m \u001b[3m                             Long term memories                              \u001b[0m                                   \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m ┏━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓                                   \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m ┃\u001b[1;35m \u001b[0m\u001b[1;35mMemory ID           \u001b[0m\u001b[1;35m \u001b[0m┃\u001b[1;35m \u001b[0m\u001b[1;35mContent                                           \u001b[0m\u001b[1;35m \u001b[0m┃                                   \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m ┡━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩                                   \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m │\u001b[36m \u001b[0m\u001b[36mYCvc5poB8SWL6T841dF2\u001b[0m\u001b[36m \u001b[0m│\u001b[33m \u001b[0m\u001b[33mSarah's 8-year-old child has a severe seafood     \u001b[0m\u001b[33m \u001b[0m│                                   \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m │\u001b[36m                      \u001b[0m│\u001b[33m \u001b[0m\u001b[33mallergy requiring careful restaurant selection    \u001b[0m\u001b[33m \u001b[0m│                                   \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m │\u001b[36m                      \u001b[0m│\u001b[33m \u001b[0m\u001b[33mduring ...                                        \u001b[0m\u001b[33m \u001b[0m│                                   \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m │\u001b[36m \u001b[0m\u001b[36mWivb5poB8SWL6T84s9FZ\u001b[0m\u001b[36m \u001b[0m│\u001b[33m \u001b[0m\u001b[33mSarah's family consists of 4 members: Sarah, her  \u001b[0m\u001b[33m \u001b[0m│                                   \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m │\u001b[36m                      \u001b[0m│\u001b[33m \u001b[0m\u001b[33mhusband, and two children aged 8 and 12.          \u001b[0m\u001b[33m \u001b[0m│                                   \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m │\u001b[36m \u001b[0m\u001b[36mWSvb5poB8SWL6T84s9FZ\u001b[0m\u001b[36m \u001b[0m│\u001b[33m \u001b[0m\u001b[33mClient Sarah is planning a 7-day family vacation  \u001b[0m\u001b[33m \u001b[0m│                                   \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m │\u001b[36m                      \u001b[0m│\u001b[33m \u001b[0m\u001b[33mto Hawaii for summer with a budget of             \u001b[0m\u001b[33m \u001b[0m│                                   \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m │\u001b[36m                      \u001b[0m│\u001b[33m \u001b[0m\u001b[33mapproximately...                                  \u001b[0m\u001b[33m \u001b[0m│                                   \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m │\u001b[36m \u001b[0m\u001b[36mWyvb5poB8SWL6T84s9FZ\u001b[0m\u001b[36m \u001b[0m│\u001b[33m \u001b[0m\u001b[33mSarah's family loves beaches and the children are \u001b[0m\u001b[33m \u001b[0m│                                   \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m │\u001b[36m                      \u001b[0m│\u001b[33m \u001b[0m\u001b[33minterested in water sports. The kids have never   \u001b[0m\u001b[33m \u001b[0m│                                   \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m │\u001b[36m                      \u001b[0m│\u001b[33m \u001b[0m\u001b[33mbe...                                             \u001b[0m\u001b[33m \u001b[0m│                                   \u001b[32m│\u001b[0m\n",
+       "\u001b[32m│\u001b[0m └──────────────────────┴────────────────────────────────────────────────────┘                                   \u001b[32m│\u001b[0m\n",
+       "\u001b[32m╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯\u001b[0m\n"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Wonderful, Sarah! I have all our previous notes right here. Let me recap what we've discussed so far about your Hawaii vacation:\n",
+      "\n",
+      "**Your Trip Details:**\n",
+      "- 📅 **Duration:** 7-day family vacation to Hawaii this summer\n",
+      "- 💰 **Budget:** Approximately $8,000\n",
+      "- 👨‍👩‍👧‍👦 **Family:** 4 members - you, your husband, and two children (ages 8 and 12)\n",
+      "\n",
+      "**Preferences & Important Notes:**\n",
+      "- 🏖️ Your family loves beaches\n",
+      "- 🏄 The kids are interested in water sports\n",
+      "- 🤿 This will be the children's **first snorkeling experience** - how exciting!\n",
+      "- ⚠️ **Critical:** Your 8-year-old has a **severe seafood allergy**, so we need to be very careful with restaurant selections\n",
+      "\n",
+      "How can I help you today? Are you ready to start booking, or did you have questions about specific resorts, activities, or dining options that can safely accommodate your child's allergy?\n",
+      "\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "👤 You:  That's amazing you remembered everything! Do you have any resort recommendations?\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "🤖 Travel Agent: I'm so glad those notes are helpful! Based on your family's profile, here are my top resort recommendations for your Hawaii trip:\n",
+      "\n",
+      "---\n",
+      "\n",
+      "## 🌺 Top Family Resort Recommendations\n",
+      "\n",
+      "### 1. **Aulani, A Disney Resort & Spa** (Oahu - Ko Olina)\n",
+      "- **Why it's perfect for you:** World-class kids' programs for both your 8 and 12-year-old, beautiful lagoon beach perfect for beginner snorkeling, and Disney is renowned for handling food allergies with extreme care\n",
+      "- **Budget fit:** Mid-to-higher range, but excellent value for families\n",
+      "- **Highlights:** Private lagoon, water slides, character experiences, dedicated allergy-trained chefs\n",
+      "\n",
+      "### 2. **Grand Hyatt Kauai Resort & Spa** (Kauai)\n",
+      "- **Why it's perfect for you:** Stunning beach access, saltwater lagoon ideal for first-time snorkelers, excellent kids' camp\n",
+      "- **Budget fit:** Works well within your $8,000 budget\n",
+      "- **Highlights:** Multiple pools, nearby Poipu Beach for water sports, restaurants with strong allergen protocols\n",
+      "\n",
+      "### 3. **Fairmont Orchid** (Big Island)\n",
+      "- **Why it's perfect for you:** Protected snorkeling cove right on property (perfect for beginners!), family-friendly atmosphere, excellent beach activities\n",
+      "- **Budget fit:** Moderate - can fit your budget especially with a partial stay\n",
+      "- **Highlights:** On-site snorkeling with sea turtles, water sports equipment rentals, responsive to dietary needs\n",
+      "\n",
+      "### 4. **Honua Kai Resort & Spa** (Maui - Kaanapali)\n",
+      "- **Why it's perfect for you:** Condo-style suites with full kitchens (great for preparing safe meals for your 8-year-old!), right on the beach, close to snorkeling spots\n",
+      "- **Budget fit:** Excellent value - having a kitchen can save significantly on dining costs\n",
+      "- **Highlights:** Multiple pools, near family-friendly Kaanapali Beach, flexibility to cook allergen-safe meals\n",
+      "\n",
+      "---\n",
+      "\n",
+      "**My top pick for your family:** I'd lean toward **Aulani** or **Honua Kai**. Aulani offers peace of mind with their allergy protocols, while Honua Kai gives you kitchen flexibility and budget savings.\n",
+      "\n",
+      "Would you like me to look into specific pricing or availability for any of these? Or do you have a particular Hawaiian island you're most drawn to?\n",
+      "\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "👤 You:  q\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "🤖 Travel Agent: Safe travels! I'll remember our conversation for next time.\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Agent will previous conversations from previous conversation\n",
+    "# Note: The session_id will be different\n",
+    "start_travel_session('travel_session2')"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.13.2"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}

@@ -6,17 +6,17 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SentenceTransformerModel.make_model_config_json &mdash; Opensearch-py-ml 1.3.0 documentation</title>
+  <title>SentenceTransformerModel.make_model_config_json &mdash; Opensearch-py-ml 1.4.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
-      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
 
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=1f29e9d3"></script>
-      <script src="../../_static/doctools.js?v=9bcbadda"></script>
-      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../../_static/documentation_options.js?v=9172181d"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -97,55 +97,6 @@
              
   <section id="sentencetransformermodel-make-model-config-json">
 <h1>SentenceTransformerModel.make_model_config_json<a class="headerlink" href="#sentencetransformermodel-make-model-config-json" title="Link to this heading"></a></h1>
-<dl class="py function">
-<dt class="sig sig-object py" id="opensearch_py_ml.ml_models.SentenceTransformerModel.make_model_config_json">
-<span class="sig-prename descclassname"><span class="pre">opensearch_py_ml.ml_models.SentenceTransformerModel.</span></span><span class="sig-name descname"><span class="pre">make_model_config_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'TORCH_SCRIPT'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_zip_file_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">embedding_dimension</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pooling_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize_result</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">additional_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#opensearch_py_ml.ml_models.SentenceTransformerModel.make_model_config_json" title="Link to this definition"></a></dt>
-<dd><p>Parse from config.json file of pre-trained hugging-face model to generate a ml-commons_model_config.json file.
-If all required fields are given by users, use the given parameters and will skip reading the config.json</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>model_name</strong> (<em>string</em>) – Optional, The name of the model. If None, default is model id, for example,
-‘sentence-transformers/msmarco-distilbert-base-tas-b’</p></li>
-<li><p><strong>model_format</strong> (<em>string</em>) – Optional, the format of the model. Default is “TORCH_SCRIPT”.</p></li>
-<li><p><strong>model_zip_file_path</strong> (<em>string</em>) – Optional, path to the model zip file. Default is the zip file path used in save_as_pt or save_as_onnx
-depending on model_format. This zip file is used to compute model_content_size_in_bytes and
-model_content_hash_value.</p></li>
-<li><p><strong>version_number</strong> (<em>string</em>) – Optional, The version number of the model. Default is 1</p></li>
-<li><p><strong>embedding_dimension</strong> (<em>int</em>) – Optional, the embedding dimension of the model. If None, get embedding_dimension
-from the pre-trained hugging-face model object.</p></li>
-<li><p><strong>pooling_mode</strong> (<em>string</em>) – Optional, the pooling mode of the model. If None, get pooling_mode
-from the pre-trained hugging-face model object.</p></li>
-<li><p><strong>normalize_result</strong> – Optional, whether to normalize the result of the model. If None, check from the pre-trained</p></li>
-</ul>
-</dd>
-</dl>
-<p>hugging-face model object.
-:type normalize_result: bool
-:param description: Optional, the description of the model. If None, get description from the README.md</p>
-<blockquote>
-<div><p>file in the model folder.</p>
-</div></blockquote>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>all_config</strong> (<em>str</em>) – Optional, the all_config of the model. If None, parse all contents from the config file of pre-trained
-hugging-face model</p></li>
-<li><p><strong>additional_config</strong> (<em>dict</em>) – Optional, the additional_config of the model. If None, set additional_config as an empty dictionary</p></li>
-<li><p><strong>model_type</strong> (<em>string</em>) – Optional, the model_type of the model. If None, parse model_type from the config file of pre-trained
-hugging-face model</p></li>
-<li><p><strong>verbose</strong> (<em>bool</em>) – optional, use printing more logs. Default as false</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>model config file path. The file path where the model config file is being saved</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>string</p>
-</dd>
-</dl>
-</dd></dl>
-
 </section>
 
 
@@ -159,7 +110,7 @@ hugging-face model</p></li>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2025, Opensearch.</p>
+    <p>&#169; Copyright 2026, Opensearch.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
