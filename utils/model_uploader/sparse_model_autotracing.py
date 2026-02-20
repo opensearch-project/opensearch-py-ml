@@ -246,8 +246,7 @@ def main(
     :rtype: None
     """
 
-    print(
-        f"""
+    print(f"""
     === Begin running sparse_model_autotracing.py ===
     Model ID: {model_id}
     Model Version: {model_version}
@@ -260,8 +259,7 @@ def main(
     Model Init Kwargs: {json.dumps(model_init_kwargs or {})}
     Is Tokenizer: {is_tokenizer}
     ==========================================
-    """
-    )
+    """)
 
     # Now Sparse model auto tracing only support Torch Script.
     assert (

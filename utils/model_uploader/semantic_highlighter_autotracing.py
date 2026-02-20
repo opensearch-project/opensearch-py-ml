@@ -250,8 +250,7 @@ def main(
     skip_deployment : bool, optional
         Whether to skip testing deployment in a local OpenSearch instance
     """
-    print(
-        f"""
+    print(f"""
     === Begin running semantic_highlighter_autotracing.py ===
     Model ID: {model_id}
     Model Version: {model_version}
@@ -262,8 +261,7 @@ def main(
     Skip Deployment: {skip_deployment}
     Device Selection: Auto (prefer GPU if available)
     ==========================================
-    """
-    )
+    """)
 
     # Semantic highlighter only supports TorchScript
     assert (

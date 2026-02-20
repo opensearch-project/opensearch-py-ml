@@ -29,6 +29,7 @@ wavelet_piecewise_const
 tranform_piecewise_const
     Convert piecewise constant signal to activity score.
 """
+
 import math
 from typing import Dict, List, Tuple
 

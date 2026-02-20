@@ -306,8 +306,7 @@ def main(
     :return: No return value expected
     :rtype: None
     """
-    print(
-        f"""
+    print(f"""
     === Begin running model_autotracing.py ===
     Model ID: {model_id}
     Model Version: {model_version}
@@ -318,8 +317,7 @@ def main(
     Upload Prefix: {upload_prefix if upload_prefix is not None else 'N/A'}
     Model Name: {model_name if model_name is not None else 'N/A'}
     ==========================================
-    """
-    )
+    """)
 
     ml_client = MLCommonClient(OPENSEARCH_TEST_CLIENT)
 
