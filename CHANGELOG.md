@@ -8,6 +8,7 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Changed
 - Update semantic highlighting sagemaker endpoint deploy scripts ([#585](https://github.com/opensearch-project/opensearch-py-ml/pull/585))
+- Update doc workflow to use 2.19.0 ([#598](https://github.com/opensearch-project/opensearch-py-ml/pull/598))
 
 ### Fixed
 
