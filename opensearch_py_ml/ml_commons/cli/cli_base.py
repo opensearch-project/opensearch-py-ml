@@ -115,6 +115,8 @@ class CLIBase:
         config: Dict[str, Any],
         file_type: str = "configuration",
         merge_existing: bool = False,
+        output_path: Optional[str] = None,
+        interactive: bool = False,
     ) -> Optional[str]:
         """
         Save data to a YAML file with optional merging of existing content.
@@ -127,6 +129,9 @@ class CLIBase:
             merge_existing (optional): Whether to merge with existing file content
                 if the file exists. Defaults to False. If False and file exists, will
                 prompt for overwrite confirmation.
+            output_path (optional): Path to save the output information.
+                It overrides the default or configured path, since it is explicitely provided by the user.
+            interactive (optional): Whether to run in interactive mode, False by default.
 
         Returns:
             Optional[str]: The absolute path where the file was saved, or None if:
@@ -136,24 +141,12 @@ class CLIBase:
                 - User declined to overwrite existing file
         """
         try:
-            # Determine default path and prompt message based on file type
-            default_path = (
-                self.CONFIG_FILE if file_type == "configuration" else self.OUTPUT_FILE
-            )
+            path = output_path or self._get_path(file_type, interactive)
 
             # Check write permissions before attempting any operations
-            directory = os.path.dirname(default_path) or os.getcwd()
+            directory = os.path.dirname(path) or os.getcwd()
             if not os.access(directory, os.W_OK):
                 raise PermissionError(f"No write access to directory: {directory}")
-
-            # Get save path from user
-            path = (
-                input(
-                    f"\nEnter the path to save the {file_type} information, "
-                    f"or press Enter to save it in the current directory [{default_path}]: "
-                ).strip()
-                or default_path
-            )
 
             # Validate and normalize the path
             path = os.path.abspath(os.path.expanduser(path))
@@ -199,6 +192,23 @@ class CLIBase:
                 f"{Fore.RED}Error saving {file_type}: {str(e)}{Style.RESET_ALL}"
             )
         return None
+
+    def _get_path(self, file_type: str, interactive: bool = False):
+        default_path = (
+            self.CONFIG_FILE if file_type == "configuration" else self.OUTPUT_FILE
+        )
+
+        if not interactive:
+            return default_path
+
+        # if we are in interactive mode, prompt the user for the path
+        return (
+            input(
+                f"\nEnter the path to save the {file_type} information, "
+                f"or press Enter to save it in the current directory [{default_path}]: "
+            ).strip()
+            or default_path
+        )
 
     def _merge_configs(self, path: str, new_config: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -273,6 +283,8 @@ class CLIBase:
         role_arn: Optional[str] = None,
         secret_name: Optional[str] = None,
         secret_arn: Optional[str] = None,
+        interactive: bool = True,
+        output_path: Optional[str] = None,
     ) -> None:
         """
         Save connector output to a YAML file.
@@ -298,10 +310,21 @@ class CLIBase:
                 "connector_secret_name": secret_name or "",
             }
         )
-        self.save_yaml_file(self.output_config, "output", merge_existing=True)
+        self.save_yaml_file(
+            self.output_config,
+            "output",
+            merge_existing=True,
+            output_path=output_path,
+            interactive=interactive,
+        )
 
     def register_model_output(
-        self, model_id: str, model_name: str, connector_id: str
+        self,
+        model_id: str,
+        model_name: str,
+        connector_id: str,
+        output_path: Optional[str] = None,
+        interactive: bool = False,
     ) -> None:
         """
         Save register model output to a YAML file.
@@ -310,6 +333,9 @@ class CLIBase:
             model_id: The registered model ID.
             model_name: The registered model name.
             connector_id: The connector ID associated with the registered model.
+            output_path (optional): Path to save the output information.
+                                    If not provided, output will be current working directory.
+            interactive (optional): Whether to run in interactive mode.
         """
         # Update the register_model section
         self.output_config["register_model"].append(
@@ -319,7 +345,13 @@ class CLIBase:
                 "connector_id": connector_id,
             }
         )
-        self.save_yaml_file(self.output_config, "output", merge_existing=True)
+        self.save_yaml_file(
+            self.output_config,
+            "output",
+            merge_existing=True,
+            output_path=output_path,
+            interactive=interactive,
+        )
 
     def predict_model_output(self, model_id: str, response: str) -> None:
         """
@@ -336,7 +368,13 @@ class CLIBase:
                 "response": response,
             }
         )
-        self.save_yaml_file(self.output_config, "output", merge_existing=True)
+        self.save_yaml_file(
+            self.output_config,
+            "output",
+            merge_existing=True,
+            output_path=None,
+            interactive=True,
+        )
 
     def get_opensearch_domain_name(
         self, opensearch_domain_endpoint: str
