@@ -102,12 +102,15 @@
 </section>
 <section id="command-syntax">
 <h2>Command syntax<a class="headerlink" href="#command-syntax" title="Link to this heading"></a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">opensearch-ml</span> <span class="pre">model</span> <span class="pre">register</span> <span class="pre">[--connectorId</span> <span class="pre">'&lt;value&gt;'][--name</span> <span class="pre">'&lt;value&gt;'][--description</span> <span class="pre">'&lt;value&gt;']</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">opensearch-ml</span> <span class="pre">model</span> <span class="pre">register</span> <span class="pre">[-h][-i][--connectorId</span> <span class="pre">'&lt;value&gt;'][--name</span> <span class="pre">'&lt;value&gt;'][--description</span> <span class="pre">'&lt;value&gt;'][-o</span> <span class="pre">&lt;value&gt;]</span></code></p>
 <p><strong>Options:</strong></p>
 <ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">-h</span></code>: Show help message and exit</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-i</span></code>: (Optional) Enable interactive mode for model registration. Off by default</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--connectorId</span> <span class="pre">'&lt;value&gt;'</span></code>: (Optional) The connector ID to associate the model with</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--name</span> <span class="pre">'&lt;value&gt;'</span></code>: (Optional) The name of the model</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">--description</span> <span class="pre">'&lt;value&gt;'</span></code>: (Optional) A brief description of the model</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-o</span> <span class="pre">&lt;value&gt;</span></code>: (Optional) The file path to save the output information. If not provided, the output will be saved in the current directory while in non-interactive mode</p></li>
 </ul>
 </section>
 <section id="usage-examples">
@@ -115,7 +118,7 @@
 <p><strong>Registering a model interactively</strong></p>
 <blockquote>
 <div><p>Use the following command to register a model interactively:</p>
-<p><code class="docutils literal notranslate"><span class="pre">opensearch-ml</span> <span class="pre">model</span> <span class="pre">register</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">opensearch-ml</span> <span class="pre">model</span> <span class="pre">register</span> <span class="pre">-i</span></code></p>
 <p>Sample response:</p>
 <div class="highlight-plaintext notranslate"><div class="highlight"><pre><span></span>Starting model registration...
 
@@ -136,15 +139,14 @@ Output information saved successfully to /Documents/cli/output.yml
 <p><strong>Registering a model directly</strong></p>
 <blockquote>
 <div><p>To register a model directly, provide all parameters to the following command:</p>
-<p><code class="docutils literal notranslate"><span class="pre">opensearch-ml</span> <span class="pre">model</span> <span class="pre">register</span> <span class="pre">--connectorId</span> <span class="pre">'connector123'</span> <span class="pre">--name</span> <span class="pre">'Test</span> <span class="pre">model'</span> <span class="pre">--description</span> <span class="pre">'This</span> <span class="pre">is</span> <span class="pre">a</span> <span class="pre">test</span> <span class="pre">model'</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">opensearch-ml</span> <span class="pre">model</span> <span class="pre">register</span> <span class="pre">--connectorId</span> <span class="pre">'connector123'</span> <span class="pre">--name</span> <span class="pre">'Test</span> <span class="pre">model'</span> <span class="pre">--description</span> <span class="pre">'This</span> <span class="pre">is</span> <span class="pre">a</span> <span class="pre">test</span> <span class="pre">model'</span> <span class="pre">-o</span> <span class="pre">/Documents/cli/output.yml</span></code></p>
+<p>If <cite>-o</cite> or <cite>–outputPath</cite> is not specified, the output file will be saved in the current directory in non-interactive mode.</p>
 <p>Sample response:</p>
 <div class="highlight-plaintext notranslate"><div class="highlight"><pre><span></span>Starting model registration...
 
 Setup configuration loaded successfully from /Documents/cli/setup_config.yml
 
 Successfully registered a model with ID: model123
-
-Enter the path to save the output information, or press Enter to save it in the current directory [/Documents/cli/output.yml]:
 
 Output information saved successfully to /Documents/cli/output.yml
 </pre></div>
