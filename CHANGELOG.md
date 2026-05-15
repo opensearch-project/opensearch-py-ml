@@ -13,6 +13,8 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Update semantic highlighting sagemaker endpoint deploy scripts ([#585](https://github.com/opensearch-project/opensearch-py-ml/pull/585))
 - Update doc workflow to use 2.19.0 ([#598](https://github.com/opensearch-project/opensearch-py-ml/pull/598))
 - Update asymmetric embedding sagemaker endpoint deploy scripts ([#601](https://github.com/opensearch-project/opensearch-py-ml/pull/601))
+- Update transformers version constraint to >=4.53.0,<5.0.0 ([#615](https://github.com/opensearch-project/opensearch-py-ml/pull/615))
+
 ### Fixed
 
 ## [1.3.0]
