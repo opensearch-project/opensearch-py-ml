@@ -12,7 +12,7 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 ### Changed
 - Update semantic highlighting sagemaker endpoint deploy scripts ([#585](https://github.com/opensearch-project/opensearch-py-ml/pull/585))
 - Update doc workflow to use 2.19.0 ([#598](https://github.com/opensearch-project/opensearch-py-ml/pull/598))
-
+- Update asymmetric embedding sagemaker endpoint deploy scripts ([#601](https://github.com/opensearch-project/opensearch-py-ml/pull/601))
 ### Fixed
 
 ## [1.3.0]
@@ -51,6 +51,7 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Upgrade torch version to fix security issue ([#561](https://github.com/opensearch-project/opensearch-py-ml/pull/561))
 - Upgrade numpy and python version ([#562](https://github.com/opensearch-project/opensearch-py-ml/pull/562))
 - Update space type mapping for sentence transformer models ([#574](https://github.com/opensearch-project/opensearch-py-ml/pull/574))
+
 
 ### Fixed
 - Fix for uploading models with function_name instead of model_task ([#553](https://github.com/opensearch-project/opensearch-py-ml/pull/553))
