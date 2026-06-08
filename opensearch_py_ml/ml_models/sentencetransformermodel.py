@@ -15,7 +15,6 @@ import re
 import shutil
 import subprocess
 import time
-from pathlib import Path
 from typing import List
 from zipfile import ZipFile
 
@@ -28,11 +27,14 @@ import yaml
 from accelerate import Accelerator, notebook_launcher
 from mdutils.fileutils import MarkDownFile
 from sentence_transformers import SentenceTransformer
-from sentence_transformers.models import Normalize, Pooling, Transformer
+from sentence_transformers.sentence_transformer.modules import (
+    Normalize,
+    Pooling,
+    Transformer,
+)
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from transformers import TrainingArguments, get_linear_schedule_with_warmup
-from transformers.convert_graph_to_onnx import convert
 from transformers.models.distilbert.modeling_distilbert import (
     DistilBertSdpaAttention,
     MultiHeadSelfAttention,
@@ -1089,11 +1091,40 @@ class SentenceTransformerModel(BaseUploadModel):
             save_json_folder_path, model.tokenizer.model_max_length
         )
 
-        convert(
-            framework="pt",
-            model=model_id,
-            output=Path(model_path),
-            opset=15,
+        os.makedirs(os.path.dirname(model_path), exist_ok=True)
+        device = torch.device("cpu")
+        cpu_model = model.to(device)
+        dummy_input = cpu_model.tokenizer(
+            "dummy input for onnx export",
+            return_tensors="pt",
+            padding=True,
+            truncation=True,
+        )
+
+        class _OnnxWrapper(torch.nn.Module):
+            def __init__(self, model):
+                super().__init__()
+                self.model = model
+
+            def forward(self, input_ids, attention_mask):
+                output = self.model(
+                    {"input_ids": input_ids, "attention_mask": attention_mask}
+                )
+                return output["sentence_embedding"]
+
+        wrapper = _OnnxWrapper(cpu_model)
+        torch.onnx.export(
+            wrapper,
+            (dummy_input["input_ids"], dummy_input["attention_mask"]),
+            model_path,
+            opset_version=15,
+            input_names=["input_ids", "attention_mask"],
+            output_names=["sentence_embedding"],
+            dynamic_axes={
+                "input_ids": {0: "batch_size", 1: "sequence_length"},
+                "attention_mask": {0: "batch_size", 1: "sequence_length"},
+                "sentence_embedding": {0: "batch_size"},
+            },
         )
 
         print("model file is saved to ", model_path)
@@ -1358,14 +1389,14 @@ class SentenceTransformerModel(BaseUploadModel):
         ):
             try:
                 if embedding_dimension is None:
-                    embedding_dimension = model.get_sentence_embedding_dimension()
+                    embedding_dimension = model.get_embedding_dimension()
 
                 for str_idx, module in model._modules.items():
                     if model_type is None and isinstance(module, Transformer):
                         model_type = module.auto_model.__class__.__name__
                         model_type = model_type.lower().rstrip("model")
                     elif pooling_mode is None and isinstance(module, Pooling):
-                        pooling_mode = module.get_pooling_mode_str().upper()
+                        pooling_mode = module.pooling_mode.upper()
                     elif normalize_result is None and isinstance(module, Normalize):
                         normalize_result = True
                     # TODO: Support 'Dense' module

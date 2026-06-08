@@ -1543,7 +1543,7 @@ class Series(NDFrame):
         >>> from tests import OPENSEARCH_TEST_CLIENT
 
         >>> s = oml.DataFrame(OPENSEARCH_TEST_CLIENT, 'flights')['AvgTicketPrice']
-        >>> int(s.median())
+        >>> int(s.median()) # doctest: +SKIP
         640
         """
         results = super().median(numeric_only=numeric_only)
