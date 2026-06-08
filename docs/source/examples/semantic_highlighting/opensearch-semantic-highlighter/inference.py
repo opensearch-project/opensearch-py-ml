@@ -9,9 +9,8 @@ from torch.nn.utils.rnn import pad_sequence
 from transformers import (
     AutoTokenizer, 
     AutoConfig,
-    BertModel
 )
-from transformers.models.bert.modeling_bert import BertPreTrainedModel
+from transformers.models.bert.modeling_bert import BertModel, BertPreTrainedModel
 from typing import List, Dict, Any, Tuple, Optional, Union
 from dataclasses import dataclass, field
 from functools import partial
@@ -59,7 +58,7 @@ class BertTaggerForSentenceExtractionWithBackoff(BertPreTrainedModel):
         self.bert = BertModel(config, add_pooling_layer=False)
         self.dropout = nn.Dropout(config.hidden_dropout_prob)
         self.classifier = nn.Linear(config.hidden_size, self.num_labels)
-        self.init_weights()
+        self.post_init()
 
     def forward(
         self,
