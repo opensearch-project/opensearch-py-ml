@@ -343,7 +343,10 @@ class MLCommonClient:
                 print("Model deployed only partially")
             # TODO: need to add the test case later for this line
             else:
-                raise Exception("Model deployment failed")
+                task_info = self._get_task_info(task_id)
+                raise Exception(
+                    f"Model deployment failed. Task ID: {task_id}. Task details: {task_info}"
+                )
 
         return self._get_task_info(task_id)
 
@@ -382,7 +385,10 @@ class MLCommonClient:
             elif model_state == "PARTIALLY_DEPLOYED":
                 print("Model deployed only partially")
             else:
-                raise Exception("Model deployment failed")
+                task_info = self._get_task_info(task_id)
+                raise Exception(
+                    f"Model deployment failed. Task ID: {task_id}. Task details: {task_info}"
+                )
 
         return self._get_task_info(task_id)
 

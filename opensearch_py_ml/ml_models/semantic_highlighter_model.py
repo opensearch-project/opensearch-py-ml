@@ -306,7 +306,6 @@ class SemanticHighlighterModel(BaseUploadModel):
         tokenizer_path = os.path.join(self.folder_path, "tokenizer")
         os.makedirs(tokenizer_path, exist_ok=True)
         tokenizer.save_pretrained(tokenizer_path)
-        tokenizer.save_vocabulary(tokenizer_path)
         print(f"Tokenizer files saved to {tokenizer_path}")
 
         # Move example inputs to the same device as the model
