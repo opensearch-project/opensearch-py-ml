@@ -46,7 +46,7 @@ class TraceableBertTaggerForSentenceExtractionWithBackoff(BertPreTrainedModel):
         self.bert = BertModel(config)
         self.dropout = nn.Dropout(config.hidden_dropout_prob)
         self.classifier = nn.Linear(config.hidden_size, self.num_labels)
-        self.init_weights()
+        self.post_init()
 
     def forward(
         self,
@@ -306,6 +306,7 @@ class SemanticHighlighterModel(BaseUploadModel):
         tokenizer_path = os.path.join(self.folder_path, "tokenizer")
         os.makedirs(tokenizer_path, exist_ok=True)
         tokenizer.save_pretrained(tokenizer_path)
+        tokenizer.save_vocabulary(tokenizer_path)
         print(f"Tokenizer files saved to {tokenizer_path}")
 
         # Move example inputs to the same device as the model
