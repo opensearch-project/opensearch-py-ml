@@ -443,7 +443,9 @@ class SentenceTransformerModel(BaseUploadModel):
         corp_len = []
 
         # Load a model from HuggingFace
-        model = SentenceTransformer(model_id)
+        model = SentenceTransformer(
+            model_id, model_kwargs={"attn_implementation": "eager"}
+        )
 
         # Calculate the length of passages
         for i in range(len(train_examples)):
@@ -781,7 +783,9 @@ class SentenceTransformerModel(BaseUploadModel):
         :rtype: string
         """
 
-        model = SentenceTransformer(model_id)
+        model = SentenceTransformer(
+            model_id, model_kwargs={"attn_implementation": "eager"}
+        )
 
         if model_name is None:
             model_name = str(model_id.split("/")[-1] + ".pt")
@@ -890,7 +894,9 @@ class SentenceTransformerModel(BaseUploadModel):
         :rtype: string
         """
 
-        model = SentenceTransformer(model_id)
+        model = SentenceTransformer(
+            model_id, model_kwargs={"attn_implementation": "eager"}
+        )
 
         if model_name is None:
             model_name = str(model_id.split("/")[-1] + ".onnx")
@@ -1211,7 +1217,9 @@ class SentenceTransformerModel(BaseUploadModel):
             model_name = self.model_id
 
         # if user input model_type/embedding_dimension/pooling_mode, it will skip this step.
-        model = SentenceTransformer(self.model_id)
+        model = SentenceTransformer(
+            self.model_id, model_kwargs={"attn_implementation": "eager"}
+        )
         if (
             model_type is None
             or embedding_dimension is None
