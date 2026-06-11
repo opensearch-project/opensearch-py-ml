@@ -202,8 +202,6 @@ def test_model_zip_content():
         "opensearch-semantic-highlighter-v1.pt",
         "tokenizer.json",
         "tokenizer_config.json",
-        "special_tokens_map.json",
-        "vocab.txt",
         "LICENSE",
     }
 
