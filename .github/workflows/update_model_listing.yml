@@ -22,9 +22,9 @@ jobs:
          echo "This workflow should only be triggered on 'main' branch"
          exit 1
     - name: Checkout Main Branch
-      uses: actions/checkout@v4
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
     - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v2
+      uses: aws-actions/configure-aws-credentials@5fd3084fc36e372ff1fff382a39b10d03659f355 # v2
       with:
         aws-region: ${{ secrets.MODEL_UPLOADER_AWS_REGION }}
         role-to-assume: ${{ secrets.MODEL_UPLOADER_ROLE }}
@@ -52,7 +52,7 @@ jobs:
         done
         echo $(ls config_folder)
     - name: Set Up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
       with:
         python-version: '3.x'
     - name: Update pretrained_models_all_versions.json
@@ -79,7 +79,7 @@ jobs:
         echo "EOF" >> $GITHUB_OUTPUT
         echo "${pr_body@E}"
     - name: Create a Branch & Raise a PR
-      uses: peter-evans/create-pull-request@v7
+      uses: peter-evans/create-pull-request@22a9089034f40e5a961c8808d113e2c98fb63676 # v7
       id: create_pr
       with:
         committer: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
@@ -94,7 +94,7 @@ jobs:
     - name: Checkout PR Branch
       id: checkout_pr_branch
       continue-on-error: true
-      uses: actions/checkout@v4
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       with:
         ref: model-listing-uploader/${{ github.run_id }}
     - name: Create a line for updating CHANGELOG.md
@@ -107,7 +107,7 @@ jobs:
         echo "changelog_line=$changelog_line" >> $GITHUB_OUTPUT
     - name: Warning Comment on PR if create_changelog_line fails
       if: steps.checkout_pr_branch.outcome == 'success' && steps.create_changelog_line.outcome == 'failure'
-      uses: thollander/actions-comment-pull-request@v2
+      uses: thollander/actions-comment-pull-request@fabd468d3a1a0b97feee5f6b9e499eab0dd903f6 # v2
       with:
         pr_number: ${{ steps.create_pr.outputs.pull-request-number }}
         message: "Warning:exclamation:: The workflow failed to update CHANGELOG.md. Please update CHANGELOG.md manually."
@@ -120,7 +120,7 @@ jobs:
         python utils/model_uploader/update_changelog_md.py "${{ steps.create_changelog_line.outputs.changelog_line }}"
     - name: Commit Updates
       if: steps.checkout_pr_branch.outcome == 'success' && steps.create_changelog_line.outcome == 'success' && steps.update_changelog.outcome == 'success'
-      uses: stefanzweifel/git-auto-commit-action@v4
+      uses: stefanzweifel/git-auto-commit-action@3ea6ae190baf489ba007f7c92608f33ce20ef04a # v4
       id: commit
       with:
         branch: model-listing-uploader/${{ github.run_id }}
@@ -130,7 +130,7 @@ jobs:
         file_pattern: CHANGELOG.md
     - name: Warning Comment on PR if update_changelog fails
       if: steps.checkout_pr_branch.outcome == 'success' && steps.create_changelog_line.outcome == 'success' && steps.update_changelog.outcome == 'failure'
-      uses: thollander/actions-comment-pull-request@v2
+      uses: thollander/actions-comment-pull-request@fabd468d3a1a0b97feee5f6b9e499eab0dd903f6 # v2
       with:
         pr_number: ${{ steps.create_pr.outputs.pull-request-number }}
         message: |
