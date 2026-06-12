@@ -6,7 +6,6 @@
 # GitHub history for details.
 
 import json
-import math
 import os
 import pickle
 import platform
@@ -15,7 +14,6 @@ import re
 import shutil
 import subprocess
 import time
-from pathlib import Path
 from typing import List
 from zipfile import ZipFile
 
@@ -23,20 +21,18 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import torch
-import torch.nn as nn
 import yaml
 from accelerate import Accelerator, notebook_launcher
 from mdutils.fileutils import MarkDownFile
 from sentence_transformers import SentenceTransformer
-from sentence_transformers.models import Normalize, Pooling, Transformer
+from sentence_transformers.sentence_transformer.modules import (
+    Normalize,
+    Pooling,
+    Transformer,
+)
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from transformers import TrainingArguments, get_linear_schedule_with_warmup
-from transformers.convert_graph_to_onnx import convert
-from transformers.models.distilbert.modeling_distilbert import (
-    DistilBertSdpaAttention,
-    MultiHeadSelfAttention,
-)
 
 from opensearch_py_ml.ml_commons.ml_common_utils import (
     _generate_model_content_hash_value,
@@ -388,173 +384,6 @@ class SentenceTransformerModel(BaseUploadModel):
             train_examples.append([queries[i], passages[i]])
         return train_examples
 
-    def _get_parent_and_attr(self, model, module_name):
-        """
-        Retrieve the parent module and the attribute name for a given module.
-        For example, if module_name is "encoder.layer.0.attention", this function will return
-        the "encoder.layer.0" module and "attention" as the attribute name.
-
-        :param model:
-            required, the model instance to traverse
-        :type model: SentenceTransformer
-        :param module_name:
-            required, the dot-separated path to the module
-        :type module_name: string
-        :return: tuple containing parent module object and the name of the target attribute
-        :rtype: Tuple[object, string]
-        """
-        parts = module_name.split(".")
-        parent = model
-        for part in parts[:-1]:  # Traverse until the second last part
-            parent = getattr(parent, part)
-        return parent, parts[-1]
-
-    def patch_model_weights(self, model):
-        """
-        Replace DistilBertSdpaAttention with MultiHeadSelfAttention in the given model.
-        Needed for compatibility with newer PyTorch version (2.5.1) while preserving the model's learned weights.
-
-        This function performs the following steps:
-        1. Identifies all DistilBertSdpaAttention layers in the model
-        2. Creates new MultiHeadSelfAttention layers with identical weights and configuration
-        3. Replaces the old DistilBertSdpaAttention attention layers with the new MultiHeadSelfAttention attention layers
-        4. Ensures the forward method returns proper tuple format for compatibility
-
-        :param model:
-            required, the DistilBert model instance
-        :type model: SentenceTransformer
-        :return: the modified model with replaced attention layers
-        :rtype: SentenceTransformer
-        """
-        # Collect the layers to replace in a separate list to avoid modifying dictionary while iterating
-        modules_to_replace = []
-
-        for name, module in model.named_modules():
-            # Identify modules that need to be replaced
-            if isinstance(module, DistilBertSdpaAttention):
-                modules_to_replace.append((name, module))
-
-        # Replace the identified modules
-        for name, module in modules_to_replace:
-            # Retrieve the original config
-            config = getattr(module, "config", None)
-            if config is None:
-                raise ValueError(f"Module {name} does not have a 'config' attribute.")
-
-            # Create new MultiHeadSelfAttention with same config
-            new_module = MultiHeadSelfAttention(config)
-
-            # Copy weights into new module
-            new_module.q_lin.weight.data = module.q_lin.weight.data.clone()
-            new_module.q_lin.bias.data = module.q_lin.bias.data.clone()
-            new_module.k_lin.weight.data = module.k_lin.weight.data.clone()
-            new_module.k_lin.bias.data = module.k_lin.bias.data.clone()
-            new_module.v_lin.weight.data = module.v_lin.weight.data.clone()
-            new_module.v_lin.bias.data = module.v_lin.bias.data.clone()
-            new_module.out_lin.weight.data = module.out_lin.weight.data.clone()
-            new_module.out_lin.bias.data = module.out_lin.bias.data.clone()
-
-            # Modify the forward method to fix tuple return issue
-            def new_forward(
-                self, query, key, value, mask, head_mask, output_attentions
-            ):
-                """
-                Replace forward method to ensure proper tuple return format.
-
-                :param query:
-                    required, tensor containing query vectors of shape [batch_size, seq_length, dim]
-                :type query: Tensor
-                :param key:
-                    required, tensor containing key vectors of shape [batch_size, seq_length, dim]
-                :type key: Tensor
-                :param value:
-                    required, tensor containing value vectors of shape [batch_size, seq_length, dim]
-                :type value: Tensor
-                :param mask:
-                    required, attention mask tensor of shape [batch_size, seq_length] or [batch_size, seq_length, seq_length]
-                :type mask: Tensor
-                :param head_mask:
-                    required, mask for attention heads
-                :type head_mask: Tensor
-                :param output_attentions:
-                    required, boolean flag indicating whether to output attention weights
-                :type output_attentions: bool
-                :return: A tuple of output and the attention weights if output_attentions is True,
-                        otherwise a tuple of output. Output shape: [batch_size, seq_length, dim]
-                :rtype: Tuple[Tensor, Tensor] or Tuple[Tensor]
-                """
-                batch_size, seq_length, _ = query.shape
-                dim_per_head = self.dim // self.n_heads
-
-                # Ensure the mask is the correct shape
-                if mask.dim() == 2:  # [batch_size, seq_length]
-                    mask = mask[
-                        :, None, None, :
-                    ]  # Convert to [batch_size, 1, 1, seq_length]
-                elif mask.dim() == 3:  # [batch_size, seq_length, seq_length]
-                    mask = mask[
-                        :, None, :, :
-                    ]  # Convert to [batch_size, 1, seq_length, seq_length]
-
-                # Validate the new mask shape before applying expansion
-                if mask.shape[-1] != seq_length:
-                    raise ValueError(
-                        f"Mask shape {mask.shape} does not match sequence length {seq_length}"
-                    )
-
-                # Apply mask expansion for all attention heads
-                mask = (mask == 0).expand(
-                    batch_size, self.n_heads, seq_length, seq_length
-                )
-
-                # Transform query, key, and value for multi-head attention
-                q = (
-                    self.q_lin(query)
-                    .view(batch_size, seq_length, self.n_heads, dim_per_head)
-                    .transpose(1, 2)
-                )
-                k = (
-                    self.k_lin(key)
-                    .view(batch_size, seq_length, self.n_heads, dim_per_head)
-                    .transpose(1, 2)
-                )
-                v = (
-                    self.v_lin(value)
-                    .view(batch_size, seq_length, self.n_heads, dim_per_head)
-                    .transpose(1, 2)
-                )
-
-                q = q / math.sqrt(dim_per_head)
-                scores = torch.matmul(q, k.transpose(-2, -1))
-
-                # Apply the correctly shaped mask
-                scores = scores.masked_fill(mask, torch.finfo(scores.dtype).min)
-
-                weights = nn.functional.softmax(scores, dim=-1)
-                weights = nn.functional.dropout(
-                    weights, p=self.dropout.p, training=self.training
-                )
-
-                context = torch.matmul(weights, v)
-                context = (
-                    context.transpose(1, 2)
-                    .contiguous()
-                    .view(batch_size, seq_length, self.dim)
-                )
-                output = self.out_lin(context)
-
-                # Ensure return is always a tuple, as expected by DistilBERT
-                return (output, weights) if output_attentions else (output,)
-
-            # Replace forward method with the new function
-            new_module.forward = new_forward.__get__(new_module, MultiHeadSelfAttention)
-
-            # Replace module in the model
-            parent_module, attr_name = self._get_parent_and_attr(model, name)
-            setattr(parent_module, attr_name, new_module)
-
-        return model
-
     def train_model(
         self,
         train_examples: List[List[str]],
@@ -614,7 +443,9 @@ class SentenceTransformerModel(BaseUploadModel):
         corp_len = []
 
         # Load a model from HuggingFace
-        model = SentenceTransformer(model_id)
+        model = SentenceTransformer(
+            model_id, model_kwargs={"attn_implementation": "eager"}
+        )
 
         # Calculate the length of passages
         for i in range(len(train_examples)):
@@ -702,11 +533,13 @@ class SentenceTransformerModel(BaseUploadModel):
                     model = accelerator.unwrap_model(model)
                     out_q = accelerator.unwrap_model(model).tokenize(batch_q)
                     for key in out_q.keys():
-                        out_q[key] = out_q[key].to(model.device)
+                        if isinstance(out_q[key], torch.Tensor):
+                            out_q[key] = out_q[key].to(model.device)
 
                     out_p = accelerator.unwrap_model(model).tokenize(batch_p)
                     for key in out_p.keys():
-                        out_p[key] = out_p[key].to(model.device)
+                        if isinstance(out_p[key], torch.Tensor):
+                            out_p[key] = out_p[key].to(model.device)
 
                     Y = model(out_q)["sentence_embedding"]
                     X = model(out_p)["sentence_embedding"]
@@ -776,12 +609,14 @@ class SentenceTransformerModel(BaseUploadModel):
 
                     out_q = model.tokenize(batch_q)
                     for key in out_q.keys():
-                        out_q[key] = out_q[key].to(device)
+                        if isinstance(out_q[key], torch.Tensor):
+                            out_q[key] = out_q[key].to(device)
                     Y = model(out_q)["sentence_embedding"]
 
                     out = model.tokenize(batch_p)
                     for key in out.keys():
-                        out[key] = out[key].to(device)
+                        if isinstance(out[key], torch.Tensor):
+                            out[key] = out[key].to(device)
                     X = model(out)["sentence_embedding"]
 
                     XY = torch.exp(torch.matmul(X, Y.T) / (X.shape[1]) ** 0.5)
@@ -803,7 +638,6 @@ class SentenceTransformerModel(BaseUploadModel):
                         plt.plot(loss[::100])
                         plt.show()
 
-        model = self.patch_model_weights(model)
         # saving the pytorch model and the tokenizers.json file is saving at this step
         model.save(self.folder_path)
         device = "cpu"
@@ -811,7 +645,8 @@ class SentenceTransformerModel(BaseUploadModel):
         print(f"Total training time: {time.time() - init_time}\n")
 
         for key in out_q.keys():
-            out_q[key] = out_q[key].to(device)
+            if isinstance(out_q[key], torch.Tensor):
+                out_q[key] = out_q[key].to(device)
 
         traced_cpu = torch.jit.trace(
             cpu_model,
@@ -948,7 +783,9 @@ class SentenceTransformerModel(BaseUploadModel):
         :rtype: string
         """
 
-        model = SentenceTransformer(model_id)
+        model = SentenceTransformer(
+            model_id, model_kwargs={"attn_implementation": "eager"}
+        )
 
         if model_name is None:
             model_name = str(model_id.split("/")[-1] + ".pt")
@@ -1057,7 +894,9 @@ class SentenceTransformerModel(BaseUploadModel):
         :rtype: string
         """
 
-        model = SentenceTransformer(model_id)
+        model = SentenceTransformer(
+            model_id, model_kwargs={"attn_implementation": "eager"}
+        )
 
         if model_name is None:
             model_name = str(model_id.split("/")[-1] + ".onnx")
@@ -1089,11 +928,40 @@ class SentenceTransformerModel(BaseUploadModel):
             save_json_folder_path, model.tokenizer.model_max_length
         )
 
-        convert(
-            framework="pt",
-            model=model_id,
-            output=Path(model_path),
-            opset=15,
+        os.makedirs(os.path.dirname(model_path), exist_ok=True)
+        device = torch.device("cpu")
+        cpu_model = model.to(device)
+        dummy_input = cpu_model.tokenizer(
+            "dummy input for onnx export",
+            return_tensors="pt",
+            padding=True,
+            truncation=True,
+        )
+
+        class _OnnxWrapper(torch.nn.Module):
+            def __init__(self, model):
+                super().__init__()
+                self.model = model
+
+            def forward(self, input_ids, attention_mask):
+                output = self.model(
+                    {"input_ids": input_ids, "attention_mask": attention_mask}
+                )
+                return output["sentence_embedding"]
+
+        wrapper = _OnnxWrapper(cpu_model)
+        torch.onnx.export(
+            wrapper,
+            (dummy_input["input_ids"], dummy_input["attention_mask"]),
+            model_path,
+            opset_version=15,
+            input_names=["input_ids", "attention_mask"],
+            output_names=["sentence_embedding"],
+            dynamic_axes={
+                "input_ids": {0: "batch_size", 1: "sequence_length"},
+                "attention_mask": {0: "batch_size", 1: "sequence_length"},
+                "sentence_embedding": {0: "batch_size"},
+            },
         )
 
         print("model file is saved to ", model_path)
@@ -1349,7 +1217,9 @@ class SentenceTransformerModel(BaseUploadModel):
             model_name = self.model_id
 
         # if user input model_type/embedding_dimension/pooling_mode, it will skip this step.
-        model = SentenceTransformer(self.model_id)
+        model = SentenceTransformer(
+            self.model_id, model_kwargs={"attn_implementation": "eager"}
+        )
         if (
             model_type is None
             or embedding_dimension is None
@@ -1358,14 +1228,14 @@ class SentenceTransformerModel(BaseUploadModel):
         ):
             try:
                 if embedding_dimension is None:
-                    embedding_dimension = model.get_sentence_embedding_dimension()
+                    embedding_dimension = model.get_embedding_dimension()
 
                 for str_idx, module in model._modules.items():
                     if model_type is None and isinstance(module, Transformer):
                         model_type = module.auto_model.__class__.__name__
                         model_type = model_type.lower().rstrip("model")
                     elif pooling_mode is None and isinstance(module, Pooling):
-                        pooling_mode = module.get_pooling_mode_str().upper()
+                        pooling_mode = module.pooling_mode.upper()
                     elif normalize_result is None and isinstance(module, Normalize):
                         normalize_result = True
                     # TODO: Support 'Dense' module

@@ -46,7 +46,7 @@ class TraceableBertTaggerForSentenceExtractionWithBackoff(BertPreTrainedModel):
         self.bert = BertModel(config)
         self.dropout = nn.Dropout(config.hidden_dropout_prob)
         self.classifier = nn.Linear(config.hidden_size, self.num_labels)
-        self.init_weights()
+        self.post_init()
 
     def forward(
         self,
