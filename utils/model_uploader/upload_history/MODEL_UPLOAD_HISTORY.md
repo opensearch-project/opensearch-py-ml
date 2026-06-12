@@ -54,3 +54,4 @@ The following table shows sentence transformer model upload history.
 |2025-06-02 11:52:31|@nathaliellenaa|`sentence-transformers/paraphrase-mpnet-base-v2`|1.0.1|TORCH_SCRIPT|768|N/A|15400188136|
 |2025-06-02 12:11:44|@nathaliellenaa|`sentence-transformers/distiluse-base-multilingual-cased-v1`|1.0.2|TORCH_SCRIPT|512|N/A|15400467060|
 |2025-06-12 10:31:57|@nathaliellenaa|`opensearch-project/opensearch-semantic-highlighter-v1`|1.0.0|TORCH_SCRIPT|N/A|N/A|15617103395|
+|2025-09-15 15:37:05|@nathaliellenaa|`sentence-transformers/distiluse-base-multilingual-cased-v1`|1.0.2|TORCH_SCRIPT|512|MEAN|17747624425|
