@@ -136,7 +136,7 @@ def compute_event_accuracy(event_preds, event_labels, M):
         return precs, recs
 
 
-def test_torchscript_scripting():
+def test_torchscript_scripting(tmp_path):
     # test scripting and save / load of scripted model
     model = mcorr.MCorr()
 
@@ -146,19 +146,18 @@ def test_torchscript_scripting():
         assert False, f"Failed to script model with exception {exec}"
 
     try:
-        torch.jit.save(jit_processing, "mcorrtest.pt")
+        model_path = tmp_path / "mcorrtest.pt"
+        torch.jit.save(jit_processing, model_path)
     except Exception as exec:
         assert False, f"Failed to save model with exception {exec}"
 
     try:
-        _ = torch.jit.load("mcorrtest.pt")
+        _ = torch.jit.load(model_path)
     except Exception as exec:
         assert False, f"Failed to load scripted model with exception {exec}"
 
-    os.remove("mcorrtest.pt")
 
-
-def test_torchscript_output():
+def test_torchscript_output(tmp_path):
     # data with nontrivial event structure
     sig = torch.normal(mean=0, std=1, size=[5, 128])
 
@@ -167,8 +166,9 @@ def test_torchscript_output():
 
     model = mcorr.MCorr()
     jit_processing = torch.jit.script(model)
-    torch.jit.save(jit_processing, "mcorrtest.pt")
-    loaded_model = torch.jit.load("mcorrtest.pt")
+    model_path = tmp_path / "mcorrtest.pt"
+    torch.jit.save(jit_processing, model_path)
+    loaded_model = torch.jit.load(model_path)
 
     ts_events = loaded_model.forward(sig)
 
@@ -179,5 +179,3 @@ def test_torchscript_output():
     for pte, tse in zip(pt_events, ts_events):
         for k in pte.keys():
             torch.testing.assert_close(pte[k], tse[k])
-
-    os.remove("mcorrtest.pt")

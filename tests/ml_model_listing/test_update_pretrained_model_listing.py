@@ -26,55 +26,20 @@ CONFIG_FOLDERNAME = "config_folder"
 SAMPLE_PRETRAINED_MODEL_LISTING = os.path.join(
     SAMPLE_FOLDER, "pretrained_model_listing.json"
 )
-SAMPLE_FOLDER_COPY = os.path.join(THIS_DIR, "samples_copy")
 SAMPLE_MISSING_CONFIG_SUBFOLDERNAME = "ml-models/huggingface/sentence-transformers"
-TEST_FILE = os.path.join(THIS_DIR, "test_pretrained_model_listing.json")
 
 from update_pretrained_model_listing import main as update_pretrained_model_listing_main
 
 
-def clean_test_file():
-    if os.path.isfile(TEST_FILE):
-        os.remove(TEST_FILE)
-
-
-def copy_samples_folder():
-    shutil.copytree(SAMPLE_FOLDER, SAMPLE_FOLDER_COPY)
-
-
-def clean_samples_folder_copy():
-    if os.path.exists(SAMPLE_FOLDER_COPY):
-        for files in os.listdir(SAMPLE_FOLDER_COPY):
-            sub_path = os.path.join(SAMPLE_FOLDER_COPY, files)
-            if os.path.isfile(sub_path):
-                os.remove(sub_path)
-            else:
-                try:
-                    shutil.rmtree(sub_path)
-                except OSError as err:
-                    print(
-                        "Fail to delete files, please delete all files in "
-                        + str(SAMPLE_FOLDER_COPY)
-                        + " "
-                        + str(err)
-                    )
-
-        shutil.rmtree(SAMPLE_FOLDER_COPY)
-
-
-clean_samples_folder_copy()
-clean_test_file()
-
-
-def test_create_new_pretrained_model_listing():
-    clean_test_file()
+def test_create_new_pretrained_model_listing(tmp_path):
+    test_file = str(tmp_path / "test_pretrained_model_listing.json")
     try:
         update_pretrained_model_listing_main(
             [
                 os.path.join(SAMPLE_FOLDER, CONFIG_PATHS_TXT_FILENAME),
                 os.path.join(SAMPLE_FOLDER, CONFIG_FOLDERNAME),
                 "--pretrained_model_listing_json_filepath",
-                TEST_FILE,
+                test_file,
             ]
         )
     except Exception as e:
@@ -89,44 +54,34 @@ def test_create_new_pretrained_model_listing():
         )
 
     try:
-        with open(TEST_FILE, "r") as f:
+        with open(test_file, "r") as f:
             test_pretrained_model_listing = json.load(f)
     except Exception as e:
-        assert False, print(f"Cannot open {TEST_FILE} to verify its content: {e}")
+        assert False, print(f"Cannot open {test_file} to verify its content: {e}")
 
     assert test_pretrained_model_listing == sample_pretrained_model_listing, print(
         "Incorrect pretrained model listing"
     )
 
-    clean_test_file()
 
-
-def test_missing_config_file():
-    clean_test_file()
-    clean_samples_folder_copy()
-
-    copy_samples_folder()
+def test_missing_config_file(tmp_path):
+    test_file = str(tmp_path / "test_pretrained_model_listing.json")
+    samples_folder_copy = tmp_path / "samples_copy"
+    shutil.copytree(SAMPLE_FOLDER, samples_folder_copy)
     shutil.rmtree(
         os.path.join(
-            SAMPLE_FOLDER_COPY, CONFIG_FOLDERNAME, SAMPLE_MISSING_CONFIG_SUBFOLDERNAME
+            samples_folder_copy, CONFIG_FOLDERNAME, SAMPLE_MISSING_CONFIG_SUBFOLDERNAME
         )
     )
 
     with pytest.raises(Exception) as exc_info:
         update_pretrained_model_listing_main(
             [
-                os.path.join(SAMPLE_FOLDER_COPY, CONFIG_PATHS_TXT_FILENAME),
-                os.path.join(SAMPLE_FOLDER_COPY, CONFIG_FOLDERNAME),
+                os.path.join(samples_folder_copy, CONFIG_PATHS_TXT_FILENAME),
+                os.path.join(samples_folder_copy, CONFIG_FOLDERNAME),
                 "--pretrained_model_listing_json_filepath",
-                TEST_FILE,
+                test_file,
             ]
         )
     assert exc_info.type is Exception
     assert "Cannot open" in str(exc_info.value)
-
-    clean_test_file()
-    clean_samples_folder_copy()
-
-
-clean_samples_folder_copy()
-clean_test_file()

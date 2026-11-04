@@ -6,11 +6,11 @@
 # GitHub history for details.
 
 
-import os
 import unittest
 from io import StringIO
 from unittest.mock import MagicMock, call, patch
 
+import pytest
 from botocore.exceptions import ClientError
 from colorama import Fore, Style
 
@@ -19,14 +19,14 @@ from opensearch_py_ml.ml_commons.cli.ml_setup import Setup
 
 
 class TestSetup(unittest.TestCase):
-    def setUp(self):
-        if os.path.exists(CLIBase.CONFIG_FILE):
-            os.remove(CLIBase.CONFIG_FILE)
-        self.setup_instance = Setup()
+    @pytest.fixture(autouse=True)
+    def temporary_config(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        monkeypatch.setattr(CLIBase, "CONFIG_FILE", str(tmp_path / "setup_config.yml"))
+        monkeypatch.setattr(CLIBase, "OUTPUT_FILE", str(tmp_path / "output.yml"))
 
-    def tearDown(self):
-        if os.path.exists(CLIBase.CONFIG_FILE):
-            os.remove(CLIBase.CONFIG_FILE)
+    def setUp(self):
+        self.setup_instance = Setup()
 
     @patch("boto3.Session")
     def test_check_credentials_validity(self, mock_session):

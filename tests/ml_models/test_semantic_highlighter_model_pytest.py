@@ -7,7 +7,6 @@
 
 import json
 import os
-import shutil
 from unittest.mock import MagicMock, patch
 from zipfile import ZipFile
 
@@ -15,30 +14,6 @@ import pytest
 import torch
 
 from opensearch_py_ml.ml_models import SemanticHighlighterModel
-
-TEST_FOLDER = os.path.join(
-    os.path.dirname(os.path.abspath("__file__")), "tests", "test_model_files"
-)
-
-
-def clean_test_folder(TEST_FOLDER):
-    if os.path.exists(TEST_FOLDER):
-        for files in os.listdir(TEST_FOLDER):
-            sub_path = os.path.join(TEST_FOLDER, files)
-            if os.path.isfile(sub_path):
-                os.remove(sub_path)
-            else:
-                try:
-                    shutil.rmtree(sub_path)
-                except OSError as err:
-                    print(
-                        "Fail to delete files, please delete all files in "
-                        + str(TEST_FOLDER)
-                        + " "
-                        + str(err)
-                    )
-
-        shutil.rmtree(TEST_FOLDER)
 
 
 def compare_model_config(
@@ -97,57 +72,49 @@ def prepare_example_inputs():
     }
 
 
-clean_test_folder(TEST_FOLDER)
-test_model = SemanticHighlighterModel(folder_path=TEST_FOLDER)
+@pytest.fixture
+def model_folder(tmp_path):
+    return str(tmp_path / "test_model_files")
 
 
-def test_check_attribute():
+@pytest.fixture
+def test_model(model_folder):
+    return SemanticHighlighterModel(folder_path=model_folder)
+
+
+def test_check_attribute(model_folder, test_model):
     try:
         check_attribute = getattr(test_model, "model_id", "folder_path")
     except AttributeError:
         check_attribute = False
     assert check_attribute
 
-    assert test_model.folder_path == TEST_FOLDER
+    assert test_model.folder_path == model_folder
     assert (
         test_model.model_id == "opensearch-project/opensearch-semantic-highlighter-v1"
     )
 
-    # Skip this part as it would modify files outside the test directory
-    # clean_test_folder(default_folder)
-    # test_model0 = SemanticHighlighterModel()
-    # assert test_model0.folder_path == default_folder
-    # clean_test_folder(default_folder)
 
-
-def test_folder_path():
+def test_folder_path(tmp_path):
     # The SemanticHighlighterModel doesn't enforce the check for existing folders
     # like other model classes do. Let's verify it doesn't raise an exception,
     # which is its current behavior.
-    test_non_empty_path = os.path.join(
-        os.path.dirname(os.path.abspath("__file__")), "tests"
-    )
+    test_non_empty_path = tmp_path / "non_empty"
+    test_non_empty_path.mkdir()
+    (test_non_empty_path / "existing-file").touch()
     try:
-        model = SemanticHighlighterModel(
-            folder_path=test_non_empty_path, overwrite=False
-        )
-        # Clean up if a folder was created
-        if (
-            os.path.exists(model.folder_path)
-            and os.path.basename(model.folder_path) == "semantic-highlighter"
-        ):
-            shutil.rmtree(model.folder_path)
+        SemanticHighlighterModel(folder_path=str(test_non_empty_path), overwrite=False)
     except Exception as e:
         assert False, f"Unexpected exception was raised: {e}"
 
 
-def test_check_required_fields():
+def test_check_required_fields(test_model):
     # test without required_fields should raise TypeError
     with pytest.raises(TypeError):
         test_model.save_as_pt()
 
 
-def test_save_as_pt():
+def test_save_as_pt(test_model):
     example_inputs = prepare_example_inputs()
     try:
         test_model.save_as_pt(example_inputs=example_inputs)
@@ -155,7 +122,7 @@ def test_save_as_pt():
         assert False, f"Tracing model in torchScript raised an exception {exec}"
 
 
-def test_save_as_onnx():
+def test_save_as_onnx(test_model):
     example_inputs = prepare_example_inputs()
     # The save_as_onnx method is expected to raise NotImplementedError
     with pytest.raises(NotImplementedError) as exc_info:
@@ -165,14 +132,13 @@ def test_save_as_onnx():
     )
 
 
-def test_make_model_config_json_for_torch_script():
+def test_make_model_config_json_for_torch_script(model_folder):
     model_id = "opensearch-project/opensearch-semantic-highlighter-v1"
     model_format = "TORCH_SCRIPT"
     expected_model_description = "This is a semantic highlighter model that extracts relevant passages from documents."
 
-    clean_test_folder(TEST_FOLDER)
     test_model1 = SemanticHighlighterModel(
-        folder_path=TEST_FOLDER,
+        folder_path=model_folder,
         model_id=model_id,
     )
 
@@ -189,14 +155,12 @@ def test_make_model_config_json_for_torch_script():
         expected_model_description=expected_model_description,
     )
 
-    clean_test_folder(TEST_FOLDER)
 
-
-def test_model_zip_content():
+def test_model_zip_content(model_folder):
     model_id = "opensearch-project/opensearch-semantic-highlighter-v1"
     model_format = "TORCH_SCRIPT"
     torch_script_zip_file_path = os.path.join(
-        TEST_FOLDER, "opensearch-semantic-highlighter-v1.zip"
+        model_folder, "opensearch-semantic-highlighter-v1.zip"
     )
     torch_script_expected_filenames = {
         "opensearch-semantic-highlighter-v1.pt",
@@ -205,9 +169,8 @@ def test_model_zip_content():
         "LICENSE",
     }
 
-    clean_test_folder(TEST_FOLDER)
     test_model2 = SemanticHighlighterModel(
-        folder_path=TEST_FOLDER,
+        folder_path=model_folder,
         model_id=model_id,
     )
 
@@ -222,8 +185,6 @@ def test_model_zip_content():
         torch_script_zip_file_path, torch_script_expected_filenames, model_format
     )
 
-    clean_test_folder(TEST_FOLDER)
-
 
 def create_mock_traced_model():
     """Create a mock traced model for testing"""
@@ -234,17 +195,16 @@ def create_mock_traced_model():
     return mock_model
 
 
-def test_test_traced_model_cpu_success():
+def test_test_traced_model_cpu_success(model_folder):
     """Test _test_traced_model with successful CPU inference"""
-    clean_test_folder(TEST_FOLDER)
-    test_model_cpu = SemanticHighlighterModel(folder_path=TEST_FOLDER)
+    test_model_cpu = SemanticHighlighterModel(folder_path=model_folder)
 
     # Create mock inputs
     original_inputs = prepare_example_inputs()
-    model_path = os.path.join(TEST_FOLDER, "test_model.pt")
+    model_path = os.path.join(model_folder, "test_model.pt")
 
     # Create a dummy model file for testing
-    os.makedirs(TEST_FOLDER, exist_ok=True)
+    os.makedirs(model_folder, exist_ok=True)
     with open(model_path, "wb") as f:
         f.write(b"dummy model file")
 
@@ -256,20 +216,17 @@ def test_test_traced_model_cpu_success():
             # This should not raise any exceptions
             test_model_cpu._test_traced_model(mock_model, original_inputs, model_path)
 
-    clean_test_folder(TEST_FOLDER)
 
-
-def test_test_traced_model_gpu_success_and_output_comparison():
+def test_test_traced_model_gpu_success_and_output_comparison(model_folder):
     """Test _test_traced_model with GPU success and output structure comparison"""
-    clean_test_folder(TEST_FOLDER)
-    test_model_gpu = SemanticHighlighterModel(folder_path=TEST_FOLDER)
+    test_model_gpu = SemanticHighlighterModel(folder_path=model_folder)
 
     # Create mock inputs
     original_inputs = prepare_example_inputs()
-    model_path = os.path.join(TEST_FOLDER, "test_model.pt")
+    model_path = os.path.join(model_folder, "test_model.pt")
 
     # Create a dummy model file for testing
-    os.makedirs(TEST_FOLDER, exist_ok=True)
+    os.makedirs(model_folder, exist_ok=True)
     with open(model_path, "wb") as f:
         f.write(b"dummy model file")
 
@@ -302,19 +259,16 @@ def test_test_traced_model_gpu_success_and_output_comparison():
                 mock_cpu_model, original_inputs, model_path
             )
 
-    clean_test_folder(TEST_FOLDER)
 
-
-def test_test_traced_model_failure_scenarios():
+def test_test_traced_model_failure_scenarios(model_folder):
     """Test _test_traced_model with various failure scenarios"""
-    clean_test_folder(TEST_FOLDER)
 
     # Test CPU inference failure
-    test_model_cpu_fail = SemanticHighlighterModel(folder_path=TEST_FOLDER)
+    test_model_cpu_fail = SemanticHighlighterModel(folder_path=model_folder)
     original_inputs = prepare_example_inputs()
-    model_path = os.path.join(TEST_FOLDER, "test_model.pt")
+    model_path = os.path.join(model_folder, "test_model.pt")
 
-    os.makedirs(TEST_FOLDER, exist_ok=True)
+    os.makedirs(model_folder, exist_ok=True)
     with open(model_path, "wb") as f:
         f.write(b"dummy model file")
 
@@ -330,7 +284,7 @@ def test_test_traced_model_failure_scenarios():
                 )
 
     # Test model loading failure
-    test_model_load_fail = SemanticHighlighterModel(folder_path=TEST_FOLDER)
+    test_model_load_fail = SemanticHighlighterModel(folder_path=model_folder)
     with patch("torch.jit.load", side_effect=FileNotFoundError("Model file not found")):
         with patch("torch.cuda.is_available", return_value=False):
             with pytest.raises(FileNotFoundError, match="Model file not found"):
@@ -338,18 +292,15 @@ def test_test_traced_model_failure_scenarios():
                     None, original_inputs, model_path
                 )
 
-    clean_test_folder(TEST_FOLDER)
 
-
-def test_test_traced_model_gpu_failure_and_no_gpu():
+def test_test_traced_model_gpu_failure_and_no_gpu(model_folder):
     """Test _test_traced_model with GPU failure and no GPU scenarios"""
-    clean_test_folder(TEST_FOLDER)
-    test_model = SemanticHighlighterModel(folder_path=TEST_FOLDER)
+    test_model = SemanticHighlighterModel(folder_path=model_folder)
 
     original_inputs = prepare_example_inputs()
-    model_path = os.path.join(TEST_FOLDER, "test_model.pt")
+    model_path = os.path.join(model_folder, "test_model.pt")
 
-    os.makedirs(TEST_FOLDER, exist_ok=True)
+    os.makedirs(model_folder, exist_ok=True)
     with open(model_path, "wb") as f:
         f.write(b"dummy model file")
 
@@ -374,8 +325,3 @@ def test_test_traced_model_gpu_failure_and_no_gpu():
         with patch("torch.cuda.is_available", return_value=False):
             # Should skip GPU testing
             test_model._test_traced_model(mock_cpu_model, original_inputs, model_path)
-
-    clean_test_folder(TEST_FOLDER)
-
-
-clean_test_folder(TEST_FOLDER)

@@ -6,7 +6,6 @@
 # GitHub history for details.
 
 import os
-import shutil
 import time
 from json import JSONDecodeError
 from os.path import exists
@@ -25,24 +24,11 @@ ml_client = MLCommonClient(OPENSEARCH_TEST_CLIENT)
 
 PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 
-TESTDATA_FILENAME = os.path.join(
-    os.path.dirname(os.path.abspath("__file__")), "tests", "sample_zip.zip"
-)
-
-TESTDATA_UNZIP_FOLDER = os.path.join(
-    os.path.dirname(os.path.abspath("__file__")), "tests", "sample_zip"
-)
-
 MODEL_FILE_ZIP_NAME = "test_model.zip"
 MODEL_FILE_PT_NAME = "test_model.pt"
 MODEL_CONFIG_FILE_NAME = "ml-commons_model_config.json"
 
-TEST_FOLDER = os.path.join(PROJECT_DIR, "test_model_files")
 TESTDATA_SYNTHETIC_QUERY_ZIP = os.path.join(PROJECT_DIR, "..", "synthetic_queries.zip")
-MODEL_PATH = os.path.join(TEST_FOLDER, MODEL_FILE_ZIP_NAME)
-MODEL_CONFIG_FILE_PATH = os.path.join(TEST_FOLDER, MODEL_CONFIG_FILE_NAME)
-
-test_model = SentenceTransformerModel(folder_path=TEST_FOLDER, overwrite=True)
 
 PRETRAINED_MODEL_NAME = "huggingface/sentence-transformers/all-MiniLM-L12-v2"
 PRETRAINED_MODEL_VERSION = "1.0.1"
@@ -98,27 +84,13 @@ def iris_index():
     ml_client._client.indices.delete(index=index_name)
 
 
-def clean_test_folder(TEST_FOLDER):
-    if os.path.exists(TEST_FOLDER):
-        for files in os.listdir(TEST_FOLDER):
-            sub_path = os.path.join(TEST_FOLDER, files)
-            if os.path.isfile(sub_path):
-                os.remove(sub_path)
-            else:
-                try:
-                    shutil.rmtree(sub_path)
-                except OSError as err:
-                    print(
-                        "Fail to delete files, please delete all files in "
-                        + str(TEST_FOLDER)
-                        + " "
-                        + str(err)
-                    )
-
-        shutil.rmtree(TEST_FOLDER)
-
-
-clean_test_folder(TEST_FOLDER)
+@pytest.fixture
+def model_artifacts(tmp_path):
+    test_folder = str(tmp_path / "test_model_files")
+    test_model = SentenceTransformerModel(folder_path=test_folder, overwrite=True)
+    model_path = os.path.join(test_folder, MODEL_FILE_ZIP_NAME)
+    model_config_path = os.path.join(test_folder, MODEL_CONFIG_FILE_NAME)
+    return test_model, model_path, model_config_path
 
 
 def test_init():
@@ -286,7 +258,8 @@ def test_integration_pretrained_model_register_undeploy_delete():
             assert delete_model_obj.get("result") == "deleted"
 
 
-def test_DEPRECATED_integration_model_train_upload_full_cycle():
+def test_DEPRECATED_integration_model_train_upload_full_cycle(model_artifacts):
+    test_model, model_path, model_config_file_path = model_artifacts
     # first training the model with small epoch
     test_model.train(
         read_path=TESTDATA_SYNTHETIC_QUERY_ZIP,
@@ -297,8 +270,8 @@ def test_DEPRECATED_integration_model_train_upload_full_cycle():
     )
     # second generating the config file to create metadoc of the model in opensearch.
     test_model.make_model_config_json()
-    model_file_exists = exists(MODEL_PATH)
-    model_config_file_exists = exists(MODEL_CONFIG_FILE_PATH)
+    model_file_exists = exists(model_path)
+    model_config_file_exists = exists(model_config_file_path)
     assert model_file_exists == True
     assert model_config_file_exists == True
     if model_file_exists and model_config_file_exists:
@@ -306,7 +279,10 @@ def test_DEPRECATED_integration_model_train_upload_full_cycle():
         task_id = ""
         try:
             model_id = ml_client.upload_model(
-                MODEL_PATH, MODEL_CONFIG_FILE_PATH, load_model=False, isVerbose=True
+                model_path,
+                model_config_file_path,
+                load_model=False,
+                isVerbose=True,
             )
             print("Model_id:", model_id)
         except Exception as ex:  # noqa: E722
@@ -418,7 +394,8 @@ def test_DEPRECATED_integration_model_train_upload_full_cycle():
                     pytest.fail(f"Exception occurred when deleting model: {ex}")
 
 
-def test_integration_model_train_register_full_cycle():
+def test_integration_model_train_register_full_cycle(model_artifacts):
+    test_model, model_path, model_config_file_path = model_artifacts
     # first training the model with small epoch
     test_model.train(
         read_path=TESTDATA_SYNTHETIC_QUERY_ZIP,
@@ -430,8 +407,8 @@ def test_integration_model_train_register_full_cycle():
     )
     # second generating the config file to create metadoc of the model in opensearch.
     test_model.make_model_config_json()
-    model_file_exists = exists(MODEL_PATH)
-    model_config_file_exists = exists(MODEL_CONFIG_FILE_PATH)
+    model_file_exists = exists(model_path)
+    model_config_file_exists = exists(model_config_file_path)
     assert model_file_exists == True
     assert model_config_file_exists == True
     if model_file_exists and model_config_file_exists:
@@ -441,8 +418,8 @@ def test_integration_model_train_register_full_cycle():
         # Testing deploy_model = True for codecov/patch
         try:
             ml_client.register_model(
-                model_path=MODEL_PATH,
-                model_config_path=MODEL_CONFIG_FILE_PATH,
+                model_path=model_path,
+                model_config_path=model_config_file_path,
                 deploy_model=True,
                 isVerbose=True,
             )
@@ -451,8 +428,8 @@ def test_integration_model_train_register_full_cycle():
 
         try:
             model_id = ml_client.register_model(
-                model_path=MODEL_PATH,
-                model_config_path=MODEL_CONFIG_FILE_PATH,
+                model_path=model_path,
+                model_config_path=model_config_file_path,
                 deploy_model=False,
                 isVerbose=True,
             )

@@ -7,42 +7,15 @@
 
 import json
 import os
-import shutil
 from zipfile import ZipFile
 
 import pytest
 
 from opensearch_py_ml.ml_models import SentenceTransformerModel
 
-TEST_FOLDER = os.path.join(
-    os.path.dirname(os.path.abspath("__file__")), "tests", "test_model_files"
-)
 TESTDATA_FILENAME = os.path.join(
     os.path.dirname(os.path.abspath("__file__")), "tests", "sample_zip.zip"
 )
-TESTDATA_UNZIP_FOLDER = os.path.join(
-    os.path.dirname(os.path.abspath("__file__")), "tests", "sample_zip"
-)
-
-
-def clean_test_folder(TEST_FOLDER):
-    if os.path.exists(TEST_FOLDER):
-        for files in os.listdir(TEST_FOLDER):
-            sub_path = os.path.join(TEST_FOLDER, files)
-            if os.path.isfile(sub_path):
-                os.remove(sub_path)
-            else:
-                try:
-                    shutil.rmtree(sub_path)
-                except OSError as err:
-                    print(
-                        "Fail to delete files, please delete all files in "
-                        + str(TEST_FOLDER)
-                        + " "
-                        + str(err)
-                    )
-
-        shutil.rmtree(TEST_FOLDER)
 
 
 def compare_model_config(
@@ -108,45 +81,49 @@ def compare_model_zip_file(zip_file_path, expected_filenames, model_format):
         ), f"The content in the {model_format} model zip file does not match the expected content: {filenames} != {expected_filenames}"
 
 
-clean_test_folder(TEST_FOLDER)
-test_model = SentenceTransformerModel(folder_path=TEST_FOLDER)
+@pytest.fixture
+def model_folder(tmp_path):
+    return str(tmp_path / "test_model_files")
 
 
-def test_check_attribute():
+@pytest.fixture
+def test_model(model_folder):
+    return SentenceTransformerModel(folder_path=model_folder)
+
+
+def test_check_attribute(model_folder, test_model, tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
     try:
         check_attribute = getattr(test_model, "model_id", "folder_path")
     except AttributeError:
         check_attribute = False
     assert check_attribute
 
-    assert test_model.folder_path == TEST_FOLDER
+    assert test_model.folder_path == model_folder
     assert test_model.model_id == "sentence-transformers/msmarco-distilbert-base-tas-b"
 
     default_folder = os.path.join(os.getcwd(), "sentence_transformer_model_files")
 
-    clean_test_folder(default_folder)
     test_model0 = SentenceTransformerModel()
     assert test_model0.folder_path == default_folder
-    clean_test_folder(default_folder)
 
-    clean_test_folder(TEST_FOLDER)
     test_model1 = SentenceTransformerModel(
-        folder_path=TEST_FOLDER, model_id="sentence-transformers/all-MiniLM-L6-v2"
+        folder_path=model_folder, model_id="sentence-transformers/all-MiniLM-L6-v2"
     )
     assert test_model1.model_id == "sentence-transformers/all-MiniLM-L6-v2"
 
 
-def test_folder_path():
+def test_folder_path(tmp_path):
+    test_non_empty_path = tmp_path / "non_empty"
+    test_non_empty_path.mkdir()
+    (test_non_empty_path / "existing-file").touch()
     with pytest.raises(Exception) as exc_info:
-        test_non_empty_path = os.path.join(
-            os.path.dirname(os.path.abspath("__file__")), "tests"
-        )
-        SentenceTransformerModel(folder_path=test_non_empty_path, overwrite=False)
+        SentenceTransformerModel(folder_path=str(test_non_empty_path), overwrite=False)
     assert exc_info.type is Exception
     assert "The default folder path already exists" in exc_info.value.args[0]
 
 
-def test_check_required_fields():
+def test_check_required_fields(test_model):
     # test without required_fields should raise TypeError
     with pytest.raises(TypeError):
         test_model.train()
@@ -164,7 +141,7 @@ def test_check_required_fields():
         test_model.save_as_pt()
 
 
-def test_missing_files():
+def test_missing_files(tmp_path, test_model):
     with pytest.raises(FileNotFoundError):
         test_model.train(read_path="1234")
 
@@ -173,16 +150,10 @@ def test_missing_files():
 
     # test synthetic queries already exists in folder
     with pytest.raises(Exception) as exc_info:
-        temp_path = os.path.join(
-            os.path.dirname(os.path.abspath("__file__")),
-            "tests",
-            "test_SentenceTransformerModel",
-        )
-        clean_test_folder(temp_path)
-        test_model2 = SentenceTransformerModel(folder_path=temp_path)
+        query_path = str(tmp_path / "query_model")
+        test_model2 = SentenceTransformerModel(folder_path=query_path)
         test_model2.read_queries(TESTDATA_FILENAME)
         test_model2.read_queries(TESTDATA_FILENAME)
-        clean_test_folder(temp_path)
     assert "folder is not empty" in str(exc_info.value)
 
     # test no tokenizer.json file
@@ -192,50 +163,38 @@ def test_missing_files():
 
     # test no model file
     with pytest.raises(Exception) as exc_info:
-        temp_path = os.path.join(
-            os.path.dirname(os.path.abspath("__file__")),
-            "tests",
-            "test_SentenceTransformerModel",
-        )
-        clean_test_folder(temp_path)
-        test_model3 = SentenceTransformerModel(folder_path=temp_path)
+        missing_model_path = str(tmp_path / "missing_model")
+        test_model3 = SentenceTransformerModel(folder_path=missing_model_path)
         test_model3.save_as_pt(sentences=["today is sunny"])
-        os.remove(os.path.join(temp_path, "msmarco-distilbert-base-tas-b.pt"))
+        os.remove(os.path.join(missing_model_path, "msmarco-distilbert-base-tas-b.pt"))
         test_model3.zip_model(verbose=True)
-        clean_test_folder(temp_path)
     assert "Cannot find model in the model path" in str(exc_info.value)
 
     # test no config.json
     with pytest.raises(Exception) as exc_info:
-        temp_path = os.path.join(
-            os.path.dirname(os.path.abspath("__file__")),
-            "tests",
-            "test_SentenceTransformerModel",
-        )
-        clean_test_folder(temp_path)
-        test_model4 = SentenceTransformerModel(folder_path=temp_path)
+        missing_config_path = str(tmp_path / "missing_config")
+        test_model4 = SentenceTransformerModel(folder_path=missing_config_path)
         test_model4.save_as_pt(sentences=["today is sunny"])
-        os.remove(os.path.join(temp_path, "config.json"))
+        os.remove(os.path.join(missing_config_path, "config.json"))
         test_model4.make_model_config_json()
-        clean_test_folder(temp_path)
     assert "Cannot find config.json" in str(exc_info.value)
 
 
-def test_save_as_pt():
+def test_save_as_pt(test_model):
     try:
         test_model.save_as_pt(sentences=["today is sunny"])
     except Exception as exec:
         assert False, f"Tracing model in torchScript raised an exception {exec}"
 
 
-def test_save_as_onnx():
+def test_save_as_onnx(test_model):
     try:
         test_model.save_as_onnx()
     except Exception as exec:
         assert False, f"Tracing model in ONNX raised an exception {exec}"
 
 
-def test_make_model_config_json_for_torch_script():
+def test_make_model_config_json_for_torch_script(model_folder):
     model_id = "sentence-transformers/multi-qa-MiniLM-L6-cos-v1"
     model_format = "TORCH_SCRIPT"
     expected_model_description = "This is a sentence-transformers model: It maps sentences & paragraphs to a 384 dimensional dense vector space and was designed for semantic search. It has been trained on 215M  pairs from diverse sources."
@@ -246,9 +205,8 @@ def test_make_model_config_json_for_torch_script():
         "additional_config": {"space_type": "l2"},
     }
 
-    clean_test_folder(TEST_FOLDER)
     test_model5 = SentenceTransformerModel(
-        folder_path=TEST_FOLDER,
+        folder_path=model_folder,
         model_id=model_id,
     )
 
@@ -265,10 +223,8 @@ def test_make_model_config_json_for_torch_script():
         expected_model_config_data=expected_model_config_data,
     )
 
-    clean_test_folder(TEST_FOLDER)
 
-
-def test_make_model_config_json_for_onnx():
+def test_make_model_config_json_for_onnx(model_folder):
     model_id = "sentence-transformers/paraphrase-MiniLM-L3-v2"
     model_format = "ONNX"
     expected_model_description = "This is a sentence-transformers model: It maps sentences & paragraphs to a 384 dimensional dense vector space and can be used for tasks like clustering or semantic search."
@@ -279,9 +235,8 @@ def test_make_model_config_json_for_onnx():
         "additional_config": {"space_type": "cosinesimil"},
     }
 
-    clean_test_folder(TEST_FOLDER)
     test_model6 = SentenceTransformerModel(
-        folder_path=TEST_FOLDER,
+        folder_path=model_folder,
         model_id=model_id,
     )
 
@@ -296,10 +251,8 @@ def test_make_model_config_json_for_onnx():
         expected_model_config_data=expected_model_config_data,
     )
 
-    clean_test_folder(TEST_FOLDER)
 
-
-def test_overwrite_fields_in_model_config():
+def test_overwrite_fields_in_model_config(tmp_path, model_folder):
     model_id = "sentence-transformers/all-distilroberta-v1"
     model_format = "TORCH_SCRIPT"
     expected_model_config_data = {
@@ -316,9 +269,8 @@ def test_overwrite_fields_in_model_config():
         "additional_config": {"space_type": "cosinesimil"},
     }
 
-    clean_test_folder(TEST_FOLDER)
     test_model7 = SentenceTransformerModel(
-        folder_path=TEST_FOLDER,
+        folder_path=model_folder,
         model_id=model_id,
     )
 
@@ -335,9 +287,9 @@ def test_overwrite_fields_in_model_config():
         expected_model_config_data=expected_model_config_data,
     )
 
-    clean_test_folder(TEST_FOLDER)
+    second_model_folder = str(tmp_path / "second_model_files")
     test_model8 = SentenceTransformerModel(
-        folder_path=TEST_FOLDER,
+        folder_path=second_model_folder,
         model_id=model_id,
     )
 
@@ -358,23 +310,20 @@ def test_overwrite_fields_in_model_config():
         expected_model_config_data=overwritten_model_config_data,
     )
 
-    clean_test_folder(TEST_FOLDER)
 
-
-def test_missing_readme_md_file():
+def test_missing_readme_md_file(model_folder):
     model_id = "sentence-transformers/msmarco-distilbert-base-tas-b"
     model_format = "TORCH_SCRIPT"
     expected_model_description = "This is a sentence-transformers model: It maps sentences & paragraphs to a 768 dimensional dense vector space."
 
-    clean_test_folder(TEST_FOLDER)
     test_model9 = SentenceTransformerModel(
-        folder_path=TEST_FOLDER,
+        folder_path=model_folder,
         model_id=model_id,
     )
 
     test_model9.save_as_pt(model_id=model_id, sentences=["today is sunny"])
     temp_path = os.path.join(
-        TEST_FOLDER,
+        model_folder,
         "README.md",
     )
     os.remove(temp_path)
@@ -394,23 +343,20 @@ def test_missing_readme_md_file():
         and model_config_data_torch["description"] == expected_model_description
     ), "Should use default model description when README.md file is missing"
 
-    clean_test_folder(TEST_FOLDER)
 
-
-def test_missing_expected_description_in_readme_file():
+def test_missing_expected_description_in_readme_file(model_folder):
     model_id = "sentence-transformers/paraphrase-MiniLM-L3-v2"
     model_format = "TORCH_SCRIPT"
     expected_model_description = "This is a sentence-transformers model: It maps sentences & paragraphs to a 384 dimensional dense vector space."
 
-    clean_test_folder(TEST_FOLDER)
     test_model10 = SentenceTransformerModel(
-        folder_path=TEST_FOLDER,
+        folder_path=model_folder,
         model_id=model_id,
     )
 
     test_model10.save_as_pt(model_id=model_id, sentences=["today is sunny"])
     temp_path = os.path.join(
-        TEST_FOLDER,
+        model_folder,
         "README.md",
     )
     with open(temp_path, "w") as f:
@@ -431,17 +377,14 @@ def test_missing_expected_description_in_readme_file():
         and model_config_data_torch["description"] == expected_model_description
     ), "Should use default model description when description is missing from README.md"
 
-    clean_test_folder(TEST_FOLDER)
 
-
-def test_overwrite_description():
+def test_overwrite_description(model_folder):
     model_id = "sentence-transformers/msmarco-distilbert-base-tas-b"
     model_format = "TORCH_SCRIPT"
     expected_model_description = "Expected Description"
 
-    clean_test_folder(TEST_FOLDER)
     test_model11 = SentenceTransformerModel(
-        folder_path=TEST_FOLDER,
+        folder_path=model_folder,
         model_id=model_id,
     )
 
@@ -462,17 +405,14 @@ def test_overwrite_description():
         and model_config_data_torch["description"] == expected_model_description
     ), "Cannot overwrite description in model config file"
 
-    clean_test_folder(TEST_FOLDER)
 
-
-def test_long_description():
+def test_long_description(model_folder):
     model_id = "sentence-transformers/gtr-t5-base"
     model_format = "TORCH_SCRIPT"
     expected_model_description = "This is a sentence-transformers model: It maps sentences & paragraphs to a 768 dimensional dense vector space. The model was specifically trained for the task of semantic search."
 
-    clean_test_folder(TEST_FOLDER)
     test_model12 = SentenceTransformerModel(
-        folder_path=TEST_FOLDER,
+        folder_path=model_folder,
         model_id=model_id,
     )
 
@@ -493,22 +433,19 @@ def test_long_description():
         and model_config_data_torch["description"] == expected_model_description
     ), "Missing or Wrong model description in model config file when the description is longer than normally."
 
-    clean_test_folder(TEST_FOLDER)
 
-
-def test_truncation_parameter():
+def test_truncation_parameter(model_folder):
     model_id = "sentence-transformers/msmarco-distilbert-base-tas-b"
     MAX_LENGTH_TASB = 512
 
-    clean_test_folder(TEST_FOLDER)
     test_model13 = SentenceTransformerModel(
-        folder_path=TEST_FOLDER,
+        folder_path=model_folder,
         model_id=model_id,
     )
 
     test_model13.save_as_pt(model_id=model_id, sentences=["today is sunny"])
 
-    tokenizer_json_file_path = os.path.join(TEST_FOLDER, "tokenizer.json")
+    tokenizer_json_file_path = os.path.join(model_folder, "tokenizer.json")
     try:
         with open(tokenizer_json_file_path, "r") as json_file:
             tokenizer_json = json.load(json_file)
@@ -525,23 +462,20 @@ def test_truncation_parameter():
         tokenizer_json["truncation"]["max_length"] == MAX_LENGTH_TASB
     ), "max_length is not properly set"
 
-    clean_test_folder(TEST_FOLDER)
 
-
-def test_undefined_model_max_length_in_tokenizer_for_torch_script():
+def test_undefined_model_max_length_in_tokenizer_for_torch_script(model_folder):
     # Model of which tokenizer has undefined model max length.
     model_id = "intfloat/e5-small-v2"
     expected_max_length = 512
 
-    clean_test_folder(TEST_FOLDER)
     test_model14 = SentenceTransformerModel(
-        folder_path=TEST_FOLDER,
+        folder_path=model_folder,
         model_id=model_id,
     )
 
     test_model14.save_as_pt(model_id=model_id, sentences=["today is sunny"])
 
-    tokenizer_json_file_path = os.path.join(TEST_FOLDER, "tokenizer.json")
+    tokenizer_json_file_path = os.path.join(model_folder, "tokenizer.json")
     try:
         with open(tokenizer_json_file_path, "r") as json_file:
             tokenizer_json = json.load(json_file)
@@ -554,23 +488,20 @@ def test_undefined_model_max_length_in_tokenizer_for_torch_script():
         tokenizer_json["truncation"]["max_length"] == expected_max_length
     ), "max_length is not properly set"
 
-    clean_test_folder(TEST_FOLDER)
 
-
-def test_undefined_model_max_length_in_tokenizer_for_onnx():
+def test_undefined_model_max_length_in_tokenizer_for_onnx(model_folder):
     # Model of which tokenizer has undefined model max length.
     model_id = "intfloat/e5-small-v2"
     expected_max_length = 512
 
-    clean_test_folder(TEST_FOLDER)
     test_model14 = SentenceTransformerModel(
-        folder_path=TEST_FOLDER,
+        folder_path=model_folder,
         model_id=model_id,
     )
 
     test_model14.save_as_onnx(model_id=model_id)
 
-    tokenizer_json_file_path = os.path.join(TEST_FOLDER, "tokenizer.json")
+    tokenizer_json_file_path = os.path.join(model_folder, "tokenizer.json")
     try:
         with open(tokenizer_json_file_path, "r") as json_file:
             tokenizer_json = json.load(json_file)
@@ -583,22 +514,19 @@ def test_undefined_model_max_length_in_tokenizer_for_onnx():
         tokenizer_json["truncation"]["max_length"] == expected_max_length
     ), "max_length is not properly set"
 
-    clean_test_folder(TEST_FOLDER)
 
-
-def test_save_as_pt_with_license():
+def test_save_as_pt_with_license(model_folder):
     model_id = "sentence-transformers/all-MiniLM-L6-v2"
     model_format = "TORCH_SCRIPT"
-    torch_script_zip_file_path = os.path.join(TEST_FOLDER, "all-MiniLM-L6-v2.zip")
+    torch_script_zip_file_path = os.path.join(model_folder, "all-MiniLM-L6-v2.zip")
     torch_script_expected_filenames = {
         "all-MiniLM-L6-v2.pt",
         "tokenizer.json",
         "LICENSE",
     }
 
-    clean_test_folder(TEST_FOLDER)
     test_model15 = SentenceTransformerModel(
-        folder_path=TEST_FOLDER,
+        folder_path=model_folder,
         model_id=model_id,
     )
 
@@ -612,18 +540,15 @@ def test_save_as_pt_with_license():
         torch_script_zip_file_path, torch_script_expected_filenames, model_format
     )
 
-    clean_test_folder(TEST_FOLDER)
 
-
-def test_save_as_onnx_with_license():
+def test_save_as_onnx_with_license(model_folder):
     model_id = "sentence-transformers/all-distilroberta-v1"
     model_format = "ONNX"
-    onnx_zip_file_path = os.path.join(TEST_FOLDER, "all-distilroberta-v1.zip")
+    onnx_zip_file_path = os.path.join(model_folder, "all-distilroberta-v1.zip")
     onnx_expected_filenames = {"all-distilroberta-v1.onnx", "tokenizer.json", "LICENSE"}
 
-    clean_test_folder(TEST_FOLDER)
     test_model16 = SentenceTransformerModel(
-        folder_path=TEST_FOLDER,
+        folder_path=model_folder,
         model_id=model_id,
     )
 
@@ -631,13 +556,11 @@ def test_save_as_onnx_with_license():
 
     compare_model_zip_file(onnx_zip_file_path, onnx_expected_filenames, model_format)
 
-    clean_test_folder(TEST_FOLDER)
 
-
-def test_zip_model_with_license():
+def test_zip_model_with_license(model_folder):
     model_id = "sentence-transformers/msmarco-distilbert-base-tas-b"
     model_format = "TORCH_SCRIPT"
-    zip_file_path = os.path.join(TEST_FOLDER, "msmarco-distilbert-base-tas-b.zip")
+    zip_file_path = os.path.join(model_folder, "msmarco-distilbert-base-tas-b.zip")
     expected_filenames_wo_license = {
         "msmarco-distilbert-base-tas-b.pt",
         "tokenizer.json",
@@ -648,9 +571,8 @@ def test_zip_model_with_license():
         "LICENSE",
     }
 
-    clean_test_folder(TEST_FOLDER)
     test_model17 = SentenceTransformerModel(
-        folder_path=TEST_FOLDER,
+        folder_path=model_folder,
         model_id=model_id,
     )
 
@@ -659,9 +581,3 @@ def test_zip_model_with_license():
 
     test_model17.zip_model(add_apache_license=True)
     compare_model_zip_file(zip_file_path, expected_filenames_with_license, model_format)
-
-    clean_test_folder(TEST_FOLDER)
-
-
-clean_test_folder(TEST_FOLDER)
-clean_test_folder(TESTDATA_UNZIP_FOLDER)

@@ -13,8 +13,6 @@ of metrics correlation.
 implementations such as the R package 'diptest'.
 """
 
-import os
-
 import numpy as np
 import torch
 
@@ -124,7 +122,7 @@ def test_interp():
     assert newy_hi == ys[-1].item()
 
 
-def test_torchscript_scripting():
+def test_torchscript_scripting(tmp_path):
     # test scripting and save / load of scripted model
     model = DipTest()
 
@@ -134,19 +132,18 @@ def test_torchscript_scripting():
         assert False, f"Failed to script model with exception {exec}"
 
     try:
-        torch.jit.save(jit_processing, "diptest.pt")
+        model_path = tmp_path / "diptest.pt"
+        torch.jit.save(jit_processing, model_path)
     except Exception as exec:
         assert False, f"Failed to save model with exception {exec}"
 
     try:
-        _ = torch.jit.load("diptest.pt")
+        _ = torch.jit.load(model_path)
     except Exception as exec:
         assert False, f"Failed to load scripted model with exception {exec}"
 
-    os.remove("diptest.pt")
 
-
-def test_torchscript_output():
+def test_torchscript_output(tmp_path):
     # check scripted model output is same as pytorch
     sig = torch.normal(mean=0, std=1, size=[128])
 
@@ -155,15 +152,14 @@ def test_torchscript_output():
 
     model = DipTest()
     jit_processing = torch.jit.script(model)
-    torch.jit.save(jit_processing, "diptest.pt")
-    loaded_model = torch.jit.load("diptest.pt")
+    model_path = tmp_path / "diptest.pt"
+    torch.jit.save(jit_processing, model_path)
+    loaded_model = torch.jit.load(model_path)
 
     tsD, tsP = loaded_model.forward(sig)
 
     assert np.allclose(ptD, tsD, rtol=0, atol=0)
     assert np.allclose(ptP, tsP, rtol=0, atol=0)
-
-    os.remove("diptest.pt")
 
 
 class DipTest(torch.nn.Module):
