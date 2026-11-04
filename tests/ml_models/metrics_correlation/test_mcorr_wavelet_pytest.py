@@ -10,8 +10,6 @@ Tests of correctness and compilation for the wavelet module
 of metrics correlation.
 """
 
-import os
-
 import numpy as np
 import pywt
 import torch
@@ -150,7 +148,7 @@ def test_transform_piecewise_constant():
     assert torch.max(scores) <= torch.max(torch.diff(sig))
 
 
-def test_torchscript_scripting():
+def test_torchscript_scripting(tmp_path):
     # test scripting and save / load of scripted model
     model = WavTest()
 
@@ -160,19 +158,18 @@ def test_torchscript_scripting():
         assert False, f"Failed to script model with exception {exec}"
 
     try:
-        torch.jit.save(jit_processing, "wavtest.pt")
+        model_path = tmp_path / "wavtest.pt"
+        torch.jit.save(jit_processing, model_path)
     except Exception as exec:
         assert False, f"Failed to save model with exception {exec}"
 
     try:
-        _ = torch.jit.load("wavtest.pt")
+        _ = torch.jit.load(model_path)
     except Exception as exec:
         assert False, f"Failed to load scripted model with exception {exec}"
 
-    os.remove("wavtest.pt")
 
-
-def test_torchscript_output():
+def test_torchscript_output(tmp_path):
     # check scripted model output is same as pytorch
     sig = torch.normal(mean=0, std=1, size=[1, 32])
 
@@ -181,14 +178,13 @@ def test_torchscript_output():
 
     model = WavTest()
     jit_processing = torch.jit.script(model)
-    torch.jit.save(jit_processing, "wavtest.pt")
-    loaded_model = torch.jit.load("wavtest.pt")
+    model_path = tmp_path / "wavtest.pt"
+    torch.jit.save(jit_processing, model_path)
+    loaded_model = torch.jit.load(model_path)
 
     tsscores = loaded_model.forward(sig, 5, 2.0)
 
     torch.testing.assert_close(ptscores, tsscores, rtol=0, atol=0)
-
-    os.remove("wavtest.pt")
 
 
 class WavTest(torch.nn.Module):

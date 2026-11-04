@@ -33,12 +33,12 @@ from pandas.testing import assert_frame_equal
 
 import opensearch_py_ml as oml
 from tests import FLIGHTS_INDEX_NAME, OPENSEARCH_TEST_CLIENT
-from tests.common import ROOT_DIR, TestData
+from tests.common import TestData
 
 
 class TestDataFrameToCSV(TestData):
-    def test_to_csv_head(self):
-        results_file = ROOT_DIR + "/dataframe/results/test_to_csv_head.csv"
+    def test_to_csv_head(self, tmp_path):
+        results_file = str(tmp_path / "test_to_csv_head.csv")
 
         oml_flights = self.oml_flights().head()
         pd_flights = self.pd_flights().head()
@@ -57,8 +57,8 @@ class TestDataFrameToCSV(TestData):
 
         assert_frame_equal(pd_flights, pd_from_csv)
 
-    def test_to_csv_full(self):
-        results_file = ROOT_DIR + "/dataframe/results/test_to_csv_full.csv"
+    def test_to_csv_full(self, tmp_path):
+        results_file = str(tmp_path / "test_to_csv_full.csv")
 
         # Test is slow as it's for the full dataset, but it is useful as it goes over 10000 docs
         oml_flights = self.oml_flights()

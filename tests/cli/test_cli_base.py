@@ -10,6 +10,7 @@ import os
 import unittest
 from unittest.mock import MagicMock, Mock, mock_open, patch
 
+import pytest
 import yaml
 from colorama import Fore, Style
 
@@ -17,9 +18,13 @@ from opensearch_py_ml.ml_commons.cli.cli_base import CLIBase
 
 
 class TestCLIBase(unittest.TestCase):
+    @pytest.fixture(autouse=True)
+    def temporary_config(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        monkeypatch.setattr(CLIBase, "CONFIG_FILE", str(tmp_path / "setup_config.yml"))
+        monkeypatch.setattr(CLIBase, "OUTPUT_FILE", str(tmp_path / "output.yml"))
+
     def setUp(self):
-        if os.path.exists(CLIBase.CONFIG_FILE):
-            os.remove(CLIBase.CONFIG_FILE)
         self.cli_base = CLIBase()
         self.cli_base.OUTPUT_FILE = "/default/path/output.yml"
         self.test_config = {
@@ -42,10 +47,6 @@ class TestCLIBase(unittest.TestCase):
                 "aws_session_token": "test-token",
             },
         }
-
-    def tearDown(self):
-        if os.path.exists(CLIBase.CONFIG_FILE):
-            os.remove(CLIBase.CONFIG_FILE)
 
     @patch("builtins.print")
     def test_load_config_setup(self, mock_print):

@@ -10,8 +10,6 @@ Tests of correctness and compilation for the NMF test module
 of metrics correlation.
 """
 
-import os
-
 import numpy as np
 import torch
 from sklearn.decomposition import NMF as skNMF
@@ -75,7 +73,7 @@ def test_nmf_forward():
             assert H_rel_err <= 0.01
 
 
-def test_torchscript_scripting():
+def test_torchscript_scripting(tmp_path):
     # test scripting and save / load of scripted model
     model = nmf.NMF()
 
@@ -85,19 +83,18 @@ def test_torchscript_scripting():
         assert False, f"Failed to script model with exception {exec}"
 
     try:
-        torch.jit.save(jit_processing, "nmftest.pt")
+        model_path = tmp_path / "nmftest.pt"
+        torch.jit.save(jit_processing, model_path)
     except Exception as exec:
         assert False, f"Failed to save model with exception {exec}"
 
     try:
-        _ = torch.jit.load("nmftest.pt")
+        _ = torch.jit.load(model_path)
     except Exception as exec:
         assert False, f"Failed to load scripted model with exception {exec}"
 
-    os.remove("nmftest.pt")
 
-
-def test_torchscript_output():
+def test_torchscript_output(tmp_path):
     # check scripted model output is same as pytorch
     X = torch.normal(mean=0, std=1, size=[5, 32]) ** 2
 
@@ -106,12 +103,11 @@ def test_torchscript_output():
 
     model = nmf.NMF()
     jit_processing = torch.jit.script(model)
-    torch.jit.save(jit_processing, "nmftest.pt")
-    loaded_model = torch.jit.load("nmftest.pt")
+    model_path = tmp_path / "nmftest.pt"
+    torch.jit.save(jit_processing, model_path)
+    loaded_model = torch.jit.load(model_path)
 
     tsW, tsH = loaded_model.forward(X, 3, 200, 1e-6)
 
     torch.testing.assert_close(ptW, tsW, rtol=0, atol=0)
     torch.testing.assert_close(ptH, tsH, rtol=0, atol=0)
-
-    os.remove("nmftest.pt")
