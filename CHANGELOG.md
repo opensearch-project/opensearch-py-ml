@@ -8,6 +8,7 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Standardized interactive mode `-i/--interactive` for <u>model registration</u> CLI command to adhere to common conventions. ([#591](https://github.com/opensearch-project/opensearch-py-ml/pull/591))
 - Add `-o/--output` option to <u>model registration</u> to specify output file path enabling end to end automation. ([#591](https://github.com/opensearch-project/opensearch-py-ml/pull/591))
 - Update documentation for <u>model registration</u> to reflect new options and usage. ([#591](https://github.com/opensearch-project/opensearch-py-ml/pull/591))
+- Support exporting ONNX models over 2 GB by packaging the external `.onnx.data` file ([#626](https://github.com/opensearch-project/opensearch-py-ml/pull/626))
 
 ### Changed
 - Set upperbound for transformers in semantic highlighter requirements to fix compatibility issue ([#599](https://github.com/opensearch-project/opensearch-py-ml/pull/599))
@@ -17,6 +18,7 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Update transformers version constraint to >=5.3.0,<6.0.0 and sentence_transformers to >=5.0.0,<6.0.0 ([#615](https://github.com/opensearch-project/opensearch-py-ml/pull/615))
 
 ### Fixed
+- Fix ONNX export so models deploy in ml-commons again (IR version, pooling output, token_type_ids, single-file output) ([#626](https://github.com/opensearch-project/opensearch-py-ml/pull/626))
 
 ## [1.3.0]
 
