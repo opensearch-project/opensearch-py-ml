@@ -1024,8 +1024,7 @@ class SentenceTransformerModel(BaseUploadModel):
     ONNX_MAX_IR_VERSION = 9
     # stay under protobuf's 2 GB single-file limit, with headroom for the graph
     ONNX_SINGLE_FILE_LIMIT_BYTES = int(1.8 * 1024**3)
-    # sentence-transformers pooling mode -> ml-commons pooling_mode; ml-commons' ONNX
-    # translator applies all of these itself
+    # sentence-transformers pooling mode -> ml-commons pooling_mode
     ML_COMMONS_POOLING_MODES = {
         "mean": "MEAN",
         "max": "MAX",
@@ -1034,6 +1033,9 @@ class SentenceTransformerModel(BaseUploadModel):
         "weightedmean": "WEIGHTED_MEAN",
         "lasttoken": "LAST_TOKEN",
     }
+    # modes ml-commons' ONNX translator can't apply correctly, so the export is pre-pooled:
+    # its maxPool keeps a [1, dim] shape, so normalize_result turns every value into +/-1
+    ONNX_PRE_POOLED_POOLING_MODES = {"max"}
 
     @staticmethod
     def _onnx_model_type(model: SentenceTransformer) -> str:
@@ -1047,7 +1049,8 @@ class SentenceTransformerModel(BaseUploadModel):
     def _onnx_exports_pre_pooled_output(cls, model: SentenceTransformer) -> bool:
         """
         True unless the pipeline is Transformer -> Pooling -> (Normalize) with a single pooling
-        mode ml-commons can apply itself (see ML_COMMONS_POOLING_MODES).
+        mode ml-commons can apply itself (ML_COMMONS_POOLING_MODES minus
+        ONNX_PRE_POOLED_POOLING_MODES).
         """
         modules = list(model._modules.values())
         simple_pipeline = (
@@ -1055,6 +1058,7 @@ class SentenceTransformerModel(BaseUploadModel):
             and type(modules[0]) is Transformer
             and type(modules[1]) is Pooling
             and modules[1].pooling_mode in cls.ML_COMMONS_POOLING_MODES
+            and modules[1].pooling_mode not in cls.ONNX_PRE_POOLED_POOLING_MODES
             and all(type(m) is Normalize for m in modules[2:])
         )
         return not simple_pipeline

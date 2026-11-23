@@ -706,8 +706,6 @@ def _run_onnx_like_ml_commons(onnx_path, tokenizer_path, model_config, sentences
             output = (output * weights).sum(axis=0) / weights.sum()
         elif pooling_mode == "LAST_TOKEN":
             output = output[int(np.nonzero(mask[:, 0])[0][-1])]
-        elif pooling_mode == "MAX":
-            output = np.where(mask > 0, output, -1e9).max(axis=0)
         elif pooling_mode == "CLS":
             output = output[0]
         if model_config.get("normalize_result"):
@@ -848,7 +846,6 @@ def _save_local_sentence_transformer(path, pooling_mode="mean", dense=False):
         ("mean_sqrt_len_tokens", "MEAN_SQRT_LEN"),
         ("weightedmean", "WEIGHTED_MEAN"),
         ("lasttoken", "LAST_TOKEN"),
-        ("max", "MAX"),
         ("cls", "CLS"),
     ],
 )
@@ -873,6 +870,39 @@ def test_save_as_onnx_maps_pooling_modes_to_ml_commons(
     onnx_path = os.path.join(output_folder, "onnx", "pooling-model.onnx")
     assert [o.name for o in _load_onnx_graph(onnx_path).graph.output] == [
         "token_embeddings"
+    ]
+
+    pytest.importorskip("onnxruntime")
+    embeddings = _run_onnx_like_ml_commons(
+        onnx_path,
+        os.path.join(output_folder, "tokenizer.json"),
+        model_config,
+        ONNX_TEST_SENTENCES,
+    )
+    _assert_matches_sentence_transformers(local_model_path, embeddings)
+    clean_test_folder(TEST_FOLDER)
+
+
+def test_save_as_onnx_max_pooling_is_pre_pooled():
+    # ml-commons' ONNX translator mis-normalizes MAX pooling ([1, dim] shape), so the export
+    # outputs the final embedding with pooling_mode NONE instead
+    clean_test_folder(TEST_FOLDER)
+    local_model_path = _save_local_sentence_transformer(
+        os.path.join(TEST_FOLDER, "max-model"), pooling_mode="max"
+    )
+    output_folder = os.path.join(TEST_FOLDER, "max-output")
+    test_model = SentenceTransformerModel(
+        folder_path=output_folder, model_id=local_model_path
+    )
+    test_model.save_as_onnx(model_id=local_model_path)
+    with open(test_model.make_model_config_json(model_format="ONNX")) as f:
+        model_config = json.load(f)["model_config"]
+    assert model_config["pooling_mode"] == "NONE"
+    assert model_config["normalize_result"] is False
+
+    onnx_path = os.path.join(output_folder, "onnx", "max-model.onnx")
+    assert [o.name for o in _load_onnx_graph(onnx_path).graph.output] == [
+        "sentence_embedding"
     ]
 
     pytest.importorskip("onnxruntime")
