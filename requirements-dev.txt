@@ -27,6 +27,7 @@ nbval
 pywavelets
 scikit-learn
 onnxscript
+onnxruntime
 
 #
 #Docs

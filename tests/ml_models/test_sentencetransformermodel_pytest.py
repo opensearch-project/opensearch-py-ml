@@ -663,5 +663,291 @@ def test_zip_model_with_license():
     clean_test_folder(TEST_FOLDER)
 
 
+ONNX_TEST_MODEL_ID = "sentence-transformers/paraphrase-MiniLM-L3-v2"
+ONNX_TEST_SENTENCES = [
+    "First test sentence",
+    "This is another sentence used for testing model embedding outputs.",
+]
+
+
+def _load_onnx_graph(onnx_path):
+    import onnx
+
+    return onnx.load(onnx_path, load_external_data=False)
+
+
+def _run_onnx_like_ml_commons(onnx_path, tokenizer_path, model_config, sentences):
+    """Run the exported model the way ml-commons does (inputs, pooling, normalization)."""
+    import numpy as np
+    import onnxruntime as ort
+    from tokenizers import Tokenizer
+
+    tokenizer = Tokenizer.from_file(tokenizer_path)
+    session = ort.InferenceSession(onnx_path, providers=["CPUExecutionProvider"])
+    input_names = {i.name for i in session.get_inputs()}
+    embeddings = []
+    for sentence in sentences:
+        encoding = tokenizer.encode(sentence)
+        feed = {
+            "input_ids": np.array([encoding.ids], dtype=np.int64),
+            "attention_mask": np.array([encoding.attention_mask], dtype=np.int64),
+        }
+        if "token_type_ids" in input_names:
+            feed["token_type_ids"] = np.array([encoding.type_ids], dtype=np.int64)
+        output = session.run(None, feed)[0][0]
+        mask = np.array(encoding.attention_mask, dtype=np.float32)[:, None]
+        pooling_mode = model_config["pooling_mode"]
+        if pooling_mode == "MEAN":
+            output = (output * mask).sum(axis=0) / mask.sum()
+        elif pooling_mode == "MEAN_SQRT_LEN":
+            output = (output * mask).sum(axis=0) / np.sqrt(mask.sum())
+        elif pooling_mode == "WEIGHTED_MEAN":
+            weights = mask * np.arange(1, len(mask) + 1, dtype=np.float32)[:, None]
+            output = (output * weights).sum(axis=0) / weights.sum()
+        elif pooling_mode == "LAST_TOKEN":
+            output = output[int(np.nonzero(mask[:, 0])[0][-1])]
+        elif pooling_mode == "CLS":
+            output = output[0]
+        if model_config.get("normalize_result"):
+            output = output / np.linalg.norm(output)
+        embeddings.append(output)
+    return np.array(embeddings)
+
+
+def _assert_matches_sentence_transformers(model_id_or_path, embeddings):
+    import numpy as np
+    from sentence_transformers import SentenceTransformer
+
+    expected = SentenceTransformer(model_id_or_path, device="cpu").encode(
+        ONNX_TEST_SENTENCES
+    )
+    for actual, ref in zip(embeddings, expected):
+        cosine = float(
+            np.dot(actual, ref) / (np.linalg.norm(actual) * np.linalg.norm(ref))
+        )
+        assert cosine > 0.9999, f"ONNX output differs from original model: {cosine}"
+
+
+def test_save_as_onnx_is_compatible_with_ml_commons():
+    # plain Transformer -> Pooling pipeline (bert): single file, IR <= 9, token embeddings out,
+    # token_type_ids in, ml-commons applies MEAN pooling
+    clean_test_folder(TEST_FOLDER)
+    test_model = SentenceTransformerModel(
+        folder_path=TEST_FOLDER, model_id=ONNX_TEST_MODEL_ID
+    )
+    zip_file_path = test_model.save_as_onnx(model_id=ONNX_TEST_MODEL_ID)
+    model_config_path = test_model.make_model_config_json(model_format="ONNX")
+
+    with ZipFile(zip_file_path, "r") as f:
+        assert set(f.namelist()) == {"paraphrase-MiniLM-L3-v2.onnx", "tokenizer.json"}
+
+    onnx_path = os.path.join(TEST_FOLDER, "onnx", "paraphrase-MiniLM-L3-v2.onnx")
+    graph = _load_onnx_graph(onnx_path)
+    assert graph.ir_version <= SentenceTransformerModel.ONNX_MAX_IR_VERSION
+    assert [i.name for i in graph.graph.input] == [
+        "input_ids",
+        "attention_mask",
+        "token_type_ids",
+    ]
+    assert [o.name for o in graph.graph.output] == ["token_embeddings"]
+
+    with open(model_config_path) as f:
+        model_config = json.load(f)["model_config"]
+    assert model_config["pooling_mode"] == "MEAN"
+
+    pytest.importorskip("onnxruntime")
+    embeddings = _run_onnx_like_ml_commons(
+        onnx_path,
+        os.path.join(TEST_FOLDER, "tokenizer.json"),
+        model_config,
+        ONNX_TEST_SENTENCES,
+    )
+    _assert_matches_sentence_transformers(ONNX_TEST_MODEL_ID, embeddings)
+    clean_test_folder(TEST_FOLDER)
+
+
+def test_save_as_onnx_pre_pooled_model_with_dense_layer():
+    # a Dense module after pooling can't be applied by ml-commons, so the export outputs the final
+    # embedding and the config uses pooling_mode NONE without normalization
+    from sentence_transformers import SentenceTransformer
+    from sentence_transformers.sentence_transformer.modules import (
+        Dense,
+        Normalize,
+        Pooling,
+        Transformer,
+    )
+
+    clean_test_folder(TEST_FOLDER)
+    local_model_path = os.path.join(TEST_FOLDER, "dense-source-model")
+    transformer = Transformer(ONNX_TEST_MODEL_ID)
+    pooling = Pooling(transformer.get_embedding_dimension(), pooling_mode="mean")
+    dense = Dense(transformer.get_embedding_dimension(), 64)
+    SentenceTransformer(
+        modules=[transformer, pooling, dense, Normalize()], device="cpu"
+    ).save(local_model_path)
+
+    output_folder = os.path.join(TEST_FOLDER, "dense-output")
+    test_model = SentenceTransformerModel(
+        folder_path=output_folder, model_id=local_model_path
+    )
+    zip_file_path = test_model.save_as_onnx(model_id=local_model_path)
+    model_config_path = test_model.make_model_config_json(
+        model_format="ONNX", pooling_mode="MEAN"
+    )
+
+    with open(model_config_path) as f:
+        model_config = json.load(f)["model_config"]
+    assert model_config["pooling_mode"] == "NONE"
+    assert model_config["normalize_result"] is False
+    assert model_config["embedding_dimension"] == 64
+
+    onnx_path = os.path.join(output_folder, "onnx", "dense-source-model.onnx")
+    graph = _load_onnx_graph(onnx_path)
+    assert graph.ir_version <= SentenceTransformerModel.ONNX_MAX_IR_VERSION
+    assert [o.name for o in graph.graph.output] == ["sentence_embedding"]
+    with ZipFile(zip_file_path, "r") as f:
+        assert set(f.namelist()) == {"dense-source-model.onnx", "tokenizer.json"}
+
+    pytest.importorskip("onnxruntime")
+    embeddings = _run_onnx_like_ml_commons(
+        onnx_path,
+        os.path.join(output_folder, "tokenizer.json"),
+        model_config,
+        ONNX_TEST_SENTENCES,
+    )
+    _assert_matches_sentence_transformers(local_model_path, embeddings)
+    clean_test_folder(TEST_FOLDER)
+
+
+def _save_local_sentence_transformer(path, pooling_mode="mean", dense=False):
+    from sentence_transformers import SentenceTransformer
+    from sentence_transformers.sentence_transformer.modules import (
+        Dense,
+        Normalize,
+        Pooling,
+        Transformer,
+    )
+
+    transformer = Transformer(ONNX_TEST_MODEL_ID)
+    modules = [
+        transformer,
+        Pooling(transformer.get_embedding_dimension(), pooling_mode=pooling_mode),
+    ]
+    if dense:
+        modules.append(Dense(transformer.get_embedding_dimension(), 64))
+    modules.append(Normalize())
+    SentenceTransformer(modules=modules, device="cpu").save(path)
+    return path
+
+
+@pytest.mark.parametrize(
+    "pooling_mode, expected_ml_commons_mode",
+    [
+        ("mean_sqrt_len_tokens", "MEAN_SQRT_LEN"),
+        ("weightedmean", "WEIGHTED_MEAN"),
+        ("lasttoken", "LAST_TOKEN"),
+        ("cls", "CLS"),
+    ],
+)
+def test_save_as_onnx_maps_pooling_modes_to_ml_commons(
+    pooling_mode, expected_ml_commons_mode
+):
+    # pooling modes ml-commons supports keep the per-token export and get ml-commons' name
+    clean_test_folder(TEST_FOLDER)
+    local_model_path = _save_local_sentence_transformer(
+        os.path.join(TEST_FOLDER, "pooling-model"), pooling_mode=pooling_mode
+    )
+    output_folder = os.path.join(TEST_FOLDER, "pooling-output")
+    test_model = SentenceTransformerModel(
+        folder_path=output_folder, model_id=local_model_path
+    )
+    test_model.save_as_onnx(model_id=local_model_path)
+    with open(test_model.make_model_config_json(model_format="ONNX")) as f:
+        model_config = json.load(f)["model_config"]
+    assert model_config["pooling_mode"] == expected_ml_commons_mode
+    assert model_config["normalize_result"] is True
+
+    onnx_path = os.path.join(output_folder, "onnx", "pooling-model.onnx")
+    assert [o.name for o in _load_onnx_graph(onnx_path).graph.output] == [
+        "token_embeddings"
+    ]
+
+    pytest.importorskip("onnxruntime")
+    embeddings = _run_onnx_like_ml_commons(
+        onnx_path,
+        os.path.join(output_folder, "tokenizer.json"),
+        model_config,
+        ONNX_TEST_SENTENCES,
+    )
+    _assert_matches_sentence_transformers(local_model_path, embeddings)
+    clean_test_folder(TEST_FOLDER)
+
+
+def test_save_as_onnx_max_pooling_is_pre_pooled():
+    # ml-commons' ONNX translator mis-normalizes MAX pooling ([1, dim] shape), so the export
+    # outputs the final embedding with pooling_mode NONE instead
+    clean_test_folder(TEST_FOLDER)
+    local_model_path = _save_local_sentence_transformer(
+        os.path.join(TEST_FOLDER, "max-model"), pooling_mode="max"
+    )
+    output_folder = os.path.join(TEST_FOLDER, "max-output")
+    test_model = SentenceTransformerModel(
+        folder_path=output_folder, model_id=local_model_path
+    )
+    test_model.save_as_onnx(model_id=local_model_path)
+    with open(test_model.make_model_config_json(model_format="ONNX")) as f:
+        model_config = json.load(f)["model_config"]
+    assert model_config["pooling_mode"] == "NONE"
+    assert model_config["normalize_result"] is False
+
+    onnx_path = os.path.join(output_folder, "onnx", "max-model.onnx")
+    assert [o.name for o in _load_onnx_graph(onnx_path).graph.output] == [
+        "sentence_embedding"
+    ]
+
+    pytest.importorskip("onnxruntime")
+    embeddings = _run_onnx_like_ml_commons(
+        onnx_path,
+        os.path.join(output_folder, "tokenizer.json"),
+        model_config,
+        ONNX_TEST_SENTENCES,
+    )
+    _assert_matches_sentence_transformers(local_model_path, embeddings)
+    clean_test_folder(TEST_FOLDER)
+
+
+def test_save_as_onnx_zips_external_data_for_large_models(monkeypatch):
+    # models over the single-file limit keep weights in <model>.onnx.data, which must be zipped
+    monkeypatch.setattr(SentenceTransformerModel, "ONNX_SINGLE_FILE_LIMIT_BYTES", 0)
+    clean_test_folder(TEST_FOLDER)
+    test_model = SentenceTransformerModel(
+        folder_path=TEST_FOLDER, model_id=ONNX_TEST_MODEL_ID
+    )
+    zip_file_path = test_model.save_as_onnx(model_id=ONNX_TEST_MODEL_ID)
+
+    with ZipFile(zip_file_path, "r") as f:
+        assert set(f.namelist()) == {
+            "paraphrase-MiniLM-L3-v2.onnx",
+            "paraphrase-MiniLM-L3-v2.onnx.data",
+            "tokenizer.json",
+        }
+    graph = _load_onnx_graph(
+        os.path.join(TEST_FOLDER, "onnx", "paraphrase-MiniLM-L3-v2.onnx")
+    )
+    assert graph.ir_version <= SentenceTransformerModel.ONNX_MAX_IR_VERSION
+
+    pytest.importorskip("onnxruntime")
+    with open(test_model.make_model_config_json(model_format="ONNX")) as f:
+        model_config = json.load(f)["model_config"]
+    embeddings = _run_onnx_like_ml_commons(
+        os.path.join(TEST_FOLDER, "onnx", "paraphrase-MiniLM-L3-v2.onnx"),
+        os.path.join(TEST_FOLDER, "tokenizer.json"),
+        model_config,
+        ONNX_TEST_SENTENCES,
+    )
+    _assert_matches_sentence_transformers(ONNX_TEST_MODEL_ID, embeddings)
+    clean_test_folder(TEST_FOLDER)
+
+
 clean_test_folder(TEST_FOLDER)
 clean_test_folder(TESTDATA_UNZIP_FOLDER)

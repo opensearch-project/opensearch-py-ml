@@ -13,6 +13,7 @@ import random
 import re
 import shutil
 import subprocess
+import tempfile
 import time
 from typing import List
 from zipfile import ZipFile
@@ -938,40 +939,74 @@ class SentenceTransformerModel(BaseUploadModel):
             truncation=True,
         )
 
+        # match the inputs ml-commons sends (token_type_ids only for bert/albert)
+        use_token_type_ids = (
+            self._onnx_model_type(cpu_model) in self.ONNX_TOKEN_TYPE_ID_MODEL_TYPES
+        )
+        if use_token_type_ids and "token_type_ids" not in dummy_input:
+            dummy_input["token_type_ids"] = torch.zeros_like(dummy_input["input_ids"])
+        input_names = ["input_ids", "attention_mask"] + (
+            ["token_type_ids"] if use_token_type_ids else []
+        )
+
+        # simple pipelines export token embeddings (ml-commons pools them); pipelines with extra
+        # modules (e.g. Dense) export the final embedding and need pooling_mode NONE (ml-commons >= 3.6)
+        pre_pooled = self._onnx_exports_pre_pooled_output(cpu_model)
+        output_name = "sentence_embedding" if pre_pooled else "token_embeddings"
+
         class _OnnxWrapper(torch.nn.Module):
-            def __init__(self, model):
+            def __init__(self, model, pre_pooled):
                 super().__init__()
                 self.model = model
+                self.pre_pooled = pre_pooled
 
-            def forward(self, input_ids, attention_mask):
-                output = self.model(
-                    {"input_ids": input_ids, "attention_mask": attention_mask}
-                )
-                return output["sentence_embedding"]
+            def forward(self, input_ids, attention_mask, token_type_ids=None):
+                features = {"input_ids": input_ids, "attention_mask": attention_mask}
+                if token_type_ids is not None:
+                    features["token_type_ids"] = token_type_ids
+                if self.pre_pooled:
+                    return self.model(features)["sentence_embedding"]
+                # Transformer module output
+                return self.model[0](features)["token_embeddings"]
 
-        wrapper = _OnnxWrapper(cpu_model)
-        torch.onnx.export(
-            wrapper,
-            (dummy_input["input_ids"], dummy_input["attention_mask"]),
-            model_path,
-            opset_version=15,
-            input_names=["input_ids", "attention_mask"],
-            output_names=["sentence_embedding"],
-            dynamic_axes={
-                "input_ids": {0: "batch_size", 1: "sequence_length"},
-                "attention_mask": {0: "batch_size", 1: "sequence_length"},
-                "sentence_embedding": {0: "batch_size"},
-            },
+        wrapper = _OnnxWrapper(cpu_model, pre_pooled)
+        dynamic_axes = {
+            name: {0: "batch_size", 1: "sequence_length"} for name in input_names
+        }
+        dynamic_axes[output_name] = (
+            {0: "batch_size"} if pre_pooled else {0: "batch_size", 1: "sequence_length"}
         )
+        # export into a temp dir: exporters may write extra files (e.g. one per tensor)
+        export_dir = tempfile.mkdtemp(
+            prefix=".onnx-export-", dir=os.path.dirname(model_path)
+        )
+        try:
+            export_path = os.path.join(export_dir, model_name)
+            os.makedirs(os.path.dirname(export_path), exist_ok=True)
+            torch.onnx.export(
+                wrapper,
+                tuple(dummy_input[name] for name in input_names),
+                export_path,
+                opset_version=18,
+                input_names=input_names,
+                output_names=[output_name],
+                dynamic_axes=dynamic_axes,
+            )
+            model_files = self._make_onnx_compatible_with_ml_commons(
+                export_path, model_path
+            )
+        finally:
+            shutil.rmtree(export_dir, ignore_errors=True)
 
         print("model file is saved to ", model_path)
 
-        # zip model file along with tokenizer.json (and license file) as output
-        with ZipFile(str(zip_file_path), "w") as zipObj:
-            zipObj.write(
-                model_path,
-                arcname=str(model_name),
-            )
+        # zip model file(s) (+ .onnx.data for models over 2 GB), tokenizer.json and optional license
+        with ZipFile(str(zip_file_path), "w", allowZip64=True) as zipObj:
+            for file_path in model_files:
+                zipObj.write(
+                    file_path,
+                    arcname=os.path.basename(file_path),
+                )
             zipObj.write(
                 os.path.join(save_json_folder_path, "tokenizer.json"),
                 arcname="tokenizer.json",
@@ -982,6 +1017,92 @@ class SentenceTransformerModel(BaseUploadModel):
         self.onnx_zip_file_path = zip_file_path
         print("zip file is saved to ", zip_file_path, "\n")
         return zip_file_path
+
+    # model types ml-commons sends token_type_ids for
+    ONNX_TOKEN_TYPE_ID_MODEL_TYPES = {"bert", "albert"}
+    # max IR version supported by ml-commons' onnxruntime (1.16.3)
+    ONNX_MAX_IR_VERSION = 9
+    # stay under protobuf's 2 GB single-file limit, with headroom for the graph
+    ONNX_SINGLE_FILE_LIMIT_BYTES = int(1.8 * 1024**3)
+    # sentence-transformers pooling mode -> ml-commons pooling_mode
+    ML_COMMONS_POOLING_MODES = {
+        "mean": "MEAN",
+        "max": "MAX",
+        "cls": "CLS",
+        "mean_sqrt_len_tokens": "MEAN_SQRT_LEN",
+        "weightedmean": "WEIGHTED_MEAN",
+        "lasttoken": "LAST_TOKEN",
+    }
+    # modes ml-commons' ONNX translator can't apply correctly, so the export is pre-pooled:
+    # its maxPool keeps a [1, dim] shape, so normalize_result turns every value into +/-1
+    ONNX_PRE_POOLED_POOLING_MODES = {"max"}
+
+    @staticmethod
+    def _onnx_model_type(model: SentenceTransformer) -> str:
+        """Return the Hugging Face model_type (e.g. 'bert') of the model's Transformer module."""
+        for module in model._modules.values():
+            if isinstance(module, Transformer):
+                return getattr(module.auto_model.config, "model_type", "").lower()
+        return ""
+
+    @classmethod
+    def _onnx_exports_pre_pooled_output(cls, model: SentenceTransformer) -> bool:
+        """
+        True unless the pipeline is Transformer -> Pooling -> (Normalize) with a single pooling
+        mode ml-commons can apply itself (ML_COMMONS_POOLING_MODES minus
+        ONNX_PRE_POOLED_POOLING_MODES).
+        """
+        modules = list(model._modules.values())
+        simple_pipeline = (
+            len(modules) >= 2
+            and type(modules[0]) is Transformer
+            and type(modules[1]) is Pooling
+            and modules[1].pooling_mode in cls.ML_COMMONS_POOLING_MODES
+            and modules[1].pooling_mode not in cls.ONNX_PRE_POOLED_POOLING_MODES
+            and all(type(m) is Normalize for m in modules[2:])
+        )
+        return not simple_pipeline
+
+    def _make_onnx_compatible_with_ml_commons(
+        self, export_path: str, model_path: str
+    ) -> List[str]:
+        """
+        Re-save the exported model at model_path for ml-commons: cap the IR version, validate it,
+        and store weights in the .onnx file, or in one <model>.onnx.data file if over 2 GB.
+
+        :return: model files (.onnx, plus .onnx.data if any)
+        """
+        import onnx
+
+        model_dir = os.path.dirname(model_path)
+        model_file_name = os.path.basename(model_path)
+        data_file_name = model_file_name + ".data"
+
+        onnx_model = onnx.load(export_path, load_external_data=True)
+        onnx_model.ir_version = min(onnx_model.ir_version, self.ONNX_MAX_IR_VERSION)
+        weights_size = sum(init.ByteSize() for init in onnx_model.graph.initializer)
+        external_data = weights_size >= self.ONNX_SINGLE_FILE_LIMIT_BYTES
+
+        # remove output of a previous export
+        for name in (model_file_name, data_file_name):
+            if os.path.exists(os.path.join(model_dir, name)):
+                os.remove(os.path.join(model_dir, name))
+
+        if external_data:
+            onnx.save_model(
+                onnx_model,
+                model_path,
+                save_as_external_data=True,
+                all_tensors_to_one_file=True,
+                location=data_file_name,
+            )
+        else:
+            onnx.save_model(onnx_model, model_path, save_as_external_data=False)
+        # fails if the graph isn't valid for the capped IR version
+        onnx.checker.check_model(model_path)
+        if external_data:
+            return [model_path, os.path.join(model_dir, data_file_name)]
+        return [model_path]
 
     def set_up_accelerate_config(
         self,
@@ -1235,7 +1356,9 @@ class SentenceTransformerModel(BaseUploadModel):
                         model_type = module.auto_model.__class__.__name__
                         model_type = model_type.lower().rstrip("model")
                     elif pooling_mode is None and isinstance(module, Pooling):
-                        pooling_mode = module.pooling_mode.upper()
+                        pooling_mode = self.ML_COMMONS_POOLING_MODES.get(
+                            module.pooling_mode, module.pooling_mode.upper()
+                        )
                     elif normalize_result is None and isinstance(module, Normalize):
                         normalize_result = True
                     # TODO: Support 'Dense' module
@@ -1245,6 +1368,15 @@ class SentenceTransformerModel(BaseUploadModel):
                 raise Exception(
                     f"Raised exception while getting model data from pre-trained hugging-face model object: {e}"
                 )
+
+        if model_format == "ONNX" and self._onnx_exports_pre_pooled_output(model):
+            if pooling_mode not in (None, "NONE") or normalize_result:
+                print(
+                    f"ONNX export of this model is pre-pooled; overriding pooling_mode={pooling_mode}, "
+                    f"normalize_result={normalize_result} with pooling_mode=NONE, normalize_result=False"
+                )
+            pooling_mode = "NONE"
+            normalize_result = False
 
         if description is None:
             readme_file_path = os.path.join(self.folder_path, "README.md")
