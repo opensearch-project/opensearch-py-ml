@@ -69,6 +69,7 @@ on:
             "activation": (Optional) String. Specifies the activation function for the sparse model. Sparse model only.
             "model_name": (Optional) String. Specifies the model name for uploading. Example: transforms "sentence-transformers/model" to "sentence-transformers/{model_name}",
             "model_init_kwargs": (Optional) Object. JSON object to pass to from_pretrained via **kwargs.
+            "query_prefix": (Optional) String. Prefix ml-commons adds to queries of an asymmetric model (written to model_config.query_prefix). SentenceTransformer only.
           }
           
           Example:
@@ -109,6 +110,7 @@ jobs:
           activation=""
           model_name="${model_id##*/}"
           model_init_kwargs="{}"
+          query_prefix=""
   
           if [ "$custom_params" != "{}" ] && [ -n "$custom_params" ]; then
             tmp_up=$(echo "$custom_params" | jq -r '.upload_prefix | select(.!=null)')
@@ -116,12 +118,15 @@ jobs:
             tmp_act=$(echo "$custom_params" | jq -r '.activation | select(.!=null)')
             tmp_mn=$(echo "$custom_params" | jq -r '.model_name | select(.!=null)')
             tmp_mik=$(echo "$custom_params" | jq -c '.model_init_kwargs | select(.!=null)')
+            # query_prefix stays JSON-encoded (e.g. "Instruct: ...\nQuery:") so newlines survive
+            tmp_qp=$(echo "$custom_params" | jq -c '.query_prefix | select(.!=null)')
   
             [ -n "$tmp_up" ] && upload_prefix="$tmp_up"
             [ -n "$tmp_spr" ] && sparse_prune_ratio="$tmp_spr"
             [ -n "$tmp_act" ] && activation="$tmp_act"
             [ -n "$tmp_mn" ] && model_name="$tmp_mn"
             [ -n "$tmp_mik" ] && model_init_kwargs="$tmp_mik"
+            [ -n "$tmp_qp" ] && query_prefix="$tmp_qp"
           fi
   
           echo "upload_prefix=$upload_prefix" >> $GITHUB_OUTPUT
@@ -129,6 +134,7 @@ jobs:
           echo "activation=$activation" >> $GITHUB_OUTPUT
           echo "model_name=$model_name" >> $GITHUB_OUTPUT
           echo "model_init_kwargs=$model_init_kwargs" >> $GITHUB_OUTPUT
+          echo "query_prefix=$query_prefix" >> $GITHUB_OUTPUT
       - name: Initiate folders
         # This scripts init the folders path variables.
         # 1. Retrieves the input model_id.
@@ -204,6 +210,7 @@ jobs:
       activation: ${{ steps.parse_custom_params.outputs.activation }}
       model_name: ${{ steps.parse_custom_params.outputs.model_name }}
       model_init_kwargs: ${{ steps.parse_custom_params.outputs.model_init_kwargs }}
+      query_prefix: ${{ steps.parse_custom_params.outputs.query_prefix }}
 
   # Step 3: Check if the model already exists in the model hub
   checking-out-model-hub:
@@ -269,7 +276,8 @@ jobs:
         cluster: ["opensearch"]
         secured: ["false"]
         entry:
-          - { opensearch_version: 3.0.0-beta1 }
+          # >= 3.6 so ONNX models exported with pooling_mode NONE can be deployed
+          - { opensearch_version: 3.6.0 }
     steps:
       - name: Remove unnecessary files
         run: |
@@ -278,6 +286,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       - name: Export Arguments
+        env:
+          QUERY_PREFIX: ${{ needs.init-workflow-var.outputs.query_prefix }}
         run: | 
           echo "MODEL_ID=${{ github.event.inputs.model_id }}" >> $GITHUB_ENV
           echo "MODEL_VERSION=${{ github.event.inputs.model_version }}" >> $GITHUB_ENV
@@ -289,6 +299,7 @@ jobs:
           echo "MODEL_NAME=${{ needs.init-workflow-var.outputs.model_name }}" >> $GITHUB_ENV
           echo "SPARSE_PRUNE_RATIO=${{ needs.init-workflow-var.outputs.sparse_prune_ratio }}" >> $GITHUB_ENV
           echo "ACTIVATION=${{ needs.init-workflow-var.outputs.activation }}" >> $GITHUB_ENV
+          echo "QUERY_PREFIX=$QUERY_PREFIX" >> $GITHUB_ENV
           echo "MODEL_INIT_KWARGS<<EOF" >> $GITHUB_ENV
           echo '${{ toJSON(fromJSON(needs.init-workflow-var.outputs.model_init_kwargs)) }}' >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
@@ -296,14 +307,15 @@ jobs:
         run: "./.ci/run-tests ${{ matrix.cluster }} ${{ matrix.secured }} ${{ matrix.entry.opensearch_version }} ${{github.event.inputs.model_type}}Trace"
         shell: bash
 
-      - name: Limit Model Size to 2GB
+      - name: Limit Model Size to 5GB
         run: |
           upload_size_in_binary_bytes=$(ls -lR ./upload/ | awk '{ SUM += $5} END {print SUM}')
-          size_limit_in_binary_bytes="2147483648" 
+          # 5 GiB: models over 2 GB (e.g. ONNX with external .onnx.data) are supported
+          size_limit_in_binary_bytes="5368709120"
           echo "Model Artifact Size: $upload_size_in_binary_bytes binary bytes"
           if [ "$upload_size_in_binary_bytes" -ge "$size_limit_in_binary_bytes" ]
           then
-            echo "The workflow cannot upload the model artifact that is larger than 2GB."
+            echo "The workflow cannot upload the model artifact that is larger than 5GB."
             exit 1
           fi
       - name: License Verification

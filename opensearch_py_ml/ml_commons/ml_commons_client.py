@@ -516,7 +516,9 @@ class MLCommonClient:
             body=request_body,
         )
 
-    def generate_embedding(self, model_id: str, sentences: List[str]) -> object:
+    def generate_embedding(
+        self, model_id: str, sentences: List[str], content_type: Optional[str] = None
+    ) -> object:
         """
         This method return embedding for given sentences (using ml commons _predict api)
 
@@ -524,6 +526,9 @@ class MLCommonClient:
         :type model_id: string
         :param sentences: List of sentences
         :type sentences: list of string
+        :param content_type: Optional, "query" or "passage" for asymmetric models registered with
+            query_prefix / passage_prefix
+        :type content_type: string
         :return: returns a json object `inference_results` which is a list of embedding results of given sentences
             every item has 4 properties: name, data_type, shape, data (embedding value)
         :rtype: object
@@ -532,6 +537,8 @@ class MLCommonClient:
         API_URL = f"{ML_BASE_URI}/_predict/text_embedding/{model_id}"
 
         API_BODY = {"text_docs": sentences, "target_response": ["sentence_embedding"]}
+        if content_type is not None:
+            API_BODY["parameters"] = {"content_type": content_type}
 
         return self._client.transport.perform_request(
             method="POST",

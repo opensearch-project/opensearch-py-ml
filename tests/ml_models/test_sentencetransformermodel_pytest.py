@@ -916,6 +916,30 @@ def test_save_as_onnx_max_pooling_is_pre_pooled():
     clean_test_folder(TEST_FOLDER)
 
 
+def test_make_model_config_json_with_query_prefix():
+    clean_test_folder(TEST_FOLDER)
+    test_model = SentenceTransformerModel(
+        folder_path=TEST_FOLDER, model_id=ONNX_TEST_MODEL_ID
+    )
+    test_model.save_as_onnx(model_id=ONNX_TEST_MODEL_ID)
+    query_prefix = (
+        "Instruct: Given a web search query, retrieve relevant passages\nQuery:"
+    )
+    with open(
+        test_model.make_model_config_json(
+            model_format="ONNX", query_prefix=query_prefix
+        )
+    ) as f:
+        model_config = json.load(f)["model_config"]
+    assert model_config["query_prefix"] == query_prefix
+
+    # no prefix field unless given
+    with open(test_model.make_model_config_json(model_format="ONNX")) as f:
+        model_config = json.load(f)["model_config"]
+    assert "query_prefix" not in model_config
+    clean_test_folder(TEST_FOLDER)
+
+
 def test_save_as_onnx_zips_external_data_for_large_models(monkeypatch):
     # models over the single-file limit keep weights in <model>.onnx.data, which must be zipped
     monkeypatch.setattr(SentenceTransformerModel, "ONNX_SINGLE_FILE_LIMIT_BYTES", 0)
