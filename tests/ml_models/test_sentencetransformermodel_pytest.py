@@ -714,12 +714,12 @@ def _run_onnx_like_ml_commons(onnx_path, tokenizer_path, model_config, sentences
     return np.array(embeddings)
 
 
-def _assert_matches_sentence_transformers(model_id_or_path, embeddings):
+def _assert_matches_sentence_transformers(model_id_or_path, embeddings, prompt=None):
     import numpy as np
     from sentence_transformers import SentenceTransformer
 
     expected = SentenceTransformer(model_id_or_path, device="cpu").encode(
-        ONNX_TEST_SENTENCES
+        ONNX_TEST_SENTENCES, prompt=prompt
     )
     for actual, ref in zip(embeddings, expected):
         cosine = float(
@@ -819,7 +819,9 @@ def test_save_as_onnx_pre_pooled_model_with_dense_layer():
     clean_test_folder(TEST_FOLDER)
 
 
-def _save_local_sentence_transformer(path, pooling_mode="mean", dense=False):
+def _save_local_sentence_transformer(
+    path, pooling_mode="mean", dense=False, include_prompt=True
+):
     from sentence_transformers import SentenceTransformer
     from sentence_transformers.sentence_transformer.modules import (
         Dense,
@@ -831,7 +833,11 @@ def _save_local_sentence_transformer(path, pooling_mode="mean", dense=False):
     transformer = Transformer(ONNX_TEST_MODEL_ID)
     modules = [
         transformer,
-        Pooling(transformer.get_embedding_dimension(), pooling_mode=pooling_mode),
+        Pooling(
+            transformer.get_embedding_dimension(),
+            pooling_mode=pooling_mode,
+            include_prompt=include_prompt,
+        ),
     ]
     if dense:
         modules.append(Dense(transformer.get_embedding_dimension(), 64))
@@ -913,6 +919,84 @@ def test_save_as_onnx_max_pooling_is_pre_pooled():
         ONNX_TEST_SENTENCES,
     )
     _assert_matches_sentence_transformers(local_model_path, embeddings)
+    clean_test_folder(TEST_FOLDER)
+
+
+def test_make_model_config_json_with_query_prefix():
+    clean_test_folder(TEST_FOLDER)
+    test_model = SentenceTransformerModel(
+        folder_path=TEST_FOLDER, model_id=ONNX_TEST_MODEL_ID
+    )
+    test_model.save_as_onnx(model_id=ONNX_TEST_MODEL_ID)
+    query_prefix = (
+        "Instruct: Given a web search query, retrieve relevant passages\nQuery:"
+    )
+    with open(
+        test_model.make_model_config_json(
+            model_format="ONNX", query_prefix=query_prefix
+        )
+    ) as f:
+        model_config = json.load(f)["model_config"]
+    assert model_config["query_prefix"] == query_prefix
+
+    # no prefix field unless given
+    with open(test_model.make_model_config_json(model_format="ONNX")) as f:
+        model_config = json.load(f)["model_config"]
+    assert "query_prefix" not in model_config
+    clean_test_folder(TEST_FOLDER)
+
+
+def test_query_prefix_matches_sentence_transformers_prompt():
+    # with include_prompt=True, prepending query_prefix (as ml-commons does) equals
+    # sentence-transformers' prompt encoding
+    clean_test_folder(TEST_FOLDER)
+    query_prefix = (
+        "Instruct: Given a web search query, retrieve relevant passages\nQuery:"
+    )
+    local_model_path = _save_local_sentence_transformer(
+        os.path.join(TEST_FOLDER, "prompt-model"), include_prompt=True
+    )
+    output_folder = os.path.join(TEST_FOLDER, "prompt-output")
+    test_model = SentenceTransformerModel(
+        folder_path=output_folder, model_id=local_model_path
+    )
+    test_model.save_as_onnx(model_id=local_model_path)
+    with open(
+        test_model.make_model_config_json(
+            model_format="ONNX", query_prefix=query_prefix
+        )
+    ) as f:
+        model_config = json.load(f)["model_config"]
+    assert model_config["query_prefix"] == query_prefix
+
+    pytest.importorskip("onnxruntime")
+    embeddings = _run_onnx_like_ml_commons(
+        os.path.join(output_folder, "onnx", "prompt-model.onnx"),
+        os.path.join(output_folder, "tokenizer.json"),
+        model_config,
+        [query_prefix + sentence for sentence in ONNX_TEST_SENTENCES],
+    )
+    _assert_matches_sentence_transformers(
+        local_model_path, embeddings, prompt=query_prefix
+    )
+    clean_test_folder(TEST_FOLDER)
+
+
+def test_query_prefix_rejected_when_pooling_excludes_prompt():
+    # ml-commons can't exclude prompt tokens from pooling, so this combination is rejected
+    clean_test_folder(TEST_FOLDER)
+    local_model_path = _save_local_sentence_transformer(
+        os.path.join(TEST_FOLDER, "no-prompt-model"), include_prompt=False
+    )
+    output_folder = os.path.join(TEST_FOLDER, "no-prompt-output")
+    test_model = SentenceTransformerModel(
+        folder_path=output_folder, model_id=local_model_path
+    )
+    test_model.save_as_onnx(model_id=local_model_path)
+    with pytest.raises(ValueError, match="include_prompt=False"):
+        test_model.make_model_config_json(model_format="ONNX", query_prefix="query: ")
+    # without a prefix the model is still supported
+    test_model.make_model_config_json(model_format="ONNX")
     clean_test_folder(TEST_FOLDER)
 
 

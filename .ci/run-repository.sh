@@ -78,10 +78,11 @@ elif [[ "$TASK_TYPE" == "SentenceTransformerTrace" || "$TASK_TYPE" == "SparseTra
   echo -e "\033[34;1mINFO:\033[0m MODEL_DESCRIPTION: ${MODEL_DESCRIPTION:-N/A}\033[0m"
   echo -e "\033[34;1mINFO:\033[0m MODEL_NAME: ${MODEL_NAME:-N/A}\033[0m"
   echo -e "\033[34;1mINFO:\033[0m MODEL_INIT_KWARGS: ${MODEL_INIT_KWARGS:-{}}\033[0m"
+  echo -e "\033[34;1mINFO:\033[0m QUERY_PREFIX: ${QUERY_PREFIX:-N/A}\033[0m"
 
   if [[ "$TASK_TYPE" == "SentenceTransformerTrace" ]]; then
       NOX_TRACE_TYPE="trace"
-      EXTRA_ARGS=( -ed "${EMBEDDING_DIMENSION}" -pm "${POOLING_MODE}" )
+      EXTRA_ARGS=( -ed "${EMBEDDING_DIMENSION}" -pm "${POOLING_MODE}" -qp "${QUERY_PREFIX}" )
   elif [[ "$TASK_TYPE" == "SparseTrace" ]]; then
       NOX_TRACE_TYPE="sparsetrace"
       EXTRA_ARGS=( -spr "${SPARSE_PRUNE_RATIO}" -act "${ACTIVATION}" -mik "${MODEL_INIT_KWARGS}" )

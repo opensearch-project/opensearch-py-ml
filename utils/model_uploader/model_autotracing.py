@@ -10,6 +10,7 @@
 # files for uploading to OpenSearch model hub.
 
 import argparse
+import json
 import os
 import shutil
 import sys
@@ -98,6 +99,7 @@ def trace_sentence_transformer_model(
     embedding_dimension: Optional[int] = None,
     pooling_mode: Optional[str] = None,
     model_description: Optional[str] = None,
+    query_prefix: Optional[str] = None,
 ) -> Tuple[str, str]:
     """
     Trace the pretrained sentence transformer model, create a model config file,
@@ -115,6 +117,8 @@ def trace_sentence_transformer_model(
     :type pooling_mode: string
     :param model_description: Model description input
     :type model_description: string
+    :param query_prefix: Query prefix for asymmetric models
+    :type query_prefix: string
     :return: Tuple of model_path (path to model zip file) and model_config_path (path to model config json file)
     :rtype: Tuple[str, str]
     """
@@ -161,6 +165,7 @@ def trace_sentence_transformer_model(
             embedding_dimension=embedding_dimension,
             pooling_mode=pooling_mode,
             description=model_description,
+            query_prefix=query_prefix,
         )
     except Exception as e:
         assert (
@@ -179,7 +184,8 @@ def register_and_deploy_sentence_transformer_model(
     model_path: str,
     model_config_path: str,
     model_format: str,
-) -> List["DTypeLike"]:
+    asymmetric: bool = False,
+) -> Tuple[List["DTypeLike"], Optional[List["DTypeLike"]]]:
     """
     Register the pretrained sentence transformer model by using the model file and the model config file,
     deploy the model to generate embeddings for the TEST_SENTENCES,
@@ -193,10 +199,15 @@ def register_and_deploy_sentence_transformer_model(
     :type model_config_path: string
     :param model_format: Model format ("TORCH_SCRIPT" or "ONNX")
     :type model_format: string
-    :return: List of embedding data for TEST_SENTENCES
-    :rtype: List["DTypeLike"]
+    :param asymmetric: Whether the model is registered with query_prefix. If True, embeddings
+        are generated as passages, and also as queries
+    :type asymmetric: bool
+    :return: Tuple of passage embedding data for TEST_SENTENCES and query embedding data
+        (None if not asymmetric)
+    :rtype: Tuple[List["DTypeLike"], Optional[List["DTypeLike"]]]
     """
     embedding_data = None
+    query_embedding_data = None
 
     # 1.) Register & Deploy the model
     model_id = register_and_deploy_model(
@@ -206,12 +217,13 @@ def register_and_deploy_sentence_transformer_model(
     check_model_status(ml_client, model_id, model_format, DENSE_MODEL_ALGORITHM)
     # 3.) Generate embeddings
     try:
-        embedding_output = ml_client.generate_embedding(model_id, TEST_SENTENCES)
-        assert len(embedding_output.get("inference_results")) == len(TEST_SENTENCES)
-        embedding_data = [
-            embedding_output["inference_results"][i]["output"][0]["data"]
-            for i in range(len(TEST_SENTENCES))
-        ]
+        embedding_data = _generate_embedding_data(
+            ml_client, model_id, "passage" if asymmetric else None
+        )
+        if asymmetric:
+            query_embedding_data = _generate_embedding_data(
+                ml_client, model_id, "query"
+            )
     except Exception as e:
         assert (
             False
@@ -233,7 +245,20 @@ def register_and_deploy_sentence_transformer_model(
         assert False, f"Raised Exception in deleting {model_format} model: {e}"
 
     # 6.) Return embedding outputs for model verification
-    return embedding_data
+    return embedding_data, query_embedding_data
+
+
+def _generate_embedding_data(
+    ml_client: "MLCommonClient", model_id: str, content_type: Optional[str]
+) -> List["DTypeLike"]:
+    embedding_output = ml_client.generate_embedding(
+        model_id, TEST_SENTENCES, content_type=content_type
+    )
+    assert len(embedding_output.get("inference_results")) == len(TEST_SENTENCES)
+    return [
+        embedding_output["inference_results"][i]["output"][0]["data"]
+        for i in range(len(TEST_SENTENCES))
+    ]
 
 
 def verify_embedding_data(
@@ -283,6 +308,7 @@ def main(
     model_description: Optional[str] = None,
     upload_prefix: Optional[str] = None,
     model_name: Optional[str] = None,
+    query_prefix: Optional[str] = None,
 ) -> None:
     """
     Perform model auto-tracing and prepare files for uploading to OpenSearch model hub
@@ -303,6 +329,8 @@ def main(
     :type upload_prefix: string
     :param model_name: Model customize name for upload
     :type model_name: string
+    :param query_prefix: Query prefix for asymmetric models
+    :type query_prefix: string
     :return: No return value expected
     :rtype: None
     """
@@ -316,14 +344,26 @@ def main(
     Model Description: {model_description if model_description is not None else 'N/A'}
     Upload Prefix: {upload_prefix if upload_prefix is not None else 'N/A'}
     Model Name: {model_name if model_name is not None else 'N/A'}
+    Query Prefix: {repr(query_prefix) if query_prefix is not None else 'N/A'}
     ==========================================
     """)
 
     ml_client = MLCommonClient(OPENSEARCH_TEST_CLIENT)
 
     pre_trained_model = SentenceTransformer(model_id)
+    asymmetric = query_prefix is not None
     original_embedding_data = list(
         pre_trained_model.encode(TEST_SENTENCES, convert_to_numpy=True)
+    )
+    # ml-commons prepends query_prefix to queries, like sentence-transformers' prompt
+    original_query_embedding_data = (
+        list(
+            pre_trained_model.encode(
+                TEST_SENTENCES, prompt=query_prefix, convert_to_numpy=True
+            )
+        )
+        if asymmetric
+        else None
     )
 
     pre_trained_model.save(path=TEMP_MODEL_PATH)
@@ -345,17 +385,26 @@ def main(
             embedding_dimension,
             pooling_mode,
             model_description,
+            query_prefix,
         )
 
-        torchscript_embedding_data = register_and_deploy_sentence_transformer_model(
+        (
+            torchscript_embedding_data,
+            torchscript_query_embedding_data,
+        ) = register_and_deploy_sentence_transformer_model(
             ml_client,
             torchscript_model_path,
             torchscript_model_config_path,
             TORCH_SCRIPT_FORMAT,
+            asymmetric,
         )
         pass_test = verify_embedding_data(
             original_embedding_data, torchscript_embedding_data
         )
+        if asymmetric:
+            pass_test = pass_test and verify_embedding_data(
+                original_query_embedding_data, torchscript_query_embedding_data
+            )
         assert (
             pass_test
         ), f"Failed while verifying embeddings of {model_id} model in TORCH_SCRIPT format"
@@ -388,13 +437,21 @@ def main(
             embedding_dimension,
             pooling_mode,
             model_description,
+            query_prefix,
         )
 
-        onnx_embedding_data = register_and_deploy_sentence_transformer_model(
-            ml_client, onnx_model_path, onnx_model_config_path, ONNX_FORMAT
+        (
+            onnx_embedding_data,
+            onnx_query_embedding_data,
+        ) = register_and_deploy_sentence_transformer_model(
+            ml_client, onnx_model_path, onnx_model_config_path, ONNX_FORMAT, asymmetric
         )
 
         pass_test = verify_embedding_data(original_embedding_data, onnx_embedding_data)
+        if asymmetric:
+            pass_test = pass_test and verify_embedding_data(
+                original_query_embedding_data, onnx_query_embedding_data
+            )
         assert (
             pass_test
         ), f"Failed while verifying embeddings of {model_id} model in ONNX format"
@@ -416,6 +473,16 @@ def main(
     store_description_variable(config_path_for_checking_description)
 
     print("\n=== Finished running model_autotracing.py ===")
+
+
+def _parse_prefix(value: str) -> Optional[str]:
+    """
+    The prefix is passed as a JSON string so whitespace and newlines survive the workflow
+    (e.g. '"Instruct: ...\\nQuery:"'). Empty values mean no prefix.
+    """
+    if value is None or value.strip() in ("", "null"):
+        return None
+    return json.loads(value)
 
 
 if __name__ == "__main__":
@@ -479,6 +546,15 @@ if __name__ == "__main__":
         const=None,
         help="Model description if you want to overwrite the default description",
     )
+    parser.add_argument(
+        "-qp",
+        "--query_prefix",
+        type=_parse_prefix,
+        nargs="?",
+        default=None,
+        const=None,
+        help="Query prefix for asymmetric models, as a JSON string (e.g. '\"query: \"')",
+    )
     args = parser.parse_args()
     for arg in vars(args):
         value = getattr(args, arg)
@@ -494,4 +570,5 @@ if __name__ == "__main__":
         args.model_description,
         args.upload_prefix,
         args.model_name,
+        args.query_prefix,
     )

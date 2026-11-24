@@ -9,6 +9,7 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Add `-o/--output` option to <u>model registration</u> to specify output file path enabling end to end automation. ([#591](https://github.com/opensearch-project/opensearch-py-ml/pull/591))
 - Update documentation for <u>model registration</u> to reflect new options and usage. ([#591](https://github.com/opensearch-project/opensearch-py-ml/pull/591))
 - Support exporting ONNX models over 2 GB by packaging the external `.onnx.data` file ([#626](https://github.com/opensearch-project/opensearch-py-ml/pull/626))
+- Support `query_prefix` for asymmetric models in the model config, model uploader workflow and auto-tracing ([#631](https://github.com/opensearch-project/opensearch-py-ml/pull/631))
 
 ### Changed
 - Set upperbound for transformers in semantic highlighter requirements to fix compatibility issue ([#599](https://github.com/opensearch-project/opensearch-py-ml/pull/599))
@@ -16,6 +17,7 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Update doc workflow to use 2.19.0 ([#598](https://github.com/opensearch-project/opensearch-py-ml/pull/598))
 - Update asymmetric embedding sagemaker endpoint deploy scripts ([#601](https://github.com/opensearch-project/opensearch-py-ml/pull/601))
 - Update transformers version constraint to >=5.3.0,<6.0.0 and sentence_transformers to >=5.0.0,<6.0.0 ([#615](https://github.com/opensearch-project/opensearch-py-ml/pull/615))
+- Raise the model uploader size limit to 5 GB and run its deploy check on OpenSearch 3.6.0 ([#631](https://github.com/opensearch-project/opensearch-py-ml/pull/631))
 
 ### Fixed
 - Fix ONNX export so models deploy in ml-commons again (IR version, pooling output, token_type_ids, single-file output) ([#626](https://github.com/opensearch-project/opensearch-py-ml/pull/626))

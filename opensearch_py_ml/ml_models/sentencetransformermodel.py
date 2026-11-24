@@ -1283,6 +1283,7 @@ class SentenceTransformerModel(BaseUploadModel):
         additional_config: dict = None,
         model_type: str = None,
         verbose: bool = False,
+        query_prefix: str = None,
     ) -> str:
         """
         Parse from config.json file of pre-trained hugging-face model to generate a ml-commons_model_config.json file.
@@ -1329,6 +1330,10 @@ class SentenceTransformerModel(BaseUploadModel):
         :param verbose:
             optional, use printing more logs. Default as false
         :type verbose: bool
+        :param query_prefix:
+            Optional, prefix ml-commons adds to query text for asymmetric models
+            (e.g. "Instruct: ...\nQuery:"). If None, no query prefix is set
+        :type query_prefix: string
         :return: model config file path. The file path where the model config file is being saved
         :rtype: string
         """
@@ -1341,6 +1346,17 @@ class SentenceTransformerModel(BaseUploadModel):
         model = SentenceTransformer(
             self.model_id, model_kwargs={"attn_implementation": "eager"}
         )
+        # ml-commons prepends query_prefix and pools over all tokens, so it can't reproduce
+        # Pooling(include_prompt=False), which leaves the prompt tokens out of the embedding
+        if query_prefix and any(
+            isinstance(module, Pooling) and not module.include_prompt
+            for module in model._modules.values()
+        ):
+            raise ValueError(
+                "query_prefix is not supported for models whose Pooling module has "
+                "include_prompt=False: ml-commons pools over the prefix tokens too, so "
+                "query embeddings would differ from the original model"
+            )
         if (
             model_type is None
             or embedding_dimension is None
@@ -1452,6 +1468,8 @@ class SentenceTransformerModel(BaseUploadModel):
             model_config_content["model_config"][
                 "additional_config"
             ] = additional_config
+        if query_prefix is not None:
+            model_config_content["model_config"]["query_prefix"] = query_prefix
 
         if model_zip_file_path is None:
             model_zip_file_path = (
