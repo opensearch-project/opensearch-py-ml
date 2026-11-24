@@ -1346,6 +1346,17 @@ class SentenceTransformerModel(BaseUploadModel):
         model = SentenceTransformer(
             self.model_id, model_kwargs={"attn_implementation": "eager"}
         )
+        # ml-commons prepends query_prefix and pools over all tokens, so it can't reproduce
+        # Pooling(include_prompt=False), which leaves the prompt tokens out of the embedding
+        if query_prefix and any(
+            isinstance(module, Pooling) and not module.include_prompt
+            for module in model._modules.values()
+        ):
+            raise ValueError(
+                "query_prefix is not supported for models whose Pooling module has "
+                "include_prompt=False: ml-commons pools over the prefix tokens too, so "
+                "query embeddings would differ from the original model"
+            )
         if (
             model_type is None
             or embedding_dimension is None

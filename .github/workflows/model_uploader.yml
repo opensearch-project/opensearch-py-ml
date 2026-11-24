@@ -102,8 +102,10 @@ jobs:
         # 2. Automatic model_name derivation from model_id (when not explicitly provided)
         # 3. Custom parameter override system with null safety checks
         id: parse_custom_params
+        env:
+          CUSTOM_PARAMS: ${{ github.event.inputs.custom_params }}
         run: |
-          custom_params='${{ github.event.inputs.custom_params }}'
+          custom_params="$CUSTOM_PARAMS"
           model_id='${{ github.event.inputs.model_id }}'
           upload_prefix=""
           sparse_prune_ratio=0
@@ -239,10 +241,12 @@ jobs:
           role-session-name: checking-out-model-hub
       - name: Check if TORCH_SCRIPT Model Exists
         if: github.event.inputs.allow_overwrite == 'NO' && (github.event.inputs.tracing_format == 'TORCH_SCRIPT' || github.event.inputs.tracing_format == 'BOTH')
+        env:
+          CUSTOM_PARAMS: ${{ github.event.inputs.custom_params }}
         run: |
           TORCH_FILE_PATH=$(python utils/model_uploader/save_model_file_path_to_env.py \
               ${{ needs.init-workflow-var.outputs.model_prefix_folder }} ${{ github.event.inputs.model_id }} \
-              ${{ github.event.inputs.model_version }} TORCH_SCRIPT '${{ github.event.inputs.custom_params }}')
+              ${{ github.event.inputs.model_version }} TORCH_SCRIPT "$CUSTOM_PARAMS")
           aws s3api head-object --bucket ${{ secrets.MODEL_BUCKET }} --key $TORCH_FILE_PATH > /dev/null 2>&1 || TORCH_MODEL_NOT_EXIST=true
           if [[ -z $TORCH_MODEL_NOT_EXIST ]]
           then
@@ -251,10 +255,12 @@ jobs:
           fi
       - name: Check if ONNX Model Exists
         if: github.event.inputs.allow_overwrite == 'NO' && (github.event.inputs.tracing_format == 'ONNX' || github.event.inputs.tracing_format == 'BOTH')
+        env:
+          CUSTOM_PARAMS: ${{ github.event.inputs.custom_params }}
         run: |
           ONNX_FILE_PATH=$(python utils/model_uploader/save_model_file_path_to_env.py \
             ${{ needs.init-workflow-var.outputs.model_prefix_folder }} ${{ github.event.inputs.model_id }} \
-            ${{ github.event.inputs.model_version }} ONNX '${{ github.event.inputs.custom_params }}')
+            ${{ github.event.inputs.model_version }} ONNX "$CUSTOM_PARAMS")
           aws s3api head-object --bucket ${{ secrets.MODEL_BUCKET }} --key $ONNX_FILE_PATH > /dev/null 2>&1 || ONNX_MODEL_NOT_EXIST=true
           if [[ -z $ONNX_MODEL_NOT_EXIST ]]
           then
