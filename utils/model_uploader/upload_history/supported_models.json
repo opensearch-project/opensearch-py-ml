@@ -378,5 +378,15 @@
         "Embedding Dimension": "N/A",
         "Pooling Mode": "N/A",
         "Workflow Run ID": "15617103395"
+    },
+    {
+        "Model Uploader": "@nathaliellenaa",
+        "Upload Time": "2026-11-25 15:20:34",
+        "Model ID": "opensearch-project/opensearch-neural-embed-v1",
+        "Model Version": "1.0.0",
+        "Model Format": "TORCH_SCRIPT",
+        "Embedding Dimension": "2048",
+        "Pooling Mode": "MEAN",
+        "Workflow Run ID": "45717759224"
     }
 ]

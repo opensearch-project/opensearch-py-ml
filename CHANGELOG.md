@@ -18,6 +18,7 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Update asymmetric embedding sagemaker endpoint deploy scripts ([#601](https://github.com/opensearch-project/opensearch-py-ml/pull/601))
 - Update transformers version constraint to >=5.3.0,<6.0.0 and sentence_transformers to >=5.0.0,<6.0.0 ([#615](https://github.com/opensearch-project/opensearch-py-ml/pull/615))
 - Raise the model uploader size limit to 5 GB and run its deploy check on OpenSearch 3.6.0 ([#631](https://github.com/opensearch-project/opensearch-py-ml/pull/631))
+- Update model upload history -  opensearch-project/opensearch-neural-embed-v1 (v.1.0.0)(TORCH_SCRIPT) by @nathaliellenaa ([#635](https://github.com/opensearch-project/opensearch-py-ml/pull/635))
 
 ### Fixed
 - Create model upload history and model listing PRs from opensearch-ci-bot's fork ([#633](https://github.com/opensearch-project/opensearch-py-ml/pull/633))
