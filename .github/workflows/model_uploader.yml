@@ -501,7 +501,10 @@ jobs:
         uses: peter-evans/create-pull-request@22a9089034f40e5a961c8808d113e2c98fb63676 # v7
         id: create_pr
         with:
-          committer: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
+          token: ${{ secrets.OPENSEARCH_CI_BOT_TOKEN }}
+          push-to-fork: opensearch-ci-bot/opensearch-py-ml
+          committer: opensearch-ci-bot <opensearch-infra@amazon.com>
+          author: opensearch-ci-bot <opensearch-infra@amazon.com>
           commit-message: 'GitHub Actions Workflow: Update Model Upload History - ${{ env.model_info }}'
           signoff: true
           title: 'Update Model Upload History  - ${{ env.model_info }}'
@@ -515,7 +518,9 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
+          repository: opensearch-ci-bot/opensearch-py-ml
           ref: model-uploader/${{ github.run_id }}
+          token: ${{ secrets.OPENSEARCH_CI_BOT_TOKEN }}
       - name: Create a line for updating CHANGELOG.md
         id: create_changelog_line
         continue-on-error: true
@@ -542,7 +547,9 @@ jobs:
         id: commit
         with:
           branch: model-uploader/${{ github.run_id }}
-          commit_user_email: "github-actions[bot]@users.noreply.github.com"
+          commit_user_name: opensearch-ci-bot
+          commit_user_email: opensearch-infra@amazon.com
+          commit_author: opensearch-ci-bot <opensearch-infra@amazon.com>
           commit_message: 'GitHub Actions Workflow: Update CHANGELOG.md - ${{ env.model_info }}'
           commit_options: '--signoff'
           file_pattern: CHANGELOG.md

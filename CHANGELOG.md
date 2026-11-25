@@ -20,6 +20,7 @@ Inspired from [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 - Raise the model uploader size limit to 5 GB and run its deploy check on OpenSearch 3.6.0 ([#631](https://github.com/opensearch-project/opensearch-py-ml/pull/631))
 
 ### Fixed
+- Create model upload history and model listing PRs from opensearch-ci-bot's fork ([#633](https://github.com/opensearch-project/opensearch-py-ml/pull/633))
 - Fix ONNX export so models deploy in ml-commons again (IR version, pooling output, token_type_ids, single-file output) ([#626](https://github.com/opensearch-project/opensearch-py-ml/pull/626))
 
 ## [1.3.0]
