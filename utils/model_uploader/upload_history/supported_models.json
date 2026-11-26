@@ -378,5 +378,25 @@
         "Embedding Dimension": "N/A",
         "Pooling Mode": "N/A",
         "Workflow Run ID": "15617103395"
+    },
+    {
+        "Model Uploader": "@nathaliellenaa",
+        "Upload Time": "2025-09-15 14:49:37",
+        "Model ID": "sentence-transformers/paraphrase-mpnet-base-v2",
+        "Model Version": "1.0.1",
+        "Model Format": "ONNX",
+        "Embedding Dimension": "768",
+        "Pooling Mode": "MEAN",
+        "Workflow Run ID": "17747106564"
+    },
+    {
+        "Model Uploader": "@nathaliellenaa",
+        "Upload Time": "2025-09-15 14:49:37",
+        "Model ID": "sentence-transformers/paraphrase-mpnet-base-v2",
+        "Model Version": "1.0.1",
+        "Model Format": "TORCH_SCRIPT",
+        "Embedding Dimension": "768",
+        "Pooling Mode": "MEAN",
+        "Workflow Run ID": "17747106564"
     }
 ]
